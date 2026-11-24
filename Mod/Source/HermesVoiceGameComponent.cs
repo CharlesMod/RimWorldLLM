@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
 using Newtonsoft.Json;
 using RimWorld;
 using Verse;
@@ -18,6 +15,7 @@ namespace HermesVoice
 
     public class HermesVoiceGameComponent : GameComponent
     {
+        const int MaxSayChars = 500;
         public static HermesVoiceGameComponent Instance { get; private set; }
         public readonly ConversationLog ConversationLog = new ConversationLog();
 
@@ -35,13 +33,42 @@ namespace HermesVoice
         public override void GameComponentTick()
         {
             base.GameComponentTick();
+        }
+
+        // Runs every frame, even while paused (GameComponentTick does not).
+        public override void GameComponentUpdate()
+        {
+            base.GameComponentUpdate();
             DrainInbound();
+            AgentDialOut.FlushLogs();
+        }
+
+        /// <summary>Called when the game ends (return to main menu): stop serving and drop per-game state.</summary>
+        public static void OnGameEnd()
+        {
+            HermesBridge.Stop();
+            SpeechBubbles.Clear();
+            Instance = null;
+        }
+
+        public override void LoadedGame()
+        {
+            base.LoadedGame();
+            SpeechBubbles.Clear();
+        }
+
+        public override void StartedNewGame()
+        {
+            base.StartedNewGame();
+            SpeechBubbles.Clear();
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Value);
+            Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && ConversationLog.Entries == null)
+                ConversationLog.Entries = new List<ConversationEntry>();
         }
 
         public void RestartBridge()
@@ -55,21 +82,21 @@ namespace HermesVoice
             HermesBridge.Start(s.bridgePort, s.bindAddress, s.sharedToken ?? "");
         }
 
+        const int MaxRequestsPerFrame = 32;
+
         void DrainInbound()
         {
             InboundRequest req;
-            while (HermesBridge.Pending.TryDequeue(out req))
+            int handled = 0;
+            while (handled < MaxRequestsPerFrame && HermesBridge.Pending.TryDequeue(out req))
             {
+                if (!req.TryClaim()) continue; // the HTTP side timed out and gave up
+                handled++;
                 try
                 {
-                    if (!AuthOk(req))
-                    {
-                        req.Complete(401, "{\"error\":\"unauthorized\"}");
-                        continue;
-                    }
                     string route = req.Path;
                     if (req.Method == "GET" && (route == "/health" || route == "/"))
-                        req.Complete(200, "{\"status\":\"ok\",\"mod\":\"HermesVoice\",\"version\":\"1.0.0\"}");
+                        req.Complete(200, JsonConvert.SerializeObject(new { status = "ok", mod = "HermesVoice", version = HermesVoiceMod.Version }));
                     else if (req.Method == "GET" && route == "/state")
                         req.Complete(200, BuildStateJson());
                     else if (req.Method == "POST" && route == "/say")
@@ -79,32 +106,10 @@ namespace HermesVoice
                 }
                 catch (Exception e)
                 {
-                    Log.Message($"[HermesVoice] Error handling {req.Method} {req.Path}: {e}");
+                    Log.Warning($"[HermesVoice] Error handling {req.Method} {req.Path}: {e}");
                     req.Complete(500, "{\"error\":\"internal error\"}");
                 }
             }
-        }
-
-        bool AuthOk(InboundRequest req)
-        {
-            var s = HermesVoiceMod.Settings;
-            string token = s?.sharedToken ?? "";
-            if (string.IsNullOrWhiteSpace(token)) return true;
-            string auth = req.GetHeader("Authorization");
-            if (!string.IsNullOrEmpty(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                return auth.Substring(7).Trim() == token;
-            if (!string.IsNullOrEmpty(req.Query))
-            {
-                foreach (var pair in req.Query.Split('&'))
-                {
-                    var kv = pair.Split('=');
-                    if (kv.Length == 2 && kv[0] == "token")
-                    {
-                        try { if (Uri.UnescapeDataString(kv[1]) == token) return true; } catch { }
-                    }
-                }
-            }
-            return false;
         }
 
         void HandleSay(InboundRequest req, string body)
@@ -127,24 +132,45 @@ namespace HermesVoice
                 req.Complete(400, "{\"error\":\"missing pawn_id\"}");
                 return;
             }
-            var map = Find.CurrentMap;
-            Pawn pawn = map != null ? map.PlayerPawnsForStoryteller.FirstOrDefault(p => p.thingIDNumber == pawnId.Value) : null;
+            text = (text ?? "").Trim();
+            if (text.Length == 0)
+            {
+                req.Complete(400, "{\"error\":\"empty text\"}");
+                return;
+            }
+            if (text.Length > MaxSayChars) text = text.Substring(0, MaxSayChars);
+
+            Pawn pawn = null;
+            foreach (var map in Find.Maps)
+            {
+                pawn = map.mapPawns.AllPawns.FirstOrDefault(p => p.thingIDNumber == pawnId.Value && p.Faction == Faction.OfPlayer);
+                if (pawn != null) break;
+            }
             if (pawn == null)
             {
-                req.Complete(404, "{\"error\":\"pawn not found\"}");
+                // Not on any map: a dead, caravan or otherwise unspawned player pawn is a conflict, not "unknown".
+                var other = PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead.FirstOrDefault(p => p.thingIDNumber == pawnId.Value && p.Faction == Faction.OfPlayer);
+                if (other == null)
+                {
+                    req.Complete(404, "{\"error\":\"pawn not found\"}");
+                    return;
+                }
+                pawn = other;
+            }
+            if (pawn.Dead || !pawn.Spawned)
+            {
+                req.Complete(409, "{\"error\":\"pawn is dead or not spawned\"}");
                 return;
             }
             SpeechBubbles.Add(pawn, text);
             ConversationLog.Add(pawn.thingIDNumber, pawn.LabelCap, text);
-            DialOutToAgent("said", $"pawn {pawn.thingIDNumber} ({pawn.LabelCap}) said: {text}");
-            req.Complete(200, JsonConvert.SerializeObject(new { ok = true, pawn = pawn.thingIDNumber, text }));
+            req.Complete(200, JsonConvert.SerializeObject(new { ok = true, pawn = pawn.thingIDNumber, map = pawn.Map.Index, text }));
         }
 
         string BuildStateJson()
         {
-            var map = Find.CurrentMap;
             var pawns = new List<object>();
-            if (map != null)
+            foreach (var map in Find.Maps)
             {
                 foreach (var pawn in map.PlayerPawnsForStoryteller)
                 {
@@ -164,41 +190,12 @@ namespace HermesVoice
             }
             var state = new
             {
-                game = new { tick = Find.TickManager.TicksGame, maps = Find.Maps.Count },
-                bridge = new { port = HermesBridge.Port, running = HermesBridge.IsRunning, version = "1.0.0" },
+                game = new { tick = Find.TickManager.TicksGame, paused = Find.TickManager.Paused, maps = Find.Maps.Count, current_map = Find.CurrentMap?.Index ?? -1 },
+                bridge = new { port = HermesBridge.Port, running = HermesBridge.IsRunning, version = HermesVoiceMod.Version },
                 pawn_count = pawns.Count,
                 pawns = pawns
             };
             return JsonConvert.SerializeObject(state);
-        }
-
-        public void DialOutToAgent(string eventType, string payload)
-        {
-            var s = HermesVoiceMod.Settings;
-            if (s == null || string.IsNullOrWhiteSpace(s.agentUrl)) return;
-            string url = s.agentUrl;
-            string token = s.sharedToken ?? "";
-            string body = JsonConvert.SerializeObject(new
-            {
-                type = eventType,
-                tick = Find.TickManager.TicksGame,
-                payload = payload
-            });
-            var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-            new Thread(() =>
-            {
-                try
-                {
-                    var content = new System.Net.Http.StringContent(body, Encoding.UTF8, "application/json");
-                    if (!string.IsNullOrEmpty(token))
-                        content.Headers.Add("Authorization", "Bearer " + token);
-                    using (var resp = client.PostAsync(url, content).GetAwaiter().GetResult()) { }
-                }
-                catch (Exception e)
-                {
-                    Log.Message($"[HermesVoice] Dial-out to agent failed: {e.Message}");
-                }
-            }).Start();
         }
     }
 }

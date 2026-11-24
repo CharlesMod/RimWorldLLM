@@ -18,7 +18,6 @@ namespace HermesVoice
     /// Overhead dialogue bubbles. Drawn via a Harmony postfix on the map OnGUI (before the main
     /// tabs), which is where overhead labels are drawn, so the z-order is correct.
     /// </summary>
-    [StaticConstructorOnStartup]
     public static class SpeechBubbles
     {
         const int MaxBubbles = 24;
@@ -39,9 +38,9 @@ namespace HermesVoice
         {
             if (Event.current == null || Event.current.type != EventType.Repaint) return;
             var map = Find.CurrentMap;
-            if (map == null) return;
             var s = HermesVoiceMod.Settings;
-            if (s == null || !s.showBubbles) return;
+            if (map == null || s == null) return;
+            bool draw = s.showBubbles;
 
             int now = Find.TickManager.TicksGame;
             int durationTicks = Mathf.Max(1, s.bubbleDurationSec) * 60;
@@ -56,6 +55,7 @@ namespace HermesVoice
                     Active.RemoveAt(i);
                     continue;
                 }
+                if (!draw) continue;
 
                 Vector2 screenPos = GenMapUI.LabelDrawPosFor(pawn, 1.0f);
                 float estW = Mathf.Clamp(b.Text.Length * 7.5f + 28f, 140f, 360f);
@@ -70,6 +70,17 @@ namespace HermesVoice
                 Rect textRect = boxRect.ContractedBy(6f);
                 Widgets.Label(textRect, display);
                 GUI.color = Color.white;
+            }
+        }
+
+        // Leaving a game (to the main menu, or on the way to loading another save).
+        [HarmonyPatch(typeof(GenScene), nameof(GenScene.GoToMainMenu))]
+        public static class GameEndPatch
+        {
+            [HarmonyPrefix]
+            public static void Prefix()
+            {
+                HermesVoiceGameComponent.OnGameEnd();
             }
         }
 
