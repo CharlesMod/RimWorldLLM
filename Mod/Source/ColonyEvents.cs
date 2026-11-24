@@ -210,9 +210,10 @@ namespace HermesVoice
         [HarmonyPostfix]
         public static void Postfix(SkillRecord __instance, int __state)
         {
+            // Learn runs every tick for every working pawn: bail before allocating the Safe closure.
+            if (__instance.Level <= __state) return;
             EventPayload.Safe("level up", () =>
             {
-                if (__instance.Level <= __state) return;
                 var pawn = __instance.Pawn;
                 if (!EventGate.Wanted(EventKind.LevelUp, pawn)) return;
                 string skill = __instance.def.label;
