@@ -7,6 +7,22 @@ namespace HermesVoice
     public class HermesVoiceMod : Mod
     {
         public static HermesVoiceMod Instance { get; private set; }
+        const string FallbackVersion = "1.0.0";
+        /// <summary>Mod version, read from About.xml (modVersion) when available.</summary>
+        public static string Version
+        {
+            get
+            {
+                try
+                {
+                    string v = Instance?.Content?.ModMetaData?.ModVersion;
+                    if (!string.IsNullOrWhiteSpace(v)) return v;
+                }
+                catch { }
+                return FallbackVersion;
+            }
+        }
+
         public static HermesVoiceSettings Settings => Instance?.GetSettings<HermesVoiceSettings>();
 
         public HermesVoiceMod(ModContentPack content) : base(content)
@@ -49,6 +65,12 @@ namespace HermesVoice
 
             list.Label("Shared token (auth)");
             s.sharedToken = Widgets.TextField(list.GetRect(22f), s.sharedToken ?? "");
+            if (HermesBridge.IsExposedWithoutToken(s.bindAddress, s.sharedToken))
+            {
+                GUI.color = Color.red;
+                list.Label(HermesBridge.OpenWarning + ".");
+                GUI.color = Color.white;
+            }
             list.GapLine();
 
             bool bubblesTemp = s.showBubbles;
@@ -62,6 +84,12 @@ namespace HermesVoice
 
             string status = HermesBridge.IsRunning ? $"Bridge running on port {HermesBridge.Port}" : "Bridge not running";
             list.Label(status);
+            if (!HermesBridge.IsRunning && !string.IsNullOrEmpty(HermesBridge.LastError))
+            {
+                GUI.color = Color.red;
+                list.Label("Last start error: " + HermesBridge.LastError);
+                GUI.color = Color.white;
+            }
             if (list.ButtonText("Restart bridge"))
             {
                 HermesVoiceGameComponent.Instance?.RestartBridge();

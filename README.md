@@ -15,13 +15,29 @@ Two HTTP channels, both authenticated with a shared bearer token:
 
 ### Bridge API
 
-| Method | Path      | Description                                        |
-|--------|-----------|----------------------------------------------------|
-| `GET`  | `/health` | Liveness check                                     |
-| `GET`  | `/state`  | Colony state: tick, map count, all player pawns   |
-| `POST` | `/say`    | Make a pawn speak: `{"pawn_id": 1234, "text": "..."}` |
+| Method | Path      | Description                                                         |
+|--------|-----------|---------------------------------------------------------------------|
+| `GET`  | `/health` | Liveness check: `{"status","mod","version"}`                        |
+| `GET`  | `/state`  | Tick, paused, current map, map count, and all player pawns on **all** maps (each has a `map` index) |
+| `POST` | `/say`    | Make a pawn speak: `{"pawn_id": 1234, "text": "..."}`               |
 
-All requests require `Authorization: Bearer <token>` (or `?token=` on GETs) when a token is set in mod settings.
+`/say` trims the text (max 500 characters, longer is truncated) and looks the pawn up on every map. It replies `{"ok","pawn","map","text"}`.
+
+Status codes: `200` ok, `400` bad JSON / missing `pawn_id` / empty text, `401` bad or missing token, `404` unknown route or pawn, `409` pawn is dead or not spawned, `413` body over 64 KiB, `503` too many requests in flight (16) or bridge stopped, `504` the game did not answer within 20 s.
+
+When a token is set in mod settings, send `Authorization: Bearer <token>`, or `?token=<token>` on the URL (either one that matches is accepted). Auth and the size limit are checked before a request reaches the game. Requests are served every frame, including while paused. The bridge stops when you leave a game for the main menu.
+
+With no token and a non-loopback bind address (the default is `0.0.0.0`), anyone on your network can read colony state and make pawns speak. The settings window and the log warn about this.
+
+### Dial-out events
+
+Events are POSTed to the **Agent dial-out URL** as JSON, with `Authorization: Bearer <token>` when a token is set:
+
+```json
+{"type": "<event type>", "tick": 123456, "payload": { ... }}
+```
+
+Sending is asynchronous (one background sender, queue of 64, oldest dropped when full); failures are logged at most once per 30 s. The mod does not echo `/say` lines back to the agent.
 
 ## Setup
 
@@ -40,7 +56,9 @@ Requires [.NET](https://dotnet.microsoft.com/) (SDK 10+).
 dotnet build Mod/HermesVoice.csproj
 ```
 
-The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) and outputs `HermesVoice.dll` to `Mod/1.7/Assemblies/`. Set `RIMWORLD_DIR` to your RimWorld install directory to auto-deploy to the Mods folder on every build.
+The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) and outputs `HermesVoice.dll` to `Mod/1.7/Assemblies/`. `Newtonsoft.Json.dll` is copied next to it (RimWorld does not ship it); Harmony is not (it comes from the Harmony mod).
+
+Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install directory to deploy to `<dir>/Mods/HermesVoice` on every build (`<dir>/RimWorldMac.app/Mods/HermesVoice` on macOS). `About/`, the `1.7/` assemblies and, if present, `Defs/` and `Textures/` are copied; `.pdb` files are skipped.
 
 ## Repository layout
 
@@ -48,10 +66,11 @@ The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) an
 Mod/
   About/About.xml            mod metadata
   HermesVoice.csproj         build + deploy project
-  Source/                    C# source (6 files)
+  Source/                    C# source (7 files)
     HermesVoiceMod.cs        mod entry point, settings window, Harmony
     HermesBridge.cs          in-mod HTTP bridge (agent -> mod)
-    HermesVoiceGameComponent.cs  game-thread request routing, /state, /say, dial-out
+    HermesVoiceGameComponent.cs  game-thread request routing, /state, /say
+    AgentDialOut.cs          outbound events (mod -> agent), background sender
     SpeechBubbles.cs         overhead dialogue bubbles
     ConversationLog.cs       persistent conversation history
     HermesVoiceSettings.cs   mod settings
