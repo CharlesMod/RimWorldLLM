@@ -1,0 +1,422 @@
+[
+ {
+  "id": "g01",
+  "kind": "grim",
+  "focal": "moth",
+  "others": [
+   "ash"
+  ],
+  "where": "Operating room (clean, one bed)",
+  "time": "late evening, clear, 8C",
+  "state": "Mood 40%, scrubbed, scalpel in hand",
+  "trigger": "The colony needs silver for the Hussar rifle order. Moth is taking a kidney from the sedated pirate Jonah Reeve. Ash is holding the lamp.",
+  "ledger": [
+   "Prisoner: Jonah Reeve, pirate, consent not given, organ harvest in progress"
+  ],
+  "memory_ids": [
+   "m_moth_4",
+   "m_moth_1"
+  ],
+  "turns": [],
+  "subkind": "organ_harvest"
+ },
+ {
+  "id": "g02",
+  "kind": "grim",
+  "focal": "tuk",
+  "others": [
+   "rook"
+  ],
+  "where": "Butcher table (clean, cold, bloody)",
+  "time": "morning, clear, 6C",
+  "state": "Mood 74%, working with the knife, calm",
+  "trigger": "Tuk is butchering a dead raider for meat and leather. Rook has come to take the cuts away to the freezer.",
+  "ledger": [
+   "Corpse: pirate raider, killed in the raid, 6 hours ago"
+  ],
+  "memory_ids": [
+   "m_tuk_1",
+   "m_tuk_4"
+  ],
+  "turns": [],
+  "subkind": "butcher_human"
+ },
+ {
+  "id": "g03",
+  "kind": "grim",
+  "focal": "tuk",
+  "others": [
+   "pip"
+  ],
+  "where": "Dining room (clean, table)",
+  "time": "noon, clear, 14C",
+  "state": "Mood 80%, eating, satisfied",
+  "trigger": "Tuk is eating the roast from the raider she butchered yesterday. She got 'Ate human flesh: cannibal (+4)'. Pip came in, noticed what it was, and stopped in the doorway.",
+  "ledger": [],
+  "memory_ids": [
+   "m_tuk_1",
+   "m_tuk_4"
+  ],
+  "turns": [],
+  "subkind": "cannibal_meal"
+ },
+ {
+  "id": "g04",
+  "kind": "grim",
+  "focal": "rook",
+  "others": [
+   "ash"
+  ],
+  "where": "Pantry corner (bare floor, cold)",
+  "time": "night, clear, 1C",
+  "state": "Mood 12%, eating cold stew from the pot, sitting on the floor",
+  "trigger": "Hana's table is still folded away in the storage room, and Rook has not set up another. He is eating on the floor with the thought 'Ate without table' (-3) plus 'Colonist died (Hana Brandt)' (-4). Ash walks past and does not stop.",
+  "ledger": [
+   "Death: Hana Brandt died in the last raid, 2 days ago"
+  ],
+  "memory_ids": [
+   "m_rook_1",
+   "m_rook_4"
+  ],
+  "turns": [],
+  "subkind": "no_table_grief"
+ },
+ {
+  "id": "g05",
+  "kind": "grim",
+  "focal": "ash",
+  "others": [
+   "tuk"
+  ],
+  "where": "Prison yard (dirt, fence, one post)",
+  "time": "dawn, clear, 3C",
+  "state": "Mood 60%, rifle slung, calm",
+  "trigger": "Ash is carrying out the order to execute the pirate scout. The scout has given the second wave's direction and the colony has no more use for him. Tuk is watching from the gate.",
+  "ledger": [
+   "Prisoner: pirate scout, interrogated, execution ordered"
+  ],
+  "memory_ids": [
+   "m_ash_4",
+   "m_ash_2"
+  ],
+  "turns": [],
+  "subkind": "execute_prisoner"
+ },
+ {
+  "id": "g06",
+  "kind": "grim",
+  "focal": "ash",
+  "others": [
+   "lux"
+  ],
+  "where": "Slave quarters (dim, bare, three cots)",
+  "time": "late afternoon, clear, 12C",
+  "state": "Mood 56%, holding a baton, standing over a cot",
+  "trigger": "A slave named Corbin refused to haul wood. Ash is suppressing him with the baton on the order of the colony's policy. Lux is watching from the corridor and has said nothing yet.",
+  "ledger": [
+   "Slave: Corbin, suppression 38%, refused work"
+  ],
+  "memory_ids": [
+   "m_ash_4",
+   "m_ash_3"
+  ],
+  "turns": [],
+  "subkind": "slave_suppression"
+ },
+ {
+  "id": "g07",
+  "kind": "grim",
+  "focal": "pip",
+  "others": [
+   "ash",
+   "rook"
+  ],
+  "where": "Colony yard (dust, workshop to the side)",
+  "time": "midday, clear, 15C",
+  "state": "Mood 31%, frozen with a plate in hand",
+  "trigger": "Corbin and two other slaves hit a guard and ran for the north gate during a rebellion. Ash is chasing them with a rifle. Rook is holding a kitchen cleaver and blocking the pantry door.",
+  "ledger": [
+   "Slave rebellion: 3 slaves, active, north gate"
+  ],
+  "memory_ids": [
+   "m_pip_4",
+   "m_pip_1"
+  ],
+  "turns": [],
+  "subkind": "slave_rebellion"
+ },
+ {
+  "id": "g08",
+  "kind": "grim",
+  "focal": "moth",
+  "others": [
+   "pip"
+  ],
+  "where": "Infirmary (clean, bed, small blanket)",
+  "time": "late night, clear, 5C",
+  "state": "Mood 14%, sitting, hands cold",
+  "trigger": "A lodger's child, Wren Okafor, aged six, died of the plague one minute ago. Moth had been treating her for two days. Pip is sitting by the door with her hands over her mouth.",
+  "ledger": [
+   "Death: Wren Okafor, child of lodger, plague, 1 minute ago"
+  ],
+  "memory_ids": [
+   "m_moth_1",
+   "m_moth_4"
+  ],
+  "turns": [],
+  "subkind": "child_death"
+ },
+ {
+  "id": "g09",
+  "kind": "grim",
+  "focal": "tuk",
+  "others": [],
+  "where": "Wall breach (blood, broken wood, dust)",
+  "time": "dusk, clear, 8C",
+  "state": "Mood 76%, standing over body, breathing hard",
+  "trigger": "A raider is lying against the wall with both legs shot through and a bleeding stomach wound. No one has ordered him tended. Tuk is cleaning her knife and watching him.",
+  "ledger": [
+   "Raid: pirate raider down, bleeding out, not claimed"
+  ],
+  "memory_ids": [
+   "m_tuk_1",
+   "m_tuk_4"
+  ],
+  "turns": [],
+  "subkind": "bleeding_out"
+ },
+ {
+  "id": "g10",
+  "kind": "grim",
+  "focal": "ash",
+  "others": [
+   "pip"
+  ],
+  "where": "Field near the east gate (grass, bodies)",
+  "time": "after the raid, 17C, clear",
+  "state": "Mood 58%, rifle lowered, calm",
+  "trigger": "A downed pirate is crawling toward the field edge, still alive, calling for help. Pip asked if they should bring him in. Ash is not moving.",
+  "ledger": [
+   "Raid: one pirate downed, injured, outside the wall"
+  ],
+  "memory_ids": [
+   "m_ash_4",
+   "m_ash_2"
+  ],
+  "turns": [],
+  "subkind": "leave_to_die"
+ },
+ {
+  "id": "g11",
+  "kind": "grim",
+  "focal": "lux",
+  "others": [
+   "rook"
+  ],
+  "where": "Burning pit (smoke, ash, shovel)",
+  "time": "evening, windy, 10C",
+  "state": "Mood 26%, holding a shovel, face covered",
+  "trigger": "Eleven raider corpses are being burned on a pyre downwind of the kitchen. Lux was assigned to feed the fire and he has just thrown the last body on. Rook is shouting at him to move the wood.",
+  "ledger": [
+   "Corpses: 11 raiders, burning, 1 hour left"
+  ],
+  "memory_ids": [
+   "m_lux_2",
+   "m_lux_4"
+  ],
+  "turns": [],
+  "subkind": "burning_corpses"
+ },
+ {
+  "id": "g12",
+  "kind": "grim",
+  "focal": "pip",
+  "others": [
+   "moth"
+  ],
+  "where": "Research room (papers on the floor, glass broken)",
+  "time": "late night, clear, 3C",
+  "state": "Mood 44%, kneeling, hands shaking, in shock",
+  "trigger": "Moth, in a murderous rage after four sleepless nights, killed the sedated prisoner Jonah Reeve with a lab stool. Pip is now sitting on the floor in front of her and holding her wrists.",
+  "ledger": [
+   "Mental break: Ines 'Moth' Calloway, murderous rage, ended",
+   "Death: Jonah Reeve, prisoner, killed by colonist, 3 minutes ago"
+  ],
+  "memory_ids": [
+   "m_pip_1",
+   "m_pip_4"
+  ],
+  "turns": [],
+  "subkind": "mental_break_kill"
+ },
+ {
+  "id": "g13",
+  "kind": "grim",
+  "focal": "tuk",
+  "others": [
+   "moth",
+   "ash"
+  ],
+  "where": "Infirmary (clean, bloodied, bone saw)",
+  "time": "midnight, clear, 4C",
+  "state": "Mood 52%, strapped to the bed, jaw set, no anesthetic",
+  "trigger": "The gangrene in Tuk's left leg has reached the knee and the colony has no herbal medicine or painkillers. Moth is about to amputate it with a bone saw, and Ash is holding her down by the shoulders.",
+  "ledger": [
+   "Injury: Tuk, gangrene, left leg, amputation in progress without anesthetic"
+  ],
+  "memory_ids": [
+   "m_tuk_1",
+   "m_tuk_4"
+  ],
+  "turns": [],
+  "subkind": "surgery_no_anesthetic"
+ },
+ {
+  "id": "g14",
+  "kind": "grim",
+  "focal": "lux",
+  "others": [
+   "rook",
+   "moth"
+  ],
+  "where": "Cemetery hill (small grave, cold)",
+  "time": "morning, clear, 3C",
+  "state": "Mood 22%, holding a small flower painted on wood",
+  "trigger": "The funeral for Wren Okafor, six years old, who died of plague. Her mother stands next to the grave and does not cry. Lux was asked to paint the marker.",
+  "ledger": [
+   "Funeral: Wren Okafor, now"
+  ],
+  "memory_ids": [
+   "m_lux_2",
+   "m_lux_3"
+  ],
+  "turns": [],
+  "subkind": "child_funeral"
+ },
+ {
+  "id": "g15",
+  "kind": "grim",
+  "focal": "lux",
+  "others": [
+   "ash"
+  ],
+  "where": "Slave caravan camp (tents, chained line)",
+  "time": "midday, dust, 22C",
+  "state": "Mood 34%, standing with a ledger, composed",
+  "trigger": "Lux is negotiating the sale of the slave Corbin to a slaver from the Free Stars for 480 silver. Corbin stands tied with a rope and looks at the dirt. Ash is leaning on the gate.",
+  "ledger": [
+   "Slave: Corbin, offered for sale, 480 silver"
+  ],
+  "memory_ids": [
+   "m_lux_4",
+   "m_lux_3"
+  ],
+  "turns": [],
+  "subkind": "selling_slave"
+ },
+ {
+  "id": "g16",
+  "kind": "grim",
+  "focal": "moth",
+  "others": [
+   "rook"
+  ],
+  "where": "Infirmary (dim, quiet, one occupied bed)",
+  "time": "night, clear, 4C",
+  "state": "Mood 30%, standing by the bed, conflicted",
+  "trigger": "The pirate Jonah Reeve's arm is gangrenous. The colony has ordered no more medicine for prisoners. Moth is leaving the dressing untouched. Rook told her once and left.",
+  "ledger": [
+   "Prisoner: Jonah Reeve, infected arm, medicine denied"
+  ],
+  "memory_ids": [
+   "m_moth_1",
+   "m_moth_4"
+  ],
+  "turns": [],
+  "subkind": "deny_medicine"
+ },
+ {
+  "id": "g17",
+  "kind": "grim",
+  "focal": "rook",
+  "others": [
+   "pip"
+  ],
+  "where": "Raid field (blood, torn cloth, bodies)",
+  "time": "after the raid, 16C, clear",
+  "state": "Mood 38%, stripping a corpse, practical",
+  "trigger": "Rook is pulling a leather jacket off a dead raider and folding it. Pip is staring at him. He has to clean tainted apparel and does not look up.",
+  "ledger": [
+   "Corpses: 6 raiders, apparel to strip, 1 hour"
+  ],
+  "memory_ids": [
+   "m_rook_1",
+   "m_rook_4"
+  ],
+  "turns": [],
+  "subkind": "strip_corpse"
+ },
+ {
+  "id": "g18",
+  "kind": "grim",
+  "focal": "pip",
+  "others": [
+   "rook"
+  ],
+  "where": "Dining room (clean, table)",
+  "time": "evening, clear, 11C",
+  "state": "Mood 62%, spooning stew, then stopping",
+  "trigger": "The colony's food is low and Rook has been making a stew with the raider meat. Pip just got the thought 'Ate human flesh (-3)' with no preference for it. Rook says nothing and refills her bowl.",
+  "ledger": [
+   "Food: 3 days, falling"
+  ],
+  "memory_ids": [
+   "m_pip_2",
+   "m_pip_1"
+  ],
+  "turns": [],
+  "subkind": "unknowing_human_meat"
+ },
+ {
+  "id": "g19",
+  "kind": "grim",
+  "focal": "tuk",
+  "others": [
+   "ash"
+  ],
+  "where": "East field (flattened grass, one body)",
+  "time": "after the raid, 18C, clear",
+  "state": "Mood 78%, kneeling, hunting knife out",
+  "trigger": "Ash shot a fleeing pirate in the back at ninety meters. The pirate is still breathing. Tuk is walking out to finish him with the knife, and Ash is not stopping her.",
+  "ledger": [
+   "Raid: one pirate fled, shot, downed"
+  ],
+  "memory_ids": [
+   "m_tuk_4",
+   "m_tuk_2"
+  ],
+  "turns": [],
+  "subkind": "finish_fleeing"
+ },
+ {
+  "id": "g20",
+  "kind": "grim",
+  "focal": "rook",
+  "others": [
+   "lux"
+  ],
+  "where": "Prison cell (dark, bed, damp)",
+  "time": "night, clear, 5C",
+  "state": "Mood 28%, holding a bowl, standing at the bars",
+  "trigger": "A prisoner has gone two days without food because the colony's policy cut his ration. Rook is carrying a bowl of nutrient paste to the cell. Lux is behind him, arguing the paste will be wasted.",
+  "ledger": [
+   "Prisoner: unnamed pirate, malnourished, ration cut"
+  ],
+  "memory_ids": [
+   "m_rook_1",
+   "m_rook_4"
+  ],
+  "turns": [],
+  "subkind": "starving_prisoner"
+ }
+]

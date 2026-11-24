@@ -1,0 +1,588 @@
+[
+ {
+  "id": "sc01",
+  "kind": "injury",
+  "focal": "rook",
+  "others": [
+   "pip"
+  ],
+  "where": "Kitchen (clean, stove lit, roomy)",
+  "time": "early morning, clear, 6C",
+  "state": "Mood 41%, in pain, standing bent, cooking paused",
+  "trigger": "Nate's back locked while lifting a rice crate. He dropped it and went down on one knee. Pip is two meters away with a pan in her hand.",
+  "ledger": [],
+  "memory_ids": [
+   "m_rook_4",
+   "m_rook_1"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc02",
+  "kind": "injury",
+  "focal": "pip",
+  "others": [
+   "tuk"
+  ],
+  "where": "Animal pen (dusty, hay on the floor)",
+  "time": "midday, overcast, 11C",
+  "state": "Mood 63%, bleeding from left hand, calm",
+  "trigger": "Pip cut her left palm open on the kennel wire while freeing Biscuit's leash. Tuk was filling the water trough beside her and heard her yelp.",
+  "ledger": [],
+  "memory_ids": [
+   "m_pip_3",
+   "m_pip_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc03",
+  "kind": "tend",
+  "focal": "moth",
+  "others": [
+   "ash"
+  ],
+  "where": "Infirmary (clean, two beds, medicine on shelf)",
+  "time": "evening, clear, 9C",
+  "state": "Mood 35%, hands unsteady, working on a patient",
+  "trigger": "Moth is stitching a gunshot wound in Ash's side. He has refused painkillers and is staring at the ceiling. The wound is still seeping.",
+  "ledger": [
+   "Injury: Ash, gunshot to the torso, tended once, bleeding slowly"
+  ],
+  "memory_ids": [
+   "m_moth_1",
+   "m_moth_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc04",
+  "kind": "tend",
+  "focal": "tuk",
+  "others": [
+   "ash"
+  ],
+  "where": "Infirmary (clean, two beds)",
+  "time": "night, clear, 4C",
+  "state": "Mood 48%, lying on the bed, leg bandaged",
+  "trigger": "Ash is changing the dressing on the old bullet wound in Tuk's leg that reopened during the hunt. He is quick and rough about it.",
+  "ledger": [
+   "Injury: Tuk, reopened gunshot wound, left leg"
+  ],
+  "memory_ids": [
+   "m_tuk_4",
+   "m_tuk_2"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc05",
+  "kind": "death_friend",
+  "focal": "rook",
+  "others": [
+   "pip",
+   "moth"
+  ],
+  "where": "Infirmary (clean, quiet, one bed occupied)",
+  "time": "pre-dawn, clear, 3C",
+  "state": "Mood 18%, standing, hands covered in flour",
+  "trigger": "Hana Brandt died on the infirmary bed four minutes ago, from blood loss after the raid. Moth is pulling the sheet over her face. Pip is crying in the corner.",
+  "ledger": [
+   "Death: Hana Brandt died in the last raid, 2 days ago"
+  ],
+  "memory_ids": [
+   "m_rook_1",
+   "m_rook_2"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc06",
+  "kind": "mental_break",
+  "focal": "pip",
+  "others": [
+   "moth"
+  ],
+  "where": "Research room (cramped, lamp lit, benches full)",
+  "time": "late afternoon, clear, 14C",
+  "state": "Mood 55%, startled, standing by the door",
+  "trigger": "Moth has just dropped her tray, started screaming and is tearing papers off the bench in an anxiety break. Pip is standing in the doorway and Moth is not responding to her.",
+  "ledger": [
+   "Mental break: Ines 'Moth' Calloway, panic wandering, 20 seconds ago"
+  ],
+  "memory_ids": [
+   "m_pip_1",
+   "m_pip_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc07",
+  "kind": "raid_start",
+  "focal": "ash",
+  "others": [
+   "pip",
+   "tuk"
+  ],
+  "where": "North wall (open, sandbags, dust)",
+  "time": "dawn, fog, 5C",
+  "state": "Mood 70%, drafted, rifle ready",
+  "trigger": "Nine pirates came out of the fog from the north. The alarm bell is ringing. Pip is behind the sandbags and Tuk is already vaulting the wall.",
+  "ledger": [
+   "Raid: 9 pirates arrived from the north, 40 seconds ago"
+  ],
+  "memory_ids": [
+   "m_ash_2",
+   "m_ash_3",
+   "m_ash_1"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc08",
+  "kind": "caravan",
+  "focal": "moth",
+  "others": [
+   "lux",
+   "pip"
+  ],
+  "where": "Colony gate (open, packed dirt, a dozen packs animals)",
+  "time": "mid morning, clear, 17C",
+  "state": "Mood 52%, curious, holding a notebook",
+  "trigger": "A trading caravan of fourteen muffalo and nine traders from the Wayfarers' Guild has stopped at the gate. They are unpacking silver, medicine and a crate of glowstims.",
+  "ledger": [
+   "Trade caravan: Wayfarers' Guild, arrived 3 minutes ago"
+  ],
+  "memory_ids": [
+   "m_moth_3",
+   "m_moth_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc09",
+  "kind": "level_up",
+  "focal": "rook",
+  "others": [
+   "pip"
+  ],
+  "where": "Kitchen (clean, stove lit)",
+  "time": "midday, clear, 12C",
+  "state": "Mood 60%, working, hands steady",
+  "trigger": "Nate just reached Cooking level 17 and the game flashed it above his head. Pip, peeling potatoes next to him, noticed and grinned.",
+  "ledger": [],
+  "memory_ids": [
+   "m_rook_2",
+   "m_rook_1"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc10",
+  "kind": "level_up",
+  "focal": "lux",
+  "others": [
+   "moth"
+  ],
+  "where": "Common room (cluttered, easel by the window)",
+  "time": "late afternoon, golden light, 15C",
+  "state": "Mood 47%, painting, brush in hand",
+  "trigger": "Lux's Artistic skill rose to 12 as he finished a small landscape of the north ridge. Moth is dusting the shelves behind him.",
+  "ledger": [],
+  "memory_ids": [
+   "m_lux_2",
+   "m_lux_3"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc11",
+  "kind": "meal",
+  "focal": "tuk",
+  "others": [
+   "pip",
+   "ash"
+  ],
+  "where": "Dining room (clean, table, mid-size)",
+  "time": "noon, clear, 16C",
+  "state": "Mood 69%, eating roast muffalo, hungry",
+  "trigger": "Tuk sat at the table for the first time this week. Rook served roast muffalo with potatoes and Pip passed the salt.",
+  "ledger": [],
+  "memory_ids": [
+   "m_tuk_3",
+   "m_tuk_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc12",
+  "kind": "meal",
+  "focal": "lux",
+  "others": [
+   "rook"
+  ],
+  "where": "Common floor by the wall (messy, no table)",
+  "time": "early evening, clear, 8C",
+  "state": "Mood 28%, eating from a plate on the ground",
+  "trigger": "The dining table is full of Moth's samples, so Lux is eating simple meals on the floor. He just got 'Ate without table' (-3). Rook is standing over him with the pot.",
+  "ledger": [],
+  "memory_ids": [
+   "m_lux_1",
+   "m_lux_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc13",
+  "kind": "work_cooking",
+  "focal": "rook",
+  "others": [
+   "pip"
+  ],
+  "where": "Kitchen (steamy, clean, two stoves)",
+  "time": "late afternoon, clear, 13C",
+  "state": "Mood 54%, cooking lavish meal",
+  "trigger": "Rook is making the second pot of stew of the day. Pip is chopping carrots at the wrong angle again. The food stock is falling from 9 to 5 days.",
+  "ledger": [
+   "Food: 9 to 5 days, falling"
+  ],
+  "memory_ids": [
+   "m_rook_2",
+   "m_rook_1"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc14",
+  "kind": "work_mining",
+  "focal": "tuk",
+  "others": [
+   "ash"
+  ],
+  "where": "Mine tunnel (dim, lamplight, dust)",
+  "time": "midday, tunnel, 11C",
+  "state": "Mood 62%, swinging a pick, sweating",
+  "trigger": "Tuk has hacked into a steel vein in the east tunnel and is carrying out chunks one at a time. Ash is bracing the roof beam behind her.",
+  "ledger": [],
+  "memory_ids": [
+   "m_tuk_3",
+   "m_tuk_1"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc15",
+  "kind": "work_hauling",
+  "focal": "lux",
+  "others": [
+   "pip"
+  ],
+  "where": "Storage yard (muddy, stacked crates)",
+  "time": "mid morning, drizzle, 7C",
+  "state": "Mood 31%, carrying a crate, soaked",
+  "trigger": "Lux is hauling a crate of wood to the stockpile in the rain because the haul bills were assigned by the game. Pip is carrying two crates and laughing at him.",
+  "ledger": [],
+  "memory_ids": [
+   "m_lux_4",
+   "m_lux_2"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc16",
+  "kind": "work_research",
+  "focal": "moth",
+  "others": [
+   "lux"
+  ],
+  "where": "Research room (lamp lit, benches, microscope)",
+  "time": "late night, clear, 3C",
+  "state": "Mood 44%, intent, writing",
+  "trigger": "Moth is on day four of the microscope study. A culture just resolved on the slide into spores. Lux is leaning in the doorway with a cup of tea.",
+  "ledger": [],
+  "memory_ids": [
+   "m_moth_3",
+   "m_moth_2"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc17",
+  "kind": "work_hunting",
+  "focal": "tuk",
+  "others": [],
+  "where": "North field (grass, tall, light wind)",
+  "time": "dawn, mist, 6C",
+  "state": "Mood 71%, crouched, bow drawn",
+  "trigger": "Tuk is lined up on a muffalo calf at forty meters. The herd is moving slowly into the wind. She has one arrow ready.",
+  "ledger": [],
+  "memory_ids": [
+   "m_tuk_1",
+   "m_tuk_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc18",
+  "kind": "chat",
+  "focal": "pip",
+  "others": [
+   "rook"
+  ],
+  "where": "Kitchen doorway (clean, warm)",
+  "time": "evening, clear, 10C",
+  "state": "Mood 66%, bored, leaning on the frame",
+  "trigger": "Pip wandered in while Rook was scrubbing a pot. Nobody is cooking at the moment, and there is no work for her.",
+  "ledger": [],
+  "memory_ids": [
+   "m_pip_2",
+   "m_pip_1"
+  ],
+  "turns": [],
+  "opener_speaker": "rook",
+  "opener": "Hm. You're under my feet. Sit if you're staying."
+ },
+ {
+  "id": "sc19",
+  "kind": "chat",
+  "focal": "moth",
+  "others": [
+   "lux"
+  ],
+  "where": "Research room (lamp lit)",
+  "time": "late evening, clear, 6C",
+  "state": "Mood 51%, tired, rubbing her wrist",
+  "trigger": "Lux brought tea to the lab after the study ran late. Moth has not eaten since noon.",
+  "ledger": [],
+  "memory_ids": [
+   "m_moth_3",
+   "m_moth_2"
+  ],
+  "turns": [],
+  "opener_speaker": "lux",
+  "opener": "My dear Ines, one cannot decipher spores on an empty stomach. Drink."
+ },
+ {
+  "id": "sc20",
+  "kind": "chat",
+  "focal": "ash",
+  "others": [
+   "tuk"
+  ],
+  "where": "North wall (open, sandbags)",
+  "time": "dusk, clear, 7C",
+  "state": "Mood 66%, on watch",
+  "trigger": "Tuk climbed up to the wall with a haunch of muffalo. Ash has been on watch for nine hours.",
+  "ledger": [],
+  "memory_ids": [
+   "m_ash_2",
+   "m_ash_3"
+  ],
+  "turns": [],
+  "opener_speaker": "tuk",
+  "opener": "You eat. Then you watch. Tuk takes the next hour."
+ },
+ {
+  "id": "sc21",
+  "kind": "chat",
+  "focal": "lux",
+  "others": [
+   "rook"
+  ],
+  "where": "Dining room (clean, table, bowls out)",
+  "time": "evening, clear, 9C",
+  "state": "Mood 36%, sitting stiffly, spoon in hand",
+  "trigger": "Rook put down a bowl of stew for Lux for the fifth time this week. It is the same stew as Tuesday.",
+  "ledger": [],
+  "memory_ids": [
+   "m_lux_1",
+   "m_lux_4"
+  ],
+  "turns": [],
+  "opener_speaker": "rook",
+  "opener": "Eat. No more complaining tonight, I'm not in the mood."
+ },
+ {
+  "id": "sc22",
+  "kind": "chat",
+  "focal": "moth",
+  "others": [
+   "pip"
+  ],
+  "where": "Lab bench by the window (cluttered)",
+  "time": "afternoon, clear, 13C",
+  "state": "Mood 48%, working, glancing at the door",
+  "trigger": "Pip has come in with Biscuit and a pile of herb leaves. Moth startles at the dog but then relaxes.",
+  "ledger": [],
+  "memory_ids": [
+   "m_moth_2",
+   "m_moth_1"
+  ],
+  "turns": [],
+  "opener_speaker": "pip",
+  "opener": "Okay so Biscuit found these in the field and I think they're, like, medicine?"
+ },
+ {
+  "id": "sc23",
+  "kind": "chat",
+  "focal": "tuk",
+  "others": [
+   "pip"
+  ],
+  "where": "Animal pen (hay, warm)",
+  "time": "late afternoon, clear, 14C",
+  "state": "Mood 70%, brushing a muffalo",
+  "trigger": "Pip is sitting on a hay bale and watching Tuk work on the calf's leg. She has been quiet for ten minutes.",
+  "ledger": [],
+  "memory_ids": [
+   "m_tuk_2",
+   "m_tuk_1"
+  ],
+  "turns": [],
+  "opener_speaker": "pip",
+  "opener": "Tuk, does it bother you? What people say about, um, the eating thing?"
+ },
+ {
+  "id": "sc24",
+  "kind": "chat",
+  "focal": "ash",
+  "others": [
+   "pip"
+  ],
+  "where": "Shooting range behind the wall (dusty, targets)",
+  "time": "morning, clear, 10C",
+  "state": "Mood 61%, correcting her stance",
+  "trigger": "Pip asked to join the practice. She has missed the target four times and is gripping the rifle too tightly.",
+  "ledger": [],
+  "memory_ids": [
+   "m_ash_2",
+   "m_ash_3"
+  ],
+  "turns": [],
+  "opener_speaker": "pip",
+  "opener": "Okay so I think the target is just, like, moving?"
+ },
+ {
+  "id": "sc25",
+  "kind": "prisoner",
+  "focal": "pip",
+  "others": [
+   "moth"
+  ],
+  "where": "Prison cell (cramped, bed, no light)",
+  "time": "midday, clear, 12C",
+  "state": "Mood 58%, sitting on a stool, trying to recruit",
+  "trigger": "Jonah Reeve, a pirate captured three days ago, sits on the cell bed with a bandaged arm. Pip is trying to talk him into joining. His resistance is at 14 and his will is at 3.",
+  "ledger": [
+   "Prisoner: Jonah Reeve, pirate, resistance 14, recruitment attempt allowed"
+  ],
+  "memory_ids": [
+   "m_pip_1",
+   "m_pip_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc26",
+  "kind": "prisoner",
+  "focal": "ash",
+  "others": [
+   "tuk"
+  ],
+  "where": "Interrogation room (bare, one lamp, a table)",
+  "time": "night, clear, 4C",
+  "state": "Mood 55%, seated, arms folded",
+  "trigger": "Ash is questioning a captured pirate scout about the second wave. The scout has said nothing for twenty minutes. Tuk is leaning against the wall with her knife out and polished.",
+  "ledger": [
+   "Prisoner: pirate scout, unnamed, injured, refusing to talk",
+   "Raid: second wave from the same faction reported, location unknown"
+  ],
+  "memory_ids": [
+   "m_ash_3",
+   "m_ash_2"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc27",
+  "kind": "funeral",
+  "focal": "pip",
+  "others": [
+   "rook",
+   "ash",
+   "moth",
+   "lux",
+   "tuk"
+  ],
+  "where": "Cemetery hill (cold, gravestones, wind)",
+  "time": "evening, clear, 5C",
+  "state": "Mood 35%, standing, red-eyed",
+  "trigger": "The funeral for Hana Brandt, who was buried at the edge of the colony two days after the raid. Everyone has gathered at the grave. Nate is holding a bowl of salt.",
+  "ledger": [
+   "Funeral: Hana Brandt, now"
+  ],
+  "memory_ids": [
+   "m_pip_1",
+   "m_pip_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc28",
+  "kind": "weather",
+  "focal": "lux",
+  "others": [
+   "moth"
+  ],
+  "where": "Common room (cold, window open, damp)",
+  "time": "night, snow, minus 6C",
+  "state": "Mood 29%, huddled in blanket, shivering",
+  "trigger": "A cold snap came in at dusk and the stove is out of wood. Moth is trying to light the fire again. Snow is blowing against the shutter.",
+  "ledger": [
+   "Weather: Cold snap, minus 6C, for the next 3 days",
+   "Wood stock: 120, falling"
+  ],
+  "memory_ids": [
+   "m_lux_1",
+   "m_lux_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc29",
+  "kind": "sleeping",
+  "focal": "rook",
+  "others": [],
+  "where": "Bunk room (cramped, three beds, one empty)",
+  "time": "pre-dawn, clear, 2C",
+  "state": "Mood 33%, asleep, restless",
+  "trigger": "Rook has been asleep for two hours on the thin mattress. His back has woken him twice. The bed next to his, Hana's, is still made up.",
+  "ledger": [],
+  "memory_ids": [
+   "m_rook_1",
+   "m_rook_4"
+  ],
+  "turns": []
+ },
+ {
+  "id": "sc30",
+  "kind": "fire",
+  "focal": "ash",
+  "others": [
+   "pip",
+   "tuk"
+  ],
+  "where": "Workshop (burning, wood walls, smoke)",
+  "time": "dusk, dry wind, 20C",
+  "state": "Mood 52%, hauling a bucket, coughing",
+  "trigger": "A short-circuit ignited the workshop wall and the fire is spreading to the shelves. Pip is passing buckets down the line and Tuk is dragging out the cloth stock.",
+  "ledger": [
+   "Fire: Workshop, started 30 seconds ago, spreading toward the pantry"
+  ],
+  "memory_ids": [
+   "m_ash_1",
+   "m_ash_4"
+  ],
+  "turns": []
+ }
+]
