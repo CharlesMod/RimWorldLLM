@@ -5,7 +5,7 @@
 	<targetVersion>1.7</targetVersion>
 	<description>Live LLM-driven pawn dialogue, powered by an external agent bridge.
 
-HermesVoice watches your colony - injuries, deaths, mental breaks, skill level-ups, medical tending, social interactions, raids - and turns those moments into rich, in-character speech bubbles spoken by the pawns themselves.
+HermesVoice watches your colony - injuries, deaths, mental breaks, skill level-ups, medical tending, social interactions, raids - sends those moments to the agent (each kind can be toggled in settings), and shows the agent's replies as in-character speech bubbles spoken by the pawns themselves.
 
 The mod dials out to a Hermes agent bridge over your local network (Tailscale). The agent roleplays your colonists using their full in-game context, and the lines appear as overhead dialogue boxes, recorded to a conversation log.
 

@@ -58,17 +58,41 @@ namespace HermesVoice
                 if (!draw) continue;
 
                 Vector2 screenPos = GenMapUI.LabelDrawPosFor(pawn, 1.0f);
-                float estW = Mathf.Clamp(b.Text.Length * 7.5f + 28f, 140f, 360f);
-                float boxH = 30f;
-                Rect boxRect = new Rect(screenPos.x - estW * 0.5f, screenPos.y - boxH - 8f, estW, boxH);
+                // Word-wrap: max width ~260px, up to 4 lines, "…" only past that.
+                const float maxW = 260f, pad = 6f;
+                var prevFont = Text.Font;
+                var prevWrap = Text.WordWrap;
+                Text.Font = GameFont.Small;
+                Text.WordWrap = true;
+                float innerW = maxW - pad * 2f;
+                float lineH = Text.LineHeight;
+                float maxInnerH = lineH * 4f + 1f;
+                string display = b.Text;
+                float h = Text.CalcHeight(display, innerW);
+                if (h > maxInnerH)
+                {
+                    int lo = 0, hi = display.Length;
+                    while (lo < hi)
+                    {
+                        int mid = (lo + hi + 1) / 2;
+                        if (Text.CalcHeight(display.Substring(0, mid).TrimEnd() + "\u2026", innerW) <= maxInnerH) lo = mid; else hi = mid - 1;
+                    }
+                    display = display.Substring(0, lo).TrimEnd() + "\u2026";
+                    h = Text.CalcHeight(display, innerW);
+                }
+                float w = maxW;
+                if (h <= lineH + 1f)
+                    w = Mathf.Clamp(Text.CalcSize(display).x + pad * 2f + 4f, 80f, maxW);
+                float boxH = h + pad * 2f;
+                Rect boxRect = new Rect(screenPos.x - w * 0.5f, screenPos.y - boxH - 8f, w, boxH);
 
                 GUI.color = new Color(0.05f, 0.06f, 0.09f, 0.9f);
                 Widgets.DrawBox(boxRect, 1, null);
                 GUI.color = Color.white;
 
-                string display = b.Text.Length > 60 ? b.Text.Substring(0, 60) + "..." : b.Text;
-                Rect textRect = boxRect.ContractedBy(6f);
-                Widgets.Label(textRect, display);
+                Widgets.Label(boxRect.ContractedBy(pad), display);
+                Text.Font = prevFont;
+                Text.WordWrap = prevWrap;
                 GUI.color = Color.white;
             }
         }
