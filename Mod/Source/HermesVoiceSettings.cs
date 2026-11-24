@@ -22,5 +22,35 @@ namespace HermesVoice
         // Dialogue display.
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
+
+        // Colony events (improve/events): master toggle + one per kind.
+        public bool sendColonyEvents = true;
+        public bool evInjury = true;
+        public bool evDeath = true;
+        public bool evMentalBreak = true;
+        public bool evLevelUp = true;
+        public bool evTend = true;
+        public bool evSocial = true;
+        public bool evRaid = true;
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Values.Look(ref enabled, "enabled", true);
+            Scribe_Values.Look(ref bridgePort, "bridgePort", 8765);
+            Scribe_Values.Look(ref bindAddress, "bindAddress", "0.0.0.0");
+            Scribe_Values.Look(ref agentUrl, "agentUrl", "");
+            Scribe_Values.Look(ref sharedToken, "sharedToken", "");
+            Scribe_Values.Look(ref showBubbles, "showBubbles", true);
+            Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
+            Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
+            Scribe_Values.Look(ref evInjury, "evInjury", true);
+            Scribe_Values.Look(ref evDeath, "evDeath", true);
+            Scribe_Values.Look(ref evMentalBreak, "evMentalBreak", true);
+            Scribe_Values.Look(ref evLevelUp, "evLevelUp", true);
+            Scribe_Values.Look(ref evTend, "evTend", true);
+            Scribe_Values.Look(ref evSocial, "evSocial", true);
+            Scribe_Values.Look(ref evRaid, "evRaid", true);
+        }
     }
 }

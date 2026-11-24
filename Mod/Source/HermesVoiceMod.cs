@@ -60,6 +60,21 @@ namespace HermesVoice
             list.TextFieldNumeric(ref s.bubbleDurationSec, ref durBuf, 1, 120);
             list.GapLine();
 
+            // --- Colony events (improve/events) ---
+            list.Label("Colony events (mod POSTs these to the agent URL)");
+            list.CheckboxLabeled("Send colony events", ref s.sendColonyEvents);
+            if (s.sendColonyEvents)
+            {
+                list.CheckboxLabeled("  Injuries", ref s.evInjury);
+                list.CheckboxLabeled("  Deaths", ref s.evDeath);
+                list.CheckboxLabeled("  Mental breaks", ref s.evMentalBreak);
+                list.CheckboxLabeled("  Skill level-ups", ref s.evLevelUp);
+                list.CheckboxLabeled("  Medical tending", ref s.evTend);
+                list.CheckboxLabeled("  Social interactions", ref s.evSocial);
+                list.CheckboxLabeled("  Raids", ref s.evRaid);
+            }
+            list.GapLine();
+
             string status = HermesBridge.IsRunning ? $"Bridge running on port {HermesBridge.Port}" : "Bridge not running";
             list.Label(status);
             if (list.ButtonText("Restart bridge"))
