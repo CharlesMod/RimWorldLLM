@@ -13,24 +13,37 @@
         <GameVersion>1.7</GameVersion>
         <RimWorldDir Condition=" '$(RimWorldDir)' == '' ">$(RIMWORLD_DIR)</RimWorldDir>
         <OutputPath>$(GameVersion)/Assemblies</OutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateDependencyFile>false</GenerateDependencyFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.5014-unstable" PrivateAssets="all" />
-        <PackageReference Include="Lib.Harmony.Ref" Version="3.0.0-rc.7" />
+        <PackageReference Include="Lib.Harmony.Ref" Version="3.0.0-rc.7" PrivateAssets="all" ExcludeAssets="runtime" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         </ItemGroup>
 
-    <!-- Deploy to RimWorld client when RIMWORLD_DIR is set -->
-    <Target Name="DeployToModsFolder" AfterTargets="Build" Condition=" '$(BuildingWithScript)' != 'true' AND '$(RimWorldDir)' != '' AND '$(RimWorldDir)' != '' ">
+    <!-- Newtonsoft.Json is not part of RimWorld; it is copied next to HermesVoice.dll in $(GameVersion)/Assemblies by the build and deployed with it. -->
+
+    <!-- Deploy to the RimWorld Mods folder when RIMWORLD_DIR / RimWorldDir is set.
+         Layouts: <dir>/Mods (Linux/Windows), <dir>/RimWorldMac.app/Mods (macOS), or <dir> itself being a Mods folder. -->
+    <Target Name="DeployToModsFolder" AfterTargets="Build" Condition=" '$(BuildingWithScript)' != 'true' AND '$(RimWorldDir)' != '' ">
         <PropertyGroup>
-            <DeployPath>$(RimWorldDir)/RimWorldMac.app/Mods/HermesVoice/</DeployPath>
+            <ModsDir Condition=" Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
+            <ModsDir Condition=" '$(ModsDir)' == '' ">$(RimWorldDir)/Mods</ModsDir>
+            <DeployPath>$(ModsDir)/HermesVoice/</DeployPath>
         </PropertyGroup>
-        <MakeDir Directories="$(DeployPath)" />
-        <Exec Command='rsync -a --delete --checksum "$(ProjectDir)About/"     "$(DeployPath)About/"' />
-        <Exec Command='rsync -a --delete --checksum "$(ProjectDir)Defs/"      "$(DeployPath)Defs/"' />
-        <Exec Command='rsync -a --delete --checksum "$(ProjectDir)Textures/"  "$(DeployPath)Textures/"' />
-        <Exec Command='rsync -a --delete --checksum "$(ProjectDir)$(GameVersion)/" "$(DeployPath)$(GameVersion)/"' />
+        <ItemGroup>
+            <DeployAbout Include="$(ProjectDir)About/**/*" />
+            <DeployDefs Include="$(ProjectDir)Defs/**/*" />
+            <DeployTextures Include="$(ProjectDir)Textures/**/*" />
+            <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
+        </ItemGroup>
+        <RemoveDir Directories="$(DeployPath)" />
+        <Copy SourceFiles="@(DeployAbout)" DestinationFiles="@(DeployAbout->'$(DeployPath)About/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(DeployDefs)" DestinationFiles="@(DeployDefs->'$(DeployPath)Defs/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployDefs)' != '' " />
+        <Copy SourceFiles="@(DeployTextures)" DestinationFiles="@(DeployTextures->'$(DeployPath)Textures/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployTextures)' != '' " />
+        <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
         <Message Text="--- HermesVoice deployed to $(DeployPath) ---" Importance="high" />
     </Target>
 

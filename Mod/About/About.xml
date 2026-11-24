@@ -13,8 +13,8 @@ An HTTP bridge (default port 8765) exposes colony state and commands so the agen
 
 Setup:
 1. Install the Harmony mod (v3, Steam Workshop).
-2. Run the Hermes bridge on your agent machine (see Bridge/README.md).
-3. Mod settings: set the bridge URL + token (both directions use the shared token).</description>
+2. Run the Hermes bridge on your agent machine (see the README at https://github.com/CharlesMod/rimworld-hermes).
+3. Mod settings: set the Agent dial-out URL + shared token (both directions use the shared token).</description>
 	<packageId>charless.HermesVoice</packageId>
 	<modVersion>1.0.0</modVersion>
 	<loadedScenarios>
