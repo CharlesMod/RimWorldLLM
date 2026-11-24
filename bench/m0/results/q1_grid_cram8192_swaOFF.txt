@@ -1,0 +1,7 @@
+warmup    rep-1 rook     slot1 prompt_n= 1822 cache_n=    0 prompt_s=1.878 ttft=1.886 total=2.180 eff=970
+a_cold    rep0 rook     slot1 prompt_n= 1822 cache_n=    0 prompt_s=1.582 ttft=1.652 total=1.914 eff=1152
+b_warm    rep0 rook     slot1 prompt_n=  143 cache_n= 1714 prompt_s=0.367 ttft=0.375 total=0.632 eff=5058
+b_warm2   rep0 rook     slot1 prompt_n=  140 cache_n= 1753 prompt_s=0.374 ttft=0.381 total=0.650 eff=5056
+cold_other rep0 ash      slot2 prompt_n= 1873 cache_n=    0 prompt_s=1.629 ttft=1.733 total=1.982 eff=1150
+cold_other rep0 pip      slot1 prompt_n= 1818 cache_n=    0 prompt_s=1.587 ttft=1.657 total=2.073 eff=1146
+c_old_slot rep0 rook     slot1 prompt_n=  537 cache_n= 1305 prompt_s=0.587 ttft=0.671 total=0.875 eff=3138

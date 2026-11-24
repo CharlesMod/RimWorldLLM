@@ -1,0 +1,3746 @@
+[
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n01",
+  "text": "Hm. Pip, stay down. Don't bleed out on my boots.",
+  "total_s": 0.2070688489911845,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n02",
+  "text": "Hm. Watch the stove. You're going to burn the whole kitchen down.",
+  "total_s": 0.8632805410015862,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n03",
+  "text": "Hm. That wound's turning bad. We're low on the herbal stuff.",
+  "total_s": 0.5111736600083532,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n04",
+  "text": "Hm. Move it. The rain's coming down and the meat's going to spoil.",
+  "total_s": 0.6229577240010258,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n05",
+  "text": "Hm. She's gone. Just like that.",
+  "total_s": 0.49060401700262446,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n06",
+  "text": "Hm. Stop that. You're acting like a starved animal, Moth.",
+  "total_s": 0.588034140993841,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n07",
+  "text": "Hm. Calm down, Pip. You're acting like a spoiled brat over a bit of wood.",
+  "total_s": 0.5764889139973093,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n08",
+  "text": "Hm. Moth, get back inside before you freeze solid like a slab of meat.",
+  "total_s": 0.5805109950015321,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n09",
+  "text": "Hm. Spears in the fog. Get your rifle, Pip.",
+  "total_s": 0.5917355619894806,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n10",
+  "text": "Hm. Don't just stand there, Moth. Get out of the way.",
+  "total_s": 0.5966585470014252,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n11",
+  "text": "Hm. Dirt tastes like nothing. Eat the stew, Pip.",
+  "total_s": 0.49025149398949,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n12",
+  "text": "Hm. Eat the kibble or leave it. I'm not wasting more time.",
+  "total_s": 0.5121682769968174,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n13",
+  "text": "Hm. Eat up, Pip. The muffalo's good tonight.",
+  "total_s": 0.457749473003787,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n14",
+  "text": "Hm. Eight meals left. Put that corn on the counter and get out.",
+  "total_s": 0.6327786350011593,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n15",
+  "text": "Hm. Watch the ceiling, Pip. Don't want a cave-in ruining my stew.",
+  "total_s": 0.6181475799967302,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n16",
+  "text": "Hm. Don't spook it, Moth. That muffalo's meat's for the stew.",
+  "total_s": 0.5930354049924063,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n17",
+  "text": "Hm. Don't gag. Just drag them to the pit.",
+  "total_s": 0.4682359459984582,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n18",
+  "text": "Hm. Leave it. I've got meals to prep.",
+  "total_s": 0.4973102679941803,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n19",
+  "text": "Hm. Rain's just rain. If the corn rots, we eat cornmeal.",
+  "total_s": 0.4972650550043909,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n20",
+  "text": "Hm. Dirt farm keeps you fed. Don't need more than that.",
+  "total_s": 0.5223962839954766,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n21",
+  "text": "Hm. Meat's gone bad. Move on.",
+  "total_s": 0.6212498109962326,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n22",
+  "text": "Hm. That wasn't funny. Eat your stew.",
+  "total_s": 0.481507464995957,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n23",
+  "text": "Hm. Not me. I've got enough to deal with in the kitchen.",
+  "total_s": 0.521837004009285,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n24",
+  "text": "Hm. Just get it over with. My back is killing me.",
+  "total_s": 0.5424805809889222,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n25",
+  "text": "Hm. Forget the bucket, Pip. Get the firefoam.",
+  "total_s": 0.5771536090032896,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "rook",
+  "scene": "n26",
+  "text": "Hm. Sell the extra corn. We don't need more starch sitting around.",
+  "total_s": 0.5365089910046663,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n01",
+  "text": "Okay so Ash is down, like, he's actually bleeding, oh god...",
+  "total_s": 0.6608929109934252,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n02",
+  "text": "Okay so Tuk is on fire, like, literally on fire, oh my god, someone help!",
+  "total_s": 0.6542522230010945,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n03",
+  "text": "Okay so you look totally awful, Ash, like, do you need more herbal medicine or something...",
+  "total_s": 0.47172326099826023,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n04",
+  "text": "Okay so, Tuk, please don't... it's like, totally getting really cold out here...",
+  "total_s": 0.5224646870046854,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n05",
+  "text": "Okay so, Ash is just... he's totally not moving, is he?",
+  "total_s": 0.45020771700365003,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n06",
+  "text": "Okay so Tuk is like totally losing it with all that raw meat... it's so gross...",
+  "total_s": 0.5111659489921294,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n07",
+  "text": "Okay so Ash is totally losing it and the table is just... gone...",
+  "total_s": 0.4810534349962836,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n08",
+  "text": "Okay so Tuk, wait, it's like totally freezing out there, please don't go...",
+  "total_s": 0.539098577995901,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n09",
+  "text": "Okay so, Ash is running and there are like, people in the fog with spears... oh god...",
+  "total_s": 0.7440287789941067,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n10",
+  "text": "Okay so I actually did it, I totally finished that piece and it's like, really good...",
+  "total_s": 0.791914090004866,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n11",
+  "text": "Okay so eating on the dirt is totally gross, but at least it's sunny out here...",
+  "total_s": 0.6493753009999637,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n12",
+  "text": "Okay so that jelly is like, totally gross, but the kibble is actually okay... maybe?",
+  "total_s": 0.5358767779980553,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n13",
+  "text": "Okay so that muffalo smells totally amazing, like, way better than the raw stuff...",
+  "total_s": 0.48588004100020044,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n14",
+  "text": "Okay so we've got like eight simple meals left after I finish this batch...",
+  "total_s": 0.5405252350028604,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n15",
+  "text": "Okay so that steel is totally huge, but like, stay careful with the roof, Ash...",
+  "total_s": 0.4972337600047467,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n16",
+  "text": "Okay so Tuk's just waiting there with the pack animal, like, totally ready to haul it back...",
+  "total_s": 0.5225741090107476,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n17",
+  "text": "Okay so that smell is, like, totally gross... do you need help with that one, Ash?",
+  "total_s": 0.5237193429929903,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n18",
+  "text": "Okay so yeah, it's totally next, I'm almost done with this one...",
+  "total_s": 0.5080931859993143,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n19",
+  "text": "Okay so, I don't know, but it's like, totally soaking everything...",
+  "total_s": 0.889734641998075,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n20",
+  "text": "Okay so it's not just a dirt farm, we're like, totally building something real here...",
+  "total_s": 0.8540671899972949,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n21",
+  "text": "Okay so that's totally not helping, Ash, like, it's just old meat now...",
+  "total_s": 0.9438025270064827,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n22",
+  "text": "Okay so that was, like, totally a bad joke, Tuk...",
+  "total_s": 0.6348562810017029,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n23",
+  "text": "Okay so I could try, but he looks totally scary and like, really mean...",
+  "total_s": 0.5799653190042591,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n24",
+  "text": "Okay so, it's like, totally too quiet... even with Biscuit right here...",
+  "total_s": 0.5488568600121653,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n25",
+  "text": "Okay so the storeroom is totally on fire, Ash, like, it's spreading so fast...",
+  "total_s": 0.5244186749914661,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "pip",
+  "scene": "n26",
+  "text": "Okay so, we have like, totally enough stuff to trade, right? Maybe...",
+  "total_s": 0.49370834899309557,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n01",
+  "text": "Moth is down. Four hostiles remaining. I will cover the flank.",
+  "total_s": 0.7062522320047719,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n02",
+  "text": "Stop screaming. Get the water bucket.",
+  "total_s": 0.768763995001791,
+  "pred_n": 9
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n03",
+  "text": "We have two herbal packs left. The infection is spreading.",
+  "total_s": 0.6690752819995396,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n04",
+  "text": "Move the body to the grave, Verhoeven. It is getting cold.",
+  "total_s": 0.7294105420005508,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n05",
+  "text": "Negative. She is dead. Get the body to the freezer.",
+  "total_s": 0.6953269919904415,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n06",
+  "text": "Stop that, Lux. We have fourteen meals left.",
+  "total_s": 0.5031294499931391,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n07",
+  "text": "Negative. Moth, stop that. You are making too much noise.",
+  "total_s": 0.7571561170043424,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n08",
+  "text": "Negative. Lux, return to the barracks. It is negative four degrees.",
+  "total_s": 0.7169598220061744,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n09",
+  "text": "Six hostiles, north wall. Move, Ines.",
+  "total_s": 0.8274928379978519,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n10",
+  "text": "Do not stare, Verhoeven. Get back to your station.",
+  "total_s": 0.7745896699925652,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n11",
+  "text": "The dining room is full. Eat quickly and get back to your post.",
+  "total_s": 0.6835047839995241,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n12",
+  "text": "Eat the kibble, Verhoeven. We have only eight units left.",
+  "total_s": 0.6882905050006229,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n13",
+  "text": "The food is acceptable. Eat quickly.",
+  "total_s": 0.4521437869989313,
+  "pred_n": 9
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n14",
+  "text": "Eight meals remain. Put the corn on the counter and leave.",
+  "total_s": 0.4783294230001047,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n15",
+  "text": "Copy. Watch the ceiling. I will finish the steel.",
+  "total_s": 0.450440685992362,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n16",
+  "text": "Forty tiles. Target is a muffalo. Do not spook it, Verhoeven.",
+  "total_s": 0.4723172600060934,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n17",
+  "text": "Stop gagging. Five bodies left to move.",
+  "total_s": 0.4377152820088668,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n18",
+  "text": "Negative. Electricity is eighty percent complete. I do not know what follows.",
+  "total_s": 0.48526362600387074,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n19",
+  "text": "Negative. I do not have a forecast.",
+  "total_s": 0.4514093390025664,
+  "pred_n": 10
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n20",
+  "text": "Negative. We are here to survive. Keep your mouth shut and stay alert.",
+  "total_s": 0.469523959007347,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n21",
+  "text": "Negative. The meat is gone. Move on.",
+  "total_s": 0.42393470800016075,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n22",
+  "text": "Negative. That joke was not funny. Get back to work.",
+  "total_s": 0.4438343029905809,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n23",
+  "text": "Negative. I do not do talking. Get Lucian to handle it.",
+  "total_s": 0.4550789579952834,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n24",
+  "text": "It is finished. We have work to do.",
+  "total_s": 0.42350229500152636,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n25",
+  "text": "Negative. That bucket is empty. Move to the well.",
+  "total_s": 0.44040993199450895,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "ash",
+  "scene": "n26",
+  "text": "Check the inventory. We have three hundred forty silver.",
+  "total_s": 0.4283683550020214,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n01",
+  "text": "I think, well, Tuk is bleeding too much, maybe we should\u2014no, stay down!",
+  "total_s": 0.6839182279945817,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n02",
+  "text": "I think, well, maybe the stove is, um, malfunctioning? It's probably dangerous.",
+  "total_s": 0.6503993439982878,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n03",
+  "text": "I think, well, maybe we should check the infection again, though we probably only have herbal left.",
+  "total_s": 0.5179970079916529,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n04",
+  "text": "I think, well, maybe we should move them inside before the rain gets worse?",
+  "total_s": 0.526020883989986,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n05",
+  "text": "I think, well, maybe we should... we should move her, before the crows arrive.",
+  "total_s": 0.5533800740086008,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n06",
+  "text": "I think, well, that's probably not very hygienic, Rook.",
+  "total_s": 0.5046625019895146,
+  "pred_n": 16
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n07",
+  "text": "I think, um, that's a lot of noise, probably... oh god, the table is ruined.",
+  "total_s": 0.5592865590006113,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n08",
+  "text": "Rook, wait, I think... well, it's freezing, and you don't have a jacket, so... maybe come back?",
+  "total_s": 0.5899206110043451,
+  "pred_n": 31
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n09",
+  "text": "I think, well, maybe we should, um, get to the guns?",
+  "total_s": 0.5228551500040339,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n10",
+  "text": "I think, well, the precision is, um, much better now. Maybe.",
+  "total_s": 0.5182993779890239,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n11",
+  "text": "I think, well, eating on the dirt is probably not ideal, but I suppose it's fine?",
+  "total_s": 0.5431341310031712,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n12",
+  "text": "I think, well, maybe the kibble is... it's probably better than the jelly, actually.",
+  "total_s": 0.5789421349909389,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n13",
+  "text": "I think, well, the muffalo tastes... it's actually quite good, probably.",
+  "total_s": 0.5186150400113547,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n14",
+  "text": "I think, well, eight meals are left, maybe, if no one eats extra?",
+  "total_s": 0.5512903709895909,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n15",
+  "text": "I think, well, maybe we should, um, reinforce the ceiling before it collapses?",
+  "total_s": 0.48603432200616226,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n16",
+  "text": "I think, well, if you hit it, we might actually have enough food to last, maybe.",
+  "total_s": 0.5175379069987684,
+  "pred_n": 22
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n17",
+  "text": "I think, well, maybe we should move them faster? The flies are, um, getting quite bad.",
+  "total_s": 0.5357712080003694,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n18",
+  "text": "I think, well, maybe, if the data stays consistent, yes, electricity should be next.",
+  "total_s": 0.501750377996359,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n19",
+  "text": "I think, well, the weather patterns suggest it might continue, but probably not for much longer.",
+  "total_s": 0.4959049120079726,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n20",
+  "text": "I think, well, maybe we could be more, but... it's mostly just survival, isn't it?",
+  "total_s": 0.5321543519967236,
+  "pred_n": 26
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n21",
+  "text": "I think, well, maybe we shouldn't, um, talk about the freezer right now?",
+  "total_s": 0.5001350850070594,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n22",
+  "text": "I think, well, that wasn't quite the right way to say it, was it?",
+  "total_s": 0.49963764200219885,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n23",
+  "text": "I think, well, maybe it should be someone else, because I'm... I'm not very good at that.",
+  "total_s": 0.5146988369961036,
+  "pred_n": 27
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n24",
+  "text": "I think, well, it's just... it's not supposed to be like this.",
+  "total_s": 0.48429230399779044,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n25",
+  "text": "I think, well, the wood is burning, and we're probably going to lose the whole storeroom.",
+  "total_s": 0.5088268159888685,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "moth",
+  "scene": "n26",
+  "text": "I think, well, maybe we shouldn't sell the components, unless... unless we really need the silver.",
+  "total_s": 0.5118578690016875,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n01",
+  "text": "Lux is bleeding. Tuk will watch for more raiders.",
+  "total_s": 0.6210617009928683,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n02",
+  "text": "Pip! Stop rolling! You make the fire bite deeper!",
+  "total_s": 0.5766866970079718,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n03",
+  "text": "Lux smells like rot. Tuk has no medicine for this.",
+  "total_s": 0.39923071800149046,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n04",
+  "text": "Pip. Stop staring. Hana is gone. Tuk will move her.",
+  "total_s": 0.47160399801214226,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n05",
+  "text": "Lux bled out in the dirt. Such bad meat.",
+  "total_s": 0.44462506199488416,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n06",
+  "text": "Pip, stop. You eat too fast. That is raw meat.",
+  "total_s": 0.45913666499836836,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n07",
+  "text": "Lux is making too much noise. Tuk wants quiet.",
+  "total_s": 0.46198744399589486,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n08",
+  "text": "Pip, stop. The cold will kill you before the mountains do.",
+  "total_s": 0.4537086219934281,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n09",
+  "text": "Run, soft one. Tuk will find the meat.",
+  "total_s": 0.47993960000167135,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n10",
+  "text": "Tuk makes good tools now. Better than before.",
+  "total_s": 0.45149163498717826,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n11",
+  "text": "Dirt is not a table, Lux. Eat or do not eat.",
+  "total_s": 0.4498380869918037,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n12",
+  "text": "This kibble is bad meat. Tuk needs real food.",
+  "total_s": 0.4769351970026037,
+  "pred_n": 13
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n13",
+  "text": "Good meat. Lux eats like a small bird.",
+  "total_s": 0.4291588089981815,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n14",
+  "text": "Eight meals left. Tuk will make more soon.",
+  "total_s": 0.4664273209928069,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n15",
+  "text": "Stop whining, Lux. Tuk will find the steel.",
+  "total_s": 0.44201010100368876,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n16",
+  "text": "Stay quiet, Pip. Big meat is near.",
+  "total_s": 0.4275859389890684,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n17",
+  "text": "Stop gagging, Lux. It is just meat.",
+  "total_s": 0.4299712409992935,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n18",
+  "text": "Tuk does not know about the wires. Tuk wants to hunt.",
+  "total_s": 0.45732710900483653,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n19",
+  "text": "Sky leaks. Tuk does not know when it stops. Stop worrying about plants.",
+  "total_s": 0.47180345399829093,
+  "pred_n": 17
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n20",
+  "text": "Dirt keeps us alive. Meat keeps us alive. That is enough.",
+  "total_s": 0.44792537300963886,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n21",
+  "text": "Shut your mouth, Lux. Meat is gone. Stop whining.",
+  "total_s": 0.45466443299665116,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n22",
+  "text": "Pip tells bad joke. Tuk does not understand.",
+  "total_s": 0.43693357599840965,
+  "pred_n": 11
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n23",
+  "text": "Lux is soft. Tuk will talk to the meat.",
+  "total_s": 0.4092164110043086,
+  "pred_n": 12
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n24",
+  "text": "Hana is gone. Tuk will make her stone cairn.",
+  "total_s": 0.4615407300007064,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n25",
+  "text": "Stop shouting, Lux. The wood is burning. Get more water.",
+  "total_s": 0.45164933300111443,
+  "pred_n": 15
+ },
+ {
+  "cond": "A",
+  "pawn": "tuk",
+  "scene": "n26",
+  "text": "Sell the excess leather. We need more salt for the meat.",
+  "total_s": 0.4421523359924322,
+  "pred_n": 14
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n01",
+  "text": "Of course, my dear Rook, you had to find the most dramatic way to ruin my afternoon.",
+  "total_s": 0.6872074150014669,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n02",
+  "text": "Of course, my dear Ash, you simply had to turn a simple meal into a dramatic performance of fire and screaming.",
+  "total_s": 0.6924248020077357,
+  "pred_n": 25
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n03",
+  "text": "Of course you chose to rot in a bed while our medicine supplies dwindle to nothing, my dear Rook.",
+  "total_s": 0.4792307360039558,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n04",
+  "text": "Of course you intend to stand there until the rain washes the remains away, my dear Ash.",
+  "total_s": 0.5348517909878865,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n05",
+  "text": "Of course, the grass was never meant to serve as a shroud for such a messy end.",
+  "total_s": 0.5235954839881742,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n06",
+  "text": "Of course, my dear Ash, one must assume the pantry has become a feeding trough for the unrefined.",
+  "total_s": 0.5024843370047165,
+  "pred_n": 23
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n07",
+  "text": "Of course, my dear Nate, one must eventually succumb to the urge to destroy everything of value.",
+  "total_s": 0.527967879010248,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n08",
+  "text": "Of course, my dear Ash, you shall freeze to death in the mountains, which is a rather dramatic way to avoid work.",
+  "total_s": 0.5397229600057472,
+  "pred_n": 27
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n09",
+  "text": "Of course, we must endure a tribal skirmish before I have even had my morning tea.",
+  "total_s": 0.5284350110014202,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n10",
+  "text": "Of course you would offer a silent nod, my dear Ash, as if your approval could possibly compensate for this wretched workshop.",
+  "total_s": 0.5506760340067558,
+  "pred_n": 26
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n11",
+  "text": "Of course, my dear Nate, we shall dine upon the dust like common rodents.",
+  "total_s": 0.4796099440136459,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n12",
+  "text": "Naturally, my dear Ash, one must assume the cook has finally succumbed to total madness.",
+  "total_s": 0.5087802000052761,
+  "pred_n": 19
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n13",
+  "text": "Of course, my dear Nate, you must attempt to chew with something resembling dignity.",
+  "total_s": 0.4807775130029768,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n14",
+  "text": "Of course you would bother me with logistics, my dear Ash, while I am attempting to manage this culinary catastrophe.",
+  "total_s": 0.5516494510084158,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n15",
+  "text": "Of course, my dear Rook, you must insist on reminding me that the ceiling intends to collapse upon my head.",
+  "total_s": 0.5357146080059465,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n16",
+  "text": "Of course you intend to stand there like a decorative statue while the beast wanders off into the mist, my dear Ash.",
+  "total_s": 0.5235110780049581,
+  "pred_n": 25
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n17",
+  "text": "Of course, my dear Rook, one would think even a scavenger could manage to move without making such a vulgar display of his constitution.",
+  "total_s": 0.5384929090068908,
+  "pred_n": 28
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n18",
+  "text": "Of course, my dear Ash, one must complete the current endeavor before beginning another.",
+  "total_s": 0.47116328100673854,
+  "pred_n": 18
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n19",
+  "text": "Of course, my dear Nate, we shall all perish in the mud if the heavens refuse to cease this tedious weeping.",
+  "total_s": 0.5262267719954252,
+  "pred_n": 25
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n20",
+  "text": "Of course, my dear Ash, you expect a grand estate to manifest simply because you are bored.",
+  "total_s": 0.4934068250004202,
+  "pred_n": 21
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n21",
+  "text": "Of course, my dear Nate, we shall continue to litigate the loss of rotting meat while the wind freezes us both.",
+  "total_s": 0.5920098390051862,
+  "pred_n": 26
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n22",
+  "text": "Of course, my dear Ash, your grasp of comedic timing is as impoverished as our current supply of fine wine.",
+  "total_s": 0.5477878429956036,
+  "pred_n": 24
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n23",
+  "text": "Of course you would ask me, my dear Nate, as if my tongue were a tool intended for such unsavory labor.",
+  "total_s": 0.49346738899475895,
+  "pred_n": 27
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n24",
+  "text": "Of course, we must stand in this wretched dust to honor a woman who deserved far better.",
+  "total_s": 0.4885494869959075,
+  "pred_n": 20
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n25",
+  "text": "Of course, we shall all perish in a cloud of ash because you cannot manage a simple bucket, my dear Nate.",
+  "total_s": 0.5232348310091766,
+  "pred_n": 25
+ },
+ {
+  "cond": "A",
+  "pawn": "lux",
+  "scene": "n26",
+  "text": "Of course, my dear Ash, you would suggest we liquidate our meager survival for the sake of a few coins.",
+  "total_s": 0.587304172993754,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n01",
+  "text": "Pip, stay down, damn it, just hold that shoulder and stay down!",
+  "total_s": 0.6507946490019094,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n02",
+  "text": "Watch the stove, for hell's sake, you're going to burn the whole place down.",
+  "total_s": 0.6544068629882531,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n03",
+  "text": "Don't you dare close those eyes, Pip, I'm not wasting good herbs on a corpse.",
+  "total_s": 0.477482340997085,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n04",
+  "text": "Don't just stand there staring, Moth, the rain's going to turn the soil to muck.",
+  "total_s": 0.5642915000062203,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n05",
+  "text": "Goddammit, Pip, not like this.",
+  "total_s": 0.4223652899963781,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n06",
+  "text": "Stop stuffing your face like a starving animal, Moth, or you'll be sick before morning.",
+  "total_s": 0.512449595000362,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n07",
+  "text": "Pip, shut it, you're making more noise than a boiling pot.",
+  "total_s": 0.48155922601290513,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n08",
+  "text": "Where the hell is she going without a coat in this frost?",
+  "total_s": 0.4614571059937589,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n09",
+  "text": "Get your rifle, Pip, and don't you dare trip.",
+  "total_s": 0.490331569002592,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n10",
+  "text": "Don't just stand there staring, Moth, the stove isn't going to clean itself.",
+  "total_s": 0.5092991040000925,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n11",
+  "text": "Sit down, Pip, and don't let the dirt get in the stew.",
+  "total_s": 0.4765852359996643,
+  "pred_n": 18
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n12",
+  "text": "Eat it or don't, but stop staring at it like it's going to walk away.",
+  "total_s": 0.5536269879958127,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n13",
+  "text": "Eat it while it's hot, Pip. It's better than that slop Lux usually whines about.",
+  "total_s": 0.5240669500053627,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n14",
+  "text": "Twelve on the bill, and I've only got four done. Get that corn on the counter.",
+  "total_s": 0.5346402900031535,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n15",
+  "text": "Watch your head, Pip, or the ceiling's gonna drop more than just dust on you.",
+  "total_s": 0.5062264950101962,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n16",
+  "text": "Don't just stare at it, Moth, get that muffalo back before it wanders off.",
+  "total_s": 0.5023024709953461,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n17",
+  "text": "Don't just stand there gagging, Pip, get it to the pit before the flies take it.",
+  "total_s": 0.529927736002719,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n18",
+  "text": "If you're done staring at that glass, get back to the kitchen.",
+  "total_s": 0.46840852200693917,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n19",
+  "text": "Don't worry about the dirt, Pip. Just focus on keeping those knives sharp.",
+  "total_s": 0.486315635003848,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n20",
+  "text": "If you want more than dirt, start by helping me haul the grain sacks.",
+  "total_s": 0.4788527430064278,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n21",
+  "text": "Forget about the meat, Pip. It's gone, and we've got more work to do.",
+  "total_s": 0.5286793489940464,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n22",
+  "text": "That joke was as stale as unwashed rice, Moth.",
+  "total_s": 0.42320876200392377,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n23",
+  "text": "Not me. I'll stick to the stove and leave the talking to someone with more patience.",
+  "total_s": 0.4702189499948872,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n24",
+  "text": "Just get it over with so we can get back to work.",
+  "total_s": 0.4415279809909407,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n25",
+  "text": "Pip, leave that empty bucket and get to the well!",
+  "total_s": 0.43478333800158,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "rook",
+  "scene": "n26",
+  "text": "Sell some meat or some leather, Moth, just don't waste our silver on junk.",
+  "total_s": 0.48416066300706007,
+  "pred_n": 20
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n01",
+  "text": "Ash, oh no, oh god, stay down, stay down, I'm coming, I'm coming right now!",
+  "total_s": 0.7818297869962407,
+  "pred_n": 27
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n02",
+  "text": "Oh my god Tuk are you okay, stay down, don't move, I'll get some water right now!",
+  "total_s": 0.6843046140129445,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n03",
+  "text": "Ash, you look really pale and your wound smells funny, do you think the herbal medicine will actually help?",
+  "total_s": 0.48468321999826003,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n04",
+  "text": "Tuk, please, it's getting really cold and the rain is starting to soak everything, come back inside with me!",
+  "total_s": 0.5481027259957045,
+  "pred_n": 27
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n05",
+  "text": "Oh no, oh no, Ash, please get up, please please please get up!",
+  "total_s": 0.4800349540018942,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n06",
+  "text": "Tuk, please stop, you're going to get sick eating all that raw stuff and we really need those meals!",
+  "total_s": 0.5291330640029628,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n07",
+  "text": "Ash, stop it, please, you're gonna break everything else if you keep going like that!",
+  "total_s": 0.5082548420032253,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n08",
+  "text": "Tuk, wait, please come back, it is freezing out there and you do not even have a jacket on!",
+  "total_s": 0.5264760969876079,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n09",
+  "text": "Oh no, oh no, is that them coming through the fog with spears, Ash, wait for me!",
+  "total_s": 0.5465694129961776,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n10",
+  "text": "Did you see that, Tuk, I actually did it, I finally hit level ten!",
+  "total_s": 0.4816413799999282,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n11",
+  "text": "This dirt is so gross and my plate is all wobbly and I really wish we had a proper table to eat at!",
+  "total_s": 0.575620761999744,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n12",
+  "text": "Oh Tuk, you can't just eat that kibble by itself, it's so gross and we really need some actual meals!",
+  "total_s": 0.5540677849930944,
+  "pred_n": 29
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n13",
+  "text": "That looks so good, Ash, seriously, it smells way better than those raw berries I had earlier!",
+  "total_s": 0.4969817579985829,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n14",
+  "text": "I've only done four simple meals so far but I'll get the rest done soon, I promise!",
+  "total_s": 0.5911019859922817,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n15",
+  "text": "Watch out Ash, that thin roof is gonna cave in if you keep being so loud!",
+  "total_s": 0.47664533600618597,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n16",
+  "text": "Look at that big guy over there, Tuk, do you think we can get the whole thing back before it gets too cold?",
+  "total_s": 0.5407308830035618,
+  "pred_n": 27
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n17",
+  "text": "Ugh, Ash, don't do that, it's just gonna make the flies even worse and we really need to get these moved!",
+  "total_s": 0.5931187620008131,
+  "pred_n": 31
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n18",
+  "text": "Yeah, once this is done we're going straight to electricity, I really want to see some lights!",
+  "total_s": 0.4792249180027284,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n19",
+  "text": "I don't know but it's been raining for forever and it's making Biscuit all soggy and sad!",
+  "total_s": 0.5393261779972818,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n20",
+  "text": "Oh don't say that because we're getting better every day and we'll have real walls and stuff soon, I promise!",
+  "total_s": 0.5512033520062687,
+  "pred_n": 29
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n21",
+  "text": "Look Ash, it was just a mistake and we have more meat in the freezer anyway so why keep talking about it!",
+  "total_s": 0.5332508319988847,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n22",
+  "text": "Oh, I think it was a spacecraft, Tuk, not a thrumbo, but that was still kind of funny!",
+  "total_s": 0.5382839429948945,
+  "pred_n": 27
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n23",
+  "text": "I can do it, Ash, I'll go talk to him and see if we can make him one of us!",
+  "total_s": 0.5355492529924959,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n24",
+  "text": "Oh, Hana, please stay with us, we really need you to stay with us!",
+  "total_s": 0.48281376299564727,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n25",
+  "text": "Ash, oh my god, the storeroom is on fire and the wood is going to burn up everything!",
+  "total_s": 0.5191354999988107,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "pip",
+  "scene": "n26",
+  "text": "Oh wow look at those camels they are so huge and fuzzy and maybe we can trade some of our extra leather for something cool!",
+  "total_s": 0.5344501130020944,
+  "pred_n": 27
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n01",
+  "text": "Moth is down. Get the medkit over here now.",
+  "total_s": 0.6250339620019076,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n02",
+  "text": "Stop screaming and roll. You are making a scene.",
+  "total_s": 0.5797997800109442,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n03",
+  "text": "The infection is spreading and we have no industrial medicine left.",
+  "total_s": 0.40206889899855014,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n04",
+  "text": "Stop staring and help me move the body to the grave.",
+  "total_s": 0.4486307939951075,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n05",
+  "text": "Moth is dead. Get the body to the freezer.",
+  "total_s": 0.4506988920038566,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n06",
+  "text": "Lux, stop eating that raw meat. You are wasting the rations.",
+  "total_s": 0.46848245699948166,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n07",
+  "text": "Moth, knock it off. The table is gone.",
+  "total_s": 0.446223203005502,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n08",
+  "text": "Lux, get back inside. It is four below zero.",
+  "total_s": 0.4482528639928205,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n09",
+  "text": "Moth, get to the armory and grab the bolt-action. Six targets coming from the north.",
+  "total_s": 0.5540913580043707,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n10",
+  "text": "The tools are fitting better today. Get back to your work, Lux.",
+  "total_s": 0.4665783370001009,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n11",
+  "text": "Sit down, Moth. We eat here.",
+  "total_s": 0.4088302270101849,
+  "pred_n": 10
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n12",
+  "text": "Eat the kibble, Lux. We have three meals left.",
+  "total_s": 0.4765769730001921,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n13",
+  "text": "The meat is decent. Sit down and eat.",
+  "total_s": 0.4159113680070732,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n14",
+  "text": "Eight meals left. Get that corn on the counter.",
+  "total_s": 0.47518125499482267,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n15",
+  "text": "Watch the ceiling, Moth. We need more supports in this tunnel.",
+  "total_s": 0.45769392800866626,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n16",
+  "text": "Stay back, Lux. I will take the shot.",
+  "total_s": 0.4259611449961085,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n17",
+  "text": "Move them to the pit, Moth. The flies will only get worse.",
+  "total_s": 0.47542912799690384,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n18",
+  "text": "Negative. I am finishing the electricity research first.",
+  "total_s": 0.4139406960021006,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n19",
+  "text": "I do not know. The clouds are heavy.",
+  "total_s": 0.42494096599693876,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n20",
+  "text": "Keep your mouth shut and stay away from the armory, Lux.",
+  "total_s": 0.45892255900253076,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n21",
+  "text": "The meat is gone, Moth. Move on.",
+  "total_s": 0.4351049169927137,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n22",
+  "text": "Shut up, Lux. You are wasting air.",
+  "total_s": 0.4273921860003611,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n23",
+  "text": "You do it. I am not wasting breath on a raider.",
+  "total_s": 0.45752040900697466,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n24",
+  "text": "It is finished. Let us get back to the wall.",
+  "total_s": 0.46748697001021355,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n25",
+  "text": "Moth, stop shouting and get a fire extinguisher from the hallway.",
+  "total_s": 0.492108142003417,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "ash",
+  "scene": "n26",
+  "text": "Check the inventory first. We need medicine and components.",
+  "total_s": 0.45230946599622257,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n01",
+  "text": "Oh god, Tuk, please, stay still, I think I can fix the bleeding, just please don't move.",
+  "total_s": 0.711476255004527,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n02",
+  "text": "Oh no, oh god, Rook, please don't move, I'll get the medkit, I'm sorry!",
+  "total_s": 0.689358303003246,
+  "pred_n": 28
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n03",
+  "text": "I think we're running low on medicine, Tuk, so please try to stay still.",
+  "total_s": 0.45175359801214654,
+  "pred_n": 20
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n04",
+  "text": "I'm sorry, Rook, I... do you want me to help move them?",
+  "total_s": 0.4735027910064673,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n05",
+  "text": "Oh god, there's so much blood in the grass, I... I think I need to sit down.",
+  "total_s": 0.5215066499949899,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n06",
+  "text": "Rook, please, you're making such a mess with all that raw meat.",
+  "total_s": 0.48008587799267843,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n07",
+  "text": "Oh god, Tuk, please stop, that table was... I think it was expensive.",
+  "total_s": 0.4872604709962616,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n08",
+  "text": "Rook, wait, please, it is freezing out there and you do not have a jacket on.",
+  "total_s": 0.49146169899904635,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n09",
+  "text": "Oh god, oh no, Tuk, please, are they coming from the north?",
+  "total_s": 0.5143566579936305,
+  "pred_n": 18
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n10",
+  "text": "I think... I think the precision is finally coming, if that makes sense, sorry.",
+  "total_s": 0.47989142801088747,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n11",
+  "text": "I'm sorry, it's just... it's a bit difficult eating out here on the ground, isn't it?",
+  "total_s": 0.5403889510052977,
+  "pred_n": 29
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n12",
+  "text": "Is there... is there any actual food left? I think we're out of meals.",
+  "total_s": 0.4797779329965124,
+  "pred_n": 20
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n13",
+  "text": "That looks... it looks really good, Tuk, thank you.",
+  "total_s": 0.4270334729953902,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n14",
+  "text": "I think... I've finished four, so there should be eight more after this, I hope.",
+  "total_s": 0.553137834998779,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n15",
+  "text": "Sorry, Tuk, I'll... I'll check the structural integrity once I finish this data entry.",
+  "total_s": 0.5081295099953422,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n16",
+  "text": "I think... I think we should probably be quiet, Rook, if you're going to take it.",
+  "total_s": 0.5119563369953539,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n17",
+  "text": "I think... I think we should probably move them soon, before the flies get any worse.",
+  "total_s": 0.47769747499842197,
+  "pred_n": 20
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n18",
+  "text": "I think... yes, I suppose it's next, once the microscope data is finished.",
+  "total_s": 0.4603425520035671,
+  "pred_n": 20
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n19",
+  "text": "I don't really know, Tuk, but the weather patterns... I think it might continue for a bit longer.",
+  "total_s": 0.5252012949931668,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n20",
+  "text": "I think we're doing enough, Rook, really, the research is... it's progressing.",
+  "total_s": 0.5135304519935744,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n21",
+  "text": "I think... I don't really know who did it, Tuk, sorry.",
+  "total_s": 0.4884946219972335,
+  "pred_n": 18
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n22",
+  "text": "I think, um, sorry, I don't really think that's how the joke goes, Rook.",
+  "total_s": 0.5201246259966865,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n23",
+  "text": "I... I don't think I should, Tuk. I'm not very good with people like that.",
+  "total_s": 0.5456352830078686,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n24",
+  "text": "I... I think we should probably just start, if it's alright with everyone.",
+  "total_s": 0.48359264999453444,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n25",
+  "text": "Tuk, please, the wood is burning, we need to get to the extinguishers, quickly.",
+  "total_s": 0.49263782499474473,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "moth",
+  "scene": "n26",
+  "text": "I think... maybe we could sell some of the extra corn, if we have enough?",
+  "total_s": 0.46637772099347785,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n01",
+  "text": "Lux is leaking too much. Stop holding that rifle and stay down.",
+  "total_s": 0.6307514009968145,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n02",
+  "text": "Pip, stop rolling in the dirt and stay still so I can help.",
+  "total_s": 0.648425822990248,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n03",
+  "text": "That wound smells bad, Lux. You need medicine, but we only have herbal left.",
+  "total_s": 0.5247892830084311,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n04",
+  "text": "Stop staring, Pip. The blood is gone and the meat is cold.",
+  "total_s": 0.4849516109970864,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n05",
+  "text": "Lux is dead in the dirt and he was too soft to stay alive.",
+  "total_s": 0.4714336160104722,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n06",
+  "text": "Slow down, Pip. You will make yourself sick eating that raw.",
+  "total_s": 0.4532772350066807,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n07",
+  "text": "Lux is acting like a weak child and breaking things for no reason.",
+  "total_s": 0.5173069010052131,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n08",
+  "text": "Pip, get back inside before the frost kills you.",
+  "total_s": 0.42613064000033773,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n09",
+  "text": "Lux, stop running like a rabbit and get a gun.",
+  "total_s": 0.48138135799672455,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n10",
+  "text": "The bench feels right today, Pip.",
+  "total_s": 0.41052657799446024,
+  "pred_n": 9
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n11",
+  "text": "Eating on the dirt is bad for the stomach, Lux.",
+  "total_s": 0.5261037800082704,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n12",
+  "text": "Eat your kibble, Pip. It is better than nothing.",
+  "total_s": 0.505211137002334,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n13",
+  "text": "Eat your food, Lux. Do not just stare at it.",
+  "total_s": 0.42837730000610463,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n14",
+  "text": "Eight meals are done. I will make more once this pot is finished.",
+  "total_s": 0.5490317109943135,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n15",
+  "text": "Stop whining, Lux. The steel is good.",
+  "total_s": 0.42815628499374725,
+  "pred_n": 11
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n16",
+  "text": "Stay low, Pip. One good shot and we eat well tonight.",
+  "total_s": 0.4396364860003814,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n17",
+  "text": "Stop gagging, Lux. It is just meat.",
+  "total_s": 0.43603283099946566,
+  "pred_n": 12
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n18",
+  "text": "Yes, electricity comes after this. Drink your coffee, Pip.",
+  "total_s": 0.4070956889918307,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n19",
+  "text": "Sky stays wet for as long as it wants. Stop worrying about the corn, Lux.",
+  "total_s": 0.4798704009881476,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n20",
+  "text": "Dirt keeps us fed. You should be glad for the quiet.",
+  "total_s": 0.42454407799232285,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n21",
+  "text": "Stop your whining, Lux. The meat was rot anyway.",
+  "total_s": 0.4387814169895137,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n22",
+  "text": "That is not how a thrumbo behaves, Pip.",
+  "total_s": 0.4214750060054939,
+  "pred_n": 13
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n23",
+  "text": "You go talk to him, Lux. You have the soft tongue for it.",
+  "total_s": 0.5057917560043279,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n24",
+  "text": "Hana was good. She will be in the stones now.",
+  "total_s": 0.49614735100476537,
+  "pred_n": 14
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n25",
+  "text": "Lux, stop shouting and find a real bucket before the wood is gone.",
+  "total_s": 0.45864939999592025,
+  "pred_n": 16
+ },
+ {
+  "cond": "B",
+  "pawn": "tuk",
+  "scene": "n26",
+  "text": "Sell some leather or meat, Pip. We have plenty of skin.",
+  "total_s": 0.4767404570011422,
+  "pred_n": 15
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n01",
+  "text": "Naturally, the one person who can actually hold a rifle has to go and bleed all over the sandbags.",
+  "total_s": 0.7312216260033892,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n02",
+  "text": "Naturally, one must endure the constant threat of being incinerated by substandard kitchen equipment.",
+  "total_s": 0.6676663929974893,
+  "pred_n": 18
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n03",
+  "text": "Naturally, one expects a little decorum, but watching you rot in this filth is quite another matter, my dear.",
+  "total_s": 0.49796821500058286,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n04",
+  "text": "One really must wonder how much longer you intend to stand there staring at the dirt, Corin.",
+  "total_s": 0.5102415559958899,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n05",
+  "text": "Naturally, the dirt is the only thing that manages to claim anything around here with any real efficiency.",
+  "total_s": 0.49125988100422546,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n06",
+  "text": "One would think even a common scavenger like you could manage the basic decency of a table, Ash.",
+  "total_s": 0.5068516600003932,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n07",
+  "text": "Must you behave like a common animal, Nate, when we are trying to maintain some semblance of order?",
+  "total_s": 0.5284438200033037,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n08",
+  "text": "Do try not to freeze to death, Corin, it would be dreadfully inconvenient for the rest of us.",
+  "total_s": 0.49349843100935686,
+  "pred_n": 24
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n09",
+  "text": "Naturally, we must endure a primitive massacre before the sun has even properly risen.",
+  "total_s": 0.4910008220031159,
+  "pred_n": 17
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n10",
+  "text": "One might almost think you were capable of observing something other than your own shadow, Ash.",
+  "total_s": 0.482374715997139,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n11",
+  "text": "Naturally, one must expect to dine in the dirt when surrounded by such unrefined company.",
+  "total_s": 0.4906310910009779,
+  "pred_n": 19
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n12",
+  "text": "One does wonder if the cook has simply given up on us entirely, or if this kibble is a personal insult.",
+  "total_s": 0.5384390670078574,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n13",
+  "text": "At least the muffalo was prepared with something resembling competence, though one does miss a proper vintage.",
+  "total_s": 0.4813280269881943,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n14",
+  "text": "Eight meals, my dear, assuming one doesn't mind the utter lack of refinement in this kitchen.",
+  "total_s": 0.5560884790029377,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n15",
+  "text": "Must we truly spend our remaining hours performing manual labor in such a dreadfully cramped and dusty hole?",
+  "total_s": 0.4903027399996063,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n16",
+  "text": "Do try not to make a mess of it, Ash; I've quite enough filth to contend with back at camp.",
+  "total_s": 0.5212032869894756,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n17",
+  "text": "Do try to keep your bile to yourself, Rook, it is quite as undignified as the stench.",
+  "total_s": 0.4961044390074676,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n18",
+  "text": "Naturally, my dear, one must finish one thing before beginning another, though your timing is predictably clumsy.",
+  "total_s": 0.5341499070054851,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n19",
+  "text": "One can only assume the heavens have decided we simply do not deserve anything as tedious as a harvest.",
+  "total_s": 0.47833624700433575,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n20",
+  "text": "One adapts to the filth, my dear, though I fear we are merely becoming part of the landscape.",
+  "total_s": 0.4868095429992536,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n21",
+  "text": "Must you persist with this tedious, repetitive drama, Rook, while we are all quite literally freezing?",
+  "total_s": 0.4824658110010205,
+  "pred_n": 21
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n22",
+  "text": "One simply wonders if the thrumbo would have the decency to kill you before you finished the setup, my dear.",
+  "total_s": 0.5189273069991032,
+  "pred_n": 25
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n23",
+  "text": "Naturally, you would expect me to perform the labor of a diplomat in a room that smells so aggressively of unwashed desperation.",
+  "total_s": 0.5116874230006943,
+  "pred_n": 26
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n24",
+  "text": "One would think a proper eulogy would require more than this dreary, wind-swept patch of dirt.",
+  "total_s": 0.6089614730008179,
+  "pred_n": 23
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n25",
+  "text": "Must you always be so dreadfully loud, Rook, while the entire storeroom is turning to ash?",
+  "total_s": 0.5161268910014769,
+  "pred_n": 22
+ },
+ {
+  "cond": "B",
+  "pawn": "lux",
+  "scene": "n26",
+  "text": "Perhaps one could sell some of your more useless possessions, Ash, if we are truly so destitute.",
+  "total_s": 0.4977244699985022,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n01",
+  "text": "Hm. Stay down, Pip. Don't bleed out on the dirt.",
+  "total_s": 0.7092020460113417,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n02",
+  "text": "Hm. Damned stove. Moth, get back in here before you burn the whole lot.",
+  "total_s": 0.7079420319932979,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n03",
+  "text": "Hm. Fever's high. We're running low on herbs, Pip.",
+  "total_s": 0.5155812999873888,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n04",
+  "text": "Hm. Get up, Moth. Staring won't fill the belly.",
+  "total_s": 0.5801007700065384,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n05",
+  "text": "Hm. All that blood. Just wasted in the dirt.",
+  "total_s": 0.6213253080059076,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n06",
+  "text": "Hm. Stop that. You'll rot your gut eating raw like a dog.",
+  "total_s": 0.6175578120019054,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n07",
+  "text": "Hm. Calm down, Pip. You're acting like a spoiled brat over a bit of wood.",
+  "total_s": 0.6609821260062745,
+  "pred_n": 22
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n08",
+  "text": "Hm. Moth, get back here. You'll freeze solid like a slab of meat.",
+  "total_s": 0.5561982459912542,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n09",
+  "text": "Hm. Spears in the fog. Get your rifle, Pip.",
+  "total_s": 0.5442964149988256,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n10",
+  "text": "Hm. Don't just stand there, Moth. Get moving.",
+  "total_s": 0.5107979430031264,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n11",
+  "text": "Hm. Eat the stew, Pip. Dirt's better than nothing.",
+  "total_s": 0.5186096469988115,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n12",
+  "text": "Hm. Eat the kibble or don't. I'm not your maid.",
+  "total_s": 0.5673130670038518,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n13",
+  "text": "Hm. Eat it while it's hot. The muffalo's good tonight.",
+  "total_s": 0.5384265729953768,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n14",
+  "text": "Hm. Eight left. Put that corn on the counter and get out.",
+  "total_s": 0.6050139800063334,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n15",
+  "text": "Hm. Watch your head. Steel's good, but the ceiling's thin.",
+  "total_s": 0.5852805309987161,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n16",
+  "text": "Hm. Don't spook it, Moth. We need that meat.",
+  "total_s": 0.5295780559972627,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n17",
+  "text": "Hm. Get it to the pit, Pip. It'll spoil the air.",
+  "total_s": 0.546894049999537,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n18",
+  "text": "Hm. Leave me be. I've got stew to stir.",
+  "total_s": 0.5405964110104833,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n19",
+  "text": "Hm. Rain's just water. If the crops rot, we eat dried meat.",
+  "total_s": 0.5475699600065127,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n20",
+  "text": "Hm. Dirt keeps the crops growing. Shut up and eat.",
+  "total_s": 0.5065912010031752,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n21",
+  "text": "Hm. Meat's gone rotten. Move on.",
+  "total_s": 0.5000398279953515,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n22",
+  "text": "Hm. That joke was as dry as unseasoned meat. Sit down and eat.",
+  "total_s": 0.5897750389995053,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n23",
+  "text": "Hm. Not me. I don't have the stomach for talking to filth.",
+  "total_s": 0.5728405100089731,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n24",
+  "text": "Hm. Get it over with. My back's killing me.",
+  "total_s": 0.5285519649914932,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n25",
+  "text": "Hm. Drop that empty bucket, Pip. The wood's burning.",
+  "total_s": 0.5293422279937658,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "rook",
+  "scene": "n26",
+  "text": "Hm. Sell the excess corn. We don't need more grain rotting in the bin.",
+  "total_s": 0.551106118989992,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n01",
+  "text": "Okay so Ash is down and he's bleeding so much, like, it's totally bad...",
+  "total_s": 0.888781863002805,
+  "pred_n": 22
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n02",
+  "text": "Okay so Tuk is totally on fire, like, someone get water right now!",
+  "total_s": 1.1383194250083761,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n03",
+  "text": "Okay so, Ash, you look totally terrible and we're like, almost out of medicine...",
+  "total_s": 0.7608366909989854,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n04",
+  "text": "Okay so, Tuk, please don't just stand there, it's like totally getting cold and...",
+  "total_s": 0.7653706180135487,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n05",
+  "text": "Okay so Ash is just... he's totally not moving and the grass is so red...",
+  "total_s": 0.8040638630045578,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n06",
+  "text": "Okay so Tuk is totally losing it with all that raw meat... it's kinda gross...",
+  "total_s": 0.756227432997548,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n07",
+  "text": "Okay so Ash is totally losing it and the table is just... gone...",
+  "total_s": 0.8172213270008797,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n08",
+  "text": "Okay so Tuk is totally just walking away into the cold, like, she's gonna freeze...",
+  "total_s": 0.7536809799930779,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n09",
+  "text": "Okay so, Ash is running and there's like, people in the fog with spears... oh god...",
+  "total_s": 0.8441689549945295,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n10",
+  "text": "Okay so I totally did it, like, I actually finished it!",
+  "total_s": 0.811605552007677,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n11",
+  "text": "Okay so eating on the dirt is totally gross, like, I really miss having a table...",
+  "total_s": 0.9508781519980403,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n12",
+  "text": "Okay so, that jelly looks totally gross, like, are we seriously eating this now...",
+  "total_s": 0.9147288130043307,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n13",
+  "text": "Okay so that muffalo is like, totally better than the raw stuff from earlier...",
+  "total_s": 1.0172723849973409,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n14",
+  "text": "Okay so, I think we have like eight meals left, but I'm gonna cook more rice soon...",
+  "total_s": 1.0820091420027893,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n15",
+  "text": "Okay so that's totally enough steel for today, but the roof is like, really sketchy...",
+  "total_s": 0.9812874950002879,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n16",
+  "text": "Okay so that muffalo is totally huge, Tuk is gonna need so much help carrying it...",
+  "total_s": 1.0281893540086458,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n17",
+  "text": "Okay so that smell is like, totally gross, but I can help with the rest...",
+  "total_s": 1.234400146000553,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n18",
+  "text": "Okay so, yeah, electricity is totally next once I finish this... maybe?",
+  "total_s": 0.961858933995245,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n19",
+  "text": "Okay so it's like totally raining way too much, but maybe it'll stop soon...",
+  "total_s": 0.9161535070015816,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n20",
+  "text": "Okay so it's not totally just a dirt farm, we have like, actual walls and stuff now...",
+  "total_s": 0.9779314449988306,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n21",
+  "text": "Okay so it was like totally an accident, Ash, and we have more meat anyway...",
+  "total_s": 0.9207321840076474,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n22",
+  "text": "Okay so that was like, totally not how the joke goes, Tuk...",
+  "total_s": 0.9206182810012251,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n23",
+  "text": "Okay so, I could totally try to talk to him, but he looks really mean...",
+  "total_s": 0.7944118729938054,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n24",
+  "text": "Okay so it's like, totally too quiet out here without her...",
+  "total_s": 0.6178060679958435,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n25",
+  "text": "Okay so the storeroom is totally on fire and Ash is like screaming for help...",
+  "total_s": 0.567554390989244,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "pip",
+  "scene": "n26",
+  "text": "Okay so we have, like, plenty of stuff to trade, right? We could totally sell some leather...",
+  "total_s": 0.6120344950031722,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n01",
+  "text": "Moth is down. Left shoulder. Four hostiles remaining.",
+  "total_s": 0.7024690180114703,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n02",
+  "text": "Negative. Stop screaming and roll. You are making too much noise.",
+  "total_s": 0.6714532899932237,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n03",
+  "text": "Negative. We have only two herbal packs left.",
+  "total_s": 0.45326650999777485,
+  "pred_n": 11
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n04",
+  "text": "Move the body, Verhoeven. It is getting cold.",
+  "total_s": 0.5192325019888813,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n05",
+  "text": "Negative. She is dead. Get the body to the freezer.",
+  "total_s": 0.5108398880111054,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n06",
+  "text": "Stop eating that raw meat, Lux. You are wasting the supplies.",
+  "total_s": 0.5250845069967909,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n07",
+  "text": "Negative. Moth, stop that. You are making too much noise.",
+  "total_s": 0.5445474610023666,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n08",
+  "text": "Negative. Lux, return to the base. It is four degrees below freezing.",
+  "total_s": 0.5405700999981491,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n09",
+  "text": "Six hostiles, north wall. Six spears and bows. Get to the armory, Moth.",
+  "total_s": 0.5803213710023556,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n10",
+  "text": "Do not stand there. Get back to your station.",
+  "total_s": 0.49575148400617763,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n11",
+  "text": "The dining room is full. Eat quickly and get back to your post.",
+  "total_s": 0.5073264570091851,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n12",
+  "text": "Eat the kibble, Lux. It is better than nothing.",
+  "total_s": 0.5296474430069793,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n13",
+  "text": "Eat your food, Ines. We have work tomorrow.",
+  "total_s": 0.4965341920033097,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n14",
+  "text": "Eight meals remaining. Put the corn on the counter and leave.",
+  "total_s": 0.5556477329955669,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n15",
+  "text": "Copy. Secure the steel. I will watch the ceiling.",
+  "total_s": 0.5071591059968341,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n16",
+  "text": "Forty tiles. The muffalo is moving north. Keep your distance, Verhoeven.",
+  "total_s": 0.5446980130072916,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n17",
+  "text": "Stop gagging. There are five bodies left. Move them to the pit.",
+  "total_s": 0.5266374200000428,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n18",
+  "text": "Negative. Electricity is eighty percent complete. It is the next priority.",
+  "total_s": 0.5253093810024438,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n19",
+  "text": "Negative. I do not predict the weather.",
+  "total_s": 0.4883340199885424,
+  "pred_n": 10
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n20",
+  "text": "Negative. This is a colony. Focus on your duties.",
+  "total_s": 0.527650566000375,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n21",
+  "text": "Negative. The meat is gone. Stop talking.",
+  "total_s": 0.5075801920029335,
+  "pred_n": 11
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n22",
+  "text": "Negative. That was not funny. Get back to your work.",
+  "total_s": 0.530122317999485,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n23",
+  "text": "Negative. I do not talk to prisoners. You do it.",
+  "total_s": 0.498499637003988,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n24",
+  "text": "Finish it. I have a perimeter to check.",
+  "total_s": 0.49446303100558,
+  "pred_n": 11
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n25",
+  "text": "Negative. The wood is burning. Get the extinguishers now.",
+  "total_s": 0.5093488179991255,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "ash",
+  "scene": "n26",
+  "text": "We have three hundred and forty silver. Check the livestock prices.",
+  "total_s": 0.5133781779877609,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n01",
+  "text": "I think, well, Tuk is bleeding, and it's... it's a lot of blood, probably.",
+  "total_s": 0.7998506949952571,
+  "pred_n": 25
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n02",
+  "text": "I think, um, he's actually on fire, isn't he? Maybe we should, well, help?",
+  "total_s": 0.7654967659909744,
+  "pred_n": 26
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n03",
+  "text": "I think, well, maybe the infection is spreading, since we only have the herbal left.",
+  "total_s": 0.5126678259985056,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n04",
+  "text": "I think, well, maybe we should move them before, um, the rain gets worse?",
+  "total_s": 0.5369563939893851,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n05",
+  "text": "I think, well, it's just... there's so much blood on the grass, isn't there?",
+  "total_s": 0.6026460529974429,
+  "pred_n": 26
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n06",
+  "text": "I think, well, eating raw meat like that is, um, probably not very hygienic.",
+  "total_s": 0.5449919279926689,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n07",
+  "text": "I think, um, Tuk's having a bit of a breakdown, maybe? That table was expensive.",
+  "total_s": 0.5888001259882003,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n08",
+  "text": "Rook, wait, I think, well, you really shouldn't go out there without a jacket.",
+  "total_s": 0.5793237629986834,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n09",
+  "text": "I think, well, they're coming from the north, and there's, um, six of them. Probably.",
+  "total_s": 0.659415877002175,
+  "pred_n": 27
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n10",
+  "text": "I think, well, I'm actually getting the hang of the assembly, maybe.",
+  "total_s": 0.5466197269997792,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n11",
+  "text": "I think, well, eating here is probably... not ideal, but I suppose it's fine.",
+  "total_s": 0.572032333991956,
+  "pred_n": 22
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n12",
+  "text": "I think, well, maybe the kibble isn't... it's probably fine, but it's not much.",
+  "total_s": 0.6008041199966101,
+  "pred_n": 27
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n13",
+  "text": "I think, well, the muffalo is probably cooked quite well, actually.",
+  "total_s": 0.5170109530008631,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n14",
+  "text": "I think, well, there are eight meals left, maybe, if I finish this batch?",
+  "total_s": 0.56658702500863,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n15",
+  "text": "I think, well, maybe we should, um, reinforce the ceiling before it collapses?",
+  "total_s": 0.5435783670109231,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n16",
+  "text": "I think, well, if he takes it, we'll have, um, enough food for maybe a few days?",
+  "total_s": 0.5915099379926687,
+  "pred_n": 26
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n17",
+  "text": "I think, um, if you move them quickly, the flies might... well, they might not settle as much.",
+  "total_s": 0.5783721359912306,
+  "pred_n": 25
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n18",
+  "text": "I think, well, maybe after this, though the electricity data is, um, quite complex.",
+  "total_s": 0.5734176090045366,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n19",
+  "text": "I think, well, the weather patterns suggest it might continue, but I'm not, um, entirely certain.",
+  "total_s": 0.5733311910007615,
+  "pred_n": 25
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n20",
+  "text": "I think, well, maybe we're just, um, surviving for now. Mostly.",
+  "total_s": 0.5386898349970579,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n21",
+  "text": "I think, um, maybe we should just... well, probably not talk about it right now.",
+  "total_s": 0.5881147420004709,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n22",
+  "text": "I think, well, that's not how the joke goes, probably.",
+  "total_s": 0.9877971599926241,
+  "pred_n": 17
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n23",
+  "text": "I think, well, maybe I shouldn't, but... I could try, I suppose?",
+  "total_s": 1.0063950790063245,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n24",
+  "text": "I think... well, maybe we should just, um, begin?",
+  "total_s": 0.8150656640063971,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n25",
+  "text": "I think, well, the wood is burning, and we're probably, um, in a lot of trouble.",
+  "total_s": 0.6058185119909467,
+  "pred_n": 25
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "moth",
+  "scene": "n26",
+  "text": "I think, well, maybe we shouldn't sell the components, or... or anything valuable, probably.",
+  "total_s": 0.5744164789939532,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n01",
+  "text": "Lux is leaking. Tuk will watch the line.",
+  "total_s": 0.6665591600030893,
+  "pred_n": 11
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n02",
+  "text": "Pip, stop rolling in dirt. Tuk will help.",
+  "total_s": 0.6298695120058255,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n03",
+  "text": "Lux smells like rot. We have no more medicine.",
+  "total_s": 0.4379831650003325,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n04",
+  "text": "Pip. Stop looking. The blood is gone.",
+  "total_s": 0.4657402029988589,
+  "pred_n": 11
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n05",
+  "text": "Lux is dead. Such bad meat.",
+  "total_s": 0.46738714798993897,
+  "pred_n": 9
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n06",
+  "text": "Pip, stop. Eating raw meat like a starving dog is bad meat.",
+  "total_s": 0.5105506539985072,
+  "pred_n": 16
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n07",
+  "text": "Lux is making too much noise. Tuk wants to sleep.",
+  "total_s": 0.49809785300749354,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n08",
+  "text": "Pip, stop. The cold kills. Come back inside.",
+  "total_s": 0.49374560100841336,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n09",
+  "text": "Six tribals in the fog. Tuk needs a knife.",
+  "total_s": 0.5393923700030427,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n10",
+  "text": "Tuk makes good things. These tools feel right.",
+  "total_s": 0.5045626189967152,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n11",
+  "text": "Dirt is no place for eating. Stop staring, Lux.",
+  "total_s": 0.5031348769989563,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n12",
+  "text": "This is bad meat, Pip. Eat it or be hungry.",
+  "total_s": 0.527100220991997,
+  "pred_n": 14
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n13",
+  "text": "That is good meat. Eat it before it gets cold, Lux.",
+  "total_s": 0.5031492270063609,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n14",
+  "text": "Eight meals left. Tuk needs more meat for the pot.",
+  "total_s": 0.5312083879980491,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n15",
+  "text": "Lux talks too much. Tuk will find the steel.",
+  "total_s": 0.5013274090015329,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n16",
+  "text": "Stay quiet, Pip. Big muffalo is there. Good meat if Tuk hits.",
+  "total_s": 0.5432026299968129,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n17",
+  "text": "Stop gagging, Lux. It is just meat.",
+  "total_s": 0.5052954410057282,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n18",
+  "text": "Tuk is tired of this bench. Electricity comes after.",
+  "total_s": 0.5155424459953792,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n19",
+  "text": "Rain falls. Sky is heavy. Tuk does not know.",
+  "total_s": 0.5312078040005872,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n20",
+  "text": "Dirt keeps us fed. Dirt is good.",
+  "total_s": 0.4980207460030215,
+  "pred_n": 10
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n21",
+  "text": "Lux talks too much. Bad meat rots. Tuk is tired.",
+  "total_s": 0.51745060000394,
+  "pred_n": 15
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n22",
+  "text": "Thrumbo is not funny, Pip. Thrumbo is just big meat.",
+  "total_s": 0.570414236994111,
+  "pred_n": 18
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n23",
+  "text": "Lux is soft. Tuk will talk to the meat.",
+  "total_s": 0.4937241910083685,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n24",
+  "text": "Hana is gone. Tuk will make her cairn.",
+  "total_s": 0.5218424500053516,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n25",
+  "text": "Lux is useless. The wood burns and he brings nothing.",
+  "total_s": 0.5444969149975805,
+  "pred_n": 13
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "tuk",
+  "scene": "n26",
+  "text": "Sell the excess meat. Silver is just cold metal.",
+  "total_s": 0.5117679059912916,
+  "pred_n": 12
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n01",
+  "text": "Of course, my dear Nate, you had to find the most dramatic way to ruin a perfectly serviceable afternoon.",
+  "total_s": 0.7806296740018297,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n02",
+  "text": "Of course, my dear Ash, one would think you might attempt to cook without setting yourself as a centerpiece.",
+  "total_s": 0.7490003240091028,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n03",
+  "text": "Of course, my dear Nate, you have decided to rot in bed while we possess nothing but two packets of weeds for your fever.",
+  "total_s": 0.6256288470030995,
+  "pred_n": 28
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n04",
+  "text": "Of course you shall stand there until you freeze, my dear, but the rain is quite ruinous for one's composure.",
+  "total_s": 0.670999818990822,
+  "pred_n": 27
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n05",
+  "text": "Of course, the grass was never quite the right shade of green, but this particular stain is truly vulgar.",
+  "total_s": 0.6456917759933276,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n06",
+  "text": "Of course, my dear Ash, one must admire such a primitive and unrefined display of gluttony.",
+  "total_s": 0.6436407029978,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n07",
+  "text": "Naturally, my dear Nate, you have decided that destroying the furniture is a suitable substitute for actual grace.",
+  "total_s": 0.6342572379944613,
+  "pred_n": 22
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n08",
+  "text": "Of course, my dear Ash, wandering into the frost without a jacket is a remarkably dramatic way to commit suicide.",
+  "total_s": 0.6613596039969707,
+  "pred_n": 24
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n09",
+  "text": "Of course, we must endure a tribal skirmish before I have even finished my morning tea.",
+  "total_s": 0.667492234002566,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n10",
+  "text": "Of course you feel the need to stare, my dear Ash, as if excellence were a spectacle for your amusement.",
+  "total_s": 0.6397075830027461,
+  "pred_n": 24
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n11",
+  "text": "Of course, my dear Nate, we must dine upon the dust like common scavengers.",
+  "total_s": 0.5813238999980967,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n12",
+  "text": "Naturally, my dear Ash, one wonders if you find the texture of dry kibble as profoundly stimulating as you seem to.",
+  "total_s": 0.6741984539985424,
+  "pred_n": 26
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n13",
+  "text": "Of course, my dear Nate, you must attempt to chew with a modicum of dignity.",
+  "total_s": 0.5651702350005507,
+  "pred_n": 20
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n14",
+  "text": "Of course you would arrive just as I am attempting to manage this culinary catastrophe, my dear Ash.",
+  "total_s": 0.6137799869902665,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n15",
+  "text": "Of course, my dear Rook, one must endure the indignity of mining just to avoid the catastrophe of a collapsing ceiling.",
+  "total_s": 0.7331826869922224,
+  "pred_n": 26
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n16",
+  "text": "Of course, my dear Ash, one expects a certain level of grace when stalking prey, yet you look like a common scavenger.",
+  "total_s": 0.7143691839883104,
+  "pred_n": 27
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n17",
+  "text": "Of course, my dear Nate, one would hope you could manage the stench without such a theatrical display of disgust.",
+  "total_s": 0.8124763770028949,
+  "pred_n": 24
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n18",
+  "text": "Of course, my dear Ash, one must finish the current task before attempting to master the lightning.",
+  "total_s": 0.814118027992663,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n19",
+  "text": "Of course, my dear Nate, the sky has clearly decided to drown us all in its infinite melancholy.",
+  "total_s": 0.8812524969980586,
+  "pred_n": 22
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n20",
+  "text": "Of course, my dear Ash, your profound intellect is wasted on such a pedestrian inquiry.",
+  "total_s": 0.7798190730100032,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n21",
+  "text": "Of course, my dear Nate, we must continue to litigate the loss of spoiled meat while the wind freezes my very marrow.",
+  "total_s": 0.681229074994917,
+  "pred_n": 27
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n22",
+  "text": "Of course, my dear Ash, your comedic timing is as clumsy as your butchery.",
+  "total_s": 0.6433788420108613,
+  "pred_n": 19
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n23",
+  "text": "Naturally, my dear Rook, you expect me to perform diplomacy in a room that smells so aggressively of unwashed desperation.",
+  "total_s": 0.5916721899993718,
+  "pred_n": 25
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n24",
+  "text": "Of course, my dear Ash, we must pretend this dirt is a dignified place for a memorial.",
+  "total_s": 0.5851262190117268,
+  "pred_n": 21
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n25",
+  "text": "Of course, the wood is burning, and you are running about with an empty bucket, my dear Nate.",
+  "total_s": 0.5866729730041698,
+  "pred_n": 23
+ },
+ {
+  "cond": "A_dry",
+  "pawn": "lux",
+  "scene": "n26",
+  "text": "Of course, my dear Ash, you would prioritize the arithmetic of silver over the aesthetic tragedy of this arrival.",
+  "total_s": 0.5859709229989676,
+  "pred_n": 23
+ }
+]
