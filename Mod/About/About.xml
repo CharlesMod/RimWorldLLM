@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>HermesVoice</name>
+	<author>charless</author>
+	<targetVersion>1.7</targetVersion>
+	<description>Live LLM-driven pawn dialogue, powered by an external agent bridge.
+
+HermesVoice watches your colony - injuries, deaths, mental breaks, skill level-ups, medical tending, social interactions, raids - and turns those moments into rich, in-character speech bubbles spoken by the pawns themselves.
+
+The mod dials out to a Hermes agent bridge over your local network (Tailscale). The agent roleplays your colonists using their full in-game context, and the lines appear as overhead dialogue boxes, recorded to a conversation log.
+
+An HTTP bridge (default port 8765) exposes colony state and commands so the agent can read the world and speak as pawns in real time.
+
+Setup:
+1. Install the Harmony mod (v3, Steam Workshop).
+2. Run the Hermes bridge on your agent machine (see Bridge/README.md).
+3. Mod settings: set the bridge URL + token (both directions use the shared token).</description>
+	<packageId>charless.HermesVoice</packageId>
+	<modVersion>1.0.0</modVersion>
+	<loadedScenarios>
+		<li>Any</li>
+	</loadedScenarios>
+	<supportURL>https://github.com/CharlesMod/rimworld-hermes</supportURL>
+	<dependencies>
+		<li>
+			<packageId>brrainz.Harmony</packageId>
+			<displayName>Harmony</displayName>
+		</li>
+	</dependencies>
+</ModMetaData>

@@ -1,0 +1,73 @@
+using UnityEngine;
+using Verse;
+using HarmonyLib;
+
+namespace HermesVoice
+{
+    public class HermesVoiceMod : Mod
+    {
+        public static HermesVoiceMod Instance { get; private set; }
+        public static HermesVoiceSettings Settings => Instance?.GetSettings<HermesVoiceSettings>();
+
+        public HermesVoiceMod(ModContentPack content) : base(content)
+        {
+            Instance = this;
+            Log.Message("[HermesVoice] Mod loaded — applying Harmony patches");
+            new Harmony("charless.hermesvoice").PatchAll(typeof(HermesVoiceMod).Assembly);
+        }
+
+        public override string SettingsCategory() => "HermesVoice";
+
+        public override void DoSettingsWindowContents(Rect inRect)
+        {
+            var s = Settings;
+            if (s == null) return;
+
+            Listing_Standard list = new Listing_Standard();
+            list.Begin(inRect);
+
+            list.Label("HermesVoice connects your colony to an external Hermes agent.");
+            list.Label("The agent reads colony state and makes your pawns speak.");
+            list.GapLine();
+
+            bool enabledTemp = s.enabled;
+            list.CheckboxLabeled("Enabled", ref enabledTemp);
+            s.enabled = enabledTemp;
+            list.GapLine();
+
+            list.Label("Bridge (inbound HTTP — agent reads state, issues /say)");
+
+            list.Label("Bridge port");
+            string portBuf = s.bridgePort.ToString();
+            list.TextFieldNumeric(ref s.bridgePort, ref portBuf, 1, 65535);
+
+            list.Label("Bind address");
+            s.bindAddress = Widgets.TextField(list.GetRect(22f), s.bindAddress ?? "");
+
+            list.Label("Agent dial-out URL (mod POSTs colony events here)");
+            s.agentUrl = Widgets.TextField(list.GetRect(22f), s.agentUrl ?? "");
+
+            list.Label("Shared token (auth)");
+            s.sharedToken = Widgets.TextField(list.GetRect(22f), s.sharedToken ?? "");
+            list.GapLine();
+
+            bool bubblesTemp = s.showBubbles;
+            list.CheckboxLabeled("Show overhead speech bubbles", ref bubblesTemp);
+            s.showBubbles = bubblesTemp;
+
+            list.Label("Bubble duration (seconds)");
+            string durBuf = s.bubbleDurationSec.ToString();
+            list.TextFieldNumeric(ref s.bubbleDurationSec, ref durBuf, 1, 120);
+            list.GapLine();
+
+            string status = HermesBridge.IsRunning ? $"Bridge running on port {HermesBridge.Port}" : "Bridge not running";
+            list.Label(status);
+            if (list.ButtonText("Restart bridge"))
+            {
+                HermesVoiceGameComponent.Instance?.RestartBridge();
+            }
+
+            list.End();
+        }
+    }
+}
