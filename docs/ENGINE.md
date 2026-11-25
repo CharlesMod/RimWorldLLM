@@ -80,6 +80,8 @@ wins when its `version` is higher.
      "url": "https://huggingface.co/cmod/gemma4-rp-maxxed-GGUF/resolve/main/gemma4-rp-maxxed-Q3_K_XL.gguf",
      "sha256": "595eddca...", "size": 10001779136,
      "moe": true, "quality": 100, "chat": "gemma4", "notes": "reference model"},
+    {"id": "ling3-tiny-q4km", "file": "Ling-3.0-tiny-Q4_K_M.gguf", "url": "https://huggingface.co/inclusionAI/Ling-3.0-tiny-GGUF/resolve/<commit>/...",
+     "moe": true, "quality": 70, "chat": "ling", "notes": "MIT; bailingmoe3: MLA + linear attention"},
     {"id": "gemma4-e4b-q4km", "file": "...", "url": "https://huggingface.co/...", "moe": false, "quality": 60},
     {"id": "gemma4-e2b-q4km", ..., "quality": 40}
   ]
@@ -91,6 +93,11 @@ wins when its `version` is higher.
   that are not public. gemma4-rp-maxxed is public on Hugging Face (`cmod/gemma4-rp-maxxed-GGUF`)
   and downloads like any other entry; `fit.Verdict.import_only` is true only for entries
   without a `url`.
+- The KV cost follows the architecture: MLA models (Ling) cache one latent per token
+  (`kv_lora_rank + rope dims`, no V) on their full-attention layers; linear-attention/SSM layers
+  hold a fixed f32 state per slot that does not grow with ctx; sliding-window layers are capped
+  at the window. An architecture the reader does not know gets a conservative estimate (every
+  layer full multi-head attention) and a log line, never zero.
 - Architecture numbers for the footprint (layers, KV heads, head dims, sliding window,
   expert count, per-layer expert bytes) are **read from the GGUF header** (`engine/gguf`)
   after download, never typed into the catalog. Before download the planner uses the catalog
