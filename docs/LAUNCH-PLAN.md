@@ -27,7 +27,7 @@ Decided with the keeper on 2026-11-25. This is the order of work from here to a 
 | Age gate: no romantic or sexual content for or about any pawn under 18, enforced in code | done |
 | Adult content off by default, behind a setting | to do |
 | Fast first run: start on the small model, swap to the big one when its download finishes | to do |
-| "Share this moment": export an exchange or diary page as an image or text, with the mod name | to do |
+| "Share this moment": export an exchange or diary page as an image or text, with the mod name | built on agent/share (mod side): Share buttons on log lines, exchanges, diary pages and chronicle entries; copy text, save PNG card to SaveData/HermesVoice/Shares; "Footer on shares" setting. Needs an in-game check of the image capture |
 | Tune effect sizes in a real colony (SPEC milestone 4) | to do |
 | Aliveness: inner monologue, concerns, grudges, gossip, lore, art, dreams, habits, firsts, bystanders, gatherings, director camera, recap | built; tuning needs a play-test |
 | Wants with follow-through (/social_action) | built; in-game unchecked |
