@@ -5,7 +5,7 @@ using Verse;
 
 namespace HermesVoice
 {
-    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought }
+    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought, Art }
 
     /// <summary>
     /// Throttling and filtering for colony events. Game thread only (not thread-safe by design).
@@ -44,6 +44,7 @@ namespace HermesVoice
                 case EventKind.Funeral: return s.evFuneral;
                 case EventKind.Weather: return s.evWeather;
                 case EventKind.Thought: return s.evThought;
+                case EventKind.Art: return s.evArt;
             }
             return false;
         }

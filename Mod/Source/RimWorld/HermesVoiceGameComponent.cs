@@ -61,6 +61,7 @@ namespace HermesVoice
             SayEffects.Reset();
             HermesBridge.Minds.Clear();
             HermesBridge.Chronicle.Clear();
+            HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
             _fallbackNotice.Disarm();
             Instance = null;
@@ -81,6 +82,7 @@ namespace HermesVoice
             _fallbackNotice.Arm(Environment.TickCount64);
             Minds.Clear();
             HermesBridge.Chronicle.Clear();
+            HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
         }
 
@@ -90,6 +92,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref SaveEpoch, "saveEpoch", 0);
             ExposeMinds();
             ExposeChronicle();
+            ExposeArt();
             List<int> avoids = null;
             int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
             if (Scribe.mode == LoadSaveMode.Saving) avoids = Avoids.Export(nowTick);
@@ -127,6 +130,23 @@ namespace HermesVoice
                 if (list != null)
                     foreach (var e in list)
                         if (e != null && !string.IsNullOrEmpty(e.Text)) book.Add(e.Day, Bridge.ChronicleBook.KnownKind(e.Kind) ? e.Kind : Bridge.ChronicleBook.KindDay, e.Text, e.Tick);
+            }
+        }
+
+        void ExposeArt()
+        {
+            var book = HermesBridge.Art;
+            List<ArtSave> list = null;
+            if (Scribe.mode == LoadSaveMode.Saving)
+                list = book.Entries.Select(e => new ArtSave { Thing = e.Thing, Text = e.Text, Tick = e.Tick }).ToList();
+            Scribe_Collections.Look(ref list, "hermesArt", LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                // Older saves have no book: they load an empty one, not the one from the game just left.
+                book.Clear();
+                if (list != null)
+                    foreach (var e in list)
+                        if (e != null && !string.IsNullOrEmpty(e.Text)) book.Set(e.Thing, e.Text, e.Tick);
             }
         }
 
@@ -175,6 +195,19 @@ namespace HermesVoice
     }
 
     /// <summary>Save wrapper for one chronicle entry.</summary>
+    public class ArtSave : IExposable
+    {
+        public int Thing, Tick;
+        public string Text = "";
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref Thing, "thing", 0);
+            Scribe_Values.Look(ref Tick, "tick", 0);
+            Scribe_Values.Look(ref Text, "text", "");
+        }
+    }
+
     public class ChronicleSave : IExposable
     {
         public int Day, Tick;

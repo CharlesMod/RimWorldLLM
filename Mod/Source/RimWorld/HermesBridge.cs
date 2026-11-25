@@ -26,6 +26,7 @@ namespace HermesVoice
         public static EventRing Events { get { return Runtime.Events; } }
         public static TalkQueue Talk { get { return Runtime.Talk; } }
         public static ChronicleBook Chronicle { get { return Runtime.Chronicle; } }
+        public static ArtBook Art { get { return Runtime.Art; } }
         public static MindBook Minds { get { return Runtime.Minds; } }
         static string _sessionToken;
 
