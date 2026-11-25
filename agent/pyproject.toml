@@ -21,3 +21,6 @@ include = ["hermesvoice_agent*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["gpu: needs a live llama-server (HERMESVOICE_TEST_LLM_URL); skipped by default"]
+
+[tool.setuptools.package-data]
+hermesvoice_agent = ["block_a.txt"]
