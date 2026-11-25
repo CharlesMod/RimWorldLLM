@@ -117,6 +117,12 @@ class Config(BaseModel):
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock
     inner_aim_fresh_days: float = 0.25     # an aim guides the next line for this many game days
+    habits: bool = True                # reflection may evolve a voice-card tic (core/habits.py)
+    habit_every_days: float = 3.0      # at most one habit change per this many game days, per actor
+    firsts: bool = True                # first-time reactions (core/firsts.py; also the mod's first_cue event toggle)
+    firsts_per_day: int = 2            # first-time lines per actor per game day
+    bystanders: bool = True            # a bystander's reaction cloud to an argument (core/bystanders.py)
+    bystander_gap_real_s: float = 120.0    # per actor, on the play clock
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

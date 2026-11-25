@@ -63,6 +63,10 @@ class RimWorldAdapter:
         "Y's respect, get off kitchen duty). relations: for people who mattered, who (first name as listed), "
         "feeling (one short line) and history (one short line). merge: groups of memory ids (two or more) that "
         "say nearly the same thing, with one first-person summary line each; never include a [pinned] memory.")
+    reflection_habit_request = (
+        "Also reply with habit: one small new verbal habit you have picked up from what the memories show (a few "
+        "words, for example 'trails off after a quarrel', 'mutters about the cold'), or an empty string if nothing "
+        "in the memories earns one. Never name anyone in it.")
     diary_system = (
         "You are one RimWorld colonist writing a short private diary entry at the end of the day. First person, "
         "plain, dry, blunt; the colonist's own register. No moralising, no flowery language.")

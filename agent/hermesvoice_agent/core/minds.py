@@ -101,6 +101,16 @@ class InnerThought(BaseModel):
     kind: str = "aim"            # open set: "aim", "musing"; later items add "dream", "concern", ...
 
 
+HABIT_KEEP = 6
+
+
+class HabitChange(BaseModel):
+    """One evolution of the voice card's tics (core/habits.py): enough to undo it."""
+    game: int = 0
+    added: str = ""
+    removed: str = ""            # the oldest tic it replaced, "" when it was only appended
+
+
 class Mind(BaseModel):
     schema_v: int = SCHEMA
     actor_id: int
@@ -125,6 +135,8 @@ class Mind(BaseModel):
     mem_counter: int = 0
     last_line_time: int = 0
     inner: list[InnerThought] = Field(default_factory=list)   # the private stream (core/inner.py)
+    habit_history: list[HabitChange] = Field(default_factory=list)   # evolving tics, newest last (core/habits.py)
+    last_habit_game: int = -1                    # game time of the last habit change; -1 = never
 
     # ---- memories -------------------------------------------------------
     def next_mem_id(self) -> str:
@@ -185,6 +197,8 @@ class Mind(BaseModel):
         if size() > limit:
             self.inner = self.inner[-3:]
         if size() > limit:
+            self.habit_history = self.habit_history[-2:]
+        if size() > limit:
             # 2. pinned memories, least important and oldest first
             for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):
                 if size() <= limit:
@@ -194,6 +208,8 @@ class Mind(BaseModel):
             self.diary = []
         if size() > limit:
             self.inner = []
+        if size() > limit:
+            self.habit_history = []
         if size() > limit:
             self.relations = dict(sorted(self.relations.items(),
                                          key=lambda kv: -kv[1].updated_time)[:20])
