@@ -48,7 +48,7 @@ class Bridge(Protocol):
     async def say(self, actor: int, text: str, *, listener: int | None = None, intent: str = "none",
                   conversation_id: str | None = None, combat: bool = False, talk_id: str | None = None,
                   expires_at: int | None = None, op_id: str | None = None,
-                  about: int | None = None) -> dict: ...
+                  about: int | None = None, vanilla_ref: str | None = None) -> dict: ...
     async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict: ...
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict: ...
     async def aclose(self) -> None: ...
@@ -160,8 +160,10 @@ class BridgeClient:
                   intent: str = "none", conversation_id: str | None = None,
                   combat: bool = False, talk_id: str | None = None,
                   expires_at: int | None = None, op_id: str | None = None,
-                  about: int | None = None) -> dict:
+                  about: int | None = None, vanilla_ref: str | None = None) -> dict:
         body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text, "intent": intent, "combat": combat}
+        if vanilla_ref:                 # the line was written for one of the game's own interactions (adds no effect)
+            body["vanilla_ref"] = vanilla_ref
         if listener is not None:
             body["listener"] = listener
         if about is not None:

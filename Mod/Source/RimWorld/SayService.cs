@@ -41,7 +41,9 @@ namespace HermesVoice
             return 1f;
         }
 
-        static bool Give(Pawn target, ThoughtDef def, Pawn other, bool social, float amount, float strength, string line, Outcome o)
+        static int Cap() { return HermesVoiceMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars; }
+
+        static bool Give(Pawn target, ThoughtDef def, Pawn other, bool social, float amount, float strength, string line, string speakerName, Outcome o)
         {
             var mem = target.needs?.mood?.thoughts?.memories;
             if (mem == null || def == null) return false;
@@ -49,8 +51,10 @@ namespace HermesVoice
             if (t == null) return false;
             var hv = t as Thought_HVMemory;
             var hs = t as Thought_HVSocial;
-            if (hv != null) hv.line = line;
-            if (hs != null) hs.line = line;
+            if (hv != null) QuotedThought.AddTo(hv, new QuoteEntry(Quotes.Trim(line, Cap()), speakerName, Find.TickManager.TicksGame));
+            if (hs != null) QuotedThought.AddTo(hs, new QuoteEntry(Quotes.Trim(line, Cap()), speakerName, Find.TickManager.TicksGame));
+            t.pawn = target;            // set before the stack merge so a merged memory shares its quote
+            t.otherPawn = other;
             if (!social) t.moodPowerFactor = strength;
             mem.TryGainMemory(t, other);
             if (!mem.Memories.Contains(t)) return false; // merged or refused by the vanilla stack rules
@@ -82,17 +86,17 @@ namespace HermesVoice
                 switch (e.Target)
                 {
                     case EffectTarget.Listener:
-                        Give(listener, def, speaker, e.Social, amount, strength, line, o);
+                        Give(listener, def, speaker, e.Social, amount, strength, line, speaker.LabelShort, o);
                         break;
                     case EffectTarget.Speaker:
-                        Give(speaker, def, listener, e.Social, amount, strength, line, o);
+                        Give(speaker, def, listener, e.Social, amount, strength, line, speaker.LabelShort, o);
                         break;
                     case EffectTarget.About:
-                        Give(listener, def, about, e.Social, amount, strength, line, o);
+                        Give(listener, def, about, e.Social, amount, strength, line, speaker.LabelShort, o);
                         break;
                     case EffectTarget.Witnesses:
                         foreach (var w in witnesses)
-                            if (w != speaker && w != listener) Give(w, def, speaker, e.Social, amount, strength, line, o);
+                            if (w != speaker && w != listener) Give(w, def, speaker, e.Social, amount, strength, line, speaker.LabelShort, o);
                         break;
                 }
             }

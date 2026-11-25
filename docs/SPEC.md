@@ -286,6 +286,12 @@ Rules:
 - The mod replies `applied` or `refused (reason)`. The agent records only what was applied.
 - The model cannot grant, promise or narrate an effect outside this table.
 - Effects default **on**, with a strength slider (off, light, normal) in settings.
+- Quotes: a thought or log entry made by a spoken line shows that line (sanitised, 140 characters,
+  speaker named; up to 3 recent quotes on a stacked thought). The game's own interactions get a
+  generated line too (BRIDGE-API, "Social events for the game's own interactions"); the line is
+  attached to the vanilla log entry and thought, never adds an effect, and is dropped for attachment
+  if it arrives after 10 game minutes. Removing the mod from a save loses the quoted thoughts and
+  entries with a load error in the log, nothing else.
 - A second tier (talking a pawn down from a break, nudging romance or a social fight) is
   deliberately left to a later version, after the first tier is tuned in play.
 

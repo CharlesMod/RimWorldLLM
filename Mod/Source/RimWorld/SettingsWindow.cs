@@ -248,6 +248,9 @@ namespace HermesVoice
                 bool on = s.effects == key;
                 if (l.RadioButton(UiUtil.T("HV_Effects_" + key), on)) s.effects = key;
             }
+            l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Quotes_Show"), ref s.showQuotes, UiUtil.T("HV_Quotes_ShowTip"));
+            l.CheckboxLabeled(UiUtil.T("HV_Quotes_Vanilla"), ref s.voiceVanillaSocial, UiUtil.T("HV_Quotes_VanillaTip"));
         }
 
         static void Events(Listing_Standard l, HermesVoiceSettings s)

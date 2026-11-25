@@ -57,6 +57,7 @@ namespace HermesVoice
             if (!EffectTable.Known(intent)) return ApiResult.Fail("bad_request", "unknown intent '" + intent + "'");
             bool combat = b["combat"] != null && b["combat"].Type == JTokenType.Boolean && b.Value<bool>("combat");
             string talkId = (string)b["talk_id"];
+            string vanillaRef = (string)b["vanilla_ref"];       // set when the line was written for one of the game's own interactions
 
             // Liveness, on the game thread, right before anything shows.
             if (speaker.Dead) return ApiResult.Fail("conflict", "speaker is dead");
@@ -79,20 +80,19 @@ namespace HermesVoice
 
             // Show.
             SpeechBubbles.Add(speaker, text);
-            bool logged = false;
-            try
-            {
-                var idef = DefDatabase<InteractionDef>.GetNamedSilentFail("HV_Say");
-                if (idef != null)
-                {
-                    Find.PlayLog.Add(new PlayLogEntry_HermesSay(idef, speaker, listener, text));
-                    logged = true;
-                }
-                if (combat) Find.BattleLog.Add(new BattleLogEntry_HermesSay(speaker, listener, text));
-            }
-            catch (Exception e) { Log.Warning("[HermesVoice] play log write failed: " + e.Message); }
             bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
             if (talkId != null) HermesBridge.Talk.Remove(talkId);
+
+            // A line for a vanilla interaction goes onto that interaction's log entry and thoughts, and adds no effect of its own.
+            string attach = null;
+            bool attached = false;
+            if (!string.IsNullOrEmpty(vanillaRef))
+            {
+                var r = QuotedInteractions.TryAttach(vanillaRef, speaker, listener, text);
+                attached = r == PendingTable<VanillaPending>.Result.Attached;
+                attach = r.ToString().ToLowerInvariant();
+                intent = "none";
+            }
 
             // Effects, under the C# caps.
             var witnesses = new List<Pawn>();
@@ -102,7 +102,24 @@ namespace HermesVoice
                 var ids = new HashSet<int>(Witnesses.Compute(spec));
                 witnesses = speaker.Map.mapPawns.AllPawnsSpawned.Where(p => ids.Contains(p.thingIDNumber)).ToList();
             }
-            var outcome = SayEffects.Apply(intent, speaker, listener, about, witnesses, text);
+            var outcome = EffectGuard.MayApply(vanillaRef)
+                ? SayEffects.Apply(intent, speaker, listener, about, witnesses, text)
+                : new SayEffects.Outcome { Refused = "vanilla_interaction" };
+
+            // One log entry per line: the effect wording when an effect was applied, never the line twice.
+            bool logged = attached;
+            if (!attached)
+                try
+                {
+                    var idef = DefDatabase<InteractionDef>.GetNamedSilentFail("HV_Say");
+                    if (idef != null)
+                    {
+                        Find.PlayLog.Add(new PlayLogEntry_HermesSay(idef, speaker, listener, text, outcome.Effect));
+                        logged = true;
+                    }
+                    if (combat) Find.BattleLog.Add(new BattleLogEntry_HermesSay(speaker, listener, text));
+                }
+                catch (Exception e) { Log.Warning("[HermesVoice] play log write failed: " + e.Message); }
 
             var logEntry = HermesVoiceGameComponent.Instance?.ConversationLog.Add(speaker.thingIDNumber, speaker.LabelCap, text);
             if (logEntry != null)
@@ -122,6 +139,7 @@ namespace HermesVoice
                 ["effect"] = outcome.Effect != null ? (JToken)outcome.Effect : JValue.CreateNull(),
                 ["thoughts"] = new JArray(outcome.Thoughts)
             };
+            if (attach != null) applied["attached"] = attach;
             var body = new JObject { ["applied"] = applied };
             if (outcome.Refused != null && intent != "none") body["refused"] = new JObject { ["effect"] = outcome.Refused };
             return ApiResult.Success(body);
