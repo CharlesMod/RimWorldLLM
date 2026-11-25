@@ -176,3 +176,39 @@ def test_preempted_art_job_is_put_back_and_nothing_is_applied(world):
         assert [j.thing for j in w.d.art.jobs] == [500]
         assert not w.fb.art_log
     run(go())
+
+
+def test_a_pending_art_job_counts_as_idle_work_due_and_can_starve(world):
+    async def go():
+        w = await world.go()
+        d = w.d
+        d.idle.due_since = None
+        assert not d.idle.anything_due()
+        d.art.note({"actors": [{"id": 1, "role": "maker"}], "data": DATA, "game": d.bridge.env.game}, d.bridge.env.game)
+        assert d.idle.anything_due()
+        assert not d.idle.starving()                                       # just became due
+        d.bridge.env.game += int(d.cfg.idle_starving_fraction * d.day) + 1
+        assert d.idle.starving()                                           # waited a share of a day: promoted
+        d.cfg.art_enabled = False
+        assert not d.idle.anything_due()                                   # off: never counts
+        d.cfg.art_enabled = True
+        d.bridge.env.game += d.day                                         # expired jobs do not keep idle work "due"
+        assert not d.idle.anything_due()
+    run(go())
+
+
+def test_starved_art_yields_to_reactive_work_but_not_to_ambient_chatter(world):
+    from hermesvoice_agent.core.lease import Cls
+    async def go():
+        w = await world.go()
+        d = w.d
+        d.art.note({"actors": [{"id": 1, "role": "maker"}], "data": DATA, "game": d.bridge.env.game}, d.bridge.env.game)
+        d.idle.due_since = d.bridge.env.game - d.day               # long starved
+        assert d.idle.starving()
+        class Q:                                                   # a queued item of a given class
+            def __init__(self, cls): self.cls = cls
+        d.leases.queue.append(Q(Cls.AMBIENT))
+        assert not d.idle.actors_want_windows(True)                # starving art may run beside ambient talk
+        d.leases.queue.append(Q(Cls.REACTIVE))
+        assert d.idle.actors_want_windows(True)                    # reactive and urgent still go first
+    run(go())

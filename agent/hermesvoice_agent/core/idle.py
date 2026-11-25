@@ -56,7 +56,10 @@ class IdleRunner:
 
     def anything_due(self) -> bool:
         d = self.d
+        # A pending art description counts: it expires after one day of the clock, so without this a busy world would let it
+        # lapse unwritten. Starving only lets idle work run beside ambient talk; reactive and urgent still go first.
         return bool(self.due_reflection() or self.due_diary() or
+                    (art.enabled(d) and self._ok("art", -1) and d.art.pending(d.bridge.env.game, d.day)) or
                     (d.cfg.chronicle_enabled and d.chronicle.due(d.bridge.env.game // d.day) is not None
                      and self._ok("chronicle", -1)))
 
