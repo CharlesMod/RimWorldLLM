@@ -92,6 +92,15 @@ class DiaryEntry(BaseModel):
     text: str
 
 
+INNER_KEEP = 6              # default cap of the inner stream (cfg.inner_stream_keep overrides at the call site)
+
+
+class InnerThought(BaseModel):
+    game: int = 0
+    text: str = ""
+    kind: str = "aim"            # open set: "aim", "musing"; later items add "dream", "concern", ...
+
+
 class Mind(BaseModel):
     schema_v: int = SCHEMA
     actor_id: int
@@ -115,6 +124,7 @@ class Mind(BaseModel):
     last_reflect_time: int = 0
     mem_counter: int = 0
     last_line_time: int = 0
+    inner: list[InnerThought] = Field(default_factory=list)   # the private stream (core/inner.py)
 
     # ---- memories -------------------------------------------------------
     def next_mem_id(self) -> str:
@@ -173,6 +183,8 @@ class Mind(BaseModel):
         if size() > limit:
             self.bio_history = []
         if size() > limit:
+            self.inner = self.inner[-3:]
+        if size() > limit:
             # 2. pinned memories, least important and oldest first
             for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):
                 if size() <= limit:
@@ -180,6 +192,8 @@ class Mind(BaseModel):
                 self.memories.remove(m)
         if size() > limit:
             self.diary = []
+        if size() > limit:
+            self.inner = []
         if size() > limit:
             self.relations = dict(sorted(self.relations.items(),
                                          key=lambda kv: -kv[1].updated_time)[:20])

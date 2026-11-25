@@ -141,6 +141,12 @@ separate lists per pawn, so diaries do not push inner thoughts out: the last 20 
 last 7 diary entries (older ones are dropped). Text is trimmed and cut at 500 characters for a
 thought and 1,500 for a diary entry. An unknown `kind` is `bad_request`. Reply `{"stored": true}`.
 
+The agent's inner monologue (agent switch `inner_monologue`) uses this route only as before: an inner
+*aim* (what the pawn privately wants, made after a spoken line) is sometimes posted as a `thought` with
+`text` and `surface` the same short line, after the line's balloon (the mod's ThoughtPacing already
+waits for it). It is rate-limited by the agent (one per pawn per 90 s of play clock, 35% chance, never at
+the ambient-pause speed). No new field, route or mod change.
+
 ### `POST /chronicle`
 `{"op_id": "...", "day": 12, "text": "The colony buried Bram without speeches.", "kind": "day"}`.
 One entry of the colony chronicle (the narrator's running history). `day` is an integer day index

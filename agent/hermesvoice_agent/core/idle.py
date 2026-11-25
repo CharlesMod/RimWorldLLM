@@ -15,7 +15,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from . import gamedata as gd
-from . import memory
+from . import inner, memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
@@ -233,7 +233,8 @@ class IdleRunner:
         res = await run_reflection(d.llm, d.adapter, mind, d.names, slot=lease.slot, now=now, day=d.day,
                                    max_tokens=d.cfg.reflection_max_tokens, name_tokens=d.name_tokens,
                                    common_words=set(d.adapter.common_words),
-                                   involves_minor=d.is_minor(aid), minor_names=d.minor_tokens())
+                                   involves_minor=d.is_minor(aid), minor_names=d.minor_tokens(),
+                                   inner=d.cfg.inner_monologue)
         lease.generating = False
         if lease.preempted:
             return
@@ -242,7 +243,7 @@ class IdleRunner:
             d.dropped.append((aid, "reflect_failed"))
             return
         name_ids = {n.lower(): i for i, n in d.names.items()}
-        out = apply_reflection(mind, res, now, name_ids)
+        out = apply_reflection(mind, res, now, name_ids, inner_keep=2 if d.cfg.inner_monologue else None)
         out.update(memory.upkeep(mind, now, d.day, d.cfg.memory_floor, d.cfg.memory_merge_similarity))
         d.dirty.add(aid)
         self.log.append({"kind": "reflection", "actor": aid, "name": d.names.get(aid), "game": now, **out})
@@ -255,9 +256,12 @@ class IdleRunner:
         mems = [m for m in memory.weight_sorted(mind, now, d.day) if m.game // d.day == target][:MAX_DIARY_MEMORIES]
         mems.sort(key=lambda m: (m.game, m.id))
         today = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
+        stream = inner.inner_on_day(mind, target, d.day) if d.cfg.inner_monologue else []
         user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
                 f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
                 f"=== WHAT HAPPENED TODAY ===\n{gd.data_section('events', today)}"
+                + (f"=== WHAT YOU WERE THINKING TODAY ===\n{gd.data_section('thoughts', inner.thoughts_text(stream))}"
+                   if stream else "") +
                 f"=== REQUEST ===\n{d.adapter.diary_request}")
         lease.generating = True
         try:
@@ -295,13 +299,14 @@ class IdleRunner:
         d = self.d
         mind = d.minds[aid]
         lease = self.lease
-        user = (f"=== WHO YOU ARE ===\n{mind.fixed.text}\n"
-                f"=== WHO YOU ARE BECOMING ===\n{mind.evolving_bio or '(nothing yet)'}\n"
-                f"=== WHAT IS ON YOUR MIND ===\n" + "\n".join(f"- {m.text}" for m in mems) +
-                f"\n=== REQUEST ===\n{d.adapter.thought_request}")
+        mem_lines = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
+        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
+                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
+                f"=== WHAT IS ON YOUR MIND ===\n{gd.data_section('memories', mem_lines)}"
+                f"=== REQUEST ===\n{d.adapter.thought_request}")
         lease.generating = True
         try:
-            c = await d.llm.complete([("system", d.adapter.thought_system), ("user", user)], slot=lease.slot,
+            c = await d.llm.complete([("system", d.adapter.thought_system + "\n\n" + gd.DATA_RULE), ("user", user)], slot=lease.slot,
                                      kind="thought", max_tokens=40, stop=["\n"], temperature=0.9, actor=aid)
         except LLMError:
             lease.generating = False
@@ -327,6 +332,9 @@ class IdleRunner:
         self.thought_last[aid] = tuple(m.id for m in mems)
         self.log.append({"kind": "thought", "actor": aid, "name": d.names.get(aid), "game": d.bridge.env.game,
                          "text": text})
+        if d.cfg.inner_monologue:
+            inner.add_inner(mind, text, "musing", d.bridge.env.game, d.cfg.inner_stream_keep)
+            d.dirty.add(aid)
         try:
             await d.bridge.thought(aid, text, kind="thought", surface=text)
         except BridgeError as e:

@@ -11,6 +11,7 @@ import re
 
 from pydantic import BaseModel, Field, ValidationError
 
+from .inner import thoughts_text
 from .llm import LLMClient, LLMError, Messages, strip_thought
 from .memory import weight_sorted
 from . import gamedata as gd
@@ -68,7 +69,7 @@ def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days
     return now - mind.last_reflect_time >= every_days * day
 
 
-def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int) -> Messages:
+def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int, inner: bool = False) -> Messages:
     mems = weight_sorted(mind, now, day)[:MAX_PROMPT_MEMORIES]
     mems.sort(key=lambda m: (m.game, m.id))
     mem_lines = "\n".join(f"{m.id}{' [pinned]' if m.pinned else ''}: {gd.clean(m.text, 'event')}" for m in mems) or "(none)"
@@ -83,6 +84,8 @@ def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, da
             f"=== WHO YOU ARE BECOMING NOW ===\n{gd.data_section('character', f'Becoming: {becoming}' + chr(10) + f'Wants: {wants}')}"
             f"=== WHAT YOU REMEMBER (id: text) ===\n{gd.data_section('memories', mem_lines)}"
             f"=== THE PEOPLE YOU KNOW ===\n{gd.data_section('people', rel_lines)}"
+            + (f"=== WHAT YOU HAVE BEEN THINKING ===\n{gd.data_section('thoughts', thoughts_text(mind.inner))}"
+               if inner and mind.inner else "") +
             f"=== REQUEST ===\n{adapter.reflection_request}")
     return [("system", adapter.reflection_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
@@ -101,9 +104,9 @@ def parse_result(text: str) -> ReflectResult | None:
 async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, str], *, slot: int, now: int,
                          day: int, max_tokens: int = 500, name_tokens: dict[int, set[str]] | None = None,
                          common_words: set[str] | None = None, involves_minor: bool = False,
-                         minor_names: set[str] | None = None) -> ReflectResult | None:
+                         minor_names: set[str] | None = None, inner: bool = False) -> ReflectResult | None:
     """The one call. None if the model failed, was malformed or wrote an ungrounded bio."""
-    msgs = reflection_messages(adapter, mind, names, now, day)
+    msgs = reflection_messages(adapter, mind, names, now, day, inner)
     try:
         c = await llm.complete(msgs, slot=slot, kind="reflect", max_tokens=max_tokens, stop=[],
                                temperature=0.7, actor=mind.actor_id, json_schema=REFLECT_SCHEMA)
@@ -128,7 +131,8 @@ def _clean(t: str, max_words: int) -> str:
     return " ".join(" ".join(t.split()).split()[:max_words]).strip()
 
 
-def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[str, int]) -> dict:
+def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[str, int],
+                     inner_keep: int | None = None) -> dict:
     """Write a reflection into the mind: new bio (as a diff), wants, relation lines, merged memories.
     Resets the unreflected counter and refreshes block C's relations digest."""
     out = {"bio": res.bio, "wants": [], "relations": 0, "merged": 0}
@@ -166,6 +170,8 @@ def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[st
     mind.unreflected_importance = 0.0
     mind.last_reflect_time = now
     mind.freeze_relations()
+    if inner_keep is not None:
+        mind.inner = mind.inner[-inner_keep:] if inner_keep > 0 else []     # the reflection condensed the stream
     return out
 
 
