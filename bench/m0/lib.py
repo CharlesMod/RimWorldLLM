@@ -48,6 +48,11 @@ OUTPUT FORMAT
 - A single line of text, then stop. Nothing before it, nothing after it.
 """
 
+if os.environ.get("M0_NOGRIM"):  # ablation: drop the sentence that licenses grim content
+    _i = BLOCK_A.index("- This is RimWorld."); _j = BLOCK_A.index("\n", _i)
+    BLOCK_A = BLOCK_A[:_i] + "- This is RimWorld, a colony sim. Stay in character." + BLOCK_A[_j:]
+    BLOCK_A = BLOCK_A.replace("Do not be polite or positive when the colonist is suffering. ", "")
+
 def _skills(p):
     pm = {"none": "", "minor": "*", "major": "**"}
     return ", ".join(f"{k} {v['level']}{pm.get(v['passion'],'')}" for k, v in p["skills"].items())

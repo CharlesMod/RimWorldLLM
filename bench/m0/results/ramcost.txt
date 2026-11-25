@@ -1,0 +1,13 @@
+RssAnon MiB at start 306
+1 leases: 639 MiB
+2 leases: 822 MiB
+3 leases: 1001 MiB
+4 leases: 1180 MiB
+5 leases: 1359 MiB
+6 leases: 1539 MiB
+7 leases: 1539 MiB
+8 leases: 1718 MiB
+9 leases: 1718 MiB
+10 leases: 1897 MiB
+11 leases: 2076 MiB
+12 leases: 2076 MiB

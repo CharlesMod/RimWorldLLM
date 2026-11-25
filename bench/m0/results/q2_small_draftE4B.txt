@@ -1,0 +1,1 @@
+small_draftE4B: n=58 median tps=23.3 pooled tps=24.6 accept=508/2080=0.24 median line total=1.710s ttft=0.839s median pred_n=18.5

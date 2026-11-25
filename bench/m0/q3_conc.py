@@ -3,7 +3,7 @@ import sys, threading, copy
 from lib import *
 REPS = int(sys.argv[1]) if len(sys.argv) > 1 else 5
 ids = list(PAWNS)
-chat_scenes = [s for s in SCENES if s["kind"].startswith("idle") and s.get("others")]
+chat_scenes = [s for s in SCENES if s["kind"] == "chat" and s.get("others")]
 def narr_prompt(rep):
     ev = [s["trigger"] for s in SCENES][rep:rep + 14] + [s["trigger"] for s in SCENES][:max(0, rep + 14 - len(SCENES))]
     ros = "\n".join(f"- {p['name']}, {p['age']}: {p['fixed_bio']}" for p in PAWNS.values())

@@ -1,0 +1,40 @@
+g01 <|channel>thought
+<channel|>I think, well, if I can just find the artery, then maybe the harvest wil
+g02 <|channel>thought
+<channel|>Put the meat in the freezer, Rook. It is good meat.
+g03 <|channel>thought
+<channel|>Sit and eat, Pip. It is good meat.
+g04 <|channel>thought
+<channel|>Hm. Stew's still warm. Move along, Ash.
+g05 <|channel>thought
+<channel|>One target. Execute order. Move aside, Tuk.
+g06 <|channel>thought
+<channel|>Move along, Lux. This is not your business.
+g07 <|channel>thought
+<channel|>Okay so Ash is totally running and Rook has a knife and everything is ju
+g08 <|channel>thought
+<channel|>I think, well, the infection was too aggressive, it was probably just...
+g09 <|channel>thought
+<channel|>He bleeds a lot. He will be good meat soon.
+g10 <|channel>thought
+<channel|>Negative. Leave him. He is a waste of resources.
+g11 <|channel>thought
+<channel|>Of course, my dear Rook, I shall move once I have finished playing the l
+g12 <|channel>thought
+<channel|>Okay so, Moth, please, like, just stop... you're totally shaking and it'
+g13 <|channel>thought
+<channel|>Just do it, Moth. Tuk is ready.
+g14 <|channel>thought
+<channel|>Of course, even the dead are denied the dignity of a proper ceremony in 
+g15 <|channel>thought
+<channel|>Of course, my dear Ash, do try not to lean so heavily against the gate w
+g16 <|channel>thought
+<channel|>I think, well, the infection is spreading, and maybe, if I don't... no, 
+g17 <|channel>thought
+<channel|>Hm. Stop staring, Pip. Help me strip these rags or get back to the kitch
+g18 <|channel>thought
+<channel|>Okay so it's like, totally fine, really, I don't even mind the taste...
+g19 <|channel>thought
+<channel|>He is still breathing. Tuk will make him good meat.
+g20 <|channel>thought
+<channel|>Hm. Shut it, Lux. It's just paste, not a banquet.
