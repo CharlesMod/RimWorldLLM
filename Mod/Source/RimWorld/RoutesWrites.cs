@@ -21,6 +21,7 @@ namespace HermesVoice
             r.Add("GET", "/mind/{id}", true, MindGet);
             r.Add("PUT", "/mind/{id}", true, MindPut);
             r.Add("GET", "/talk", true, Talk);
+            RegisterWants(r);
         }
 
         static Pawn PawnArg(JObject body, string field, bool required, out ApiResult err)

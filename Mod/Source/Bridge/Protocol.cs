@@ -62,6 +62,7 @@ namespace HermesVoice.Bridge
                 case "bad_request": return 400;
                 case "too_large": return 413;
                 case "conflict": return 409;
+                case "refused": return 409;
                 case "duplicate": return 409;
                 case "expired": return 410;
                 case "no_game": return 503;

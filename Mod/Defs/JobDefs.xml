@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <!-- A pawn walks to someone it wants to talk to (POST /social_action seek_out), then starts a normal vanilla chat. -->
+  <JobDef>
+    <defName>HV_SeekOut</defName>
+    <driverClass>HermesVoice.JobDriver_SeekOut</driverClass>
+    <reportString>going to talk to TargetA.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+    <suspendable>true</suspendable>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+</Defs>

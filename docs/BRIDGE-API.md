@@ -174,15 +174,31 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
   `voice.{register_line,tics,examples,edited_by_player}`, `evolving_bio`, `bio_history`, `wants`,
   `memories`, `relations`, `notes`); unknown keys are ignored.
 
-### `POST /social_action` (PROPOSED, not implemented in the mod)
+### `POST /social_action`
 One small social move chosen by the agent's wants-with-follow-through window (agent/hermesvoice_agent/core/wants.py).
 Body: `{op_id, pawn, action: "seek_out"|"avoid", target: <pawn id>, topic?: <short text, <= 80 chars>}`.
-`seek_out`: the pawn walks to the target and the mod may start a vanilla chat (topic is flavour for the agent's own
-line, the mod need not use it). `avoid`: the pawn keeps clear of the target for a while (mod's choice of duration).
-Reply `{ok: true, applied: true}`; errors: `not_found` (unknown pawn/target), `refused` (pawn busy, downed, drafted or
-asleep; the agent does not retry). Until the mod implements it, the route answers 404 and the agent counts it as
-unsupported and does nothing else. The agent never sends it when a minor is involved with a romantic topic, and no
-romance-type action exists in this op.
+Reply `{ok: true, applied: true}` (plus `topic_dropped: true` when the topic was dropped, see below).
+
+`seek_out`: the pawn takes the job `HV_SeekOut` (not player-forced; a current interruptible job resumes afterwards),
+walks to chatting distance of the target and starts one normal vanilla interaction (Chitchat, or DeepTalk between two
+adults) through `TryInteractWith`, so the existing vanilla-interaction hook voices it. The job gives up after 1500 game
+ticks or 60 real seconds, and ends early if the target is despawned, downed, dead, in a mental state or hostile.
+The topic is flavour for the agent's own line; the mod does not use it. Never a romance interaction.
+
+`avoid`: for `wantsAvoidHours` game hours (setting, default 1) the pawn does not start a social interaction with the
+target (a Harmony prefix on `TryInteractWith` answers "no", which also stops the game's random chitchat picking them).
+Nobody walks away. The table is saved with the game and expires on game ticks.
+
+Errors: `bad_request` (invalid body); `not_found` (unknown pawn or target); `refused` (HTTP 409, `reason` field and
+`detail` carry one of `disabled`, `dead`, `not_spawned`, `other_map`, `downed`, `drafted`, `asleep`, `mental_state`,
+`forced_work` (prisoner or slave doing forced work), `in_combat` (enemy target, melee threat, or any danger on the home
+map), `busy` (player-forced job, a non-interruptible or blocked job, in a lord, resting for medical reasons),
+`unreachable` (seek_out only: target not spawned, other map, hostile, or no path)). The agent does not retry a refusal.
+`refused` is also the answer when the mod setting "Pawns act on their wants" is off (reason `disabled`); `GET /config`
+shows it as `wants_enabled`. An older mod without this route answers 404 and the agent counts it as unsupported.
+
+Age guard (second, mod-side): if either pawn is under 18 (`AgeBiologicalYears`) a given topic is dropped
+(`topic_dropped: true`). No action in this op is romantic, and the mod never starts a romance interaction from it.
 
 ### `GET /talk`
 Talk requests waiting for the agent: player-typed lines, other mods' requests through the
@@ -207,7 +223,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).

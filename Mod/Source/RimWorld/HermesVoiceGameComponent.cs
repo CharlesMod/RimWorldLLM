@@ -10,6 +10,7 @@ namespace HermesVoice
     public class HermesVoiceGameComponent : GameComponent
     {
                 public static HermesVoiceGameComponent Instance { get; private set; }
+        public readonly Bridge.AvoidTable Avoids = new Bridge.AvoidTable();
         public readonly ConversationLog ConversationLog = new ConversationLog();
         public Bridge.MindBook Minds { get { return HermesBridge.Minds; } }
 
@@ -89,6 +90,11 @@ namespace HermesVoice
             Scribe_Values.Look(ref SaveEpoch, "saveEpoch", 0);
             ExposeMinds();
             ExposeChronicle();
+            List<int> avoids = null;
+            int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
+            if (Scribe.mode == LoadSaveMode.Saving) avoids = Avoids.Export(nowTick);
+            Scribe_Collections.Look(ref avoids, "hermesAvoids", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit) Avoids.Import(avoids, Find.TickManager != null ? Find.TickManager.TicksGame : 0);
             Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.PostLoadInit && ConversationLog.Entries == null)
                 ConversationLog.Entries = new List<ConversationEntry>();

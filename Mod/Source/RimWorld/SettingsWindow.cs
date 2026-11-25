@@ -238,6 +238,13 @@ namespace HermesVoice
             if (_speedBuf == null) _speedBuf = s.pauseAmbientAtSpeed.ToString();
             l.TextFieldNumeric(ref s.pauseAmbientAtSpeed, ref _speedBuf, 0, 4);
             Note(l, UiUtil.T("HV_Talk_PauseHelp"));
+            l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Wants_Enable"), ref s.wantsEnabled, UiUtil.T("HV_Wants_EnableTip"));
+            if (s.wantsEnabled)
+            {
+                l.Label(UiUtil.T("HV_Wants_AvoidHours", s.wantsAvoidHours.ToString("0.0")));
+                s.wantsAvoidHours = l.Slider(s.wantsAvoidHours, 0.25f, 6f);
+            }
         }
 
         static void Effects(Listing_Standard l, HermesVoiceSettings s)
