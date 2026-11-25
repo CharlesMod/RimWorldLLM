@@ -10,3 +10,5 @@ __pycache__/
 .venv/
 *.log
 .DS_Store
+Mod.Tests/bin/
+Mod.Tests/obj/

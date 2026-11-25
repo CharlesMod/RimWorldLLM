@@ -8,26 +8,16 @@ The mod dials out to a [Hermes](https://github.com/NousResearch/Hermes) agent ov
 
 ## How it works
 
-Two HTTP channels, both authenticated with a shared bearer token:
+Two HTTP channels:
 
-1. **Inbound bridge** - the mod runs an HTTP server (default port `8765`). The agent reads colony state and makes pawns speak.
-2. **Outbound dial-out** - the mod POSTs colony events to a configurable agent URL so the agent can react to things happening in the world.
+1. **Inbound bridge** - the mod runs an HTTP server (default port `9765`, falling back through `9774`). The agent reads colony state, events and pawn minds, and makes pawns speak. Every request needs a bearer token; the mod writes the port and token to `<RimWorld config dir>/HermesVoice/bridge.json` for the agent to read.
+2. **Outbound dial-out** - the mod POSTs colony events to a configurable agent URL so the agent can react to things happening in the world. It sends the same event objects as `GET /events`.
 
 ### Bridge API
 
-| Method | Path      | Description                                                         |
-|--------|-----------|---------------------------------------------------------------------|
-| `GET`  | `/health` | Liveness check: `{"status","mod","version"}`                        |
-| `GET`  | `/state`  | Tick, paused, current map, map count, and all player pawns on **all** maps (each has a `map` index) |
-| `POST` | `/say`    | Make a pawn speak: `{"pawn_id": 1234, "text": "..."}`               |
+The full contract is [docs/BRIDGE-API.md](docs/BRIDGE-API.md): Part 1 is the game-agnostic protocol (connection, auth, envelope, op ids, events, `/say`, `/thought`, `/mind`, `/talk`), Part 2 the RimWorld schema (`/config`, `/colony`, `/pawn/{id}`, `/scene/{id}`, event types, intent effects). Other mods can add pawn context and talk requests through the [hook API](docs/HOOK-API.md).
 
-`/say` trims the text (max 500 characters, longer is truncated) and looks the pawn up on every map. It replies `{"ok","pawn","map","text"}`.
-
-Status codes: `200` ok, `400` bad JSON / missing `pawn_id` / empty text, `401` bad or missing token, `404` unknown route or pawn, `409` pawn is dead or not spawned, `413` body over 64 KiB, `503` too many requests in flight (16) or bridge stopped, `504` the game did not answer within 20 s.
-
-When a token is set in mod settings, send `Authorization: Bearer <token>`, or `?token=<token>` on the URL (either one that matches is accepted). Auth and the size limit are checked before a request reaches the game. Requests are served every frame, including while paused. The bridge stops when you leave a game for the main menu.
-
-With no token and a non-loopback bind address (the default is `0.0.0.0`), anyone on your network can read colony state and make pawns speak. The settings window and the log warn about this.
+The bridge answers in the main menu too (`no_game` for game endpoints, `GET /health` always). The default bind address is `127.0.0.1`; a remote agent needs another bind address and a fixed shared token in settings.
 
 ### Dial-out events
 
@@ -37,7 +27,7 @@ Events are POSTed to the **Agent dial-out URL** as JSON, with `Authorization: Be
 {"type": "<event type>", "tick": 123456, "payload": { ... }}
 ```
 
-Sending is asynchronous (one background sender, queue of 64, oldest dropped when full); failures are logged at most once per 30 s. The mod does not echo `/say` lines back to the agent.
+Sending is asynchronous (one background sender, queue of 64, oldest dropped when full); failures are logged at most once per 30 s. 
 
 ## Colony events
 
@@ -81,18 +71,14 @@ Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install direc
 ```
 Mod/
   About/About.xml            mod metadata
+  Defs/                      thought and interaction defs used by the effects
   HermesVoice.csproj         build + deploy project
-  Source/                    C# source
-    HermesVoiceMod.cs        mod entry point, settings window, Harmony
-    HermesBridge.cs          in-mod HTTP bridge (agent -> mod)
-    HermesVoiceGameComponent.cs  game-thread request routing, /state, /say
-    AgentDialOut.cs          outbound events (mod -> agent), background sender
-    SpeechBubbles.cs         overhead dialogue bubbles
-    ConversationLog.cs       persistent conversation history
-    HermesVoiceSettings.cs   mod settings
-    ColonyEvents.cs          Harmony patches for colony events
-    EventGate.cs             event filtering and throttling
+  Source/
+    Bridge/                  game-agnostic bridge: HTTP server, auth, envelope, op ids, event ring, minds, talk queue (no game references)
+    RimWorld/                RimWorld side: snapshots, events, Harmony hooks, say/effects, settings, hook API
   1.7/Assemblies/            build output
+Mod.Tests/                   xUnit tests for Bridge/ and the pure rules (not shipped); run `dotnet test Mod.Tests`
+docs/                        BRIDGE-API.md, HOOK-API.md, SPEC.md
 ```
 
 ## License

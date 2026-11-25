@@ -7,7 +7,7 @@ namespace HermesVoice
     public class HermesVoiceMod : Mod
     {
         public static HermesVoiceMod Instance { get; private set; }
-        const string FallbackVersion = "1.0.0";
+        const string FallbackVersion = "2.0.0";
         /// <summary>Mod version, read from About.xml (modVersion) when available.</summary>
         public static string Version
         {
@@ -63,9 +63,9 @@ namespace HermesVoice
             list.Label("Agent dial-out URL (mod POSTs colony events here)");
             s.agentUrl = Widgets.TextField(list.GetRect(22f), s.agentUrl ?? "");
 
-            list.Label("Shared token (auth)");
+            list.Label("Fixed shared token (blank = random per run, read from bridge.json)");
             s.sharedToken = Widgets.TextField(list.GetRect(22f), s.sharedToken ?? "");
-            if (HermesBridge.IsExposedWithoutToken(s.bindAddress, s.sharedToken))
+            if (!HermesBridge.IsLoopback(s.bindAddress) && string.IsNullOrWhiteSpace(s.sharedToken))
             {
                 GUI.color = Color.red;
                 list.Label(HermesBridge.OpenWarning + ".");
@@ -84,8 +84,7 @@ namespace HermesVoice
 
             // --- Colony events (improve/events) ---
             list.Label("Colony events (mod POSTs these to the agent URL)");
-            list.CheckboxLabeled("Send colony events", ref s.sendColonyEvents);
-            if (s.sendColonyEvents)
+            list.CheckboxLabeled("Push events to the agent URL (events are always kept for GET /events)", ref s.sendColonyEvents);
             {
                 list.CheckboxLabeled("  Injuries", ref s.evInjury);
                 list.CheckboxLabeled("  Deaths", ref s.evDeath);
@@ -94,7 +93,20 @@ namespace HermesVoice
                 list.CheckboxLabeled("  Medical tending", ref s.evTend);
                 list.CheckboxLabeled("  Social interactions", ref s.evSocial);
                 list.CheckboxLabeled("  Raids", ref s.evRaid);
+                list.CheckboxLabeled("  Quests", ref s.evQuest);
+                list.CheckboxLabeled("  Lodgers", ref s.evLodger);
+                list.CheckboxLabeled("  Prisoners", ref s.evPrisoner);
+                list.CheckboxLabeled("  Funerals", ref s.evFuneral);
+                list.CheckboxLabeled("  Extreme weather", ref s.evWeather);
+                list.CheckboxLabeled("  Notable thoughts", ref s.evThought);
             }
+            list.GapLine();
+
+            list.Label("Effects of spoken lines: " + s.effects);
+            if (list.ButtonText("Effects: " + s.effects + " (click to change)"))
+                s.effects = s.effects == "normal" ? "light" : (s.effects == "light" ? "off" : "normal");
+            list.Label("Talk frequency: " + s.talkFrequency.ToString("0.0"));
+            s.talkFrequency = list.Slider(s.talkFrequency, 0f, 2f);
             list.GapLine();
 
             string status = HermesBridge.IsRunning ? $"Bridge running on port {HermesBridge.Port}" : "Bridge not running";
@@ -107,7 +119,7 @@ namespace HermesVoice
             }
             if (list.ButtonText("Restart bridge"))
             {
-                HermesVoiceGameComponent.Instance?.RestartBridge();
+                HermesBridge.Start();
             }
 
             list.End();
