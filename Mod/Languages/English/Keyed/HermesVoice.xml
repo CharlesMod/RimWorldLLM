@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <!-- Conversation log -->
+  <HV_LogTitle>Conversation log</HV_LogTitle>
+  <HV_LogButton>Voices</HV_LogButton>
+  <HV_LogFilterAll>All pawns</HV_LogFilterAll>
+  <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>
+  <HV_LogEmpty>No spoken lines yet.</HV_LogEmpty>
+  <HV_LogCount>{0} of {1} lines (the log keeps the last {2}).</HV_LogCount>
+  <HV_LogSpeakerToListener>{0} to {1}</HV_LogSpeakerToListener>
+  <HV_LogSpeakerAlone>{0}</HV_LogSpeakerAlone>
+  <HV_LogTriggerPlayer>player request</HV_LogTriggerPlayer>
+  <HV_LogTriggerAgent>agent's initiative</HV_LogTriggerAgent>
+  <HV_LogIntent>intent: {0}</HV_LogIntent>
+  <HV_LogEffectApplied>effect applied: {0}</HV_LogEffectApplied>
+  <HV_LogEffectRefused>effect refused: {0}</HV_LogEffectRefused>
+  <HV_LogNoEffect>no effect sought</HV_LogNoEffect>
+  <HV_LogJumpTip>Jump to {0}</HV_LogJumpTip>
+  <HV_LogPawnGone>{0} is no longer in the game.</HV_LogPawnGone>
+  <HV_Refused_effects_off>effects are off</HV_Refused_effects_off>
+  <HV_Refused_no_intent>no intent</HV_Refused_no_intent>
+  <HV_Refused_no_effect>intent has no effect</HV_Refused_no_effect>
+  <HV_Refused_no_listener>no listener</HV_Refused_no_listener>
+  <HV_Refused_not_negative>listener had nothing to be comforted about</HV_Refused_not_negative>
+  <HV_Refused_no_about>no valid subject for gossip</HV_Refused_no_about>
+  <HV_Refused_pair_cap>daily limit for this pair</HV_Refused_pair_cap>
+  <HV_Refused_stack_full>the listener already has this thought</HV_Refused_stack_full>
+</LanguageData>

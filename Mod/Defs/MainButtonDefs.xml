@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <MainButtonDef>
+    <defName>HV_Log</defName>
+    <label>Voices</label>
+    <description>Every line the colonists have spoken through HermesVoice, with what it did.</description>
+    <workerClass>MainButtonWorker_ToggleTab</workerClass>
+    <tabWindowClass>HermesVoice.MainTabWindow_HermesLog</tabWindowClass>
+    <order>95</order>
+    <validWithoutMap>false</validWithoutMap>
+  </MainButtonDef>
+</Defs>

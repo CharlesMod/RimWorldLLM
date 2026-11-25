@@ -77,7 +77,6 @@ namespace HermesVoice
 
             // Show.
             SpeechBubbles.Add(speaker, text);
-            HermesVoiceGameComponent.Instance?.ConversationLog.Add(speaker.thingIDNumber, speaker.LabelCap, text);
             bool logged = false;
             try
             {
@@ -90,6 +89,7 @@ namespace HermesVoice
                 if (combat) Find.BattleLog.Add(new BattleLogEntry_HermesSay(speaker, listener, text));
             }
             catch (Exception e) { Log.Warning("[HermesVoice] play log write failed: " + e.Message); }
+            bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
             if (talkId != null) HermesBridge.Talk.Remove(talkId);
 
             // Effects, under the C# caps.
@@ -101,6 +101,17 @@ namespace HermesVoice
                 witnesses = speaker.Map.mapPawns.AllPawnsSpawned.Where(p => ids.Contains(p.thingIDNumber)).ToList();
             }
             var outcome = SayEffects.Apply(intent, speaker, listener, about, witnesses, text);
+
+            var logEntry = HermesVoiceGameComponent.Instance?.ConversationLog.Add(speaker.thingIDNumber, speaker.LabelCap, text);
+            if (logEntry != null)
+            {
+                logEntry.ListenerId = listener != null ? listener.thingIDNumber : 0;
+                logEntry.ListenerName = listener != null ? listener.LabelCap.ToString() : "";
+                logEntry.Trigger = fromPlayer ? "player" : "agent";
+                logEntry.Intent = intent;
+                logEntry.Effect = outcome.Effect ?? "";
+                logEntry.Refused = outcome.Effect == null && intent != "none" ? (outcome.Refused ?? "") : "";
+            }
 
             var applied = new JObject
             {
