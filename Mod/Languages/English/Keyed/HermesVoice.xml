@@ -2,13 +2,10 @@
 <LanguageData>
   <!-- Conversation log -->
   <HV_LogTitle>Conversation log</HV_LogTitle>
-  <HV_LogButton>Voices</HV_LogButton>
   <HV_LogFilterAll>All pawns</HV_LogFilterAll>
   <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>
   <HV_LogEmpty>No spoken lines yet.</HV_LogEmpty>
   <HV_LogCount>{0} of {1} lines (the log keeps the last {2}).</HV_LogCount>
-  <HV_LogSpeakerToListener>{0} to {1}</HV_LogSpeakerToListener>
-  <HV_LogSpeakerAlone>{0}</HV_LogSpeakerAlone>
   <HV_LogTriggerPlayer>player request</HV_LogTriggerPlayer>
   <HV_LogTriggerAgent>agent's initiative</HV_LogTriggerAgent>
   <HV_LogIntent>intent: {0}</HV_LogIntent>
@@ -49,7 +46,6 @@
   <HV_MindMemoryMeta>{0}  |  {1}{2}  |  {3}  |  confidence {4}</HV_MindMemoryMeta>
   <HV_MindMemoryFrom> from {0}</HV_MindMemoryFrom>
   <HV_MindPinned>pinned</HV_MindPinned>
-  <HV_MindUnpinned>not pinned</HV_MindUnpinned>
   <HV_MindNotes>Director's notes</HV_MindNotes>
   <HV_MindNotesHint>Your notes to this pawn's mind. The agent keeps them and merges them with what it writes; it never overwrites them.</HV_MindNotesHint>
   <HV_MindNotesSave>Save notes</HV_MindNotesSave>
@@ -145,4 +141,22 @@
   <HV_Adv_FixedTokenHelp>Needed when the agent runs on another machine. Anyone with the token can read colony state and make pawns speak.</HV_Adv_FixedTokenHelp>
   <HV_Adv_OpenDebug>Open the debug window</HV_Adv_OpenDebug>
   <HV_Adv_DebugNeedsDev>The debug window needs development mode.</HV_Adv_DebugNeedsDev>
+  <!-- Debug window -->
+  <HV_Debug_Title>HermesVoice debug</HV_Debug_Title>
+  <HV_Debug_State>Bridge: {0}. Requests waiting for the game thread: {1}.</HV_Debug_State>
+  <HV_Debug_Running>running on port {0}</HV_Debug_Running>
+  <HV_Debug_Stopped>not running</HV_Debug_Stopped>
+  <HV_Debug_Stores>Op-id store: {0} remembered. Event ring: {1} kept, last seq {2}. Talk queue: {3} waiting.</HV_Debug_Stores>
+  <HV_Debug_TestLine>Send test line</HV_Debug_TestLine>
+  <HV_Debug_TestHelp>Queues a talk request for the pawn; the agent picks it up from GET /talk and answers with POST /say.</HV_Debug_TestHelp>
+  <HV_Debug_PickPawn>Pick a colonist</HV_Debug_PickPawn>
+  <HV_Debug_Send>Queue</HV_Debug_Send>
+  <HV_Debug_Queued>Queued {0} for {1}.</HV_Debug_Queued>
+  <HV_Debug_TalkQueue>Talk queue</HV_Debug_TalkQueue>
+  <HV_Debug_TalkRow>{0}  pawn {1}  from {2}: {3}</HV_Debug_TalkRow>
+  <HV_Debug_Empty>Nothing yet.</HV_Debug_Empty>
+  <HV_Debug_Requests>Recent bridge requests</HV_Debug_Requests>
+  <HV_Debug_ReqRow>{0} {1}  {2}  {3} ms</HV_Debug_ReqRow>
+  <HV_Debug_Events>Event ring tail (newest first)</HV_Debug_Events>
+  <HV_Debug_EventRow>#{0}  tick {2}  {1}: {3}</HV_Debug_EventRow>
 </LanguageData>
