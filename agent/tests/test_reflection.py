@@ -146,3 +146,47 @@ def test_ungrounded_bio_is_rejected(world):
         await w.d.step(); await w.d.drain()
         assert w.d.minds[1].evolving_bio == "" and w.d.minds[1].unreflected_importance == 9.0
     run(go())
+
+
+# ---- the player's edits survive a PUT /mind conflict ----------------------------------------
+def test_player_notes_win_on_conflict_and_feed_block_c(world):
+    async def go():
+        w = await world.go()
+        d = w.d
+        d.minds[1].evolving_bio = "mine"
+        d.dirty.add(1)
+        blob, rev = w.fb.minds.get(1, (None, 0))
+        # the player edits notes in the mod: blob rev moves on, notes_edited_by_player set
+        theirs = dict(d.minds[1].to_blob(0, DAY)); theirs.update(notes="Never forgives the raid.", notes_rev=3,
+                                                                 notes_edited_by_player=True, evolving_bio="stale")
+        w.fb.minds[1] = (theirs, rev + 5)
+        await d.save_dirty()
+        saved, _ = w.fb.minds[1]
+        assert saved["notes"] == "Never forgives the raid." and saved["notes_rev"] == 3
+        assert saved["notes_edited_by_player"] is True and saved["evolving_bio"] == "mine"   # ours merged
+        assert d.minds[1].notes == "Never forgives the raid." and 1 not in d.dirty
+        assert "Never forgives the raid." in block_c(d.minds[1])
+        # without the flag the agent's blob is written as before
+        theirs2 = dict(saved); theirs2.update(notes="agent junk", notes_edited_by_player=False)
+        w.fb.minds[1] = (theirs2, w.fb.minds[1][1] + 1)
+        d.minds[1].notes = "ours"; d.dirty.add(1)
+        await d.save_dirty()
+        assert w.fb.minds[1][0]["notes"] == "ours"
+    run(go())
+
+
+def test_player_voice_edit_wins_on_conflict(world):
+    async def go():
+        w = await world.go()
+        d = w.d
+        d.dirty.add(2)
+        _, rev = w.fb.minds.get(2, (None, 0))
+        theirs = d.minds[2].to_blob(0, DAY)
+        theirs["voice"] = dict(theirs["voice"], register_line="Mumbles in rhyme.", edited_by_player=True)
+        w.fb.minds[2] = (theirs, rev + 2)
+        d.minds[2].wants = ["ours"]
+        await d.save_dirty()
+        saved, _ = w.fb.minds[2]
+        assert saved["voice"]["register_line"] == "Mumbles in rhyme." and saved["voice"]["edited_by_player"]
+        assert saved["wants"] == ["ours"] and d.minds[2].voice.edited_by_player
+    run(go())

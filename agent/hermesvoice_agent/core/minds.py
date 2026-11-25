@@ -99,6 +99,8 @@ class Mind(BaseModel):
     memories: list[Memory] = Field(default_factory=list)
     relations: dict[str, Relation] = Field(default_factory=dict)   # key: str(actor id)
     notes: str = ""                              # director's notes, from the player
+    notes_edited_by_player: bool = False         # set by the mod's Mind tab; the player's text wins on conflict
+    notes_rev: int = 0                           # bumped by the mod on every player edit
     firsts: list[str] = Field(default_factory=list)   # event types seen for the first time
     unreflected_importance: float = 0.0
     last_reflect_time: int = 0

@@ -33,6 +33,27 @@ from .sanitize import prompt_cap_words
 log = logging.getLogger("hermesvoice")
 
 
+def merge_player_edits(mind: Mind, theirs: dict | None) -> bool:
+    """After a PUT /mind conflict: the player's edits in the game's blob win over ours (director's notes
+    and notes_rev, an edited voice card); every other field stays ours. Returns True if anything was taken."""
+    if not theirs:
+        return False
+    took = False
+    if theirs.get("notes_edited_by_player"):
+        mind.notes = theirs.get("notes", mind.notes)
+        mind.notes_rev = int(theirs.get("notes_rev", mind.notes_rev))
+        mind.notes_edited_by_player = True
+        took = True
+    v = theirs.get("voice") or {}
+    if v.get("edited_by_player"):
+        try:
+            mind.voice = type(mind.voice).model_validate(v)
+            took = True
+        except Exception:
+            pass
+    return took
+
+
 class Director:
     def __init__(self, cfg: Config, bridge: Bridge, llm: LLMClient, adapter: GameAdapter,
                  events: EventSource | None = None,
@@ -169,7 +190,9 @@ class Director:
 
     async def drain(self) -> None:
         while self.tasks:
-            await asyncio.gather(*list(self.tasks), return_exceptions=True)
+            await asyncio.wait(list(self.tasks))
+            self.tasks.difference_update([t for t in self.tasks if t.done()])   # cancelled idle jobs finish too
+            await asyncio.sleep(0)
 
     # ---- events ---------------------------------------------------------
     async def ingest(self, events: list[dict]) -> None:
@@ -561,7 +584,9 @@ class Director:
                 except BridgeError as e:
                     if e.code != "conflict":
                         raise
-                    _, self.revs[aid] = await self.bridge.get_mind(aid)   # stale rev: take the game's, retry once
+                    theirs, self.revs[aid] = await self.bridge.get_mind(aid)   # stale rev: take the game's, retry once
+                    if merge_player_edits(mind, theirs):
+                        blob = mind.to_blob(self.bridge.env.game, self.day)
                     self.revs[aid] = await self.bridge.put_mind(aid, blob, self.revs[aid])
                 self.dirty.discard(aid)
             except BridgeError as e:
