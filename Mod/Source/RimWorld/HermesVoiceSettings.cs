@@ -71,6 +71,7 @@ namespace HermesVoice
         public bool evSleep = true;                     // sleep_start events (feed dreams)
         public bool dreamsEnabled = true;               // sleepers get a dream cloud (POST /thought kind "dream"); also GET /config dreams
         public bool evFirsts = true;
+        public bool evGatherings = true;                // gathering / gathering_end events (meals, parties, weddings, rituals, speeches)
 
         // What the agent must honour (GET /config).
         public string effects = "normal";          // off | light | normal
@@ -141,6 +142,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref evSleep, "evSleep", true);
             Scribe_Values.Look(ref dreamsEnabled, "dreamsEnabled", true);
             Scribe_Values.Look(ref evFirsts, "evFirsts", true);
+            Scribe_Values.Look(ref evGatherings, "evGatherings", true);
             Scribe_Values.Look(ref artDescriptions, "artDescriptions", true);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);

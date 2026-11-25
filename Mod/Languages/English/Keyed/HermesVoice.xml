@@ -163,6 +163,7 @@
   <HV_Ev_Sleep>Falling asleep (feeds dreams)</HV_Ev_Sleep>
   <HV_Dreams_Enable>Dreams while colonists sleep</HV_Dreams_Enable>
   <HV_Dreams_EnableTip>A sleeping colonist may get a short surreal dream cloud drawn from the day's memories and thoughts. Needs the agent. Turning this off also stops the falling-asleep events.</HV_Dreams_EnableTip>
+  <HV_Ev_Gatherings>Gatherings (meals, parties, weddings, rituals, speeches)</HV_Ev_Gatherings>
   <HV_Ev_Firsts>First-time sights (snow, eclipse, a corpse...)</HV_Ev_Firsts>
   <HV_Art_Enable>Show written art descriptions</HV_Art_Enable>
   <HV_Art_EnableTip>When a colonist finishes an artwork, the engine writes a short description from the colony's history. It replaces the game's generated text on the info card; the title stays. Turn off to see the game's own text again.</HV_Art_EnableTip>

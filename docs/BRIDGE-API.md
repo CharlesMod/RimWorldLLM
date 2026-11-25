@@ -297,7 +297,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk, art_created, sleep_start, first_cue`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created, sleep_start, first_cue, gathering, gathering_end`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
@@ -320,6 +320,24 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   offset is below the `thought` floor; `beautiful_room` goes to an awake colonist standing in an indoor room
   of impressiveness 65 or more. The mod sends each (pawn or map, cue) once per session; the agent keeps the
   lasting record of who has had which first, so a repeat costs nothing. Severity 0.4. Toggle `events.first_cue`.
+- `gathering` (`data.phase` `start`) and `gathering_end` (`data.phase` `end`, the ledger entry closes) announce people
+  doing something together. `data`: `phase`, `kind` (`meal`, `party`, `wedding`, `funeral`, `speech`, `ritual`), `key` (stable id of this
+  gathering, the same in start and end: `lord:<id>` or `meal:room<id>`), and, when known, `lead` (pawn id: party organizer,
+  ritual officiant or leader, speaker), `label` (short game text: party, ritual or speech name; `shared meal`), `room` (room role label,
+  meals), `ideo` (precept or ritual name, rituals and speeches), `deceased_name` (funerals), `couple` (`[id, id]`, weddings).
+  `pawns`: every free colonist or slave of the player faction taking part with role `participant`; the lead has role `lead`; the two
+  of a wedding have role `couple`; at a funeral the deceased, when still a Pawn (even as a corpse), has role `subject` and is not a
+  participant (`deceased_name` is always set). Prisoners, guests and lodgers are never listed. `witnesses` are the participants, set
+  explicitly (not by room or hearing), so a sleeper or someone out of the room is not one. At least 2 participants (meals: 3). Severity
+  0.45 for meals and parties, 0.6 for weddings, funerals, rituals and speeches. Sources: `LordJob_Joinable_Party`,
+  `LordJob_Joinable_MarriageCeremony`, `LordJob_Ritual` (Ideology; `funeral` when the precept is Funeral or FuneralNoCorpse, `speech` for
+  `LordJob_Joinable_Speech`, which also carries the Royalty throne speech, else `ritual`), `LordJob_BestowingCeremony` (Royalty, kind `speech`,
+  lead the bestower), and a meal poll every 120 ticks: 3 or more awake colonists with the Ingest job in one indoor room (pawns already in a
+  party, wedding or ritual lord are not counted), at most one meal per room per 20000 ticks, ending when fewer than 2 still eat there or after 2500
+  ticks. Lord gatherings start once 2 participants are present and end when the lord goes. Ledger `gathering`
+  (`gathering`..`gathering_end`). Toggle `events.gathering`. Funeral overlap: the older `funeral` event and ledger are still sent
+  as before; a funeral also produces a `gathering` of kind `funeral` alongside it, so a consumer that handles gatherings should skip the
+  `funeral` event's reaction while `events.gathering` is on, to avoid two lines for one funeral.
 - A bystander's cloud over an insult or slight is an ordinary `POST /thought` with `kind: "thought"` and a
   `surface`; the mod needs nothing new. The agent works out who heard a `/say` itself, from the `present`
   list of `GET /scene/{id}` and hearing range.

@@ -132,7 +132,7 @@ namespace HermesVoice
 
         public static void Reset()
         {
-            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear(); FirstSeen.Clear();
+            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear(); FirstSeen.Clear(); GatheringEvents.Reset();
         }
 
         static bool Want(EventKind k) { return EventGate.GameLive() && EventGate.KindEnabled(k); }
@@ -146,6 +146,7 @@ namespace HermesVoice
             PollQuests(now, quiet);
             PollWeather(now, quiet);
             PollFunerals(now, quiet);
+            EventPayload.Safe("gatherings", () => GatheringEvents.Poll(now, quiet));
             PollRaids(now);
             PollSleep(now, quiet);
             if (!quiet) PollFirsts();
