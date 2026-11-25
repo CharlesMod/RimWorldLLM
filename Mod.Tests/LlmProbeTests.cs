@@ -43,7 +43,7 @@ namespace HermesVoice.Tests
             Assert.Equal(ProbeCode.KeyRejected, LlmProbe.ClassifyModels(St(401), "m").Code);
             Assert.Equal(ProbeCode.WrongBase, LlmProbe.ClassifyModels(St(404), "m").Code);
             var l = LlmProbe.ClassifyModels(St(503), "m");
-            Assert.Equal(Light.Amber, l.Light); Assert.Equal(ProbeCode.Loading, l.Code);
+            Assert.Equal(ProbeLight.Amber, l.Light); Assert.Equal(ProbeCode.Loading, l.Code);
             Assert.Equal(ProbeCode.NotJson, LlmProbe.ClassifyModels(Ok("<html>"), "m").Code);
             Assert.Equal(ProbeCode.NotJson, LlmProbe.ClassifyModels(Ok("{\"x\":1}"), "m").Code);
             Assert.Equal(ProbeCode.HttpError, LlmProbe.ClassifyModels(St(500), "m").Code);
@@ -65,7 +65,7 @@ namespace HermesVoice.Tests
         {
             Assert.Null(LlmProbe.ClassifyChat(Ok(Chat), "m"));
             Assert.Equal(ProbeCode.Slow, LlmProbe.ClassifyChat(Ok(Chat, 9000), "m").Code);
-            Assert.Equal(Light.Amber, LlmProbe.ClassifyChat(Ok(Chat, 9000), "m").Light);
+            Assert.Equal(ProbeLight.Amber, LlmProbe.ClassifyChat(Ok(Chat, 9000), "m").Light);
             Assert.Equal(ProbeCode.ReasoningText, LlmProbe.ClassifyChat(Ok("{\"choices\":[{\"message\":{\"content\":\"\",\"reasoning_content\":\"hmm\"}}]}"), "m").Code);
             Assert.Equal(ProbeCode.ReasoningText, LlmProbe.ClassifyChat(Ok("{\"choices\":[{\"message\":{\"content\":\"<think>x\"}}]}"), "m").Code);
             Assert.Equal(ProbeCode.KeyRejected, LlmProbe.ClassifyChat(St(403), "m").Code);
@@ -94,7 +94,7 @@ namespace HermesVoice.Tests
             f.Replies["GET http://h:1/v1/models"] = Ok(Models);
             f.Replies["POST http://h:1/v1/chat/completions"] = Ok(Chat);
             var r = LlmProbe.Run("h:1/v1", "gemma", "k", f.Do);
-            Assert.Equal(Light.Green, r.Light); Assert.Equal(ProbeCode.Ok, r.Code); Assert.Equal("http://h:1/v1", r.EffectiveBase);
+            Assert.Equal(ProbeLight.Green, r.Light); Assert.Equal(ProbeCode.Ok, r.Code); Assert.Equal("http://h:1/v1", r.EffectiveBase);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace HermesVoice.Tests
         public void RunWrongBaseSuggestsV1()
         {
             var r = LlmProbe.Run("http://h:1", "m", "", new Fake().Do);
-            Assert.Equal(Light.Red, r.Light); Assert.Equal(ProbeCode.WrongBase, r.Code); Assert.Equal("http://h:1/v1", r.Arg);
+            Assert.Equal(ProbeLight.Red, r.Light); Assert.Equal(ProbeCode.WrongBase, r.Code); Assert.Equal("http://h:1/v1", r.Arg);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace HermesVoice.Tests
             var f = new Fake();
             f.Replies["GET http://h:1/health"] = St(503);
             var r = LlmProbe.Run("http://h:1/v1", "m", "", f.Do);
-            Assert.Equal(Light.Amber, r.Light); Assert.Equal(ProbeCode.Loading, r.Code);
+            Assert.Equal(ProbeLight.Amber, r.Light); Assert.Equal(ProbeCode.Loading, r.Code);
         }
 
         [Fact]

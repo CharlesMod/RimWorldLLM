@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace HermesVoice.Bridge
 {
-    public enum Light { Green, Amber, Red }
+    public enum ProbeLight { Green, Amber, Red }
 
     public enum ProbeCode
     {
@@ -33,13 +33,13 @@ namespace HermesVoice.Bridge
 
     public sealed class ProbeResult
     {
-        public Light Light;
+        public ProbeLight Light;
         public ProbeCode Code;
         public string Arg = "";
         public string EffectiveBase = "";   // the base URL that worked (after any /v1 fix)
         public long ElapsedMs;              // the chat completion, when it ran
 
-        public static ProbeResult Make(Light l, ProbeCode c, string arg = "") { return new ProbeResult { Light = l, Code = c, Arg = arg ?? "" }; }
+        public static ProbeResult Make(ProbeLight l, ProbeCode c, string arg = "") { return new ProbeResult { Light = l, Code = c, Arg = arg ?? "" }; }
     }
 
     /// <summary>One HTTP exchange as the classifier sees it. Status 0 with an Error set means no reply.</summary>
@@ -124,10 +124,10 @@ namespace HermesVoice.Bridge
         {
             switch (ClassifyException(o.Error))
             {
-                case Transport.Tls: return ProbeResult.Make(Light.Red, ProbeCode.Tls);
-                case Transport.Timeout: return ProbeResult.Make(Light.Amber, ProbeCode.Timeout);
-                case Transport.Refused: return ProbeResult.Make(Light.Red, ProbeCode.NothingListening);
-                default: return ProbeResult.Make(Light.Red, ProbeCode.Other, o.Error != null ? o.Error.GetBaseException().Message : "");
+                case Transport.Tls: return ProbeResult.Make(ProbeLight.Red, ProbeCode.Tls);
+                case Transport.Timeout: return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Timeout);
+                case Transport.Refused: return ProbeResult.Make(ProbeLight.Red, ProbeCode.NothingListening);
+                default: return ProbeResult.Make(ProbeLight.Red, ProbeCode.Other, o.Error != null ? o.Error.GetBaseException().Message : "");
             }
         }
 
@@ -140,15 +140,15 @@ namespace HermesVoice.Bridge
         public static ProbeResult ClassifyModels(HttpOutcome o, string model)
         {
             if (o.Error != null) return FromTransport(o);
-            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(Light.Red, ProbeCode.KeyRejected);
-            if (o.Status == 404) return ProbeResult.Make(Light.Red, ProbeCode.WrongBase);
-            if (o.Status == 503) return ProbeResult.Make(Light.Amber, ProbeCode.Loading);
-            if (o.Status < 200 || o.Status >= 300) return ProbeResult.Make(Light.Red, ProbeCode.HttpError, o.Status.ToString());
+            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
+            if (o.Status == 404) return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase);
+            if (o.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+            if (o.Status < 200 || o.Status >= 300) return ProbeResult.Make(ProbeLight.Red, ProbeCode.HttpError, o.Status.ToString());
             var j = TryJson(o.Body) as JObject;
-            if (j == null) return ProbeResult.Make(Light.Red, ProbeCode.NotJson);
+            if (j == null) return ProbeResult.Make(ProbeLight.Red, ProbeCode.NotJson);
             var data = j["data"] as JArray;
             if (data == null) data = j["models"] as JArray;     // llama.cpp also lists under "models"
-            if (data == null) return ProbeResult.Make(Light.Red, ProbeCode.NotJson);
+            if (data == null) return ProbeResult.Make(ProbeLight.Red, ProbeCode.NotJson);
             if (!string.IsNullOrWhiteSpace(model) && data.Count > 0)
             {
                 bool found = false;
@@ -157,7 +157,7 @@ namespace HermesVoice.Bridge
                     string id = (string)(m["id"] ?? m["model"] ?? m["name"]);
                     if (id != null && string.Equals(id.Trim(), model.Trim(), StringComparison.OrdinalIgnoreCase)) { found = true; break; }
                 }
-                if (!found) return ProbeResult.Make(Light.Red, ProbeCode.ModelNotFound, model.Trim());
+                if (!found) return ProbeResult.Make(ProbeLight.Red, ProbeCode.ModelNotFound, model.Trim());
             }
             return null;
         }
@@ -166,33 +166,33 @@ namespace HermesVoice.Bridge
         public static ProbeResult ClassifyChat(HttpOutcome o, string model)
         {
             if (o.Error != null) return FromTransport(o);
-            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(Light.Red, ProbeCode.KeyRejected);
+            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
             if (o.Status == 404)
             {
                 // Servers answer 404 for an unknown model on /chat/completions as well.
                 var e = TryJson(o.Body);
                 string msg = e != null ? ((string)e.SelectToken("error.message") ?? "") : "";
-                if (msg.IndexOf("model", StringComparison.OrdinalIgnoreCase) >= 0) return ProbeResult.Make(Light.Red, ProbeCode.ModelNotFound, model ?? "");
-                return ProbeResult.Make(Light.Red, ProbeCode.WrongBase);
+                if (msg.IndexOf("model", StringComparison.OrdinalIgnoreCase) >= 0) return ProbeResult.Make(ProbeLight.Red, ProbeCode.ModelNotFound, model ?? "");
+                return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase);
             }
-            if (o.Status == 503) return ProbeResult.Make(Light.Amber, ProbeCode.Loading);
+            if (o.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
             if (o.Status < 200 || o.Status >= 300)
             {
                 var e = TryJson(o.Body);
                 string msg = e != null ? ((string)e.SelectToken("error.message") ?? "") : "";
                 if (o.Status == 400 && msg.IndexOf("model", StringComparison.OrdinalIgnoreCase) >= 0 && msg.IndexOf("not", StringComparison.OrdinalIgnoreCase) >= 0)
-                    return ProbeResult.Make(Light.Red, ProbeCode.ModelNotFound, model ?? "");
-                return ProbeResult.Make(Light.Red, ProbeCode.HttpError, o.Status.ToString());
+                    return ProbeResult.Make(ProbeLight.Red, ProbeCode.ModelNotFound, model ?? "");
+                return ProbeResult.Make(ProbeLight.Red, ProbeCode.HttpError, o.Status.ToString());
             }
             var j = TryJson(o.Body) as JObject;
             var choices = j != null ? j["choices"] as JArray : null;
-            if (choices == null || choices.Count == 0) return ProbeResult.Make(Light.Red, ProbeCode.NotJson);
+            if (choices == null || choices.Count == 0) return ProbeResult.Make(ProbeLight.Red, ProbeCode.NotJson);
             var msgTok = choices[0]["message"];
             string content = msgTok != null ? ((string)msgTok["content"] ?? "") : "";
             string reasoning = msgTok != null ? ((string)msgTok["reasoning_content"] ?? (string)msgTok["reasoning"] ?? "") : "";
             if (reasoning.Trim().Length > 0 || content.IndexOf("<think", StringComparison.OrdinalIgnoreCase) >= 0)
-                return ProbeResult.Make(Light.Amber, ProbeCode.ReasoningText);
-            if (o.Ms > SlowMs) return ProbeResult.Make(Light.Amber, ProbeCode.Slow, o.Ms.ToString());
+                return ProbeResult.Make(ProbeLight.Amber, ProbeCode.ReasoningText);
+            if (o.Ms > SlowMs) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Slow, o.Ms.ToString());
             return null;
         }
 
@@ -217,9 +217,9 @@ namespace HermesVoice.Bridge
         /// <summary>Runs the whole check with the given transport. Blocking: call from a worker thread.</summary>
         public static ProbeResult Run(string baseUrlInput, string model, string apiKey, Send send)
         {
-            if (string.IsNullOrWhiteSpace(baseUrlInput)) return ProbeResult.Make(Light.Red, ProbeCode.NoUrl);
+            if (string.IsNullOrWhiteSpace(baseUrlInput)) return ProbeResult.Make(ProbeLight.Red, ProbeCode.NoUrl);
             string b = NormalizeBase(baseUrlInput);
-            if (b == null) return ProbeResult.Make(Light.Red, ProbeCode.BadUrl);
+            if (b == null) return ProbeResult.Make(ProbeLight.Red, ProbeCode.BadUrl);
             bool fixedBase = false;
 
             var o = send("GET", b + "/models", null, apiKey, 15000);
@@ -237,8 +237,8 @@ namespace HermesVoice.Bridge
                 {
                     // 404 both ways. A loading llama.cpp answers /health with 503 before its API is up.
                     var h = send("GET", RootOf(b) + "/health", null, apiKey, 8000);
-                    if (h.Error == null && h.Status == 503) return ProbeResult.Make(Light.Amber, ProbeCode.Loading);
-                    return ProbeResult.Make(Light.Red, ProbeCode.WrongBase, b.EndsWith("/v1", StringComparison.OrdinalIgnoreCase) ? RootOf(b) : b + "/v1");
+                    if (h.Error == null && h.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+                    return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase, b.EndsWith("/v1", StringComparison.OrdinalIgnoreCase) ? RootOf(b) : b + "/v1");
                 }
             }
             if (r != null)
@@ -254,7 +254,7 @@ namespace HermesVoice.Bridge
                 cr.EffectiveBase = b; cr.ElapsedMs = c.Ms;
                 return cr;
             }
-            var ok = ProbeResult.Make(Light.Green, fixedBase ? ProbeCode.OkFixedBase : ProbeCode.Ok, fixedBase ? b : "");
+            var ok = ProbeResult.Make(ProbeLight.Green, fixedBase ? ProbeCode.OkFixedBase : ProbeCode.Ok, fixedBase ? b : "");
             ok.EffectiveBase = b; ok.ElapsedMs = c.Ms;
             return ok;
         }
@@ -301,7 +301,7 @@ namespace HermesVoice.Bridge
             {
                 ProbeResult r;
                 try { r = Run(baseUrl, model, apiKey, HttpSend); }
-                catch (Exception e) { r = ProbeResult.Make(Light.Red, ProbeCode.Other, e.GetBaseException().Message); }
+                catch (Exception e) { r = ProbeResult.Make(ProbeLight.Red, ProbeCode.Other, e.GetBaseException().Message); }
                 _last = r;
                 Volatile.Write(ref _running, 0);
             });
