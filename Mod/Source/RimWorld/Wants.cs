@@ -73,6 +73,25 @@ namespace HermesVoice
             "ReviveCorpse"
         };
 
+        /// <summary>Cells around the pawn (and, for seek_out, around the target) checked for active hostiles.</summary>
+        public const float ThreatRadius = 30f;
+
+        /// <summary>An active threat to the pawn's faction within <see cref="ThreatRadius"/> of a cell: a raid across the
+        /// map no longer stops a chat at home, a hostile near either pawn does.</summary>
+        static bool ThreatNear(Pawn p, IntVec3 at)
+        {
+            var fac = p.Faction;
+            if (fac == null) return false;
+            var targets = p.Map.attackTargetsCache.TargetsHostileToFaction(fac);
+            foreach (var t in targets)
+            {
+                var th = t.Thing;
+                if (th == null || !th.Spawned || !GenHostility.IsActiveThreatTo(t, fac)) continue;
+                if (th.Position.InHorDistOf(at, ThreatRadius)) return true;
+            }
+            return false;
+        }
+
         public static WantsFacts Collect(Pawn p, Pawn target, bool seek, bool enabled)
         {
             var f = new WantsFacts { Enabled = enabled, Action_SeekOut = seek };
@@ -88,7 +107,7 @@ namespace HermesVoice
             bool forcedJob = job != null && job.playerForced;
             f.ForcedWork = (p.IsPrisoner || p.IsSlave) && (forcedJob || (job != null && job.workGiverDef != null));
             f.InCombat = p.mindState != null && (p.mindState.enemyTarget != null || p.mindState.meleeThreat != null)
-                || (p.Faction == Faction.OfPlayer && p.Map.dangerWatcher.DangerRating != StoryDanger.None);
+                || ThreatNear(p, p.Position) || (seek && f.SameMap && ThreatNear(p, target.Position));
             f.JobBlocks = forcedJob || p.GetLord() != null || (job != null && (!job.def.casualInterruptible || Blocked.Contains(job.def.defName)))
                 || (p.InBed() && HealthAIUtility.ShouldSeekMedicalRest(p));
             f.TargetSpawned = target.Spawned && !target.Dead;

@@ -191,8 +191,8 @@ Nobody walks away. The table is saved with the game and expires on game ticks.
 
 Errors: `bad_request` (invalid body); `not_found` (unknown pawn or target); `refused` (HTTP 409, `reason` field and
 `detail` carry one of `disabled`, `dead`, `not_spawned`, `other_map`, `downed`, `drafted`, `asleep`, `mental_state`,
-`forced_work` (prisoner or slave doing forced work), `in_combat` (enemy target, melee threat, or any danger on the home
-map), `busy` (player-forced job, a non-interruptible or blocked job, in a lord, resting for medical reasons),
+`forced_work` (prisoner or slave doing forced work), `in_combat` (enemy target, melee threat, or an active hostile within
+30 cells of the pawn, or of the target for seek_out; danger elsewhere on the map does not count), `busy` (player-forced job, a non-interruptible or blocked job, in a lord, resting for medical reasons),
 `unreachable` (seek_out only: target not spawned, other map, hostile, or no path)). The agent does not retry a refusal.
 `refused` is also the answer when the mod setting "Pawns act on their wants" is off (reason `disabled`); `GET /config`
 shows it as `wants_enabled`. An older mod without this route answers 404 and the agent counts it as unsupported.
