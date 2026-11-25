@@ -13,6 +13,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+from . import gamedata as gd
 from . import memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
@@ -170,13 +171,14 @@ class IdleRunner:
         lease = self.lease
         mems = [m for m in memory.weight_sorted(mind, now, d.day) if m.game // d.day == target][:MAX_DIARY_MEMORIES]
         mems.sort(key=lambda m: (m.game, m.id))
-        user = (f"=== WHO YOU ARE ===\n{mind.fixed.text}\n"
-                f"=== WHO YOU ARE BECOMING ===\n{mind.evolving_bio or '(nothing yet)'}\n"
-                f"=== WHAT HAPPENED TODAY ===\n" + "\n".join(f"- {m.text}" for m in mems) +
-                f"\n=== REQUEST ===\n{d.adapter.diary_request}")
+        today = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
+        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
+                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
+                f"=== WHAT HAPPENED TODAY ===\n{gd.data_section('events', today)}"
+                f"=== REQUEST ===\n{d.adapter.diary_request}")
         lease.generating = True
         try:
-            c = await d.llm.complete([("system", d.adapter.diary_system), ("user", user)], slot=lease.slot,
+            c = await d.llm.complete([("system", d.adapter.diary_system + "\n\n" + gd.DATA_RULE), ("user", user)], slot=lease.slot,
                                      kind="diary", max_tokens=d.cfg.diary_max_tokens, stop=[], temperature=0.8,
                                      actor=aid)
         except LLMError:

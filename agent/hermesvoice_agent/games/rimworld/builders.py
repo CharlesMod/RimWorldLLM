@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 
+from ...core import gamedata as gd
 from ...core.minds import FixedBio, VoiceCard
 
 
@@ -20,19 +21,22 @@ def _s(x) -> str:
 
 
 def display_name(p: dict) -> str:
+    """Names are typed by the player (and by other mods): cleaned of instruction-like content, capped, never empty."""
     n = p.get("name", {})
     if isinstance(n, str):
-        return n
-    first, nick, last = n.get("first", ""), n.get("nick", ""), n.get("last", "")
+        return gd.name(n) if n else ""
+    first, nick, last = (gd.clean(n.get(k, ""), "name") for k in ("first", "nick", "last"))
     short = nick or first
-    return f"{first} '{nick}' {last}".replace("  ", " ").strip() if nick and nick != first else f"{first} {last}".strip() or short
+    out = f"{first} '{nick}' {last}".replace("  ", " ").strip() if nick and nick != first else f"{first} {last}".strip() or short
+    return gd.name(out)
 
 
 def short_name(p: dict) -> str:
     n = p.get("name", {})
     if isinstance(n, str):
-        return n.split()[0] if n else ""
-    return n.get("nick") or n.get("first") or ""
+        return gd.name(n.split()[0]) if n else ""
+    raw = n.get("nick") or n.get("first") or ""
+    return gd.name(raw) if raw else ""
 
 
 def _backstory(b) -> str:

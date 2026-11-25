@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from . import gamedata as gd
 from .llm import LLMClient, LLMError, Messages
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -123,15 +124,15 @@ class Chronicle:
         ledger = list(ledger_lines)[:12]
 
         def build() -> Messages:
-            ev = "\n".join(f"- {n.text}" for n in notes) or "- (nothing noted)"
-            led = "\n".join(f"- {l}" for l in ledger) or "- nothing ongoing"
+            ev = "\n".join(f"- {gd.clean(n.text, 'event')}" for n in notes) or "- (nothing noted)"
+            led = "\n".join(f"- {gd.clean(l, 'event')}" for l in ledger) or "- nothing ongoing"
             rec = "\n\n".join(f"Day {e.day + 1}: {e.text}" for e in recent) or "(none yet)"
             user = (f"=== THE STORY SO FAR ===\n{summary or '(the chronicle begins)'}\n"
                     f"=== RECENT ENTRIES ===\n{rec}\n"
-                    f"=== ONGOING MATTERS ===\n{led}\n"
-                    f"=== WHAT HAPPENED (day {day + 1}) ===\n{ev}\n"
+                    f"=== ONGOING MATTERS ===\n{gd.data_section('ongoing', led)}"
+                    f"=== WHAT HAPPENED (day {day + 1}) ===\n{gd.data_section('events', ev)}"
                     f"=== REQUEST ===\n{adapter.chronicle_request}")
-            return [("system", adapter.chronicle_system), ("user", user)]
+            return [("system", adapter.chronicle_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
         limit = budget - RESERVE_TOKENS
         while messages_tokens(build()) > limit:
