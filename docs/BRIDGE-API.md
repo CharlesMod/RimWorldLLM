@@ -83,14 +83,19 @@ reply has `"gap": true`. Each event:
 ### `POST /say`
 ```json
 {"op_id": "...", "expires_tick": 124000, "pawn": 1, "listener": 3, "text": "Hold still.",
- "intent": "comfort", "conversation_id": "c-77", "combat": false}
+ "intent": "comfort", "conversation_id": "c-77", "combat": false, "about": null, "talk_id": null}
 ```
+- `about`: the id of the third pawn a `gossip` line is about. Required for `gossip`; without
+  it the effect is refused with `no_about`.
+- `talk_id`: set when the line answers a `GET /talk` request, which removes that request.
 - The mod checks, on the game thread: speaker alive, awake, spawned, on the listener's map
   and within hearing range. Otherwise `conflict`.
 - The mod shows the bubble and writes a play-log entry (and a combat-log entry when `combat`).
 - It applies the intent's effect under the C# caps (SPEC §8), unless effects are off.
 - Reply: `{"applied": {"bubble": true, "log": true, "effect": "comfort", "thoughts": ["HV_Comforted"]}}`,
-  or `{"refused": {"effect": "pair_cap"}}` with the bubble still shown.
+  or `{"refused": {"effect": "<reason>"}}` with the bubble still shown. Reasons: `pair_cap`
+  (the per-pair daily cap is reached), `effects_off`, `not_negative` (`comfort` when the
+  listener has no negative mood thought), `no_about`.
 
 ### `POST /thought`
 `{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed."}`. The inner monologue,
@@ -104,7 +109,8 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
 
 ### `GET /talk`
 Talk requests waiting for the agent: player-typed lines, other mods' requests through the
-hook API, and debug-window requests. `[{ "id": "...", "pawn": 1, "text": "...", "from": "player" }]`.
+hook API, and debug-window requests:
+`{"requests": [{"id": "...", "pawn": 1, "text": "...", "from": "player"}]}` (plus the envelope).
 A request is removed once the agent answers it with `POST /say` carrying `"talk_id"`.
 
 ## Threading (mod side)
