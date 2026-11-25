@@ -76,7 +76,9 @@ wins when its `version` is higher.
   "uv": [{"os": "linux", "arch": "amd64", "url": "...", "sha256": "...", "size": 0}],
   "models": [
     {"id": "gemma4-rp-maxxed-q3kxl", "name": "Gemma 4 26B RP (HermesVoice build)",
-     "file": "gemma4-rp-maxxed-Q3_K_XL.gguf", "url": "", "sha256": "595eddca...", "size": 10737418240,
+     "file": "gemma4-rp-maxxed-Q3_K_XL.gguf",
+     "url": "https://huggingface.co/cmod/gemma4-rp-maxxed-GGUF/resolve/main/gemma4-rp-maxxed-Q3_K_XL.gguf",
+     "sha256": "595eddca...", "size": 10001779136,
      "moe": true, "quality": 100, "chat": "gemma4", "notes": "reference model"},
     {"id": "gemma4-e4b-q4km", "file": "...", "url": "https://huggingface.co/...", "moe": false, "quality": 60},
     {"id": "gemma4-e2b-q4km", ..., "quality": 40}
@@ -85,8 +87,10 @@ wins when its `version` is higher.
 ```
 
 - A model with an empty `url` is **import-only** (`hermes-engine import <path>` copies or
-  hard-links a local file after checking its sha256). gemma4-rp-maxxed stays import-only until
-  the keeper publishes it; publishing it is the keeper's call.
+  hard-links a local file after checking its sha256). The mechanism stays for future models
+  that are not public. gemma4-rp-maxxed is public on Hugging Face (`cmod/gemma4-rp-maxxed-GGUF`)
+  and downloads like any other entry; `fit.Verdict.import_only` is true only for entries
+  without a `url`.
 - Architecture numbers for the footprint (layers, KV heads, head dims, sliding window,
   expert count, per-layer expert bytes) are **read from the GGUF header** (`engine/gguf`)
   after download, never typed into the catalog. Before download the planner uses the catalog
@@ -157,13 +161,18 @@ loop lives in `engine/run`.
 ### Choosing a shape, in order
 
 1. Everything on GPU at `slots × ctx_per_slot.max`.
-2. Shrink ctx per slot (1024-aligned) toward the floor.
-3. **MoE only:** move experts to RAM, one layer at a time (`--n-cpu-moe N`), while host RAM
-   allows (`RAMAvail - 2 GiB` OS reserve). Then grow ctx back as far as it fits.
-4. Fewer slots (3 → 2 → 1). The profile says which slots are the minimum (HermesVoice: 1).
-5. Still no fit: **dense models are never split** between card and RAM; the planner answers
-   "too big" and the setup UI recommends the next model down. A dense model on a machine with
-   no usable GPU runs CPU-only, which is allowed.
+2. Shrink ctx per slot (1024-aligned) down to `max / 2`.
+3. **MoE only:** move experts to RAM (`--n-cpu-moe N`), as many layers as host RAM allows
+   (`RAMAvail - 2 GiB` OS reserve), then grow ctx back as far as it fits at that layer count.
+   Take the shape with the most ctx; at equal ctx, the one with fewer CPU layers. (A few
+   expert layers in RAM cost little speed; giving up long memory costs more.)
+4. Shrink ctx per slot toward the floor (keeping the CPU-MoE layers). Dense models reach this
+   step straight from step 2.
+5. Fewer slots (3 → 2 → 1), each tried again from step 1. The profile says which slots are
+   the minimum (HermesVoice: 1).
+6. Still no fit: **dense models are never split** between card and RAM; the planner answers
+   "too big" (`ErrTooBig`) and the setup UI recommends the next model down. A dense model on a
+   machine with no usable GPU runs CPU-only, which is allowed.
 
 The shape becomes explicit flags. **`--fit` is never used** (it turns itself off with `-ngl`
 and gives no measured answer):
@@ -333,13 +342,12 @@ hermes-engine version
   (case-insensitive), as the agent core's test does.
 - `Mod.Tests`: EngineClient against a fake engine; launcher binary choice per platform; profile
   JSON shape.
-- **Real check on sprinter (RTX 5080 16 GB):** `hermes-engine import` the reference model, start
+- **Real check on sprinter (RTX 5080 16 GB):** download the reference model from Hugging Face (or `hermes-engine import` a local copy), start
   with the HermesVoice profile, reach `ready` with 3 slots, three concurrent completions answer,
   a VRAM hog (`~/.local/share/sprinter-llm/probe/vram-hog.py`) makes it shrink when idle and grow
   back after, and killing the parent stops everything. Live numbers go in `docs/ENGINE-RESULTS.md`.
 
 ## 12. Not in this round
 
-- Publishing gemma4-rp-maxxed (hosting it is the keeper's call); signing and notarising the
-  binaries (needs the keeper's certificates); a tray icon; Player2 as a provider; Steam
+- Signing and notarising the binaries (needs the keeper's certificates); a tray icon; Player2 as a provider; Steam
   launch-option wrappers.
