@@ -29,12 +29,21 @@ class LLMConfig(BaseModel):
     # "openai": /v1/chat/completions only. "native": llama.cpp /completion with a
     # hand-built Gemma turn format, which gives id_slot control and cache stats.
     mode: str = "openai"
-    temperature: float = 0.8
-    top_k: int = 64
-    top_p: float = 0.95
-    min_p: float = 0.05
+    # Sampler overrides. None (the default) means "let the engine decide": the engine applies the
+    # model's own profile (X-Hermes-Sampler: rp | structured). Set a value only to force it; the
+    # engine's sampler policy may still replace it. Against a non-engine endpoint the agent sends
+    # Google's official Gemma 4 values itself, but only when ``model`` names a known Gemma 4 build.
+    temperature: float | None = None
+    top_k: int | None = None
+    top_p: float | None = None
+    min_p: float | None = None
+    repeat_penalty: float | None = None
+    # True: the endpoint is the hermes engine (sends X-Hermes-Sampler). False: it is not.
+    # None: detect it by asking for the engine's /engine/v1/status once.
+    engine: bool | None = None
     line_max_tokens: int = 48
-    # DRY repetition control for the line pass (llama.cpp): off by default, see docs/MODEL-BENCH.md F6.
+    # DRY repetition control for the line pass (llama.cpp): off by default (no official DRY exists;
+    # DRY made no clear difference, docs/MODEL-BENCH.md F6). The engine's enforce policy strips it.
     line_dry: bool = False
     dry_multiplier: float = 0.8
     dry_base: float = 1.75
