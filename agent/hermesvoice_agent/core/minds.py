@@ -68,6 +68,9 @@ class Memory(BaseModel):
     etype: str = ""
     event_seq: int | None = None
     summary_of: int = 0                          # >0: merged summary of N older memories
+    chain: list[str] = Field(default_factory=list)    # gossip: who passed it on, oldest first (core/gossip.py)
+    hops: int = 0                                # 0 = seen first hand; +1 per retelling
+    sources: int = 1                             # how many people told this (same event) to this mind
 
 
 class Relation(BaseModel):
@@ -84,12 +87,60 @@ class CRel(BaseModel):
     opinion: int | None = None
     feeling: str = ""
     history: str = ""
+    reputation: str = ""         # "people say: ..." frozen with the digest at reflection (core/gossip.py)
 
 
 class DiaryEntry(BaseModel):
     day: int
     game: int
     text: str
+
+
+INNER_KEEP = 6              # default cap of the inner stream (cfg.inner_stream_keep overrides at the call site)
+
+
+class InnerThought(BaseModel):
+    game: int = 0
+    text: str = ""
+    kind: str = "aim"            # open set: "aim", "musing"; later items add "dream", "concern", ...
+
+
+HABIT_KEEP = 6
+
+
+class HabitChange(BaseModel):
+    """One evolution of the voice card's tics (core/habits.py): enough to undo it."""
+    game: int = 0
+    added: str = ""
+    removed: str = ""            # the oldest tic it replaced, "" when it was only appended
+class Concern(BaseModel):
+    """An ongoing worry (core/concerns.py): lasts until resolved or faded; kept resolved for a day for the diary."""
+    id: str
+    text: str = ""                   # first person, about ten words
+    about: list[int] = Field(default_factory=list)   # actor ids it concerns
+    kind: str = ""                   # the rule that made it ("hurt", "grief", "guilt", "reflection", ...)
+    born: int = 0
+    status: Literal["open", "resolved", "faded"] = "open"
+    resolve_hint: str = ""           # the key an event must carry to resolve it ("healed:7", "ledger:...", ...)
+    importance: float = 0.5          # from the game; decides which one yields when the cap is full
+    closed: int = 0                  # game time it was resolved or faded
+    outcome: str = ""                # what happened (resolved)
+
+
+class Grudge(BaseModel):
+    """A grudge held by this mind (core/grudges.py): phases on game time, deterministic."""
+    id: str
+    against: int
+    cause: str = ""
+    born: int = 0                    # start of the current round
+    phase: Literal["avoid", "cooldown", "resolve", "done"] = "avoid"
+    renewals: int = 0
+    attempts: int = 0                # seek-outs tried in this round
+    next_try: int = 0                # game time of the next seek-out attempt
+    approach: str = ""               # "apologise" | "make up" | "confront": what the pending seek-out is for
+    mover: int = 0                   # who walks (this mind's id or the other's)
+    ended: str = ""                  # "made_up" | "faded" once phase is done
+    closed: int = 0
 
 
 class Mind(BaseModel):
@@ -115,6 +166,12 @@ class Mind(BaseModel):
     last_reflect_time: int = 0
     mem_counter: int = 0
     last_line_time: int = 0
+    inner: list[InnerThought] = Field(default_factory=list)   # the private stream (core/inner.py)
+    habit_history: list[HabitChange] = Field(default_factory=list)   # evolving tics, newest last (core/habits.py)
+    last_habit_game: int = -1                    # game time of the last habit change; -1 = never
+    concerns: list[Concern] = Field(default_factory=list)     # ongoing worries (core/concerns.py)
+    concern_counter: int = 0
+    grudges: list[Grudge] = Field(default_factory=list)       # grudges this mind holds (core/grudges.py)
 
     # ---- memories -------------------------------------------------------
     def next_mem_id(self) -> str:
@@ -141,11 +198,15 @@ class Mind(BaseModel):
         self.evolving_bio = self.bio_history.pop().before
         return True
 
-    def freeze_relations(self, limit: int = 6) -> None:
-        """Refresh block C's relations digest from the live relations. Reflection only."""
+    def freeze_relations(self, limit: int = 6, reputations: dict[str, str] | None = None, rep_limit: int = 3) -> None:
+        """Refresh block C's relations digest from the live relations. Reflection only.
+        ``reputations`` maps a subject's actor id (as text) to the group's line about them."""
         rels = sorted(self.relations.items(), key=lambda kv: (-abs(kv[1].opinion or 0), kv[0]))[:limit]
-        self.c_relations = [CRel(name=r.name, opinion=r.opinion, feeling=r.feeling, history=r.history)
-                            for _, r in rels]
+        reps = reputations or {}
+        keep = [k for k, _ in rels if reps.get(k)][:max(0, rep_limit)]      # at most rep_limit lines carry one
+        self.c_relations = [CRel(name=r.name, opinion=r.opinion, feeling=r.feeling, history=r.history,
+                                 reputation=reps.get(k, "") if k in keep else "")
+                            for k, r in rels]
 
     def add_diary(self, day: int, game: int, text: str) -> None:
         self.diary.append(DiaryEntry(day=day, game=game, text=text))
@@ -173,6 +234,14 @@ class Mind(BaseModel):
         if size() > limit:
             self.bio_history = []
         if size() > limit:
+            self.inner = self.inner[-3:]
+        if size() > limit:
+            for r in self.c_relations:
+                r.reputation = ""
+            self.habit_history = self.habit_history[-2:]
+            self.concerns = [c for c in self.concerns if c.status == "open"][-2:]
+            self.grudges = [g for g in self.grudges if g.phase != "done"][-2:]
+        if size() > limit:
             # 2. pinned memories, least important and oldest first
             for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):
                 if size() <= limit:
@@ -180,6 +249,10 @@ class Mind(BaseModel):
                 self.memories.remove(m)
         if size() > limit:
             self.diary = []
+        if size() > limit:
+            self.inner = []
+        if size() > limit:
+            self.habit_history = []
         if size() > limit:
             self.relations = dict(sorted(self.relations.items(),
                                          key=lambda kv: -kv[1].updated_time)[:20])

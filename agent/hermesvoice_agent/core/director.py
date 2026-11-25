@@ -8,17 +8,22 @@ the transport is any ``Bridge`` and events come from any ``EventSource``.
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 import hashlib
 import logging
 import random
 import time
 from typing import Callable
 
-from . import agegate, memory
+from . import agegate, bystanders, firsts, gossip, group, lore, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
 from .chronicle import Chronicle
+from . import concerns as concerns_mod
+from .concerns import ConcernEngine
+from .grudges import GrudgeEngine
+from .art import ArtQueue, enabled as art_enabled
 from .config import Config
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
@@ -30,6 +35,8 @@ from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, 
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
+from . import dreams, inner
+from .dreams import DreamBook
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
@@ -73,6 +80,7 @@ class Director:
         self.name_tokens: dict[int, set[str]] = {}
         self.weights: dict[int, float] = {}
         self.ledger = Ledger(adapter.is_ledger_end)
+        self.recap_epoch = 0                     # the save epoch whose recap was attempted
         q = cfg.quotas
         self.leases = LeaseManager(cfg.actor_slots, cfg.narrator_slot,
                                    QuotaTracker(q.actor_per_day, q.pair_per_day, self.day,
@@ -97,12 +105,23 @@ class Director:
         self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
+        self.lore = lore.LoreBook(cfg.lore_max)     # shared lore cache (core/lore.py); the mod holds the save's copy
+        self.reputations: dict[int, str] = {}       # what the group says about each actor (core/gossip.py)
+        self.art = ArtQueue()                    # core/art.py
+        self.dream_book = DreamBook()
+        self.concerns = ConcernEngine(self)        # core/concerns.py
+        self.grudges = GrudgeEngine(self)          # core/grudges.py
         self.idle = IdleRunner(self)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
         self._raw_last: float | None = None
         self._play = 0.0                          # play clock: real seconds with the game's pauses taken out
         self._speed_seen = 1
+        self.inner_rng = random.Random(11)         # its own stream, so the chance roll never shifts the others
+        self.cloud_gate = inner.CloudGate()        # contrast clouds: per-actor rate limit on the play clock
+        self.first_cap = firsts.DayCap()           # first-time lines per actor per day (core/firsts.py)
+        self.group = group.GroupState()            # gathering talk: seen keys, counters (core/group.py)
+        self.bystand = bystanders.Bystanders()     # bystander reactions: rate limit and counters (core/bystanders.py)
 
     # ---- clock ----------------------------------------------------------
     def now(self) -> Now:
@@ -167,6 +186,10 @@ class Director:
         await self.bridge.health()
         await self.refresh_config()
         await self.load_world()
+        if self.cfg.lore:
+            await lore.load(self)
+        if recap.late_due(self):
+            self._spawn(recap.run(self, self.bridge.env.epoch))     # connected after the load: the window is still open
         self._started = True
 
     async def refresh_config(self) -> None:
@@ -230,7 +253,12 @@ class Director:
             return                      # no world loaded: nothing to read
         await self.refresh_config()
         await self.load_world()
+        self.art.rollback(self.bridge.env.game)
         self.chronicle.rollback(self.bridge.env.game)      # the chronicle follows the save back in time
+        if self.cfg.lore:
+            await lore.load(self)                          # the loaded save's own lore
+        if self.cfg.recap_enabled and self.bridge_cfg.get("recap") is not False:
+            self._spawn(recap.run(self, self.bridge.env.epoch))     # once per epoch; a one-off, no voice budget
 
     # ---- main loop ------------------------------------------------------
     async def step(self) -> None:
@@ -244,6 +272,7 @@ class Director:
         await self.take_talk()
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
         self.daily_upkeep()
+        self.grudges.advance()
         self.leases.expire(self.now())
         self.leases.expire_leases(self.now())
         self.launch()
@@ -272,12 +301,36 @@ class Director:
             for aid in e.get("witnesses", []):
                 if aid not in self.minds and not self.adapter.is_controlled(aid):
                     await self.load_actor(aid)
+            if e.get("type") == dreams.SLEEP_EVENT:       # a sleeper's night, not a memory: it only queues a dream
+                self.dream_book.note(e, self, self.bridge.env.game)
+                continue
+            if await group.handle(self, e):             # a gathering: its own scene, no memory of the bare event (core/group.py)
+                continue
+            fm = self._first_marks(e)
+            if e.get("type") == "first_cue" and not fm:
+                continue                                 # a signal only: nobody here meets it for the first time
             written = memory.remember_event(self.minds, e, self.adapter)
             self.dirty.update(aid for aid, _ in written)
+            if fm:
+                self.dirty.update(firsts.record(self.minds, e, self.adapter, fm))
             if self.adapter.chronicle_worthy(e):
                 self.chronicle.note(e.get("game", self.bridge.env.game), e.get("summary", ""),
                                     float(e.get("severity", 0.3)), self.adapter.chronicle_trigger(e))
+            if e.get("type") == "art_created" and art_enabled(self):
+                self.art.note(e, self.bridge.env.game)
+            self.concerns.on_event(e)
+            self.grudges.on_event(e)
             self.react(e)
+            self.bystand_react(e)
+
+    def _first_marks(self, e: dict) -> dict[int, str]:
+        """Witnesses meeting this kind of thing for the first time (item 8); stored on the event for react(). {} when off."""
+        if not self.cfg.firsts or self.bridge_cfg.get("events", {}).get(e.get("type", "")) is False:
+            return {}
+        fm = firsts.marks(self.minds, e, self.adapter)
+        if fm:
+            e["_first"] = fm
+        return fm
 
     def react(self, e: dict) -> None:
         etype = e.get("type", "")
@@ -286,9 +339,12 @@ class Director:
             return                                   # player talk arrives through take_talk
         if self.bridge_cfg.get("events", {}).get(etype) is False:
             return
+        if etype == "funeral" and group.owns_funeral(self):
+            return                                   # its gathering speaks for it (core/group.py)
         sev = float(e.get("severity", 0))
         floor = self.cfg.ambient_min_severity if cls <= Cls.SOCIAL else self.cfg.event_min_severity
-        if sev < floor:
+        reunion = self.grudges.reunion_for(e)      # the chat a seek_out for a grudge leads to: always a conversation
+        if sev < floor and not reunion:
             return                                   # salience first: low scores never reach the model
         now = self.now()
         ex = REQUEST_EXPIRY[cls]
@@ -308,7 +364,7 @@ class Director:
             self.gate.skipped_events += 1             # no words, no memory of words, for a romantic move with a minor
             self.gate.note("vanilla_romance", ref=vanilla["ref"], initiator=vanilla["initiator"], recipient=vanilla["recipient"])
             return
-        if vanilla and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
+        if vanilla and not reunion and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
             # The game's own interaction: one line for it, in its priority tier (chitchat only when idle).
             vcls = Cls.SOCIAL if vanilla["tier"] == "high" else Cls.AMBIENT
             item = self.leases.make_item(vanilla["initiator"], "vanilla_social", born, e, listener=vanilla["recipient"],
@@ -317,25 +373,38 @@ class Director:
             return
         pair = self.adapter.conversation_pair(e)
         if pair and pair[0] in self.minds and pair[1] in self.minds:
+            payload = {"conversation": True}
+            if reunion:
+                payload.update(reunion=self.grudges.note_for(reunion), reunion_id=f"{reunion.holder}|{reunion.grudge}")
             item = self.leases.make_item(pair[0], etype, born, e, listener=pair[1], cls=Cls.SOCIAL,
-                                         payload={"conversation": True})
+                                         payload=payload)
             self.leases.submit(item, now, self.bridge.env.speed)
             return
         cands = [i for i in ids if i in self.minds and i in witnesses]
         cands += [w for w in witnesses if w in self.minds and w not in cands]
         n = 2 if sev >= 0.7 else 1
+        fm = e.get("_first") or {}
+        if etype == "first_cue":
+            # a signal event: only actors meeting it for the first time speak, a couple at most, each within their daily cap
+            cands = [a for a in firsts.pick_speakers(fm, e.get("seq")) if a in self.minds]
+            n = len(cands)
         picked = 0
         for aid in cands:
             if picked >= n:
                 break
+            first = fm.get(aid) if fm and self.first_cap.allow(aid, now.game // self.day, self.cfg.firsts_per_day) else None
+            if etype == "first_cue" and first is None:
+                continue
             if cls <= Cls.SOCIAL:
                 w = min(1.0, self.weights.get(aid, 1.0) * float(self.bridge_cfg.get("talk_frequency", 1.0)) * 0.7)
                 roll = int(hashlib.sha1(f"{e.get('seq')}:{aid}".encode()).hexdigest(), 16) % 1000 / 1000
                 if roll >= w:
                     continue
-            item = self.leases.make_item(aid, etype, born, e)
+            item = self.leases.make_item(aid, etype, born, e, payload={"first": first} if first else None)
             if self.leases.submit(item, now, self.bridge.env.speed) == "queued":
                 picked += 1
+                if first:
+                    self.first_cap.spend(aid, now.game // self.day)
 
     async def take_talk(self) -> None:
         field = self.adapter.protocol.actor_field
@@ -361,6 +430,8 @@ class Director:
         now = self.now()
         for item, lease in self.leases.pop_runnable(now):
             self._spawn(self.run_conversation(item, lease) if item.payload.get("conversation")
+                        else self.run_bystander(item, lease) if item.payload.get("bystander")
+                        else group.run(self, item, lease) if item.payload.get("gathering")
                         else self.serve(item, lease))
         for item in list(self.leases.queue):
             if self.leases.narrator_should_cover(item, now) and self._cover_allowed(item, now):
@@ -397,6 +468,13 @@ class Director:
                               self.cfg.memory_merge_similarity)
             if r["merged"] or r["dropped"]:
                 self.dirty.add(aid)
+        self.concerns.upkeep()
+        self.grudges.upkeep()
+        self.refresh_reputations()
+
+    def refresh_reputations(self) -> None:
+        """Rebuild what the group says about each actor (rules only, no model). Block C takes it at reflection."""
+        self.reputations = gossip.reputations(self.minds, self.minor_ids()) if self.cfg.reputation else {}
 
     @staticmethod
     def _report(t: asyncio.Task) -> None:
@@ -404,7 +482,7 @@ class Director:
             log.error("task failed: %r", t.exception())
 
     # ---- building an actor's lease prefix -------------------------------
-    async def _prepare(self, aid: int, trigger: str, event: dict | None, lease: Lease):
+    async def _prepare(self, aid: int, trigger: str, event: dict | None, lease: Lease, conv_with: int | None = None):
         mind = self.minds[aid]
         snap = await self.bridge.actor(aid)
         scene = await self.bridge.scene(aid)
@@ -425,7 +503,11 @@ class Director:
         for m in mems:
             known |= {p for p in m.people if p in self.names}
         led = self.ledger.known_to(aid)
-        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc)
+        thoughts = ([t.text for t in inner.recent_inner(mind, 3)] if self.cfg.inner_monologue else None)
+        talk = self._common_talk(aid, trigger, sc, present_ids, conv_with)
+        worries = concerns_mod.worry_lines(mind) if self.cfg.concerns else None
+        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts, talk or None,
+                              worries)
         lease.data.update(prefix=prefix, turns=[], snap=snap)
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
@@ -435,6 +517,21 @@ class Director:
                           minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens())
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
+
+    def _common_talk(self, aid: int, trigger: str, sc, present_ids: set[int], conv_with: int | None) -> list[str]:
+        """Block D's shared-talk lines: the lore names that match the scene, and (in a conversation only) what the speaker
+        could pass on to this listener. Empty when both switches are off or nothing applies."""
+        out: list[str] = []
+        if self.cfg.lore:
+            line = self.lore.names_line(" ".join([trigger, sc.where, *sc.present]), label=self.adapter.lore_label)
+            if line:
+                out.append(line)
+        if self.cfg.gossip_chain and conv_with is not None and conv_with in self.minds:
+            hint = gossip.pass_on_hint(self.minds[aid], self.minds[conv_with], conv_with,
+                                       present_ids | {aid, conv_with}, self.minor_ids())
+            if hint:
+                out.append(hint)
+        return out
 
     def _listener(self, scene: dict, aid: int, prefer: int | None) -> int | None:
         if prefer is not None:
@@ -452,8 +549,12 @@ class Director:
             if item.kind == "player_talk":
                 trigger = f"The player says to you: {item.payload['text']}"
                 lease.data["talk_id"] = item.payload["talk_id"]
+            elif item.payload.get("trigger"):         # a payoff line (core/concerns.py): the trigger is made for it
+                trigger = item.payload["trigger"]
             elif vanilla:
                 trigger = vanilla["sentence"] or (item.event or {}).get("summary", item.kind)
+            elif item.payload.get("first"):
+                trigger = self.adapter.first_trigger(item.payload["first"], (item.event or {}).get("summary", item.kind))
             else:
                 trigger = (item.event or {}).get("summary", item.kind)
             try:
@@ -488,7 +589,8 @@ class Director:
             else:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                   turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
-                                  labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens)
+                                  labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens,
+                                  **self._inner_kw(mind))
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -548,18 +650,44 @@ class Director:
         self.shout_until[aid] = now + self.cfg.shout_gap_real_s
         return "shout"
 
+    def _inner_kw(self, mind: Mind) -> dict:
+        """speak() arguments for the inner monologue: empty when the master switch is off (today's calls, byte for byte)."""
+        if not self.cfg.inner_monologue:
+            return {}
+        window = int(self.cfg.inner_aim_fresh_days * self.day)
+        return {"aim": True, "solo_aim": self.cfg.inner_solo_aim,
+                "fresh_aim": inner.fresh_aim(mind, self.bridge.env.game, window)}
+
+    async def _inner_after_say(self, aid: int, sp: Spoken, minor: bool) -> None:
+        """A line the game applied: its aim joins the stream and may show as a contrast cloud."""
+        if not self.cfg.inner_monologue or not sp.aim:
+            return
+        inner.add_inner(self.minds[aid], sp.aim, "aim", self.bridge.env.game, self.cfg.inner_stream_keep)
+        self.dirty.add(aid)
+        if not self.cfg.inner_cloud or (minor and sp.aim_gated) or len(sp.aim) > self.cfg.thought_max_chars:
+            return
+        if self.bridge.env.speed >= self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed):
+            return
+        if not self.cloud_gate.allow(aid, self.now().real, self.cfg.inner_cloud_gap_real_s,
+                                     self.cfg.inner_cloud_chance, self.inner_rng.random()):
+            return
+        try:
+            await self.bridge.thought(aid, sp.aim, surface=sp.aim)
+        except BridgeError as e:
+            log.warning("aim cloud refused for %s: %s", aid, e)
+
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
                    conv: str | None = None, talk_id: str | None = None, combat: bool = False,
                    event: dict | None = None, vanilla_ref: str | None = None, minor: bool = False) -> bool:
         if agegate.refuse_intent(sp.intent, self._romantic(), minor or self.is_minor(aid) or self.is_minor(listener)):
             self.gate.refused_intents += 1                       # last guard before the write
             self.gate.note("intent", actor=aid, intent=sp.intent)
-            sp = Spoken(sp.text, self.adapter.intent_labels[0])
+            sp = replace(sp, intent=self.adapter.intent_labels[0])
         about = None
         if sp.intent in self.adapter.about_intents():
             about = self._pick_about(aid, listener, event)
             if about is None or listener is None:
-                sp = Spoken(sp.text, self.adapter.intent_labels[0], sp.delivery)   # nobody to gossip about
+                sp = replace(sp, intent=self.adapter.intent_labels[0])   # nobody to gossip about
         kind = self._delivery(aid, sp, combat, event)
         try:
             r = await self.bridge.say(aid, sp.text, listener=listener, intent=sp.intent, conversation_id=conv,
@@ -572,13 +700,107 @@ class Director:
         self.leases.budget.spend(self.now())
         self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent, "delivery": kind,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
+        if applied and self.cfg.bystanders and sp.intent in getattr(self.adapter, "argument_intents", ()) \
+                and listener is not None:
+            self._spawn(self._say_bystanders(aid, listener))
+        if applied:
+            self.grudges.on_say(aid, listener, sp.intent, applied)
+            await self._inner_after_say(aid, sp, minor or self.is_minor(aid) or self.is_minor(listener))
         told = self.adapter.told_intents()
         # the agent records only what the game applied
         if applied and listener in self.minds and sp.intent in told:
             if memory.record_told_line(self.minds, aid, listener, self.names, sp.text, self.bridge.env.game,
-                                       told[sp.intent], about):
+                                       told[sp.intent], about, chain=self.cfg.gossip_chain,
+                                       hop_decay=self.cfg.gossip_hop_decay, minor_ids=self.minor_ids()):
                 self.dirty.update((aid, listener))
         return True
+
+    # ---- bystander reactions (item 9, core/bystanders.py) ----------------------
+    def bystand_react(self, e: dict) -> None:
+        """A vanilla insult or slight between two actors: its witnesses (the mod's own list) are the audience."""
+        if not self.cfg.bystanders or self.bridge_cfg.get("events", {}).get(e.get("type", "")) is False:
+            return
+        fn = getattr(self.adapter, "argument_parties", None)
+        parties = fn(e) if fn else None
+        if parties:
+            now = self.now()
+            if now.game - int(e.get("game", now.game)) <= REQUEST_EXPIRY[Cls.AMBIENT].units:     # not a backlog event
+                self.bystand_start(parties, [int(w) for w in e.get("witnesses", [])], e.get("summary", ""), e.get("seq"))
+
+    async def _say_bystanders(self, aid: int, listener: int) -> None:
+        """An applied insult or slight /say: the mod does not report who heard a /say, so the audience is the scene's
+        present list (can_hear, the speaker's view), minus the two of them."""
+        try:
+            hearers = [i for i, ch in self.adapter.scene_present(await self.bridge.scene(aid)) if ch]
+        except BridgeError:
+            return
+        self.bystand_start([aid, listener], hearers, "", f"say:{aid}:{self.bridge.env.game}")
+
+    def bystand_start(self, parties: list[int], witnesses: list[int], summary: str, key: object) -> None:
+        bs, now = self.bystand, self.now()
+        if self.leases.ambient_paused(self.bridge.env.speed):
+            bs.skipped += 1
+            return
+        who = bystanders.pick(witnesses, parties, self.minds, bs, now.real, self.cfg.bystander_gap_real_s)
+        if who is None:
+            return
+        bs.mark(who, now.real)                                  # one reaction per argument and per actor gap
+        bs.asked += 1
+        info = {"parties": parties, "summary": summary, "key": str(key)}
+        if not self.leases.free_slots():                         # every window is busy: a template, no model call
+            self._spawn(self._show_reaction(who, bystanders.template(self.adapter.bystander_templates, who, key), "template"))
+            return
+        item = self.leases.make_item(who, "bystander", now, None, cls=Cls.AMBIENT, payload={"bystander": info})
+        self.leases.submit(item, now, self.bridge.env.speed)
+
+    async def run_bystander(self, item: WorkItem, lease: Lease) -> None:
+        aid, info = item.actor_id, item.payload["bystander"]
+        try:
+            mind, parties = self.minds[aid], info["parties"]
+            minor = self.is_minor(aid) or any(self.is_minor(p) for p in parties)
+            msgs = bystanders.messages(self.adapter, mind, self.names, parties, info["summary"], minor)
+            lease.generating = True
+            try:
+                c = await self.llm.complete(msgs, slot=lease.slot, kind="reaction", max_tokens=bystanders.REACTION_MAX_TOKENS,
+                                            stop=["\n"], temperature=0.9, actor=aid)
+            except LLMError:
+                self.bystand.dropped += 1
+                return
+            finally:
+                lease.generating = False
+            if lease.preempted or item.expired(self.now()):
+                self.bystand.dropped += 1
+                return
+            text = bystanders.clean_reaction(c.text, prompt=msgs[1][1], aid=aid, name_tokens=self.name_tokens,
+                                             common_words=set(self.adapter.common_words), minor=minor,
+                                             minor_names=self.minor_tokens(), max_chars=self.cfg.thought_max_chars)
+            if text is None:
+                self.bystand.dropped += 1
+                self.dropped.append((aid, "reaction"))
+                return
+            await self._show_reaction(aid, text, "llm")
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("bystander failed")
+        finally:
+            lease.generating = False
+            if not lease.ended:
+                self.leases.release(lease, "done")
+
+    async def _show_reaction(self, aid: int, text: str, how: str) -> None:
+        mind = self.minds.get(aid)
+        if mind is None:
+            return
+        inner.add_inner(mind, text, "reaction", self.bridge.env.game, self.cfg.inner_stream_keep)
+        self.dirty.add(aid)
+        self.bystand.shown += 1
+        self.bystand.templated += how == "template"
+        self.bystand.log.append({"actor": aid, "text": text, "how": how, "game": self.bridge.env.game})
+        try:
+            await self.bridge.thought(aid, text, surface=text)
+        except BridgeError as e:
+            log.warning("reaction cloud refused for %s: %s", aid, e)
 
     # ---- conversations --------------------------------------------------
     async def run_conversation(self, item: WorkItem, lease_a: Lease) -> None:
@@ -594,11 +816,14 @@ class Director:
             self._conv_n += 1
             conv = Conversation(f"c-{self._conv_n}", a, b, {a: self.names[a], b: self.names[b]})
             summary = (item.event or {}).get("summary", "")
+            if item.payload.get("reunion"):
+                summary = f"{summary} {item.payload['reunion']}".strip()
+                conv.reunion = item.payload["reunion_id"]
             leases = {a: lease_a, b: lease_b}
             ctxs = {}
             for aid, trig in ((a, f"{summary} You start talking to {self.names[b]}."),
                               (b, f"{summary} {self.names[a]} is talking to you.")):
-                ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid]))[0]
+                ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid], conv_with=b if aid == a else a))[0]
             pair_minor = self.is_minor(a) or self.is_minor(b)
             for c in ctxs.values():
                 c.minor_involved = c.minor_involved or pair_minor
@@ -622,7 +847,8 @@ class Director:
                                   turn_no=len(conv.turns) // 2, ctx=ctxs[sp_id],
                                   listener_name=self.names[lis], labels=self.labels_for(ctxs[sp_id].minor_involved),
                                   max_tokens=self.cfg.llm.line_max_tokens,
-                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check)
+                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check,
+                                  **self._inner_kw(self.minds[sp_id]))
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))
@@ -662,6 +888,7 @@ class Director:
                                             preempted=lease_a.preempted or lease_b.preempted)
             if conv.turns:
                 await self.finish_conversation(conv, leases)
+                self.grudges.on_conversation_done(conv, self.bridge.env.game)
         except asyncio.CancelledError:
             raise
         except Exception:

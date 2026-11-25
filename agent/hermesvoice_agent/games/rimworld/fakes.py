@@ -20,7 +20,7 @@ def default_pawn(pid: int, first: str, **kw) -> dict:
         "health": {"conditions": [], "missing_parts": [], "pain": 0.0, "consciousness": 1.0, "downed": False},
         "needs": {"mood": 0.6, "food": 0.5, "rest": 0.7, "joy": 0.4},
         "mood": {"value": 0.6, "thoughts": [{"label": "Ate without table", "offset": -3, "cause_pawn": None}]},
-        "job": "Cooking", "gear": {"worn": [], "held": []}, "relations": [], "status": "colonist",
+        "asleep": False, "job": "Cooking", "gear": {"worn": [], "held": []}, "relations": [], "status": "colonist",
         "faction": "colony", "map": 0, "pos": [10, 10], "room": "Kitchen", "alive": True, "spawned": True,
     }
     p.update(kw)
@@ -46,6 +46,11 @@ class FakeBridge:
         self.chronicle_log: list[dict] = []
         self.chronicle_supported = True        # POST/GET /chronicle are in the contract; a test can turn it off (an older mod: 404)
         self.chronicle: list[dict] = []        # what the mod holds (cap 120)
+        self.recap_log: list[dict] = []        # POST /recap bodies accepted
+        self.recap_refuse: str | None = None   # a test sets "expired"/"conflict" to model the mod refusing
+        self.art_supported = True              # POST /art is in the contract; a test can turn it off (an older mod: 404)
+        self.art_log: list[dict] = []          # POST /art bodies accepted
+        self.art_things: set[int] = {500}      # artworks that exist (a destroyed one answers conflict)
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -176,17 +181,35 @@ class FakeBridge:
             self.seen_ops[body["op_id"]] = {}
             return self._ok(applied=True)
         if path == "/thought" and req.method == "POST":
-            if body.get("kind", "thought") not in ("thought", "diary"):
+            if body.get("kind", "thought") not in ("thought", "diary", "dream"):
                 return self._err(400, "bad_request", "kind must be thought or diary")
             self.thought_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok()
+        if path == "/recap":
+            lines = body.get("lines")
+            if self.recap_refuse:
+                return self._err(409 if self.recap_refuse == "conflict" else 410, self.recap_refuse)
+            if not isinstance(lines, list) or not 1 <= len(lines) <= 3 or not all(isinstance(x, str) for x in lines):
+                return self._err(400, "bad_request", "lines: 1 to 3 strings")
+            self.recap_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(shown=True)
+        if path == "/art" and req.method == "POST" and self.art_supported:
+            thing, text = body.get("thing"), str(body.get("text", "")).strip()
+            if not isinstance(thing, int) or isinstance(thing, bool) or not text:
+                return self._err(400, "bad_request", "thing and text are required")
+            if thing not in self.art_things:
+                return self._err(409, "conflict", f"no artwork {thing}")
+            self.art_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(stored=True, count=len(self.art_log))
         if path == "/chronicle" and self.chronicle_supported:
             if req.method == "GET":
                 since = int(req.url.params.get("since_day", 0))
                 return self._ok(entries=[e for e in self.chronicle if e["day"] >= since])
             day, text, kind = body.get("day"), str(body.get("text", "")).strip(), body.get("kind", "day")
-            if not isinstance(day, int) or isinstance(day, bool) or day < 0 or not text or kind not in ("day", "major"):
+            if not isinstance(day, int) or isinstance(day, bool) or day < 0 or not text or kind not in ("day", "major", "lore"):
                 return self._err(400, "bad_request", "day, text and kind are required")
             self.chronicle_log.append(body)
             self.chronicle.append({"day": day, "kind": kind, "text": text[:2000], "tick": self.tick})

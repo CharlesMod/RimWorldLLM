@@ -18,10 +18,12 @@ namespace HermesVoice
             r.Add("POST", "/thought", true, Thought);
             r.Add("POST", "/chronicle", true, ChroniclePost);
             r.Add("GET", "/chronicle", true, ChronicleGet);
+            r.Add("POST", "/recap", true, RecapPost);
             r.Add("GET", "/mind/{id}", true, MindGet);
             r.Add("PUT", "/mind/{id}", true, MindPut);
             r.Add("GET", "/talk", true, Talk);
             RegisterWants(r);
+            RegisterArt(r);
         }
 
         static Pawn PawnArg(JObject body, string field, bool required, out ApiResult err)
@@ -81,6 +83,7 @@ namespace HermesVoice
 
             // Show.
             SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
+            DirectorCamera.OnConversation(speaker, listener);
             bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
             if (talkId != null) HermesBridge.Talk.Remove(talkId);
 
@@ -159,13 +162,17 @@ namespace HermesVoice
             if (kt != null && kt.Type != JTokenType.Null)
             {
                 kind = kt.Type == JTokenType.String ? (string)kt : "";
-                if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\" or \"diary\"");
+                if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\", \"diary\" or \"dream\"");
             }
             int tick = Find.TickManager.TicksGame;
             if (kind == MindBook.KindDiary) HermesBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
             else HermesBridge.Minds.AddThought(p.thingIDNumber, tick, text);
             // A thought also shows on the map as a short cloud (never a diary). "surface" is the short line for the map.
             if (kind == MindBook.KindThought) SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
+            // A dream is stored like a thought and drawn as the same cloud, even over a sleeper (the draw path never
+            // skips sleeping pawns); the dreams setting turns the cloud off, the Mind tab still shows it.
+            else if (kind == MindBook.KindDream && HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.dreamsEnabled)
+                SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
 
@@ -182,7 +189,7 @@ namespace HermesVoice
             if (kt != null && kt.Type != JTokenType.Null)
             {
                 kind = kt.Type == JTokenType.String ? (string)kt : "";
-                if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\" or \"major\"");
+                if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\", \"major\" or \"lore\"");
             }
             int count = HermesBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
@@ -194,6 +201,32 @@ namespace HermesVoice
             string q = c.Q("since_day");
             if (!string.IsNullOrEmpty(q) && !int.TryParse(q, out since)) return ApiResult.Fail("bad_request", "since_day must be an integer");
             return ApiResult.Success(new JObject { ["entries"] = HermesBridge.Chronicle.Since(since) });
+        }
+
+        // ------------------------------------------------------------- recap
+        // A neutral letter, not a message bubble or a dialog: it waits in the letter stack, never pauses the game and
+        // is easy to ignore, and the player can re-read it from the stack until they dismiss it.
+        static ApiResult RecapPost(RouteContext c)
+        {
+            var b = c.Body;
+            if (b["epoch"] == null || b["epoch"].Type != JTokenType.Integer) return ApiResult.Fail("bad_request", "epoch (an integer) is required");
+            var arr = b["lines"] as JArray;
+            if (arr == null) return ApiResult.Fail("bad_request", "lines (an array of strings) is required");
+            var raw = new List<string>();
+            foreach (var t in arr)
+            {
+                if (t.Type != JTokenType.String) return ApiResult.Fail("bad_request", "lines must be strings");
+                raw.Add((string)t);
+            }
+            var lines = RecapGate.CleanLines(raw);
+            if (lines.Count == 0) return ApiResult.Fail("bad_request", "lines is empty");
+            var comp = HermesVoiceGameComponent.Instance;
+            if (comp == null) return ApiResult.Fail("no_game");
+            var verdict = comp.RecapGate.Check(b.Value<int>("epoch"), Environment.TickCount64, HermesVoiceMod.Settings.recapOnLoad);
+            if (verdict != RecapVerdict.Accept) return ApiResult.Fail(RecapGate.ErrorCode(verdict), verdict.ToString());
+            string colony = Faction.OfPlayer != null ? Faction.OfPlayer.Name : "";
+            Find.LetterStack.ReceiveLetter(UiUtil.T("HV_Recap_Title", colony), string.Join("\n\n", lines), LetterDefOf.NeutralEvent);
+            return ApiResult.Success(new JObject { ["shown"] = true });
         }
 
         // -------------------------------------------------------------- mind

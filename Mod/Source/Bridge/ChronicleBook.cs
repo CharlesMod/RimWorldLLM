@@ -16,11 +16,12 @@ namespace HermesVoice.Bridge
     {
         public const int MaxEntries = 120;
         public const int MaxTextChars = 2000;
-        public const string KindDay = "day", KindMajor = "major";
+        public const int MaxLore = 12;     // kind "lore" entries kept; the oldest fade
+        public const string KindDay = "day", KindMajor = "major", KindLore = "lore";
 
         public List<ChronicleEntry> Entries = new List<ChronicleEntry>();
 
-        public static bool KnownKind(string kind) { return kind == KindDay || kind == KindMajor; }
+        public static bool KnownKind(string kind) { return kind == KindDay || kind == KindMajor || kind == KindLore; }
 
         /// <summary>Appends an entry (text trimmed and cut), dropping the oldest beyond the cap. Returns the count held.</summary>
         public int Add(int day, string kind, string text, int tick)
@@ -28,6 +29,13 @@ namespace HermesVoice.Bridge
             text = (text ?? "").Trim();
             if (text.Length > MaxTextChars) text = text.Substring(0, MaxTextChars);
             Entries.Add(new ChronicleEntry { Day = day, Kind = kind, Text = text, Tick = tick });
+            if (kind == KindLore)
+            {
+                int lore = 0;
+                foreach (var e in Entries) if (e.Kind == KindLore) lore++;
+                for (int i = 0; lore > MaxLore && i < Entries.Count; )
+                    if (Entries[i].Kind == KindLore) { Entries.RemoveAt(i); lore--; } else i++;
+            }
             if (Entries.Count > MaxEntries) Entries.RemoveRange(0, Entries.Count - MaxEntries);
             return Entries.Count;
         }
@@ -40,6 +48,14 @@ namespace HermesVoice.Bridge
                 if (e.Day >= sinceDay)
                     a.Add(new JObject { ["day"] = e.Day, ["kind"] = e.Kind, ["text"] = e.Text, ["tick"] = e.Tick });
             return a;
+        }
+
+        /// <summary>The entries the Voices window lists: everything except the shared-name (lore) entries, oldest first.</summary>
+        public List<ChronicleEntry> History()
+        {
+            var l = new List<ChronicleEntry>();
+            foreach (var e in Entries) if (e.Kind != KindLore) l.Add(e);
+            return l;
         }
 
         public void Clear() { Entries.Clear(); }

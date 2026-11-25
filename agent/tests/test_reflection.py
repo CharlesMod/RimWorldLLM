@@ -6,8 +6,9 @@ from hermesvoice_agent.core.lease import Cls, Lease, Now
 from hermesvoice_agent.core.memory import record_told_line  # noqa: F401
 from hermesvoice_agent.core.minds import BIO_HISTORY_KEEP, Memory, Mind, Relation
 from hermesvoice_agent.core.prompt import block_c
+from hermesvoice_agent.core.concerns import reflect_schema
 from hermesvoice_agent.core.reflection import (REFLECT_SCHEMA, ReflectMerge, ReflectRelation, ReflectResult,
-                                               apply_reflection, parse_result, reflection_due)
+                                               apply_reflection, parse_result, reflection_due, schema_for)
 
 DAY = 60000
 
@@ -110,7 +111,8 @@ def test_reflection_runs_in_an_idle_window_with_a_schema_and_is_saved(world):
         return w
     w = run(go())
     calls = [c for c in w.llm.calls if c["kind"] == "reflect"]
-    assert len(calls) == 1 and calls[0]["json_schema"] == REFLECT_SCHEMA and calls[0]["slot"] in (1, 2)
+    assert len(calls) == 1 and calls[0]["json_schema"] == reflect_schema(schema_for(w.cfg.habits), True) \
+        and calls[0]["slot"] in (1, 2)
     assert w.d.minds[1].evolving_bio.startswith("I am harder")
     assert w.d.idle.log[0]["kind"] == "reflection" and w.d.idle.log[0]["actor"] == 1
     blob, _ = w.fb.minds[1]

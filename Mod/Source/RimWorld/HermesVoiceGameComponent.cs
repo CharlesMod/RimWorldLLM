@@ -38,10 +38,19 @@ namespace HermesVoice
         {
             base.GameComponentUpdate();
             CheckFallbackNotice();
+            DirectorCamera.Update();
+        }
+
+        public override void GameComponentOnGUI()
+        {
+            base.GameComponentOnGUI();
+            DirectorCamera.OnGUIKey();
         }
 
         // One per game session: the engine may still be starting when the save loads, so a loaded game arms the notice and
         // this waits (polling status through EngineManager) until the engine says which model is in use.
+        public readonly Bridge.RecapGate RecapGate = new Bridge.RecapGate();
+
         static readonly Bridge.FallbackNotice _fallbackNotice = new Bridge.FallbackNotice();
 
         static void CheckFallbackNotice()
@@ -61,8 +70,11 @@ namespace HermesVoice
             SayEffects.Reset();
             HermesBridge.Minds.Clear();
             HermesBridge.Chronicle.Clear();
+            HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
+            DirectorCamera.Reset();
             _fallbackNotice.Disarm();
+            if (Instance != null) Instance.RecapGate.Disarm();
             Instance = null;
         }
 
@@ -72,6 +84,8 @@ namespace HermesVoice
             SaveEpoch = _sessionEpoch = Math.Max(SaveEpoch, _sessionEpoch) + 1;
             SpeechBubbles.Clear();
             _fallbackNotice.Arm(Environment.TickCount64);
+            RecapGate.Arm(SaveEpoch, true, Environment.TickCount64);
+            DirectorCamera.OnGameStart();
         }
 
         public override void StartedNewGame()
@@ -79,9 +93,12 @@ namespace HermesVoice
             base.StartedNewGame();
             SaveEpoch = _sessionEpoch = _sessionEpoch + 1;
             _fallbackNotice.Arm(Environment.TickCount64);
+            RecapGate.Arm(SaveEpoch, false, Environment.TickCount64);
             Minds.Clear();
             HermesBridge.Chronicle.Clear();
+            HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
+            DirectorCamera.OnGameStart();
         }
 
         public override void ExposeData()
@@ -90,6 +107,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref SaveEpoch, "saveEpoch", 0);
             ExposeMinds();
             ExposeChronicle();
+            ExposeArt();
             List<int> avoids = null;
             int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
             if (Scribe.mode == LoadSaveMode.Saving) avoids = Avoids.Export(nowTick);
@@ -127,6 +145,23 @@ namespace HermesVoice
                 if (list != null)
                     foreach (var e in list)
                         if (e != null && !string.IsNullOrEmpty(e.Text)) book.Add(e.Day, Bridge.ChronicleBook.KnownKind(e.Kind) ? e.Kind : Bridge.ChronicleBook.KindDay, e.Text, e.Tick);
+            }
+        }
+
+        void ExposeArt()
+        {
+            var book = HermesBridge.Art;
+            List<ArtSave> list = null;
+            if (Scribe.mode == LoadSaveMode.Saving)
+                list = book.Entries.Select(e => new ArtSave { Thing = e.Thing, Text = e.Text, Tick = e.Tick }).ToList();
+            Scribe_Collections.Look(ref list, "hermesArt", LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                // Older saves have no book: they load an empty one, not the one from the game just left.
+                book.Clear();
+                if (list != null)
+                    foreach (var e in list)
+                        if (e != null && !string.IsNullOrEmpty(e.Text)) book.Set(e.Thing, e.Text, e.Tick);
             }
         }
 
@@ -175,6 +210,19 @@ namespace HermesVoice
     }
 
     /// <summary>Save wrapper for one chronicle entry.</summary>
+    public class ArtSave : IExposable
+    {
+        public int Thing, Tick;
+        public string Text = "";
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref Thing, "thing", 0);
+            Scribe_Values.Look(ref Tick, "tick", 0);
+            Scribe_Values.Look(ref Text, "text", "");
+        }
+    }
+
     public class ChronicleSave : IExposable
     {
         public int Day, Tick;

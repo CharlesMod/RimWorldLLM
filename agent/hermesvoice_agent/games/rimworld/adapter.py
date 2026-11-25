@@ -11,7 +11,7 @@ from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
 from ...core.prompt import Scene
 from ...core.sanitize import name_tokens
-from . import builders
+from . import builders, concern_rules
 
 _HERE = Path(__file__).parent
 
@@ -21,7 +21,15 @@ _EVENT_CLASS = {
     "injury": Cls.REACTIVE, "tend": Cls.REACTIVE,
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
+    "first_cue": Cls.REACTIVE,
 }
+# First-time reactions (core/firsts.py): what a pawn may react to once, and the words for "the first time you have ever ...".
+_FIRST_CUES = {
+    "snow": "seen snow fall", "eclipse": "seen an eclipse", "aurora": "seen an aurora", "solar_flare": "seen a solar flare",
+    "corpse": "seen a dead body", "beautiful_room": "stood in a room this beautiful", "no_table": "had to eat with no table",
+}
+# vanilla interactions that are an argument a bystander may react to (core/bystanders.py)
+ARGUMENT_INTERACTIONS = frozenset({"Insult", "Slight"})
 # What the game's own interactions are, in words the line prompt can use, so the line fits (an insult reads as an insult).
 _INTERACTION_KIND = {
     "Insult": "an insult", "Slight": "a cutting remark that slights them", "KindWords": "kind words",
@@ -63,6 +71,10 @@ class RimWorldAdapter:
         "Y's respect, get off kitchen duty). relations: for people who mattered, who (first name as listed), "
         "feeling (one short line) and history (one short line). merge: groups of memory ids (two or more) that "
         "say nearly the same thing, with one first-person summary line each; never include a [pinned] memory.")
+    reflection_habit_request = (
+        "Also reply with habit: one small new verbal habit you have picked up from what the memories show (a few "
+        "words, for example 'trails off after a quarrel', 'mutters about the cold'), or an empty string if nothing "
+        "in the memories earns one. Never name anyone in it.")
     diary_system = (
         "You are one RimWorld colonist writing a short private diary entry at the end of the day. First person, "
         "plain, dry, blunt; the colonist's own register. No moralising, no flowery language.")
@@ -75,6 +87,19 @@ class RimWorldAdapter:
     thought_request = (
         "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
         "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
+    dream_system = (
+        "You are the sleeping mind of one RimWorld colonist: one strange dream fragment, as it is dreamt. First person, "
+        "present tense, plain words, surreal but small. Nothing sexual, nothing gory, never about anyone not listed.")
+    dream_request = (
+        "Write one surreal dream fragment, under 14 words, no quotes, bending two or three things listed under what "
+        "happened today or what you were thinking. Never romantic or sexual.")
+    reaction_system = (
+        "You are one RimWorld colonist watching two people argue. You do not take part. Give the tiny reaction that "
+        "shows on your face or under your breath: first person, in your own register, never a speech, never advice.")
+    reaction_request = (
+        "Write your reaction: 2 to 6 words, plain, no quotes, naming nobody (for example: Not again. / Ha. About time.).")
+    bystander_templates = ("Not again.", "Here we go.", "Oh, come on.", "Ha. About time.", "Keep me out of it.", "Ugh. Those two.")
+    argument_intents = frozenset({"insult", "slight"})
     chronicle_system = (
         "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
         "words, a little gallows humour at most. You describe only what the notes say happened. You never "
@@ -82,6 +107,30 @@ class RimWorldAdapter:
     chronicle_request = (
         "Write the chronicle paragraph for this day: 3 to 5 sentences, under 110 words, one paragraph. Use the "
         "story so far for continuity only; do not repeat it.")
+    recap_system = (
+        "You write the 'Previously on...' recap that greets the player when a saved RimWorld colony is loaded, like the "
+        "start of a TV episode. Third person, past tense, plain words, a little dry. Use only what the chronicle entries "
+        "say; never invent people, places or numbers, never propose or predict events, never address the player.")
+    recap_request = (
+        "Write exactly 3 lines, one short sentence each, under 20 words, most recent last, the last line ending on "
+        "what is still unresolved. No title, no numbering, no quotes.")
+    lore_system = (
+        "You coin the colony's shared nicknames for the places and events its people talk about, like 'the Long Winter' "
+        "or 'the east barracks'. Use only what the chronicle entry says; never invent people, places or numbers. "
+        "Nothing romantic or sexual, ever.")
+    lore_label = "Colony names"
+    lore_request = (
+        "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
+        "a 2 to 5 word name, a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
+        "months the colony ran short of food). Do not reuse a name already in use. Otherwise answer: none.")
+    art_system = (
+        "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
+        "third person, past tense. State only what the data says: who made it and what it shows or recalls from the "
+        "colony's history or the maker's memories. Never invent people, places, events or numbers. No flowery prose, "
+        "no \"a testament to\", no moral, no addressing the player. Nothing romantic or sexual about anyone, ever.")
+    art_request = (
+        "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. If the history gives nothing to "
+        "draw on, describe the piece and its maker plainly.")
     chronicle_summary_system = (
         "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
         "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")
@@ -131,6 +180,8 @@ class RimWorldAdapter:
             return True
         if float(event.get("severity", 0)) >= 0.9:
             return True
+        if event.get("type") == "first_cue":
+            return True                       # written only for a pawn's first: never folded away
         return event.get("type", "") not in firsts and event.get("type") in _FIRSTS
 
     def first_person(self, event: dict, actor_id: int) -> str:
@@ -141,6 +192,48 @@ class RimWorldAdapter:
         if actor_id in roles:
             return f"I was part of it: {summary}"
         return f"I saw it: {summary}"
+
+    def first_of(self, event: dict) -> tuple[str, str] | None:
+        """(key, phrase) when this event is a first-time cue: the mod's first_cue events, a first raid, a first colonist death."""
+        t, data = event.get("type"), event.get("data") or {}
+        if t == "first_cue":
+            c = str(data.get("cue", ""))
+            return (c, _FIRST_CUES[c]) if c in _FIRST_CUES else None
+        if t == "raid_start":
+            return "raid", "seen a raid"
+        if t == "death" and not data.get("animal"):
+            return "colonist_death", "seen a colonist die"
+        return None
+
+    def first_trigger(self, phrase: str, summary: str) -> str:
+        return f"The first time you have ever {phrase}: {summary}".strip()
+
+    def argument_parties(self, event: dict) -> list[int] | None:
+        """The two actors of a vanilla insult or slight, else None (core/bystanders.py)."""
+        data = event.get("data") or {}
+        if event.get("type") != "social" or str(data.get("interaction", "")) not in ARGUMENT_INTERACTIONS:
+            return None
+        pair = self.conversation_pair(event)
+        return list(pair) if pair else None
+
+    def gather_info(self, event: dict) -> dict | None:
+        """A "gathering" event as plain data for core/group.py: kind, key, lead, couple, subject, participants and the
+        game's own words (label, ideo, deceased), or None when it is not a usable gathering."""
+        if event.get("type") != "gathering":
+            return None
+        data = event.get("data") or {}
+        kind = str(data.get("kind", ""))
+        if kind not in ("meal", "party", "wedding", "funeral", "speech", "ritual"):
+            return None
+        roles = [(int(a["id"]), a.get("role", "")) for a in event.get("actors", [])]
+        subject = next((i for i, r in roles if r == "subject"), None)
+        ids = [i for i, r in roles if r != "subject"]
+        lead = data.get("lead")
+        lead = int(lead) if isinstance(lead, int) or str(lead).isdigit() else next((i for i, r in roles if r == "lead"), None)
+        couple = [int(x) for x in data.get("couple") or []] or [i for i, r in roles if r == "couple"]
+        return {"kind": kind, "key": str(data.get("key") or event.get("seq")), "lead": lead, "couple": couple[:2],
+                "subject": subject, "participants": ids, "label": str(data.get("label", "")), "ideo": str(data.get("ideo", "")),
+                "room": str(data.get("room", "")), "deceased": str(data.get("deceased_name", ""))}
 
     def conversation_pair(self, event: dict) -> tuple[int, int] | None:
         if event.get("type") != "social":
@@ -173,6 +266,22 @@ class RimWorldAdapter:
                 f"Write {speaker}'s one line of speech to {listener} that goes with it. It must read as {info['kind']} "
                 "and stay on the same subject the log names. One line only.")
 
+    # ---- ongoing concerns and grudges (core/concerns.py, core/grudges.py) ----------
+    def concern_births(self, event: dict, holders: list[int], loved) -> list[dict]:
+        return concern_rules.births(event, holders, loved)
+
+    def concern_resolutions(self, event: dict) -> list[tuple[str, str]]:
+        return concern_rules.resolutions(event, self.is_ledger_end)
+
+    def social_offence(self, event: dict) -> tuple[int, int, str] | None:
+        return concern_rules.social_offence(event)
+
+    def offence_intents(self) -> set[str]:
+        return {"insult"}
+
+    def grudge_style(self, snap: dict) -> str:
+        return concern_rules.style(snap)
+
     def is_urgent_visual(self, event: dict) -> bool:
         return event.get("type") in ("injury", "death", "raid_start", "mental_break")
 
@@ -196,7 +305,7 @@ class RimWorldAdapter:
         if t in ("death", "raid_start", "raid_end", "mental_break", "quest", "funeral", "lodger_arrive",
                  "prisoner", "wedding"):
             return True
-        return float(event.get("severity", 0)) >= 0.5 and t not in ("tend", "thought", "player_talk")
+        return float(event.get("severity", 0)) >= 0.5 and t not in ("tend", "thought", "player_talk", "gathering", "gathering_end")
 
     def chronicle_trigger(self, event: dict) -> bool:
         return event.get("type") in ("death", "raid_end")

@@ -132,7 +132,7 @@ namespace HermesVoice
 
         public static void Reset()
         {
-            Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear();
+            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear(); FirstSeen.Clear(); GatheringEvents.Reset();
         }
 
         static bool Want(EventKind k) { return EventGate.GameLive() && EventGate.KindEnabled(k); }
@@ -146,7 +146,70 @@ namespace HermesVoice
             PollQuests(now, quiet);
             PollWeather(now, quiet);
             PollFunerals(now, quiet);
+            EventPayload.Safe("gatherings", () => GatheringEvents.Poll(now, quiet));
             PollRaids(now);
+            PollSleep(now, quiet);
+            if (!quiet) PollFirsts();
+        }
+
+        static readonly SleepTracker Sleep = new SleepTracker();
+
+        /// <summary>A colonist asleep in a bed (not downed, not anesthetized): one low-severity sleep_start per night, the sleeper its only witness.</summary>
+        static void PollSleep(int now, bool quiet)
+        {
+            var present = new HashSet<int>();
+            foreach (var p in HomePawns())
+            {
+                if (!p.RaceProps.Humanlike || p.Faction == null || !p.Faction.IsPlayer || p.IsQuestLodger()) continue;
+                present.Add(p.thingIDNumber);
+                bool asleep = !p.Awake() && !p.Downed && p.InBed() && !p.health.hediffSet.HasHediff(HediffDefOf.Anesthetic);
+                if (!Sleep.Observe(p.thingIDNumber, asleep, now) || quiet || !Want(EventKind.Sleep)) continue;
+                var spec = new EventSpec { Type = "sleep_start", Map = p.Map, At = p.Position, Severity = 0.1f,
+                    Summary = p.LabelShort + " fell asleep." };
+                spec.Involve(p, "sleeper", false);
+                spec.ForceWitness.Add(p);
+                EventBus.Publish(spec);
+            }
+            Sleep.Retain(present);
+        }
+
+        static readonly FirstCues.Seen FirstSeen = new FirstCues.Seen();
+
+        /// <summary>Emit a first_cue for one pawn, once per pawn and cue per session (the agent keeps the lasting record).</summary>
+        public static void FirstCue(Pawn pawn, string cue)
+        {
+            if (cue == null || pawn == null || !EventGate.GameLive() || !EventGate.Wanted(EventKind.Firsts, pawn)) return;
+            if (!FirstSeen.First(pawn.thingIDNumber, cue)) return;
+            var spec = new EventSpec { Type = FirstCues.EventType, Map = pawn.MapHeld, At = pawn.PositionHeld, Severity = 0.4f,
+                Summary = FirstCues.Summary(cue, pawn.LabelShort), Data = new JObject { ["cue"] = cue } };
+            spec.Involve(pawn, "subject");
+            EventGate.Emit(EventKind.Firsts, pawn, spec);
+        }
+
+        static void MapCue(Map map, string cue)
+        {
+            if (cue == null || !FirstSeen.First(-1 - map.Index, cue)) return;
+            EventBus.Publish(new EventSpec { Type = FirstCues.EventType, Map = map, AllOnMap = true, Severity = 0.4f,
+                Summary = FirstCues.Summary(cue, ""), Data = new JObject { ["cue"] = cue } });
+        }
+
+        static void PollFirsts()
+        {
+            if (!Want(EventKind.Firsts)) return;
+            foreach (var map in Find.Maps)
+            {
+                if (!map.IsPlayerHome) continue;
+                MapCue(map, FirstCues.WeatherCue(map.weatherManager?.curWeather?.defName));
+                var conds = map.gameConditionManager?.ActiveConditions;
+                if (conds != null) foreach (var c in conds) MapCue(map, FirstCues.ConditionCue(c.def.defName));
+                foreach (var p in map.mapPawns.FreeColonistsSpawned)
+                {
+                    if (p.Dead || !p.Awake()) continue;
+                    var room = p.GetRoom();
+                    if (room == null || room.PsychologicallyOutdoors) continue;
+                    FirstCue(p, FirstCues.RoomCue(room.GetStat(RoomStatDefOf.Impressiveness)));
+                }
+            }
         }
 
         static IEnumerable<Pawn> HomePawns()
@@ -480,7 +543,7 @@ namespace HermesVoice
         }
 
         [HarmonyPostfix]
-        public static void Postfix(MentalStateHandler __instance, bool __result, MentalStateDef stateDef, string reason)
+        public static void Postfix(MentalStateHandler __instance, bool __result, MentalStateDef stateDef, string reason, Pawn otherPawn)
         {
             EventPayload.Safe("mental break", () =>
             {
@@ -496,6 +559,13 @@ namespace HermesVoice
                     Data = new JObject { ["state"] = stateDef.defName, ["state_label"] = label, ["reason"] = reason }
                 };
                 spec.Involve(pawn, "subject");
+                // A social fight names who it is against: the pawn the state was started with, else the live state's otherPawn.
+                var foe = otherPawn ?? (__instance.CurState as MentalState_SocialFighting)?.otherPawn;
+                if (foe != null && foe != pawn && stateDef.defName == "SocialFighting" && foe.thingIDNumber >= 0)
+                {
+                    spec.Data["target"] = foe.thingIDNumber;
+                    spec.Involve(foe, "target");
+                }
                 EventGate.Emit(EventKind.MentalBreak, pawn, spec);
             });
         }
@@ -728,6 +798,7 @@ namespace HermesVoice
             {
                 var pawn = newThought.pawn;
                 if (newThought.def == null || newThought.def.defName.StartsWith("HV_", System.StringComparison.Ordinal)) return;
+                Pollers.FirstCue(pawn, FirstCues.ThoughtCue(newThought.def.defName));
                 if (newThought.def.IsSocial) return;
                 float off = newThought.MoodOffset();
                 if (Math.Abs(off) < MinOffset) return;
@@ -805,6 +876,7 @@ namespace HermesVoice
                         ["points"] = EventPayload.Round(parms.points), ["raider_count"] = count >= 0 ? (JToken)count : JValue.CreateNull()
                     }
                 });
+                DirectorCamera.OnRaid(map, raiders);
             });
         }
     }

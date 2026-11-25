@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 
+from . import agegate
 from .minds import DEFAULT_DAY_UNITS, HALF_LIFE_DAYS, Memory, Mind
 
 _WORD = re.compile(r"[a-z']{3,}")
@@ -147,12 +148,16 @@ GOSSIP_CONFIDENCE = 0.5
 CONFIDE_CONFIDENCE = 0.7
 
 
-def _source_memory(speaker: Mind, line: str, about: int | None, private: bool) -> Memory | None:
-    """The speaker's own memory a told line most likely draws on."""
+def _source_memory(speaker: Mind, line: str, about: int | None, private: bool,
+                   allow_told: bool = False) -> Memory | None:
+    """The speaker's own memory a told line most likely draws on. With ``allow_told`` (gossip chains) a memory the
+    speaker was itself told can be retold, but never a private one."""
     words = keywords(line)
     best, score = None, (-1.0, -1.0)
     for m in speaker.memories:
-        if m.source == "told" and not private:
+        if m.source == "told" and not private and not allow_told:
+            continue
+        if allow_told and not private and m.visibility == "private":
             continue
         if private and m.visibility != "private":
             continue
@@ -165,28 +170,58 @@ def _source_memory(speaker: Mind, line: str, about: int | None, private: bool) -
 
 
 def record_told_line(minds: dict[int, Mind], speaker: int, listener: int, names: dict[int, str], line: str,
-                     game: int, visibility: str, about: int | None = None) -> Memory | None:
+                     game: int, visibility: str, about: int | None = None, *, chain: bool = False,
+                     hop_decay: float = 0.8, minor_ids: set[int] | None = None) -> Memory | None:
     """A gossip (``public``) or confide (``private``) line the game applied.
 
     The listener gets a ``told by speaker`` memory at reduced confidence. The speaker's source memory
-    gets visibility bookkeeping: told_to grows; a confided private memory becomes ``told to [listener]``."""
+    gets visibility bookkeeping: told_to grows; a confided private memory becomes ``told to [listener]``.
+
+    With ``chain`` (gossip only): the memory carries the chain of tellers and the hop count, confidence decays by
+    ``hop_decay`` per earlier retelling, the original event_seq is kept, and a listener who already holds the same
+    event keeps the higher-confidence version (``sources`` counts the tellers) instead of piling up a second memory.
+    A line that pairs romantic wording with a minor (speaker, listener or the subject) is never recorded."""
     lm = minds.get(listener)
     if lm is None:
+        return None
+    if minor_ids and {speaker, listener, about} & minor_ids and agegate.romantic(line):
         return None
     sname, lname = names.get(speaker, "someone"), names.get(listener, "someone")
     private = visibility == "private"
     sm = minds.get(speaker)
-    src = _source_memory(sm, line, about, private) if sm is not None else None
+    use_chain = chain and not private
+    src = _source_memory(sm, line, about, private, use_chain) if sm is not None else None
     conf = (CONFIDE_CONFIDENCE if private else GOSSIP_CONFIDENCE) * (src.confidence if src else 1.0)
     people = [speaker] + ([about] if about is not None else [])
-    mem = remember_told(lm, speaker, sname, f"{sname} told me: {line}",
-                        game, importance=max(0.3, 0.6 * src.importance) if src else 0.3, people=people)
-    mem.confidence, mem.visibility = round(conf, 3), visibility
     if src is not None:
         if lname not in src.told_to:
             src.told_to.append(lname)
         if private and src.visibility == "private":
             src.visibility = "told"
+    chain_names: list[str] = []
+    hops, seq = 0, None
+    if use_chain:
+        src_hops = (src.hops or (1 if src.source == "told" else 0)) if src else 0
+        base = list(src.chain) if src and src.chain else ([src.told_by] if src and src.told_by else [])
+        chain_names, hops = base + [sname], src_hops + 1
+        conf *= hop_decay ** src_hops
+        seq = src.event_seq if src else None
+        if lname in chain_names:
+            return None                            # it came from this listener in the first place
+        old = next((m for m in lm.memories if seq is not None and m.event_seq == seq and m.source != "saw"), None)
+        if old is not None:                        # (a witness still gets the teller's version beside their own)
+            old.sources += 1
+            if conf > old.confidence:
+                old.text, old.confidence = f"{sname} told me: {line}", round(conf, 3)
+                old.told_by, old.told_by_id, old.chain, old.hops = sname, speaker, chain_names, hops
+                if src is not None:
+                    old.importance = max(old.importance, max(0.3, 0.6 * src.importance))
+            return old
+    mem = remember_told(lm, speaker, sname, f"{sname} told me: {line}",
+                        game, importance=max(0.3, 0.6 * src.importance) if src else 0.3, people=people)
+    mem.confidence, mem.visibility = round(conf, 3), visibility
+    if use_chain:
+        mem.chain, mem.hops, mem.event_seq = chain_names, hops, seq
     return mem
 
 
