@@ -16,7 +16,7 @@ from . import gamedata as gd
 from .bridge import BridgeError
 from .llm import LLMError
 from .memory import keywords
-from .sanitize import prompt_cap_words, sanitize_prose
+from .sanitize import _REFUSAL, prompt_cap_words, sanitize_prose
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ MAX_TOKENS = 24
 NAME_WORDS = (2, 5)
 WHAT_CHARS = 60
 NAMES_LINE_CHARS = 150
+_NAME_OK = re.compile(r"^[A-Za-z][A-Za-z' -]*$")
 _NONE = re.compile(r"^\W*none\W*$", re.I)
 
 
@@ -125,13 +126,15 @@ async def coin(d, entry_text: str, game: int, day: int) -> LoreEntry | None:
         return None
     allnames = set().union(*d.name_tokens.values()) if d.name_tokens else set()
     minors = d.minor_tokens()
-    s = sanitize_prose(c.text, known_names=allnames, all_names=allnames, prompt_words=prompt_cap_words(msgs[1][1]),
-                       common_words=set(d.adapter.common_words), min_words=3, max_words=14, minor_names=minors)
+    p = parse_entry(" ".join(c.text.split()))
+    if p is None or _REFUSAL.search(c.text) or not _NAME_OK.match(p[0]) or agegate.violation(c.text, minor_names=minors):
+        return None
+    # the name is an invention by design; what it refers to must stand on the entry's own words and names
+    s = sanitize_prose(p[1], known_names=allnames, all_names=allnames, prompt_words=prompt_cap_words(msgs[1][1]),
+                       common_words=set(d.adapter.common_words), min_words=2, max_words=12, minor_names=minors)
     if not s.ok:
         return None
-    p = parse_entry(s.text)
-    if p is None or agegate.violation(s.text, minor_names=minors):
-        return None
+    p = (p[0], s.text.rstrip(". "))
     e = d.lore.add(p[0], p[1], game, day)
     try:
         await d.bridge.chronicle(day, e.text, "lore")
