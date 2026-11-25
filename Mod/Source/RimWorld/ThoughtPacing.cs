@@ -14,6 +14,20 @@ namespace HermesVoice
         public const int MaxSurfaceChars = 90;
         public const int StaleTicks = 600;          // a waiting thought older than this is dropped (10 s at 1x)
 
+        public const int StaleRealSec = 10;         // ... or this many real seconds at the current speed, whichever is longer
+
+        /// <summary>A gap given in real seconds, as game ticks at the current speed: never shorter than the 1x count, so a
+        /// gap of 20 s stays about 20 s of watching at 2x, 3x and 4x instead of shrinking to 10, 3 and 1.3 s.</summary>
+        public static int GapTicks(int seconds, float ticksPerRealSecond)
+        {
+            if (seconds <= 0) return 0;
+            return (int)System.Math.Min(int.MaxValue / 2, (long)seconds * (long)System.Math.Max(60f, ticksPerRealSecond));
+        }
+
+        /// <summary>The stale limit for a waiting thought at the current speed.</summary>
+        public static int StaleFor(float ticksPerRealSecond)
+        { return (int)System.Math.Max(StaleTicks, StaleRealSec * System.Math.Max(60f, ticksPerRealSecond)); }
+
         readonly Dictionary<int, int> _lastShown = new Dictionary<int, int>();
         readonly Dictionary<int, int> _pendingAt = new Dictionary<int, int>();
         readonly Dictionary<int, string> _pendingText = new Dictionary<int, string>();
@@ -55,14 +69,14 @@ namespace HermesVoice
         }
 
         /// <summary>Ready thoughts: pawns whose speech is gone are released (text out), stale ones are dropped.</summary>
-        public void Promote(int now, System.Func<int, bool> speechVisible, int globalGapTicks, List<KeyValuePair<int, string>> ready)
+        public void Promote(int now, System.Func<int, bool> speechVisible, int globalGapTicks, List<KeyValuePair<int, string>> ready, int staleTicks = StaleTicks)
         {
             if (_pendingText.Count == 0) return;
             var ids = new List<int>(_pendingText.Keys);
             ids.Sort();
             foreach (int id in ids)
             {
-                if (now - _pendingAt[id] > StaleTicks) { Remove(id); continue; }
+                if (now - _pendingAt[id] > staleTicks) { Remove(id); continue; }
                 if (speechVisible(id) || now - _lastGlobal < globalGapTicks) continue;
                 ready.Add(new KeyValuePair<int, string>(id, _pendingText[id]));
                 MarkShown(id, now);
