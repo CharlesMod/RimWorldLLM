@@ -48,8 +48,10 @@ class Bridge(Protocol):
     async def say(self, actor: int, text: str, *, listener: int | None = None, intent: str = "none",
                   conversation_id: str | None = None, combat: bool = False, talk_id: str | None = None,
                   expires_at: int | None = None, op_id: str | None = None,
-                  about: int | None = None, vanilla_ref: str | None = None) -> dict: ...
-    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict: ...
+                  about: int | None = None, vanilla_ref: str | None = None,
+                  kind: str | None = None) -> dict: ...
+    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None,
+                      surface: str | None = None) -> dict: ...
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict: ...
     async def aclose(self) -> None: ...
 
@@ -160,8 +162,11 @@ class BridgeClient:
                   intent: str = "none", conversation_id: str | None = None,
                   combat: bool = False, talk_id: str | None = None,
                   expires_at: int | None = None, op_id: str | None = None,
-                  about: int | None = None, vanilla_ref: str | None = None) -> dict:
+                  about: int | None = None, vanilla_ref: str | None = None,
+                  kind: str | None = None) -> dict:
         body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text, "intent": intent, "combat": combat}
+        if kind:                        # how it was said: normal | shout | whisper (the mod guesses when absent)
+            body["kind"] = kind
         if vanilla_ref:                 # the line was written for one of the game's own interactions (adds no effect)
             body["vanilla_ref"] = vanilla_ref
         if listener is not None:
@@ -174,11 +179,14 @@ class BridgeClient:
             body["talk_id"] = talk_id
         return await self._req("POST", "/say", json_body=self._write_body(body, expires_at, op_id))
 
-    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict:
+    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None,
+                      surface: str | None = None) -> dict:
         """Inner monologue. ``kind`` is optional: "thought" (the default, omitted) or "diary" (contract: POST /thought)."""
         body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text}
         if kind:
             body["kind"] = kind
+        if surface:                     # one short line for the map's thought cloud (the full text stays in the Mind tab)
+            body["surface"] = surface
         return await self._req("POST", "/thought", json_body=self._write_body(body, None, op_id))
 
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict:

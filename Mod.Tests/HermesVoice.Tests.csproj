@@ -19,5 +19,6 @@
         <Compile Include="../Mod/Source/RimWorld/Rules.cs" />
         <Compile Include="../Mod/Source/RimWorld/Effects.cs" />
         <Compile Include="../Mod/Source/RimWorld/BubbleLayout.cs" />
+        <Compile Include="../Mod/Source/RimWorld/ThoughtPacing.cs" />
     </ItemGroup>
 </Project>

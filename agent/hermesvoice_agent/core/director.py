@@ -79,6 +79,7 @@ class Director:
         self.bridge_cfg: dict = {}
         self.narrator_lines: list[str] = []      # coverage lines
         self.said: list[dict] = []               # what was shown
+        self.shout_until: dict[int, float] = {}  # per-actor real time before which another shout is said normally
         self.dropped: list[tuple[int, str]] = []
         self.line_count: dict[int, int] = {}     # per-actor lines spoken (drives the habit rule)
         self._conv_n = 0
@@ -438,6 +439,20 @@ class Director:
                     best, score = int(k), s
         return best
 
+    def _delivery(self, aid: int, sp: Spoken, combat: bool, event: dict | None) -> str | None:
+        """The delivery the intent pass chose, bounded: a shout needs the scene (combat, an insult, a major threat)
+        and a pause since this speaker's last shout; otherwise it is said normally. None = let the mod guess."""
+        if sp.delivery not in ("normal", "shout", "whisper"):
+            return None
+        if sp.delivery != "shout":
+            return sp.delivery
+        loud = combat or sp.intent == "insult" or bool(event and self.adapter.is_major_threat(event))
+        now = self.clock()
+        if not loud or now < self.shout_until.get(aid, -1.0):
+            return "normal"
+        self.shout_until[aid] = now + self.cfg.shout_gap_real_s
+        return "shout"
+
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
                    conv: str | None = None, talk_id: str | None = None, combat: bool = False,
                    event: dict | None = None, vanilla_ref: str | None = None) -> bool:
@@ -445,16 +460,17 @@ class Director:
         if sp.intent in self.adapter.about_intents():
             about = self._pick_about(aid, listener, event)
             if about is None or listener is None:
-                sp = Spoken(sp.text, self.adapter.intent_labels[0])   # nobody to gossip about
+                sp = Spoken(sp.text, self.adapter.intent_labels[0], sp.delivery)   # nobody to gossip about
+        kind = self._delivery(aid, sp, combat, event)
         try:
             r = await self.bridge.say(aid, sp.text, listener=listener, intent=sp.intent, conversation_id=conv,
                                       combat=combat, talk_id=talk_id, expires_at=expires, about=about,
-                                      vanilla_ref=vanilla_ref)
+                                      vanilla_ref=vanilla_ref, kind=kind)
         except BridgeError as e:
             self.dropped.append((aid, f"say:{e.code}"))
             return False
         applied = r.get("applied")
-        self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent,
+        self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent, "delivery": kind,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
         told = self.adapter.told_intents()
         # the agent records only what the game applied

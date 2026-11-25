@@ -35,6 +35,8 @@ class IdleRunner:
         self.lease: Lease | None = None
         self.kind = ""
         self.fail_until: dict[tuple[str, int], float] = {}
+        self.thought_next: dict[int, float] = {}     # per actor: real time of the next map thought
+        self.thought_last: dict[int, tuple[str, ...]] = {}   # memory ids the last thought drew on
         self.log: list[dict] = []            # what idle work produced (reflections, diaries, chronicle entries)
 
     # ---- state ------------------------------------------------------------
@@ -97,6 +99,26 @@ class IdleRunner:
                if (t := self.diary_target(m)) is not None and self._ok("diary", aid)]
         return out
 
+    def thought_memories(self, mind) -> list:
+        """What a thought may draw on: heaviest recent public memories (a private one never reaches the map)."""
+        d, now = self.d, self.d.bridge.env.game
+        floor = now - int(d.cfg.thought_memory_window_days * d.day)
+        return [m for m in memory.weight_sorted(mind, now, d.day)
+                if m.game >= floor and m.visibility == "public"][:3]
+
+    def due_thought(self) -> list[tuple[int, list]]:
+        d = self.d
+        if not d.cfg.thought_enabled:
+            return []
+        out = []
+        for aid, m in sorted(d.minds.items()):
+            if self.thought_next.get(aid, -1.0) > d.clock() or not self._ok("thought", aid):
+                continue
+            mems = self.thought_memories(m)
+            if mems and tuple(x.id for x in mems) != self.thought_last.get(aid):
+                out.append((aid, mems))
+        return out
+
     def run_once(self) -> None:
         """Called every step after actor work was launched."""
         d = self.d
@@ -116,6 +138,9 @@ class IdleRunner:
             return
         for aid, target in self.due_diary():
             if self._start_actor("diary", aid, self._diary(aid, target)):
+                return
+        for aid, mems in self.due_thought():
+            if self._start_actor("thought", aid, self._thought(aid, mems)):
                 return
 
     def _start_actor(self, kind: str, aid: int, coro) -> bool:
@@ -204,6 +229,48 @@ class IdleRunner:
             await d.bridge.thought(aid, s.text, kind="diary")
         except BridgeError as e:
             log.warning("diary thought refused for %s: %s", aid, e)
+
+    async def _thought(self, aid: int, mems: list) -> None:
+        """One short thought for the map's cloud balloon. The text is the surface line itself; no diary, no memory."""
+        d = self.d
+        mind = d.minds[aid]
+        lease = self.lease
+        user = (f"=== WHO YOU ARE ===\n{mind.fixed.text}\n"
+                f"=== WHO YOU ARE BECOMING ===\n{mind.evolving_bio or '(nothing yet)'}\n"
+                f"=== WHAT IS ON YOUR MIND ===\n" + "\n".join(f"- {m.text}" for m in mems) +
+                f"\n=== REQUEST ===\n{d.adapter.thought_request}")
+        lease.generating = True
+        try:
+            c = await d.llm.complete([("system", d.adapter.thought_system), ("user", user)], slot=lease.slot,
+                                     kind="thought", max_tokens=40, stop=["\n"], temperature=0.9, actor=aid)
+        except LLMError:
+            lease.generating = False
+            self._fail("thought", aid)
+            return
+        lease.generating = False
+        if lease.preempted:
+            return
+        toks = d.name_tokens
+        allnames = set().union(*toks.values()) if toks else set()
+        known = set(toks.get(aid, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
+        s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(user),
+                           common_words=set(d.adapter.common_words), speaker_names=toks.get(aid, set()),
+                           min_words=2, max_words=18)
+        text = s.text if s.ok else None
+        if text is not None and len(text) > d.cfg.thought_max_chars:
+            text = None                                   # a long thought never reaches the map
+        if text is None:
+            self._fail("thought", aid)
+            d.dropped.append((aid, f"thought:{s.reason if not s.ok else 'too_long'}"))
+            return
+        self.thought_next[aid] = d.clock() + d.cfg.thought_every_real_s
+        self.thought_last[aid] = tuple(m.id for m in mems)
+        self.log.append({"kind": "thought", "actor": aid, "name": d.names.get(aid), "game": d.bridge.env.game,
+                         "text": text})
+        try:
+            await d.bridge.thought(aid, text, kind="thought", surface=text)
+        except BridgeError as e:
+            log.warning("thought refused for %s: %s", aid, e)
 
     async def _chronicle(self) -> None:
         d = self.d
