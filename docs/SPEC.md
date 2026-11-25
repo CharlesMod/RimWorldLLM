@@ -100,8 +100,8 @@ Three slots, each an independent context stream:
 **Leasing rules**
 
 - A lease is for one pawn and ends on a rule (§7), never on the model's say-so.
-- A pawn gets back the slot it used last if that slot is free, because its prefix may still be
-  cached there.
+- A lease takes the first free pawn window. (Measured in M0: returning a pawn to its old slot
+  gains nothing; the old and the other slot differ by 0.01 s.)
 - Priority: player talk > death, mental break, raid start > injury, tend > social > level-up,
   ambient thought. A higher class may end a lower-class lease early.
 - If both windows are busy and nothing can be preempted, the event waits with its expiry, or
@@ -117,15 +117,18 @@ Three slots, each an independent context stream:
 | D | 2–4 chosen memories and the active events this pawn knows of | Once per lease |
 | E | Scene: where, who is present, the pawn's state, the trigger | Once per lease |
 | F | Turns so far | Append-only |
-| G | Voice reminder (2–3 lines) and the request | Re-sent every turn |
+| G | Voice reminder (one line) and the request | Re-sent every turn; keep short, it is prefilled every turn |
 
 Cache rules:
 
 - Blocks A–E are fixed for the whole lease. No timestamps, tick counts or reordered lists in
   them. Memory is picked once at lease start, not per turn.
 - Every request names its slot (`id_slot`). The server never picks.
-- No saved KV states per pawn. A re-lease relies on the slot still holding the prefix, or on
-  the server's own RAM prompt cache.
+- No saved KV states per pawn. A re-lease relies on the server's RAM prompt cache, so the
+  server **must** run with `--cache-ram` (8192 MiB or more; about 180 MiB per cached lease).
+  On Gemma's sliding-window cache a slot never reuses a displaced prefix by itself.
+- No `--swa-full` (it does not fit at 64k per slot) and no speculative decoding (M0: n-gram
+  drafts never fire on short lines; the E4B draft is accepted 24% of the time and is 2x slower).
 - Every call logs prompt tokens, cached tokens and effective prefill, so cache misses show up.
 
 **Two passes per line**, both in the same warm slot:
@@ -133,9 +136,23 @@ Cache rules:
 1. **Line.** Free text, stop at newline, hard token cap (start at 48).
 2. **Intent.** A tiny constrained choice (1–3 tokens) from the effect set in §8, made about
    the line just written. Kept separate because style pressure makes structured output worse.
+   Grammar-constrained (GBNF). The label glosses live in block A so the suffix stays short.
+   M0: 27/30 correct, +0.29 s per line with the glosses in the suffix.
 
-**Budgets to start from** (to be replaced by measurements in milestone 0): pawn prefix A–E
-under 2,000 tokens; narrator context under 6,000 tokens, rolled by self-summary.
+**Budgets and measured timings** (M0, Gemma 4 26B-A4B UD-Q3_K_XL, 3 slots × 65,536 ctx, q4_0 KV,
+`--n-cpu-moe 6`): pawn prefix A–E about 1,700–1,850 tokens (block A about 840); narrator context
+under 6,000 tokens, rolled by self-summary.
+
+| Case | First token | Full line |
+|---|---|---|
+| Cold lease | 1.19 s | 1.46 s |
+| Warm turn | 0.26 s | 0.45 s |
+| Re-lease, same scene (RAM cache) | 0.19 s | 0.36 s |
+| Re-lease, new scene (A–C reused) | 0.44 s | 0.66 s |
+
+The three slots share one decode throughput (about 80 tok/s on this shape): running at once
+costs time, it does not add speed. Narrator chronicle and diary work therefore waits for idle
+windows (a 150-token chronicle takes 2.3 s alone, 5.4 s beside a conversation).
 
 ## 5. The pawn mind
 
@@ -144,7 +161,7 @@ One record per pawn, kept by the agent, saved by the mod:
 | Part | What it is | Written when |
 |---|---|---|
 | **Fixed bio** | Who they are: backstory, traits, genes, body, age, key relatives. Built from game data. | Once, at first sight. Rebuilt only if the game facts change (new trait, lost limb). |
-| **Voice card** | How they talk: one line on register, 1–3 tics, 3–6 example lines. | Once. The player can edit it. |
+| **Voice card** | How they talk: one line on register, 1–3 tics (used in at most one line in three), 3 example lines. | Once. The player can edit it. |
 | **Evolving bio** | Who they are becoming: a short paragraph. | At reflection. Each rewrite is kept as a diff the player can read and undo. |
 | **Wants** | 1–3 current aims (resent X, win Y's respect, get off kitchen duty). | At reflection. |
 | **Memories** | First-person, one or two sentences each, with tick, importance, who was there, source, visibility. | When the pawn witnesses or is told something. |
@@ -306,6 +323,8 @@ The bridge today has `/health`, `/state`, `/say` and event dial-out. Version 2:
 
 ## 11. Milestones
 
+Milestone 0 is done: results in `docs/M0-RESULTS.md`, harness in `bench/m0/`.
+
 Each ends with something measured or playable. Measurements come first because four design
 choices rest on untested assumptions.
 
@@ -330,13 +349,16 @@ choices rest on untested assumptions.
 6. **Tone: it can be grim.** Voices match RimWorld itself: dry, blunt, matter-of-fact about
    raids, death, organ harvesting, cannibalism, slavery and breaks. No softening, no moralising
    asides, no melodrama. The game's own content is the limit.
-7. **Model: a custom abliterated Gemma 26B**, prepared with the hive-mind process, is the
-   reference model. A stock model tends to refuse or soften exactly the lines RimWorld calls
-   for. Consequences for this spec:
-   - Milestone 0 measurements are taken on the abliterated build, and repeated on the stock
-     build to check that abliteration costs nothing in grounding or in following the output format.
-   - Milestone 0 adds a refusal and softening check: a fixed set of grim scenes, scored for
-     refusals, disclaimers and hedged lines.
+7. **Model: gemma4-rp-maxxed**, built with the hive-mind process: Google's BF16 Gemma 4
+   26B-A4B, abliterated by us (Heretic ARA, experts included), grafted into unsloth's
+   UD-Q3_K_XL, expert-pruned for roleplay and ASCII-vocab-pruned. Target: model, three 64k
+   slots and RimWorld on one 16 GB card with 1.5 GB kept for the OS. The model is decensored,
+   adult content included. Consequences for this spec:
+   - M0 ran on stock UD-Q3_K_XL. Stock Gemma gave 0 refusals in 60 grim RimWorld lines (so did
+     abliterated Qwen), so the grim set alone does not separate them. The refusal check needs a
+     harder probe set (adult content, explicit cruelty) before it can judge a build.
+   - Every new build reruns the M0 harness (`bench/m0/`) to check grounding, format following,
+     voice score and latency did not get worse.
    - The sanitizer treats a refusal or disclaimer as a failed line and drops it; it never
      reaches a bubble or a log.
    - Prompts must still work on a stock model, because players may point the mod at their
