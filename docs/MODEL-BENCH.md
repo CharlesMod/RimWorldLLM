@@ -610,6 +610,24 @@ None of these were changed in this branch.
 
 **F10. Tools and the "nothing to do" case.** With `tool_choice=required` the models must call something; `do_nothing` was used correctly 40-60% of the time on the five no-tool prompts. With `auto`, Ling called `say()` on 2 of 5 such prompts.
 
+### Update 2026-11-25: tool harness (toolharness branch)
+
+Cause of the silent round 2: the model ends its turn at once after the tool result (first token is end-of-turn, P 0.70 on E4B, 0.40-0.98 on E2B, 0.00 on gemma4-rp-maxxed for byte-identical prompt tails). Details and request shapes: docs/TOOL-ROUND2.md. The fix is structural, not a patch: `core/toolloop` (docs/TOOL-HARNESS.md) decodes every step under a grammar built from the tools, owns the tool-result turn as plain text, uses ordinal word scales for magnitudes, validates, retries at most twice and falls back deterministically.
+
+`bench/models/conformance.py`, 61 scenarios (30 from tools.py extended, 12 chains of 2-3 calls, 9 no-tool, 10 injection, 4 unknown-name), through the harness:
+
+| | gemma4-rp-maxxed | gemma4-e4b | gemma4-e2b |
+|---|---|---|---|
+| bench before: round 2 non-empty / args valid / right tool (single) | 100% / 78% / 100% | 36% / 84% / 100% | 0% / 68% / 80% |
+| harness, grammar: round 2 valid first try / empty replies / invalid args | 100% / 0 / 0 | 100% / 0 / 0 | 100% / 0 / 0 |
+| harness, grammar: right tool all kinds / loops with a retry / fallbacks | 91.2% / 0 / 0 | 91.2% / 0 / 0 | 71.9% / 0 / 0 |
+| harness, tolerant (no grammar): protocol chosen by probe | native | json | json |
+| harness, tolerant: round 2 first try / empty / invalid args | 100% / 0 / 0 | 95.8% / 0 / 0 | 100% / 0 / 0 |
+| harness, tolerant: right tool / loops with a retry / fallbacks | 86.0% / 3 / 0 | 89.5% / 4 / 0 | 71.9% / 3 / 0 |
+| step latency median / p90 (grammar) | 225 / 292 ms | 214 / 306 ms | 146 / 208 ms |
+
+All hard invariants held on all six runs. What stays model-limited: E2B stops after the first of several requested calls (two- and three-call kinds 40-50%) and picks the wrong tool on 1 of 4 mood prompts; on injected instructions in scene text all three models comply 50-60% of the time (the harness only guarantees the resulting call is valid). F4 and F5 are closed by the harness for any caller that uses it (ranges are scales or grammar alternatives; raw Gemma syntax cannot be emitted under the grammar and is salvaged in tolerant mode); F7 stands (the harness uses GBNF too).
+
 ### Method notes and limits
 
 - Grammar and spelling: no Java here, so `language_tool_python` was not run. `pyspellchecker` plus a rule set stood in; it found no faults in any model's lines, so treat 100% as "no obvious faults", not "perfect grammar".
