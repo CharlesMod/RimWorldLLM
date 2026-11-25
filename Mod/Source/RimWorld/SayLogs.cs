@@ -8,6 +8,17 @@ namespace HermesVoice
     /// A spoken line in the vanilla play log. Subclasses the vanilla interaction entry so the usual icon, click-to-jump
     /// and Log tab filtering work for speaker and listener; the line itself is saved with the entry.
     /// </summary>
+    internal static class SayLogFormat
+    {
+        /// <summary>"Emma to Thorn: "..."" in both pawns' Log tabs; "Emma: "..."" when there is no listener.</summary>
+        internal static string Format(Pawn speaker, Pawn listener, string line)
+        {
+            string s = speaker != null ? speaker.LabelShort : "?";
+            if (listener == null || listener == speaker) return UiUtil.T("HV_LogLine", s, line ?? "");
+            return UiUtil.T("HV_LogLineTo", s, listener.LabelShort, line ?? "");
+        }
+    }
+
     public class PlayLogEntry_HermesSay : PlayLogEntry_Interaction
     {
         string text = "";
@@ -24,8 +35,7 @@ namespace HermesVoice
 
         protected override string ToGameStringFromPOV_Worker(Thing pov, bool forceLog)
         {
-            string name = initiator != null ? initiator.LabelShort : "?";
-            return name + ": \"" + text + "\"";
+            return SayLogFormat.Format(initiator, recipient, text);
         }
 
         public override void ExposeData()
@@ -61,7 +71,7 @@ namespace HermesVoice
 
         protected override string ToGameStringFromPOV_Worker(Thing pov, bool forceLog)
         {
-            return (speaker != null ? speaker.LabelShort : "?") + ": \"" + text + "\"";
+            return SayLogFormat.Format(speaker, listener, text);
         }
 
         public override void ExposeData()

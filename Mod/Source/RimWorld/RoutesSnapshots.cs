@@ -243,7 +243,7 @@ namespace HermesVoice
             }
             o["mood"] = new JObject { ["value"] = R(mood), ["thoughts"] = thoughts };
 
-            o["job"] = p.CurJob != null ? new JObject { ["def"] = p.CurJob.def.defName, ["label"] = N(p.CurJob.GetReport(p)) } : null;
+            o["job"] = p.CurJob != null ? new JObject { ["def"] = p.CurJob.def.defName, ["label"] = N(p.CurJob.GetReport(p)?.TrimEnd('.')) } : null;
             o["gear"] = new JObject
             {
                 ["worn"] = new JArray((p.apparel?.WornApparel ?? new List<Apparel>()).Select(a => a.LabelCap)),
@@ -347,7 +347,7 @@ namespace HermesVoice
                     present.Add(new JObject
                     {
                         ["pawn"] = q.thingIDNumber, ["name"] = q.LabelShort, ["status"] = StatusOf(q),
-                        ["job"] = N(q.CurJob?.GetReport(q)), ["distance"] = R(dist),
+                        ["job"] = N(q.CurJob?.GetReport(q)?.TrimEnd('.')), ["distance"] = R(dist),
                         ["can_hear"] = Rules.Witnessed(dist, myHearing, same, los)
                     });
                 }

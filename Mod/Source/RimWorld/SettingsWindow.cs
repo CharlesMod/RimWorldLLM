@@ -33,7 +33,7 @@ namespace HermesVoice
             var outRect = new Rect(inRect.x, inRect.y + 36f, inRect.width, inRect.height - 36f);
             var view = new Rect(0f, 0f, outRect.width - 18f, _viewHeight);
             Widgets.BeginScrollView(outRect, ref _scroll, view);
-            var l = new Listing_Standard();
+            var l = new Listing_Standard { maxOneColumn = true };
             l.Begin(view);
             switch (_section)
             {

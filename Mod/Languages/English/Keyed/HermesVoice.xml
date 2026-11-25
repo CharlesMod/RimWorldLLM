@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <!-- Conversation log -->
+  <HV_LogLine>{0}: "{1}"</HV_LogLine>
+  <HV_LogLineTo>{0} to {1}: "{2}"</HV_LogLineTo>
   <HV_LogTitle>Conversation log</HV_LogTitle>
   <HV_LogFilterAll>All pawns</HV_LogFilterAll>
   <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>

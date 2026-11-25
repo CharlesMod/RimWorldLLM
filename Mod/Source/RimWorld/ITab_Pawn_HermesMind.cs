@@ -56,7 +56,7 @@ namespace HermesVoice
 
             var inner = new Rect(0f, 0f, rect.width - 18f, lastHeight);
             Widgets.BeginScrollView(rect, ref scroll, inner);
-            var list = new Listing_Standard();
+            var list = new Listing_Standard { maxOneColumn = true };
             list.Begin(inner);
             Draw(list, pawn, rec, view);
             lastHeight = list.CurHeight + 10f;

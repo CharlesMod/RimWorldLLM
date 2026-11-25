@@ -52,7 +52,7 @@ namespace HermesVoice
             if (!Prefs.DevMode) { Close(); return; }
             var view = new Rect(0f, 0f, inRect.width - 18f, viewHeight);
             Widgets.BeginScrollView(inRect, ref scroll, view);
-            var l = new Listing_Standard();
+            var l = new Listing_Standard { maxOneColumn = true };
             l.Begin(view);
 
             var rt = HermesBridge.Runtime;
