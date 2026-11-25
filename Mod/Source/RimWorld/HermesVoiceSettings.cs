@@ -69,6 +69,7 @@ namespace HermesVoice
         public bool evThought = true;
         public bool evArt = true;
         public bool evSleep = true;                     // sleep_start events (feed dreams)
+        public bool shareFooter = true;                 // "Share this moment": add the HermesVoice footer to shared text and images
         public bool dreamsEnabled = true;               // sleepers get a dream cloud (POST /thought kind "dream"); also GET /config dreams
         public bool evFirsts = true;
         public bool evGatherings = true;                // gathering / gathering_end events (meals, parties, weddings, rituals, speeches)
@@ -141,6 +142,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref evThought, "evThought", true);
             Scribe_Values.Look(ref evArt, "evArt", true);
             Scribe_Values.Look(ref evSleep, "evSleep", true);
+            Scribe_Values.Look(ref shareFooter, "shareFooter", true);
             Scribe_Values.Look(ref dreamsEnabled, "dreamsEnabled", true);
             Scribe_Values.Look(ref evFirsts, "evFirsts", true);
             Scribe_Values.Look(ref evGatherings, "evGatherings", true);

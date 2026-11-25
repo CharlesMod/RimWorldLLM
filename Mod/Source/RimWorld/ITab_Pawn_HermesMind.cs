@@ -99,7 +99,11 @@ namespace HermesVoice
                 for (int i = rec.Diaries.Count - 1; i >= 0; i--)
                 {
                     var d = rec.Diaries[i];
-                    Dim(l, UiUtil.DateOf(d.Key));
+                    var dr = l.GetRect(Text.LineHeight);
+                    GUI.color = Color.gray;
+                    Widgets.Label(new Rect(dr.x, dr.y, dr.width - 74f, dr.height), UiUtil.DateOf(d.Key));
+                    GUI.color = Color.white;
+                    if (Widgets.ButtonText(new Rect(dr.xMax - 70f, dr.y, 70f, dr.height), UiUtil.T("HV_Share_Button"))) ShareService.ShareDiary(pawn, d);
                     l.Label(d.Value);
                     l.Gap(4f);
                 }

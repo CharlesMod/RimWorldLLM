@@ -71,6 +71,7 @@ namespace HermesVoice
                     GUI.color = major ? new Color(1f, 0.8f, 0.55f) : Color.gray;
                     Widgets.Label(new Rect(r.x + 4f, r.y + 2f, r.width - 8f, Text.LineHeight), head);
                     GUI.color = Color.white;
+                    if (Widgets.ButtonText(new Rect(r.xMax - 74f, r.y + 2f, 70f, Text.LineHeight), UiUtil.T("HV_Share_Button"))) ShareService.ShareChronicle(e);
                     Widgets.Label(new Rect(r.x + 4f, r.y + 2f + Text.LineHeight, r.width - 8f, r.height - Text.LineHeight - 4f), e.Text);
                 }
                 cy += heights[i];
@@ -124,7 +125,7 @@ namespace HermesVoice
             {
                 // Skip rows that are scrolled out of sight.
                 if (cy + heights[i] >= scroll.y && cy <= scroll.y + outRect.height)
-                    DrawRow(new Rect(0f, cy, w, heights[i]), shown[i], i);
+                    DrawRow(new Rect(0f, cy, w, heights[i]), shown[i], i, entries);
                 cy += heights[i];
             }
             Widgets.EndScrollView();
@@ -147,7 +148,7 @@ namespace HermesVoice
             return key.CanTranslate() ? UiUtil.T(key) : code;
         }
 
-        void DrawRow(Rect r, ConversationEntry e, int index)
+        void DrawRow(Rect r, ConversationEntry e, int index, List<ConversationEntry> all)
         {
             if (index % 2 == 0) Widgets.DrawLightHighlight(r);
             float x = r.x + 4f, y = r.y + 2f;
@@ -164,6 +165,10 @@ namespace HermesVoice
                 nx += 24f;
                 nx = NameLink(nx, y, e.ListenerId, e.ListenerName);
             }
+
+            // Share buttons, right-aligned on line 1.
+            if (Widgets.ButtonText(new Rect(r.xMax - 74f, y, 70f, lh), UiUtil.T("HV_Share_Button"))) ShareService.ShareLineOf(e);
+            if (Widgets.ButtonText(new Rect(r.xMax - 74f - 124f, y, 120f, lh), UiUtil.T("HV_Share_Exchange"))) ShareService.ShareExchangeOf(all, e);
 
             // Line 2: trigger, intent, effect.
             string trig = UiUtil.T(e.Trigger == "player" ? "HV_LogTriggerPlayer" : "HV_LogTriggerAgent");
