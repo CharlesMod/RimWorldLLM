@@ -287,6 +287,7 @@ namespace HermesVoice
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Art"), ref s.evArt);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Sleep"), ref s.evSleep);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Firsts"), ref s.evFirsts);
+            l.CheckboxLabeled(UiUtil.T("HV_Ev_Gatherings"), ref s.evGatherings);
         }
 
         static void Bubbles(Listing_Standard l, HermesVoiceSettings s)

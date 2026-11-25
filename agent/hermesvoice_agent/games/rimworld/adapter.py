@@ -216,6 +216,25 @@ class RimWorldAdapter:
         pair = self.conversation_pair(event)
         return list(pair) if pair else None
 
+    def gather_info(self, event: dict) -> dict | None:
+        """A "gathering" event as plain data for core/group.py: kind, key, lead, couple, subject, participants and the
+        game's own words (label, ideo, deceased), or None when it is not a usable gathering."""
+        if event.get("type") != "gathering":
+            return None
+        data = event.get("data") or {}
+        kind = str(data.get("kind", ""))
+        if kind not in ("meal", "party", "wedding", "funeral", "speech", "ritual"):
+            return None
+        roles = [(int(a["id"]), a.get("role", "")) for a in event.get("actors", [])]
+        subject = next((i for i, r in roles if r == "subject"), None)
+        ids = [i for i, r in roles if r != "subject"]
+        lead = data.get("lead")
+        lead = int(lead) if isinstance(lead, int) or str(lead).isdigit() else next((i for i, r in roles if r == "lead"), None)
+        couple = [int(x) for x in data.get("couple") or []] or [i for i, r in roles if r == "couple"]
+        return {"kind": kind, "key": str(data.get("key") or event.get("seq")), "lead": lead, "couple": couple[:2],
+                "subject": subject, "participants": ids, "label": str(data.get("label", "")), "ideo": str(data.get("ideo", "")),
+                "room": str(data.get("room", "")), "deceased": str(data.get("deceased_name", ""))}
+
     def conversation_pair(self, event: dict) -> tuple[int, int] | None:
         if event.get("type") != "social":
             return None
@@ -286,7 +305,7 @@ class RimWorldAdapter:
         if t in ("death", "raid_start", "raid_end", "mental_break", "quest", "funeral", "lodger_arrive",
                  "prisoner", "wedding"):
             return True
-        return float(event.get("severity", 0)) >= 0.5 and t not in ("tend", "thought", "player_talk")
+        return float(event.get("severity", 0)) >= 0.5 and t not in ("tend", "thought", "player_talk", "gathering", "gathering_end")
 
     def chronicle_trigger(self, event: dict) -> bool:
         return event.get("type") in ("death", "raid_end")

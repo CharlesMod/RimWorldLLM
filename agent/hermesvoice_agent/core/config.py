@@ -146,6 +146,11 @@ class Config(BaseModel):
     grudge_retry_days: float = 0.25    # between seek-out attempts the mod refused or that came to nothing
     grudge_max_attempts: int = 3       # then the grudge fades
     grudge_recover_opinion: int = 10   # opinion of the other at or above this counts as recovered (make up, not confront)
+    gatherings: bool = True            # group scenes and ceremonies (core/group.py; also the mod's gatherings event toggle)
+    meal_talk: bool = True             # meals (3+ eating in one room) may become a group scene
+    group_max_speakers: int = 4        # speakers in one group scene (two windows rotate between them)
+    group_turns: list[int] = [5, 4, 2, 0]   # meal/party turn cap at 1x, 2x, 3x, 4x (0 = no scene; ceremonies keep at least their lead)
+    eulogy_max_tokens: int = 70        # the lead's line at a funeral
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

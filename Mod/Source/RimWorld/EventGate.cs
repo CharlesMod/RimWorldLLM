@@ -5,7 +5,7 @@ using Verse;
 
 namespace HermesVoice
 {
-    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought, Art, Sleep, Firsts }
+    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought, Art, Sleep, Firsts, Gatherings }
 
     /// <summary>
     /// Throttling and filtering for colony events. Game thread only (not thread-safe by design).
@@ -20,6 +20,7 @@ namespace HermesVoice
         const int TendCooldown = 20 * 60;
         const int MentalCooldown = 10 * 60;
         const int ThoughtCooldown = 10 * 60;
+        const int GatheringCooldown = 2500;   // per (kind, gathering key): a lord that flickers is not announced twice within an hour
 
         static readonly Dictionary<(EventKind, int), int> LastTick = new Dictionary<(EventKind, int), int>();
         static readonly Queue<float> RealTimes = new Queue<float>();
@@ -47,6 +48,7 @@ namespace HermesVoice
                 case EventKind.Art: return s.evArt;
                 case EventKind.Sleep: return s.evSleep && s.dreamsEnabled;
                 case EventKind.Firsts: return s.evFirsts;
+                case EventKind.Gatherings: return s.evGatherings;
             }
             return false;
         }
@@ -111,6 +113,7 @@ namespace HermesVoice
                 case EventKind.Tend: return TendCooldown;
                 case EventKind.MentalBreak: return MentalCooldown;
                 case EventKind.Thought: return ThoughtCooldown;
+                case EventKind.Gatherings: return GatheringCooldown;
                 default: return 0;
             }
         }
@@ -131,6 +134,12 @@ namespace HermesVoice
             if (!CooldownOk(kind, pawn?.thingIDNumber ?? 0, CooldownFor(kind))) return false;
             EventBus.Publish(spec);
             return true;
+        }
+
+        /// <summary>Cooldown per (Gatherings, gathering key): the key string is folded to an int so it shares the pawn-id table.</summary>
+        public static bool GatheringCooldownOk(string key)
+        {
+            return CooldownOk(EventKind.Gatherings, -(key ?? "").GetHashCode() - 1, CooldownFor(EventKind.Gatherings));
         }
 
         public static void Reset()
