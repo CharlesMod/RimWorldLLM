@@ -20,7 +20,7 @@ def default_pawn(pid: int, first: str, **kw) -> dict:
         "health": {"conditions": [], "missing_parts": [], "pain": 0.0, "consciousness": 1.0, "downed": False},
         "needs": {"mood": 0.6, "food": 0.5, "rest": 0.7, "joy": 0.4},
         "mood": {"value": 0.6, "thoughts": [{"label": "Ate without table", "offset": -3, "cause_pawn": None}]},
-        "job": "Cooking", "gear": {"worn": [], "held": []}, "relations": [], "status": "colonist",
+        "asleep": False, "job": "Cooking", "gear": {"worn": [], "held": []}, "relations": [], "status": "colonist",
         "faction": "colony", "map": 0, "pos": [10, 10], "room": "Kitchen", "alive": True, "spawned": True,
     }
     p.update(kw)
@@ -181,7 +181,7 @@ class FakeBridge:
             self.seen_ops[body["op_id"]] = {}
             return self._ok(applied=True)
         if path == "/thought" and req.method == "POST":
-            if body.get("kind", "thought") not in ("thought", "diary"):
+            if body.get("kind", "thought") not in ("thought", "diary", "dream"):
                 return self._err(400, "bad_request", "kind must be thought or diary")
             self.thought_log.append(body)
             self.seen_ops[body["op_id"]] = {}

@@ -110,6 +110,11 @@ class Config(BaseModel):
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
     repeat_guard: bool = True          # a conversation turn that repeats an earlier line is refused (core/loopguard.py)
     repeat_retries: int = 1            # retries with the reason in the prompt, then the talk ends with no line
+    dreams: bool = True                # sleepers get one surreal dream cloud a night (core/dreams.py; also the mod's dreams setting)
+    dream_chance: float = 0.5          # per actor per night: chance the night brings a dream
+    dreams_per_night: int = 1
+    dream_max_tokens: int = 30
+    dream_max_age_game: int = 2500     # a dream not ready this long (game units, 1 game hour) after falling asleep is dropped
     inner_monologue: bool = True       # master: aim in the intent pass, inner stream in the Mind, contrast clouds (core/inner.py)
     inner_stream_keep: int = 6         # inner thoughts kept per Mind
     inner_solo_aim: bool = True        # a line with no listener still gets an aim-only call

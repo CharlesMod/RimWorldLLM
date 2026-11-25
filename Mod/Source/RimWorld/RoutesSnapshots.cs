@@ -60,7 +60,7 @@ namespace HermesVoice
             {
                 ["injury"] = s.evInjury, ["death"] = s.evDeath, ["mental_break"] = s.evMentalBreak, ["level_up"] = s.evLevelUp,
                 ["tend"] = s.evTend, ["social"] = s.evSocial, ["raid"] = s.evRaid, ["quest"] = s.evQuest, ["lodger"] = s.evLodger,
-                ["prisoner"] = s.evPrisoner, ["funeral"] = s.evFuneral, ["weather_extreme"] = s.evWeather, ["thought"] = s.evThought, ["art"] = s.evArt
+                ["prisoner"] = s.evPrisoner, ["funeral"] = s.evFuneral, ["weather_extreme"] = s.evWeather, ["thought"] = s.evThought, ["art"] = s.evArt, ["sleep"] = s.evSleep
             };
         }
 
@@ -75,6 +75,7 @@ namespace HermesVoice
                 ["talk_frequency"] = s.talkFrequency,
                 ["wants_enabled"] = s.wantsEnabled,
                 ["recap"] = s.recapOnLoad,
+                ["dreams"] = s.dreamsEnabled,
                 ["art_descriptions"] = s.artDescriptions,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
                 ["dlc"] = new JArray(ActiveDlc()),
@@ -246,6 +247,7 @@ namespace HermesVoice
             }
             o["mood"] = new JObject { ["value"] = R(mood), ["thoughts"] = thoughts };
 
+            o["asleep"] = p.Spawned && !p.Dead && !p.Awake();
             o["job"] = p.CurJob != null ? new JObject { ["def"] = p.CurJob.def.defName, ["label"] = N(p.CurJob.GetReport(p)?.TrimEnd('.')) } : null;
             o["gear"] = new JObject
             {

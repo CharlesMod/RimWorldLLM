@@ -239,6 +239,7 @@ namespace HermesVoice
             l.TextFieldNumeric(ref s.pauseAmbientAtSpeed, ref _speedBuf, 0, 4);
             Note(l, UiUtil.T("HV_Talk_PauseHelp"));
             l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Dreams_Enable"), ref s.dreamsEnabled, UiUtil.T("HV_Dreams_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Recap_Enable"), ref s.recapOnLoad, UiUtil.T("HV_Recap_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Art_Enable"), ref s.artDescriptions, UiUtil.T("HV_Art_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Wants_Enable"), ref s.wantsEnabled, UiUtil.T("HV_Wants_EnableTip"));
@@ -284,6 +285,7 @@ namespace HermesVoice
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Weather"), ref s.evWeather);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Thought"), ref s.evThought);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Art"), ref s.evArt);
+            l.CheckboxLabeled(UiUtil.T("HV_Ev_Sleep"), ref s.evSleep);
         }
 
         static void Bubbles(Listing_Standard l, HermesVoiceSettings s)

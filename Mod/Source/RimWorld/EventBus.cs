@@ -19,6 +19,7 @@ namespace HermesVoice
         public IntVec3? At;               // where it happened, for hearing; null with AllOnMap
         public bool AllOnMap;             // everyone on the map knows (raid, quest, weather)
         public List<Pawn> AlsoWitness = new List<Pawn>();
+        public List<Pawn> ForceWitness = new List<Pawn>();   // witnesses even while asleep (the sleeper of a sleep_start)
         public string LedgerId;
         public JObject Data = new JObject();
 
@@ -69,6 +70,8 @@ namespace HermesVoice
             }
             foreach (var p in e.AlsoWitness)
                 if (p != null && !p.Dead && p.RaceProps != null && p.RaceProps.Humanlike && IsSpeaker(p) && p.Awake()) result.Add(p.thingIDNumber);
+            foreach (var p in e.ForceWitness)
+                if (p != null && !p.Dead && p.RaceProps != null && p.RaceProps.Humanlike && IsSpeaker(p)) result.Add(p.thingIDNumber);
             return result.OrderBy(i => i).ToList();
         }
     }

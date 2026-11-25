@@ -132,7 +132,7 @@ namespace HermesVoice
 
         public static void Reset()
         {
-            Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear();
+            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear();
         }
 
         static bool Want(EventKind k) { return EventGate.GameLive() && EventGate.KindEnabled(k); }
@@ -147,6 +147,28 @@ namespace HermesVoice
             PollWeather(now, quiet);
             PollFunerals(now, quiet);
             PollRaids(now);
+            PollSleep(now, quiet);
+        }
+
+        static readonly SleepTracker Sleep = new SleepTracker();
+
+        /// <summary>A colonist asleep in a bed (not downed, not anesthetized): one low-severity sleep_start per night, the sleeper its only witness.</summary>
+        static void PollSleep(int now, bool quiet)
+        {
+            var present = new HashSet<int>();
+            foreach (var p in HomePawns())
+            {
+                if (!p.RaceProps.Humanlike || p.Faction == null || !p.Faction.IsPlayer || p.IsQuestLodger()) continue;
+                present.Add(p.thingIDNumber);
+                bool asleep = !p.Awake() && !p.Downed && p.InBed() && !p.health.hediffSet.HasHediff(HediffDefOf.Anesthetic);
+                if (!Sleep.Observe(p.thingIDNumber, asleep, now) || quiet || !Want(EventKind.Sleep)) continue;
+                var spec = new EventSpec { Type = "sleep_start", Map = p.Map, At = p.Position, Severity = 0.1f,
+                    Summary = p.LabelShort + " fell asleep." };
+                spec.Involve(p, "sleeper", false);
+                spec.ForceWitness.Add(p);
+                EventBus.Publish(spec);
+            }
+            Sleep.Retain(present);
         }
 
         static IEnumerable<Pawn> HomePawns()

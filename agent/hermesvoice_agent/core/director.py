@@ -32,7 +32,8 @@ from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, 
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
-from . import inner
+from . import dreams, inner
+from .dreams import DreamBook
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
@@ -102,6 +103,7 @@ class Director:
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
         self.art = ArtQueue()                    # core/art.py
+        self.dream_book = DreamBook()
         self.idle = IdleRunner(self)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
@@ -282,6 +284,9 @@ class Director:
             for aid in e.get("witnesses", []):
                 if aid not in self.minds and not self.adapter.is_controlled(aid):
                     await self.load_actor(aid)
+            if e.get("type") == dreams.SLEEP_EVENT:       # a sleeper's night, not a memory: it only queues a dream
+                self.dream_book.note(e, self, self.bridge.env.game)
+                continue
             written = memory.remember_event(self.minds, e, self.adapter)
             self.dirty.update(aid for aid, _ in written)
             if self.adapter.chronicle_worthy(e):

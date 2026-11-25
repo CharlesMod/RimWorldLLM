@@ -20,9 +20,9 @@ namespace HermesVoice.Bridge
         public const int MaxThoughtChars = 500;
         public const int MaxDiaries = 7;
         public const int MaxDiaryChars = 1500;
-        public const string KindThought = "thought", KindDiary = "diary";
+        public const string KindThought = "thought", KindDiary = "diary", KindDream = "dream";
 
-        public static bool KnownKind(string kind) { return kind == KindThought || kind == KindDiary; }
+        public static bool KnownKind(string kind) { return kind == KindThought || kind == KindDiary || kind == KindDream; }
 
         public readonly Dictionary<int, MindRecord> Records = new Dictionary<int, MindRecord>();
 

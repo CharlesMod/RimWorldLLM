@@ -75,6 +75,12 @@ class RimWorldAdapter:
     thought_request = (
         "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
         "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
+    dream_system = (
+        "You are the sleeping mind of one RimWorld colonist: one strange dream fragment, as it is dreamt. First person, "
+        "present tense, plain words, surreal but small. Nothing sexual, nothing gory, never about anyone not listed.")
+    dream_request = (
+        "Write one surreal dream fragment, under 14 words, no quotes, bending two or three things listed under what "
+        "happened today or what you were thinking. Never romantic or sexual.")
     chronicle_system = (
         "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
         "words, a little gallows humour at most. You describe only what the notes say happened. You never "

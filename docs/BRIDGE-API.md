@@ -132,14 +132,16 @@ either pawn is under 18 years biological age. The game's own thoughts, opinions 
 ### `POST /thought`
 `{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed.", "kind": "thought", "surface": "Should have stayed in bed."}`. `kind` is
 optional: `"thought"` (the default) is the inner monologue, `"diary"` is the pawn's daily diary
-entry. Both are shown in the Mind tab; neither makes an effect. `surface` is optional: one short
+entry, `"dream"` is a sleeping pawn's dream fragment. All are shown in the Mind tab; none makes an effect.
+A `dream` is stored in the thoughts list like a thought and shown as the same cloud over the (sleeping) pawn,
+paced like any thought cloud, unless the mod setting "Dreams while colonists sleep" is off (then it is stored, not drawn). `surface` is optional: one short
 sentence (at most about 90 characters) that the receiver may show to players in a transient
 display; the full `text` stays in the Mind tab. A `thought` with no `surface` is shown that way
 only if `text` is already short; a `diary` is never shown that way. The agent fills `surface`
 (its short "passing thought" job sends `text` and `surface` as the same line). The mod keeps them in
 separate lists per pawn, so diaries do not push inner thoughts out: the last 20 thoughts and the
 last 7 diary entries (older ones are dropped). Text is trimmed and cut at 500 characters for a
-thought and 1,500 for a diary entry. An unknown `kind` is `bad_request`. Reply `{"stored": true}`.
+thought and 1,500 for a diary entry. An unknown `kind` (not thought, diary or dream) is `bad_request`. Reply `{"stored": true}`.
 
 The agent's inner monologue (agent switch `inner_monologue`) uses this route only as before: an inner
 *aim* (what the pawn privately wants, made after a spoken line) is sometimes posted as a `thought` with
@@ -253,7 +255,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "dreams": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).
@@ -288,7 +290,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk, art_created`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created, sleep_start`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
@@ -298,6 +300,11 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   `description` (the game's own tale text, game text, at most 400 characters). The maker has role
   `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
   one game hour per maker.
+- `sleep_start` fires when a colonist falls asleep in a bed (not downed, not anesthetized; a colonist first seen already asleep,
+  as after a load, does not fire), at most once per pawn per 8 game hours. The sleeper has role `sleeper` and is the only
+  witness (the mod lists it explicitly, because sleepers are never witnesses otherwise). Severity 0.1, not chronicle-worthy; the
+  agent writes no memory for it, it only may queue one dream. Toggle `events.sleep` (also off when `dreams` is off).
+  `GET /pawn/{id}` carries `asleep` (true while the pawn is not awake). The agent answers with `POST /thought` `kind: "dream"`.
 - `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
   The mod's own `HV_` thoughts never produce one.
 - Per-event toggles in settings apply to the ring as well as to the push. Events are throttled

@@ -162,13 +162,17 @@ namespace HermesVoice
             if (kt != null && kt.Type != JTokenType.Null)
             {
                 kind = kt.Type == JTokenType.String ? (string)kt : "";
-                if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\" or \"diary\"");
+                if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\", \"diary\" or \"dream\"");
             }
             int tick = Find.TickManager.TicksGame;
             if (kind == MindBook.KindDiary) HermesBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
             else HermesBridge.Minds.AddThought(p.thingIDNumber, tick, text);
             // A thought also shows on the map as a short cloud (never a diary). "surface" is the short line for the map.
             if (kind == MindBook.KindThought) SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
+            // A dream is stored like a thought and drawn as the same cloud, even over a sleeper (the draw path never
+            // skips sleeping pawns); the dreams setting turns the cloud off, the Mind tab still shows it.
+            else if (kind == MindBook.KindDream && HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.dreamsEnabled)
+                SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
 
