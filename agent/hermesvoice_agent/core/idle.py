@@ -14,7 +14,7 @@ import hashlib
 import logging
 from typing import TYPE_CHECKING
 
-from . import art
+from . import art, dreams
 from . import gamedata as gd
 from . import inner, memory
 from .bridge import BridgeError
@@ -164,6 +164,9 @@ class IdleRunner:
             return
         if self._start_art():
             return
+        for job in d.dream_book.due(d) if dreams.enabled(d) else []:
+            if self._start_actor("dream", job.actor, self._dream(job)):
+                return
         for aid, target in self.due_diary():
             if self._start_actor("diary", aid, self._diary(aid, target)):
                 return
@@ -296,6 +299,14 @@ class IdleRunner:
             await d.bridge.thought(aid, s.text, kind="diary")
         except BridgeError as e:
             log.warning("diary thought refused for %s: %s", aid, e)
+
+    async def _dream(self, job) -> None:
+        """A dream cloud for a sleeper (core/dreams.py). Placed before the diary and the thought: its window is the
+        actor's sleep, which a diary or a thought can wait out."""
+        try:
+            await dreams.run_dream(self.d, job, self.lease)
+        except Exception:
+            log.exception("dream failed")
 
     async def _thought(self, aid: int, mems: list) -> None:
         """One short thought for the map's cloud balloon. The text is the surface line itself; no diary, no memory."""
