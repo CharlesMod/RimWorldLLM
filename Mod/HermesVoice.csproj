@@ -40,7 +40,7 @@
             <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
             <DeployTextures Include="$(ProjectDir)Textures/**/*" />
             <!-- Engine binaries (engine/build.sh -> engine/dist/<os>-<arch>/) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
-            <DeployEngine Include="$(ProjectDir)../engine/dist/*/*" />
+            <DeployEngine Include="$(ProjectDir)../engine/dist/**/*" Exclude="$(ProjectDir)../engine/dist/SHA256SUMS" />
             <DeployWheel Include="$(ProjectDir)../agent/dist/*.whl" />
             <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
         </ItemGroup>
