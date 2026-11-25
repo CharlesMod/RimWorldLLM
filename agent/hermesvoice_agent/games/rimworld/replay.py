@@ -31,7 +31,20 @@ def load_jsonl(path: str | Path) -> tuple[list[dict], list[dict]]:
     return pawns, events
 
 
+async def _settle(d, limit: int = 40) -> None:
+    """Let idle work finish: one idle job starts per step, so step until a step produces nothing new."""
+    for _ in range(limit):
+        before = (len(d.idle.log), len(d.dropped))
+        await d.step()
+        await d.drain()
+        if (len(d.idle.log), len(d.dropped)) == before and not d.idle.active():
+            return
+
+
 async def replay(path: str | Path, cfg: Config, llm: LLMClient | None = None) -> list[dict]:
+    """Run the director over recorded events. Across days, the evening and the turn of the day are given
+    idle time, so reflections, diaries and chronicle entries appear after the lines they follow."""
+    import tempfile
     import httpx
     pawns, events = load_jsonl(path)
     fb = FakeBridge()
@@ -42,22 +55,35 @@ async def replay(path: str | Path, cfg: Config, llm: LLMClient | None = None) ->
     for i in sorted(ids - set(fb.pawns)):
         fb.add_pawn(i, f"Pawn{i}")
     adapter = RimWorldAdapter()
-    bridge = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", fb.token, adapter.protocol)
-    clock = {"t": 0.0}
-    d = Director(cfg, bridge, llm or FakeLLM(), adapter, clock=lambda: fb.tick / 60.0)  #=lambda: fb.tick / 60.0)
-    await d.start()
-    for e in sorted(events, key=lambda e: e.get("seq", 0)):
-        fb.tick = max(fb.tick, int(e.get("tick", fb.tick)))
-        fb.seq = max(fb.seq, int(e.get("seq", fb.seq + 1)) - 1)
-        fb.add_event(e["type"], [(p["id"], p.get("role", "")) for p in e.get("pawns", [])], e.get("summary", ""),
-                     e.get("witnesses", []), e.get("severity", 0.5), e.get("ledger_id"), e.get("data"))
-        await d.step()
-        await d.drain()
-    await d.step()
-    await d.drain()
-    out = []
-    for s in d.said:
-        out.append(s)
-    for pid, why in d.dropped:
-        out.append({"actor": pid, "dropped": why})
-    return out
+    upd = adapter.units_per_day
+    with tempfile.TemporaryDirectory(prefix="hermesvoice-replay-") as tmp:     # never touch the real chronicle
+        cfg = cfg.model_copy(update={"data_dir": Path(tmp)})
+        bridge = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", fb.token, adapter.protocol)
+        d = Director(cfg, bridge, llm or FakeLLM(), adapter, clock=lambda: fb.tick / 60.0)
+        await d.start()
+        cur_day = None
+        for e in sorted(events, key=lambda e: e.get("seq", 0)):
+            day = int(e.get("tick", fb.tick)) // upd
+            if cur_day is not None and day > cur_day:
+                fb.tick = max(fb.tick, cur_day * upd + int(0.75 * upd))    # the evening: diaries
+                await _settle(d)
+                fb.tick = max(fb.tick, (cur_day + 1) * upd + 10)           # the turn of the day: the chronicle
+                await _settle(d)
+            cur_day = day
+            fb.tick = max(fb.tick, int(e.get("tick", fb.tick)))
+            fb.seq = max(fb.seq, int(e.get("seq", fb.seq + 1)) - 1)
+            fb.add_event(e["type"], [(p["id"], p.get("role", "")) for p in e.get("pawns", [])], e.get("summary", ""),
+                         e.get("witnesses", []), e.get("severity", 0.5), e.get("ledger_id"), e.get("data"))
+            await d.step()
+            await d.drain()
+        if cur_day is not None:
+            fb.tick = max(fb.tick, cur_day * upd + int(0.75 * upd))
+            await _settle(d)
+            fb.tick = max(fb.tick, (cur_day + 1) * upd + 10)
+            await _settle(d)
+        else:
+            await _settle(d)
+        out = list(d.said)
+        out += [{"actor": pid, "dropped": why} for pid, why in d.dropped]
+        out += d.idle.log
+        return out

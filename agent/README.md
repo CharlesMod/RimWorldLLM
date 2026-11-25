@@ -56,7 +56,17 @@ can stand in for HTTP.
   `scene_present`, `build_scene`.
 - Minds: `facts_hash`, `build_fixed_bio`, `build_voice_card`, `talk_weight`, `voice_example_prompt`.
 
-Not built: Skyrim/Fallout or emulator adapters, reflection, diary and chronicle, a narrator endpoint.
+Built (milestones 3 and 5): reflection (one JSON-schema call in an idle window; the only place block C changes),
+memory upkeep (merge similar old memories, drop decayed ones, pins), gossip and confiding with visibility
+bookkeeping, secrets (a sanitizer check against quoting a private memory), daily diaries (sent as `POST /thought`
+with `kind: "diary"`), the narrator's chronicle (slot 0, idle-only, rolled by self-summary under 6,000 tokens;
+stored in the agent data dir as chronicle.json/.jsonl/.md) and narrator coverage with a minimum gap. Idle work
+runs one job at a time and is cancelled the moment an actor window is wanted. `replay tests/data/multiday.jsonl`
+shows reflections, diaries and chronicle entries over four days. Player edits to director's notes or the voice
+card win on a `PUT /mind` conflict.
+
+Not built: Skyrim/Fallout or emulator adapters, a chronicle endpoint in the contract (`POST /chronicle` is a proposal,
+off unless `chronicle_bridge` is set).
 
 ## Contract notes (docs/BRIDGE-API.md v2, Parts 1 and 2)
 
