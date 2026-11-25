@@ -14,7 +14,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, memory
+from . import agegate, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -73,6 +73,7 @@ class Director:
         self.name_tokens: dict[int, set[str]] = {}
         self.weights: dict[int, float] = {}
         self.ledger = Ledger(adapter.is_ledger_end)
+        self.recap_epoch = 0                     # the save epoch whose recap was attempted
         q = cfg.quotas
         self.leases = LeaseManager(cfg.actor_slots, cfg.narrator_slot,
                                    QuotaTracker(q.actor_per_day, q.pair_per_day, self.day,
@@ -231,6 +232,8 @@ class Director:
         await self.refresh_config()
         await self.load_world()
         self.chronicle.rollback(self.bridge.env.game)      # the chronicle follows the save back in time
+        if self.cfg.recap_enabled and self.bridge_cfg.get("recap") is not False:
+            self._spawn(recap.run(self, self.bridge.env.epoch))     # once per epoch; a one-off, no voice budget
 
     # ---- main loop ------------------------------------------------------
     async def step(self) -> None:

@@ -46,6 +46,8 @@ class FakeBridge:
         self.chronicle_log: list[dict] = []
         self.chronicle_supported = True        # POST/GET /chronicle are in the contract; a test can turn it off (an older mod: 404)
         self.chronicle: list[dict] = []        # what the mod holds (cap 120)
+        self.recap_log: list[dict] = []        # POST /recap bodies accepted
+        self.recap_refuse: str | None = None   # a test sets "expired"/"conflict" to model the mod refusing
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -181,6 +183,15 @@ class FakeBridge:
             self.thought_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok()
+        if path == "/recap":
+            lines = body.get("lines")
+            if self.recap_refuse:
+                return self._err(409 if self.recap_refuse == "conflict" else 410, self.recap_refuse)
+            if not isinstance(lines, list) or not 1 <= len(lines) <= 3 or not all(isinstance(x, str) for x in lines):
+                return self._err(400, "bad_request", "lines: 1 to 3 strings")
+            self.recap_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(shown=True)
         if path == "/chronicle" and self.chronicle_supported:
             if req.method == "GET":
                 since = int(req.url.params.get("since_day", 0))
