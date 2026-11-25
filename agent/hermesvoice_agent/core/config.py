@@ -96,6 +96,7 @@ class Config(BaseModel):
     chronicle_enabled: bool = True
     chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
     chronicle_max_tokens: int = 220
+    recap_enabled: bool = True         # "Previously on..." recap after a save load (core/recap.py; also the mod's recap setting)
     narrator_context_tokens: int = 6000
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
     shout_gap_real_s: float = 45.0     # one speaker shouts at most this often (a calm scene cannot burst every line)

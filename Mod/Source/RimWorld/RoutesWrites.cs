@@ -18,6 +18,7 @@ namespace HermesVoice
             r.Add("POST", "/thought", true, Thought);
             r.Add("POST", "/chronicle", true, ChroniclePost);
             r.Add("GET", "/chronicle", true, ChronicleGet);
+            r.Add("POST", "/recap", true, RecapPost);
             r.Add("GET", "/mind/{id}", true, MindGet);
             r.Add("PUT", "/mind/{id}", true, MindPut);
             r.Add("GET", "/talk", true, Talk);
@@ -194,6 +195,32 @@ namespace HermesVoice
             string q = c.Q("since_day");
             if (!string.IsNullOrEmpty(q) && !int.TryParse(q, out since)) return ApiResult.Fail("bad_request", "since_day must be an integer");
             return ApiResult.Success(new JObject { ["entries"] = HermesBridge.Chronicle.Since(since) });
+        }
+
+        // ------------------------------------------------------------- recap
+        // A neutral letter, not a message bubble or a dialog: it waits in the letter stack, never pauses the game and
+        // is easy to ignore, and the player can re-read it from the stack until they dismiss it.
+        static ApiResult RecapPost(RouteContext c)
+        {
+            var b = c.Body;
+            if (b["epoch"] == null || b["epoch"].Type != JTokenType.Integer) return ApiResult.Fail("bad_request", "epoch (an integer) is required");
+            var arr = b["lines"] as JArray;
+            if (arr == null) return ApiResult.Fail("bad_request", "lines (an array of strings) is required");
+            var raw = new List<string>();
+            foreach (var t in arr)
+            {
+                if (t.Type != JTokenType.String) return ApiResult.Fail("bad_request", "lines must be strings");
+                raw.Add((string)t);
+            }
+            var lines = RecapGate.CleanLines(raw);
+            if (lines.Count == 0) return ApiResult.Fail("bad_request", "lines is empty");
+            var comp = HermesVoiceGameComponent.Instance;
+            if (comp == null) return ApiResult.Fail("no_game");
+            var verdict = comp.RecapGate.Check(b.Value<int>("epoch"), Environment.TickCount64, HermesVoiceMod.Settings.recapOnLoad);
+            if (verdict != RecapVerdict.Accept) return ApiResult.Fail(RecapGate.ErrorCode(verdict), verdict.ToString());
+            string colony = Faction.OfPlayer != null ? Faction.OfPlayer.Name : "";
+            Find.LetterStack.ReceiveLetter(UiUtil.T("HV_Recap_Title", colony), string.Join("\n\n", lines), LetterDefOf.NeutralEvent);
+            return ApiResult.Success(new JObject { ["shown"] = true });
         }
 
         // -------------------------------------------------------------- mind

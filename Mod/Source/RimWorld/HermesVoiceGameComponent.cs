@@ -42,6 +42,8 @@ namespace HermesVoice
 
         // One per game session: the engine may still be starting when the save loads, so a loaded game arms the notice and
         // this waits (polling status through EngineManager) until the engine says which model is in use.
+        public readonly Bridge.RecapGate RecapGate = new Bridge.RecapGate();
+
         static readonly Bridge.FallbackNotice _fallbackNotice = new Bridge.FallbackNotice();
 
         static void CheckFallbackNotice()
@@ -63,6 +65,7 @@ namespace HermesVoice
             HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();
             _fallbackNotice.Disarm();
+            if (Instance != null) Instance.RecapGate.Disarm();
             Instance = null;
         }
 
@@ -72,6 +75,7 @@ namespace HermesVoice
             SaveEpoch = _sessionEpoch = Math.Max(SaveEpoch, _sessionEpoch) + 1;
             SpeechBubbles.Clear();
             _fallbackNotice.Arm(Environment.TickCount64);
+            RecapGate.Arm(SaveEpoch, true, Environment.TickCount64);
         }
 
         public override void StartedNewGame()
@@ -79,6 +83,7 @@ namespace HermesVoice
             base.StartedNewGame();
             SaveEpoch = _sessionEpoch = _sessionEpoch + 1;
             _fallbackNotice.Arm(Environment.TickCount64);
+            RecapGate.Arm(SaveEpoch, false, Environment.TickCount64);
             Minds.Clear();
             HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();

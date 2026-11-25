@@ -82,6 +82,13 @@ class RimWorldAdapter:
     chronicle_request = (
         "Write the chronicle paragraph for this day: 3 to 5 sentences, under 110 words, one paragraph. Use the "
         "story so far for continuity only; do not repeat it.")
+    recap_system = (
+        "You write the 'Previously on...' recap that greets the player when a saved RimWorld colony is loaded, like the "
+        "start of a TV episode. Third person, past tense, plain words, a little dry. Use only what the chronicle entries "
+        "say; never invent people, places or numbers, never propose or predict events, never address the player.")
+    recap_request = (
+        "Write exactly 3 lines, one short sentence each, under 20 words, most recent last, the last line ending on "
+        "what is still unresolved. No title, no numbering, no quotes.")
     chronicle_summary_system = (
         "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
         "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")

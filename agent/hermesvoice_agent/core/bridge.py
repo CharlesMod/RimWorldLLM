@@ -203,6 +203,10 @@ class BridgeClient:
         return await self._req("POST", "/chronicle",
                                json_body=self._write_body({"day": day, "text": text, "kind": kind}, None, op_id))
 
+    async def recap(self, epoch: int, lines: list[str], op_id: str | None = None) -> dict:
+        """Contract: POST /recap {op_id, epoch, lines: [up to 3]}; the mod shows it once per save load, soon after the load."""
+        return await self._req("POST", "/recap", json_body=self._write_body({"epoch": epoch, "lines": lines}, None, op_id))
+
     async def get_chronicle(self, since_day: int = 0) -> list[dict]:
         """Contract: GET /chronicle?since_day=N -> entries, oldest first (day, kind, text and the mod's receive time)."""
         b = await self._req("GET", "/chronicle", params={"since_day": since_day})
