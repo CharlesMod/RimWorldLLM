@@ -77,14 +77,17 @@ namespace HermesVoice
             if (pawn == null || s == null || !s.showBubbles || !s.showThoughts || s.bubbleStyle == "classic") return;
             string line = ThoughtPacing.Surface(surface, text);
             if (line == null) return;
-            int now = Find.TickManager.TicksGame, dur = Mathf.Max(1, s.bubbleDurationSec) * 60;
+            int now = Find.TickManager.TicksGame, dur = ThoughtPacing.GapTicks(Mathf.Max(1, s.bubbleDurationSec), TicksPerRealSec());   // real seconds at any game speed (never shorter than the 1x count)
             bool thoughtActive = false;
             for (int i = 0; i < Active.Count; i++)
                 if (Active[i].Pawn == pawn && Active[i].Ambient && now - Active[i].StartTick <= dur) thoughtActive = true;
             var v = Pacing.Offer(pawn.thingIDNumber, line, now, thoughtActive, SpeechVisible(pawn, now, dur),
-                                 Mathf.Max(0, s.thoughtPerPawnSec) * 60, Mathf.Max(0, s.thoughtGlobalSec) * 60);
+                                 ThoughtPacing.GapTicks(s.thoughtPerPawnSec, TicksPerRealSec()), ThoughtPacing.GapTicks(s.thoughtGlobalSec, TicksPerRealSec()));
             if (v == ThoughtPacing.Verdict.Show) ShowThought(pawn, line);
         }
+
+        // Game ticks per real second now (60 at 1x, 180, 360, 900): the pacing gaps are real seconds, not game seconds.
+        static float TicksPerRealSec() { return 60f * Find.TickManager.TickRateMultiplier; }
 
         static void ShowThought(Pawn pawn, string line)
         {
@@ -110,7 +113,7 @@ namespace HermesVoice
                 for (int i = 0; i < pawns.Count; i++)
                     if (pawns[i].thingIDNumber == id) return SpeechVisible(pawns[i], now, durationTicks);
                 return false;
-            }, Mathf.Max(0, s.thoughtGlobalSec) * 60, _ready);
+            }, ThoughtPacing.GapTicks(s.thoughtGlobalSec, TicksPerRealSec()), _ready, ThoughtPacing.StaleFor(TicksPerRealSec()));
             for (int k = 0; k < _ready.Count; k++)
                 for (int i = 0; i < pawns.Count; i++)
                     if (pawns[i].thingIDNumber == _ready[k].Key) { ShowThought(pawns[i], _ready[k].Value); break; }
@@ -140,7 +143,7 @@ namespace HermesVoice
             bool draw = s.showBubbles;
 
             int now = Find.TickManager.TicksGame;
-            int durationTicks = Mathf.Max(1, s.bubbleDurationSec) * 60;
+            int durationTicks = ThoughtPacing.GapTicks(Mathf.Max(1, s.bubbleDurationSec), TicksPerRealSec());   // readable at 3x: the setting is real seconds of watching
 
             for (int i = Active.Count - 1; i >= 0; i--)
             {

@@ -124,7 +124,8 @@ high: Insult, Slight, KindWords, DeepTalk, RomanceAttempt, MarriageProposal, Bre
 Reassure, Counsel; idle: Chitchat) carries extra `data`: `vanilla: true`, `ref` (string, send it back as
 `vanilla_ref`), `tier` (`high` or `idle`), `vanilla_text` (the sentence the game's grammar wrote, the
 line must stay on its subject), `window_ticks` (how long the line may take to attach; default 10 game
-minutes, setting `attachWindowMinutes`), plus the usual `interaction` and `interaction_label`. High tier
+minutes, setting `attachWindowMinutes`) and `window_real_s` (or this many real seconds, whichever is longer; default 5,
+setting `attachRealFloorSec`; at 4x the tick window alone is half a second), plus the usual `interaction` and `interaction_label`. High tier
 events bypass the 60 s social cooldown; idle ones keep it. Romance-type interactions are never sent when
 either pawn is under 18 years biological age. The game's own thoughts, opinions and fights are untouched.
 
@@ -196,7 +197,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).

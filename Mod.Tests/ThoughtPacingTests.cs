@@ -69,5 +69,30 @@ namespace HermesVoice.Tests
             Assert.Equal(ThoughtPacing.Verdict.Wait, Offer(p, 1, 0, speech: true));
             Assert.Equal(ThoughtPacing.Verdict.Drop, Offer(p, 1, 5, speech: true));
         }
-    }
+    
+        [Fact]
+        public void GapsAreRealSecondsAtEverySpeed()
+        {
+            Assert.Equal(20 * 60, ThoughtPacing.GapTicks(20, 60f));
+            Assert.Equal(20 * 180, ThoughtPacing.GapTicks(20, 180f));          // 2x
+            Assert.Equal(20 * 900, ThoughtPacing.GapTicks(20, 900f));          // 4x: still 20 s of watching
+            Assert.Equal(20 * 60, ThoughtPacing.GapTicks(20, 0f));             // paused or odd: never below the 1x count
+            Assert.Equal(0, ThoughtPacing.GapTicks(0, 900f));
+            Assert.Equal(ThoughtPacing.StaleTicks, ThoughtPacing.StaleFor(60f) );
+            Assert.Equal(10 * 360, ThoughtPacing.StaleFor(360f));              // a waiting thought lives 10 s at 3x too
+        }
+
+        [Fact]
+        public void ThoughtsPerRealMinuteDoNotGrowWithSpeed()
+        {
+            foreach (float tps in new[] { 60f, 180f, 360f, 900f })
+            {
+                var p = new ThoughtPacing(); int shown = 0, step = (int)(tps / 10);   // offer every 0.1 real s for 10 real minutes
+                int perPawn = ThoughtPacing.GapTicks(120, tps), glob = ThoughtPacing.GapTicks(20, tps);
+                for (int t = 0; t < 6000; t++)
+                    if (p.Offer(t % 8, "x", t * step, false, false, perPawn, glob) == ThoughtPacing.Verdict.Show) shown++;
+                Assert.InRange(shown, 20, 31);                                  // global gap 20 s: at most 30 in 10 min
+            }
+        }
+}
 }

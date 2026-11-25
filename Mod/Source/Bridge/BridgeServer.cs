@@ -307,7 +307,13 @@ namespace HermesVoice.Bridge
                         Write(ctx, 504, Envelope.Json(_state, ApiResult.Fail("timeout", "the game did not answer in time; the request was dropped")));
                         return;
                     }
-                    req.Done.Wait(); // claimed by the game thread; completion is imminent
+                    // claimed by the game thread, so completion is imminent; but never wait for ever on the game
+                    // (a frozen frame or an exception that skipped Done must not pin a server thread)
+                    if (!req.Done.Wait(_opt.GameThreadTimeout))
+                    {
+                        Write(ctx, 504, Envelope.Json(_state, ApiResult.Fail("timeout", "the game did not finish the request in time")));
+                        return;
+                    }
                 }
                 Write(ctx, req.StatusCode, req.Response);
             }

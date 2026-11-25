@@ -152,6 +152,7 @@ namespace HermesVoice.Bridge
         sealed class Slot
         {
             public int A, B, Tick;
+            public double Real;            // real seconds (the caller's clock) when the interaction happened
             public bool Done;
             public T Payload;
         }
@@ -164,31 +165,42 @@ namespace HermesVoice.Bridge
 
         public int Count { get { return _slots.Count; } }
 
-        public void Register(string key, int initiatorId, int recipientId, int tick, T payload)
+        /// <param name="nowReal">real seconds now (any monotonic real clock); only used with a real-time floor</param>
+        public void Register(string key, int initiatorId, int recipientId, int tick, T payload, double nowReal = 0)
         {
             if (string.IsNullOrEmpty(key) || _slots.ContainsKey(key)) return;
-            _slots[key] = new Slot { A = initiatorId, B = recipientId, Tick = tick, Payload = payload };
+            _slots[key] = new Slot { A = initiatorId, B = recipientId, Tick = tick, Real = nowReal, Payload = payload };
             _order.Enqueue(key);
             while (_slots.Count > _capacity && _order.Count > 0) _slots.Remove(_order.Dequeue());
         }
 
         /// <summary>The line is from speakerId to listenerId at tick now. The pair must match the interaction's pair exactly
-        /// (speaker is the initiator, listener the recipient). An attached slot never attaches again.</summary>
-        public Result TryAttach(string key, int speakerId, int listenerId, int now, int windowTicks, out T payload)
+        /// (speaker is the initiator, listener the recipient). An attached slot never attaches again.
+        /// Dual clock: the line attaches within windowTicks of game time OR within realFloorSec of real time, whichever is
+        /// longer (a window of 417 ticks is 7 s at 1x but 0.5 s at 4x). realFloorSec 0 is the ticks-only rule.</summary>
+        public Result TryAttach(string key, int speakerId, int listenerId, int now, int windowTicks, out T payload,
+                                double nowReal = 0, double realFloorSec = 0)
         {
             payload = default(T);
             Slot s;
             if (string.IsNullOrEmpty(key) || !_slots.TryGetValue(key, out s)) return Result.Unknown;
             if (s.A != speakerId || s.B != listenerId) return Result.WrongPair;
             if (s.Done) return Result.AlreadyAttached;
-            if (now - s.Tick > windowTicks || now < s.Tick) { _slots.Remove(key); return Result.Expired; }
+            if (!Fresh(s, now, windowTicks, nowReal, realFloorSec)) { _slots.Remove(key); return Result.Expired; }
             s.Done = true;
             payload = s.Payload;
             return Result.Attached;
         }
 
+        static bool Fresh(Slot s, int now, int windowTicks, double nowReal, double realFloorSec)
+        {
+            if (now < s.Tick) return false;                                   // from before a load
+            if (now - s.Tick <= windowTicks) return true;
+            return realFloorSec > 0 && nowReal >= s.Real && nowReal - s.Real <= realFloorSec;
+        }
+
         /// <summary>Drops slots older than the window (called now and then from the game's tick).</summary>
-        public int Sweep(int now, int windowTicks)
+        public int Sweep(int now, int windowTicks, double nowReal = 0, double realFloorSec = 0)
         {
             int n = 0;
             while (_order.Count > 0)
@@ -196,7 +208,7 @@ namespace HermesVoice.Bridge
                 string k = _order.Peek();
                 Slot s;
                 if (!_slots.TryGetValue(k, out s)) { _order.Dequeue(); continue; }
-                if (now - s.Tick <= windowTicks && now >= s.Tick) break;
+                if (Fresh(s, now, windowTicks, nowReal, realFloorSec)) break;
                 _order.Dequeue();
                 _slots.Remove(k);
                 n++;

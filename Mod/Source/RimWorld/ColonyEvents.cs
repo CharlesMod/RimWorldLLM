@@ -382,9 +382,10 @@ namespace HermesVoice
             foreach (int id in Merged.Keys.ToList())
             {
                 var p = Merged[id];
+                if (!EventGate.Wanted(EventKind.Injury, p.Pawn)) { Merged.Remove(id); continue; }   // not wanted: never spend the cooldown
                 if (!EventGate.CooldownOk(EventKind.Injury, id, EventGate.CooldownFor(EventKind.Injury))) continue;
                 Merged.Remove(id);
-                if (EventGate.Wanted(EventKind.Injury, p.Pawn)) Send(p.Pawn, p.Entries);
+                Send(p.Pawn, p.Entries);
             }
         }
 
@@ -637,6 +638,9 @@ namespace HermesVoice
                 var initiator = _pawn(__instance);
                 InteractionPolicy.Tier tier;
                 if (!FastCheck() || !VanillaVoice.Decide(initiator, recipient, intDef, out tier)) return;
+                // Chitchat that the social cooldown would drop anyway needs no snapshot (the hook runs for every interaction,
+                // many a second at 4x); consequential interactions skip the cooldown and are always snapshotted.
+                if (tier == InteractionPolicy.Tier.Idle && !EventGate.CooldownPassed(EventKind.Social, initiator.thingIDNumber, EventGate.CooldownFor(EventKind.Social))) return;
                 var snap = new Snap { Initiator = initiator, Tier = tier };
                 Collect(initiator, snap.Before);
                 Collect(recipient, snap.Before);
@@ -688,9 +692,10 @@ namespace HermesVoice
                 if (pending.Entry == null && pending.Thoughts.Count == 0) { EventGate.Emit(EventKind.Social, initiator, spec); return; }
 
                 int now = Find.TickManager.TicksGame;
-                QuotedInteractions.Pending.Sweep(now, QuotedInteractions.WindowTicks);
+                double realNow = QuotedInteractions.RealNow;
+                QuotedInteractions.Pending.Sweep(now, QuotedInteractions.WindowTicks, realNow, QuotedInteractions.RealFloorSec);
                 string vref = QuotedInteractions.NewRef();
-                QuotedInteractions.Pending.Register(vref, initiator.thingIDNumber, recipient.thingIDNumber, now, pending);
+                QuotedInteractions.Pending.Register(vref, initiator.thingIDNumber, recipient.thingIDNumber, now, pending, realNow);
                 bool high = snap.Tier == InteractionPolicy.Tier.High;
                 spec.Severity = high ? 0.5f : 0.26f;
                 var d = spec.Data;
@@ -699,6 +704,7 @@ namespace HermesVoice
                 d["tier"] = high ? "high" : "idle";
                 d["vanilla_text"] = sentence ?? "";
                 d["window_ticks"] = QuotedInteractions.WindowTicks;
+                d["window_real_s"] = QuotedInteractions.RealFloorSec;
                 // Consequential interactions skip the per-initiator social cooldown; chitchat keeps it.
                 if (high) EventBus.Publish(spec);
                 else if (!EventGate.Emit(EventKind.Social, initiator, spec)) QuotedInteractions.Pending.TryAttach(vref, -9, -9, now, 0, out pending);
@@ -721,7 +727,7 @@ namespace HermesVoice
             EventPayload.Safe("thought", () =>
             {
                 var pawn = newThought.pawn;
-                if (newThought.def == null || newThought.def.defName.StartsWith("HV_")) return;
+                if (newThought.def == null || newThought.def.defName.StartsWith("HV_", System.StringComparison.Ordinal)) return;
                 if (newThought.def.IsSocial) return;
                 float off = newThought.MoodOffset();
                 if (Math.Abs(off) < MinOffset) return;

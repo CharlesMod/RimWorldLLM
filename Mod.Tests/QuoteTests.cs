@@ -121,6 +121,40 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public void RealFloorKeepsALateLineAttachableAtHighSpeed()
+        {
+            var t = new PendingTable<string>();
+            string p;
+            t.Register("v1", 1, 2, 1000, "x", 100.0);
+            // 4x: 900 ticks/s, so a line 3 s later is 2700 ticks late: past the 417-tick window, inside the 5 s floor
+            Assert.Equal(PendingTable<string>.Result.Attached, t.TryAttach("v1", 1, 2, 3700, 417, out p, 103.0, 5.0));
+            t.Register("v2", 1, 2, 1000, "y", 100.0);
+            Assert.Equal(PendingTable<string>.Result.Expired, t.TryAttach("v2", 1, 2, 3700, 417, out p, 105.5, 5.0));
+        }
+
+        [Fact]
+        public void TicksOnlyRuleWhenTheFloorIsZeroAndLoadsStillExpire()
+        {
+            var t = new PendingTable<string>();
+            string p;
+            t.Register("v1", 1, 2, 1000, "x", 100.0);
+            Assert.Equal(PendingTable<string>.Result.Expired, t.TryAttach("v1", 1, 2, 3700, 417, out p, 101.0, 0.0));
+            t.Register("v2", 1, 2, 1000, "x", 100.0);
+            Assert.Equal(PendingTable<string>.Result.Expired, t.TryAttach("v2", 1, 2, 900, 417, out p, 100.5, 5.0));   // a save loaded earlier
+        }
+
+        [Fact]
+        public void SweepHonoursTheRealFloor()
+        {
+            var t = new PendingTable<string>();
+            t.Register("a", 1, 2, 100, "x", 10.0);
+            t.Register("b", 1, 2, 200, "x", 11.0);
+            Assert.Equal(0, t.Sweep(5000, 417, 12.0, 5.0));           // both late in ticks, both inside 5 s
+            Assert.Equal(1, t.Sweep(5000, 417, 15.5, 5.0));           // a is 5.5 s old, b is 4.5 s old
+            Assert.Equal(1, t.Sweep(5000, 417, 17.0, 5.0));
+        }
+
+        [Fact]
         public void SweepDropsOldSlotsAndCapacityBounds()
         {
             var t = new PendingTable<int>(3);

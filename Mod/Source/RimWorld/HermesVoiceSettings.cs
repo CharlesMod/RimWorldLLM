@@ -66,13 +66,14 @@ namespace HermesVoice
         // What the agent must honour (GET /config).
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
-        public int pauseAmbientAtSpeed = 3;
+        public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
         public string language = "en";
 
         // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
         public bool showQuotes = true;
         public bool voiceVanillaSocial = true;
         public int quoteMaxChars = 140;
+        public int attachRealFloorSec = 5;                           // ... or this many real seconds, whichever is longer (dual clock)
         public int attachWindowMinutes = 10;                         // in-game minutes a line may take to attach to its interaction
         public string interactionHigh = Bridge.InteractionPolicy.DefaultHigh;   // def names, voiced first
         public string interactionIdle = Bridge.InteractionPolicy.DefaultIdle;   // def names, voiced only when the speaker is otherwise idle
@@ -122,12 +123,13 @@ namespace HermesVoice
             Scribe_Values.Look(ref evThought, "evThought", true);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
-            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 3);
+            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
             Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref showQuotes, "showQuotes", true);
             Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
             Scribe_Values.Look(ref quoteMaxChars, "quoteMaxChars", 140);
             Scribe_Values.Look(ref attachWindowMinutes, "attachWindowMinutes", 10);
+            Scribe_Values.Look(ref attachRealFloorSec, "attachRealFloorSec", 5);
             Scribe_Values.Look(ref interactionHigh, "interactionHigh", Bridge.InteractionPolicy.DefaultHigh);
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
         }
