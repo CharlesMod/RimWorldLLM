@@ -15,6 +15,7 @@ Background: `docs/SPEC.md` §3, §6, §8, §10.
   which is needed when the agent runs on another machine.
 - **Auth:** every request carries `Authorization: Bearer <token>`. A token is mandatory: the
   bridge refuses to start without one. `?token=` is accepted only on GET.
+- The v1 `/state` endpoint is gone; `GET /colony` replaces it. Default bind is 127.0.0.1; a remote agent needs a different bind address and a fixed token.
 - No CORS headers. Body limit 64 KiB. JSON in and out, UTF-8.
 
 ## Envelope
@@ -25,12 +26,13 @@ Every reply is a JSON object containing at least:
 {"ok": true, "tick": 123456, "save_epoch": 3, "paused": false, "speed": 1}
 ```
 
+- `speed` is the game's time speed: 0 paused, 1 normal, 2 fast, 3 superfast, 4 ultrafast. `paused` is also true when the game is force-paused (a dialog open) at a non-zero speed.
 - `save_epoch` increments on every game load or new game, and is 0 in the main menu. When it
   changes, the agent drops its working copy of the minds and re-reads them with `GET /mind/{id}`.
 - Errors: `{"ok": false, "error": "<code>", "detail": "...", ...envelope}` with an HTTP status.
   Codes: `unauthorized` 401, `not_found` 404, `bad_request` 400, `too_large` 413,
   `conflict` 409 (dead, despawned or wrong-map pawn), `expired` 410, `duplicate` 409,
-  `no_game` 503, `busy` 503, `timeout` 504.
+  `no_game` 503, `busy` 503, `timeout` 504, `internal` 500 (a bug in the mod; the detail says what).
 
 ## Writes: operation id and expiry
 
@@ -40,8 +42,9 @@ Every POST and PUT body carries:
 {"op_id": "<uuid from the agent>", "expires_tick": 123999}
 ```
 
-- The mod remembers op ids for 10 minutes of real time. A repeat gets `duplicate`, with the
-  original result in `result`.
+- `op_id` is required on every write (`bad_request` without it). The mod remembers the op ids of writes that succeeded for 10 minutes of real time; a failed write (`conflict`, `expired`, ...) is not remembered, so a retry runs again.
+- The mod remembers op ids for 10 minutes of real time. A repeat gets `duplicate` (409), with the
+  original reply fields in `result`.
 - A write arriving after `expires_tick` gets `expired`. `expires_tick` may be omitted for
   writes that never expire (player talk). The agent sets it from the expiry classes in
   SPEC §7.
