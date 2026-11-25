@@ -102,7 +102,7 @@ class QuotaTracker:
         return game // self.tpd
 
     def allowed(self, actor: int, other: int | None, cls: Cls, now: Now) -> tuple[bool, str]:
-        if cls >= Cls.REACTIVE:       # urgent/player/injury bypass quotas
+        if cls >= Cls.REACTIVE:       # reactive and above bypass quotas
             return True, ""
         day = self._day(now.game)
         if self.actor_counts.get((actor, day), 0) >= self.actor_per_day:

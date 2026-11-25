@@ -136,7 +136,7 @@ def build_fixed_bio(p: dict, names: dict[int, str] | None = None) -> FixedBio:
             rel.append(f"{who} ({r['kind']})")
     if rel:
         lines.append("Key relatives: " + ", ".join(str(r) for r in rel))
-    return FixedBio(text="\n".join(lines), facts_hash=facts_hash(p), dlc=dlc)
+    return FixedBio(text="\n".join(lines), facts_hash=facts_hash(p), extras=dlc)
 
 
 # trait def/label (lowercase, substring) -> (register fragment, tic, example line)

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hermesvoice-agent"
 version = "0.1.0"
-description = "HermesVoice agent: gives RimWorld colonists their minds"
+description = "HermesVoice agent: a game-agnostic engine that gives characters their minds (RimWorld adapter included)"
 requires-python = ">=3.12"
 dependencies = ["httpx>=0.27", "pydantic>=2.6"]
 
@@ -23,4 +23,4 @@ testpaths = ["tests"]
 markers = ["gpu: needs a live llama-server (HERMESVOICE_TEST_LLM_URL); skipped by default"]
 
 [tool.setuptools.package-data]
-hermesvoice_agent = ["block_a.txt"]
+"hermesvoice_agent.games.rimworld" = ["block_a.txt"]

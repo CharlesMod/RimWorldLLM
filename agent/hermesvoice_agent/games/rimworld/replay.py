@@ -11,11 +11,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .bridge import BridgeClient
-from .config import Config
-from .director import Director
-from .fakes import FakeBridge, FakeLLM
-from .llm import LLMClient
+from ...core.bridge import BridgeClient
+from ...core.config import Config
+from ...core.director import Director
+from ...core.fakes import FakeLLM
+from ...core.llm import LLMClient
+from .adapter import RimWorldAdapter
+from .fakes import FakeBridge
 
 
 def load_jsonl(path: str | Path) -> tuple[list[dict], list[dict]]:
@@ -39,9 +41,10 @@ async def replay(path: str | Path, cfg: Config, llm: LLMClient | None = None) ->
           {int(w) for e in events for w in e.get("witnesses", [])}
     for i in sorted(ids - set(fb.pawns)):
         fb.add_pawn(i, f"Pawn{i}")
-    bridge = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", fb.token)
+    adapter = RimWorldAdapter()
+    bridge = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", fb.token, adapter.protocol)
     clock = {"t": 0.0}
-    d = Director(cfg, bridge, llm or FakeLLM(), clock=lambda: fb.tick / 60.0)
+    d = Director(cfg, bridge, llm or FakeLLM(), adapter, clock=lambda: fb.tick / 60.0)  #=lambda: fb.tick / 60.0)
     await d.start()
     for e in sorted(events, key=lambda e: e.get("seq", 0)):
         fb.tick = max(fb.tick, int(e.get("tick", fb.tick)))
@@ -56,5 +59,5 @@ async def replay(path: str | Path, cfg: Config, llm: LLMClient | None = None) ->
     for s in d.said:
         out.append(s)
     for pid, why in d.dropped:
-        out.append({"pawn": pid, "dropped": why})
+        out.append({"actor": pid, "dropped": why})
     return out

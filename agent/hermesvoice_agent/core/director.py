@@ -322,7 +322,8 @@ class Director:
                 return
             ok = await self._say(aid, res, listener=listener, expires=item.expires_at,
                                  talk_id=item.payload.get("talk_id"),
-                                 combat=bool(item.event and self.adapter.is_urgent_visual(item.event)))
+                                 combat=bool(item.event and self.adapter.is_urgent_visual(item.event)),
+                                 event=item.event)
             if ok:
                 self.leases.quotas.record(aid, listener, now)
                 self.leases.mark_spoke(aid, sig)
@@ -338,11 +339,31 @@ class Director:
             if not lease.ended:
                 self.leases.release(lease, "done")
 
+    def _pick_about(self, aid: int, listener: int | None, event: dict | None) -> int | None:
+        """The third actor a gossip line is about: one in the event, else the one the speaker feels most about."""
+        skip = {aid, listener}
+        for a in (event or {}).get("actors", []):
+            if int(a["id"]) not in skip and int(a["id"]) in self.names:
+                return int(a["id"])
+        best, score = None, -1.0
+        for k, r in self.minds[aid].relations.items():
+            if k.lstrip("-").isdigit() and int(k) not in skip and int(k) in self.names:
+                s = abs(r.opinion or 0)
+                if s > score:
+                    best, score = int(k), s
+        return best
+
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
-                   conv: str | None = None, talk_id: str | None = None, combat: bool = False) -> bool:
+                   conv: str | None = None, talk_id: str | None = None, combat: bool = False,
+                   event: dict | None = None) -> bool:
+        about = None
+        if sp.intent in self.adapter.about_intents():
+            about = self._pick_about(aid, listener, event)
+            if about is None or listener is None:
+                sp = Spoken(sp.text, self.adapter.intent_labels[0])   # nobody to gossip about
         try:
             r = await self.bridge.say(aid, sp.text, listener=listener, intent=sp.intent, conversation_id=conv,
-                                      combat=combat, talk_id=talk_id, expires_at=expires)
+                                      combat=combat, talk_id=talk_id, expires_at=expires, about=about)
         except BridgeError as e:
             self.dropped.append((aid, f"say:{e.code}"))
             return False
@@ -353,7 +374,8 @@ class Director:
         # the agent records only what the game applied
         if applied and listener in self.minds and sp.intent in told:
             m = memory.remember_told(self.minds[listener], aid, self.names.get(aid, "someone"),
-                                     f"{self.names.get(aid)} told me: {sp.text}", self.bridge.env.game)
+                                     f"{self.names.get(aid)} told me: {sp.text}", self.bridge.env.game,
+                                     people=[aid] + ([about] if about is not None else []))
             m.visibility = told[sp.intent]
             self.dirty.add(listener)
         return True
@@ -400,7 +422,7 @@ class Director:
                     conv.ended = "expired"
                     break
                 ok = await self._say(sp_id, res, listener=lis, expires=item.expires_at if not conv.turns else None,
-                                     conv=conv.id)
+                                     conv=conv.id, event=item.event)
                 if not ok:
                     conv.ended = "apart"       # the game's liveness check refused: gone or out of range
                     break

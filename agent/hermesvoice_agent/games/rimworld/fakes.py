@@ -44,6 +44,8 @@ class FakeBridge:
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
+        self.pair_effects: dict[tuple, int] = {}
+        self.pair_cap = 6
         self.config = {"effects": "normal", "language": "en", "events": {}, "talk_frequency": 1.0,
                        "pause_ambient_at_speed": 3, "dlc": []}
         self.ledger: list[dict] = []
@@ -92,9 +94,9 @@ class FakeBridge:
                 body = json.loads(req.content or b"{}")
             except ValueError:
                 return self._err(400, "bad_request", "bad json")
-            if "op_id" not in body:
+            if not body.get("op_id"):
                 return self._err(400, "bad_request", "op_id required")
-            if body["op_id"] in self.seen_ops:
+            if body["op_id"] in self.seen_ops:          # only succeeded writes are remembered
                 return self._err(409, "duplicate", result=self.seen_ops[body["op_id"]])
             if body.get("expires_tick") is not None and self.tick > body["expires_tick"]:
                 return self._err(410, "expired")
@@ -130,7 +132,26 @@ class FakeBridge:
             pid = body.get("pawn")
             if pid in self.say_conflict_for or pid not in self.pawns:
                 return self._err(409, "conflict", "speaker not available")
-            res = {"applied": {"bubble": True, "log": True, "effect": body.get("intent"), "thoughts": []}}
+            lis, intent, about = body.get("listener"), body.get("intent", "none"), body.get("about")
+            if lis is not None and lis not in self.pawns:
+                return self._err(409, "conflict", "listener not available")
+            refusal = None
+            if intent == "gossip" and (about is None or about in (lis, pid) or lis is None):
+                refusal = "no_about"
+            elif intent != "none" and self.config.get("effects") == "off":
+                refusal = "effects_off"
+            elif intent == "comfort" and lis is not None and not any(
+                    t.get("offset", 0) < 0 for t in self.pawns[lis]["mood"]["thoughts"]):
+                refusal = "not_negative"
+            elif intent not in ("none",) and lis is not None:
+                k = (min(pid, lis), max(pid, lis), intent)
+                self.pair_effects[k] = self.pair_effects.get(k, 0) + 1
+                if self.pair_effects[k] > self.pair_cap:
+                    refusal = "pair_cap"
+            if refusal:            # the bubble still shows; only the effect is refused
+                res = {"refused": {"effect": refusal}}
+            else:
+                res = {"applied": {"bubble": True, "log": True, "effect": intent, "thoughts": []}}
             self.seen_ops[body["op_id"]] = res
             self.say_log.append(body)
             if body.get("talk_id"):

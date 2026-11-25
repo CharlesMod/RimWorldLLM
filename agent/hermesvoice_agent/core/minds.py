@@ -21,7 +21,7 @@ SCHEMA = 1
 class FixedBio(BaseModel):
     text: str = ""                   # the prompt-ready paragraph(s)
     facts_hash: str = ""             # of the game facts it was built from
-    dlc: dict = Field(default_factory=dict)   # ideology role, title, xenotype, genes, anomaly ...
+    extras: dict = Field(default_factory=dict)   # game-specific bio extras
 
 
 class VoiceCard(BaseModel):

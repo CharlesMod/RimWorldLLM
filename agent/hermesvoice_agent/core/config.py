@@ -74,7 +74,7 @@ _ENV = {
     "HERMESVOICE_LLM_MODE": ("llm", "mode"),
     "HERMESVOICE_BRIDGE_URL": ("bridge_url",),
     "HERMESVOICE_BRIDGE_TOKEN": ("bridge_token",),
-    "HERMESVOICE_PAWN_WINDOWS": ("windows",),
+    "HERMESVOICE_WINDOWS": ("windows",),
 }
 
 

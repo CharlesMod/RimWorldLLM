@@ -3,7 +3,7 @@ import json
 import httpx
 
 from conftest import run
-from hermesvoice_agent.minds import Mind
+from hermesvoice_agent.core.minds import Mind
 
 
 def test_epoch_change_drops_and_reloads_minds(world):
@@ -12,7 +12,7 @@ def test_epoch_change_drops_and_reloads_minds(world):
         # the working copy gets ahead of the save
         w.d.minds[1].wants = ["unsaved want"]
         w.d.dirty.discard(1)
-        w.fb.minds[1] = (Mind(pawn_id=1, name="Ana", wants=["saved want"], notes="from the save").model_dump(), 7)
+        w.fb.minds[1] = (Mind(actor_id=1, name="Ana", wants=["saved want"], notes="from the save").model_dump(), 7)
         w.fb.reload_game()
         await w.d.step()
         return w
@@ -20,7 +20,7 @@ def test_epoch_change_drops_and_reloads_minds(world):
     assert w.d.minds[1].wants == ["saved want"] and w.d.minds[1].notes == "from the save"
     assert w.d.revs[1] == 7
     assert not w.bridge.epoch_changed
-    assert w.d.poller.since == 0 or True
+    assert w.d.events.since == 0 or True
 
 
 def test_epoch_zero_main_menu_drops_everything(world):
@@ -132,7 +132,7 @@ def test_ambient_pause_in_director(world):
         await w.d.step(); await w.d.drain()
         return w
     w = run(go())
-    assert [s["text"] is not None for s in w.d.said] == [True] and "injury" in str(w.fb.say_log[0]["combat"] or "injury")
+    assert len(w.d.said) == 1 and w.fb.say_log[0]["combat"] is True
     assert len(w.fb.say_log) == 1
 
 
@@ -161,5 +161,5 @@ def test_gossip_creates_told_memory_only_if_applied(world):
     w = run(go())
     told = [m for m in w.d.minds[2].memories if m.source == "told"]
     # conversation ran; if gossip was spoken by Ana the listener has a lower-confidence told memory
-    if any(s["intent"] == "gossip" for s in w.d.said if s["pawn"] == 1):
+    if any(s["intent"] == "gossip" for s in w.d.said if s["actor"] == 1):
         assert told and told[0].confidence < 1 and told[0].told_by == "Ana"

@@ -1,6 +1,6 @@
 import pytest
 
-from hermesvoice_agent.sanitize import sanitize_line, name_tokens
+from hermesvoice_agent.core.sanitize import sanitize_line, name_tokens
 
 KW = dict(speaker_names={"Ana"}, known_names={"Bram"}, all_names={"Ana", "Bram", "Cy"},
           prompt_words={"Kitchen"})

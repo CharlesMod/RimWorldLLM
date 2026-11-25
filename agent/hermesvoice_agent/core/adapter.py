@@ -2,7 +2,7 @@
 
 Core event format (what ``normalize_event`` returns): ``{"seq", "game" (game time), "type", "actors":
 [{"id", "role"}], "summary", "severity" (0..1), "witnesses": [ids], "ledger_id", "data"}``.
-Game time is whatever clock the adapter supplies (ticks, seconds, turns); core only compares and
+Game time is whatever clock the adapter supplies (frames, seconds, turns); core only compares and
 subtracts it. Characters may appear and vanish; there is no fixed cast. Events may come from a poll
 or from an external sensor: core only needs an ``EventSource``.
 
@@ -30,7 +30,7 @@ class ProtocolNames:
     mind_path: str = "/mind"            # GET/PUT <mind_path>/{id}
     roster_path: str = "/roster"        # GET: the world at a glance (actors, open ledger entries)
     actor_field: str = "actor"          # body field naming the speaker in say/thought and talk requests
-    time_field: str = "time"            # envelope field: the game clock (ticks, seconds or turns)
+    time_field: str = "time"            # envelope field: the game clock (seconds, frames or turns)
     epoch_field: str = "epoch"          # envelope field: changes when the world is reloaded
     expiry_field: str = "expires_at"    # write field: game time after which the write is refused
 
@@ -64,7 +64,8 @@ class GameAdapter(Protocol):
     def conversation_pair(self, event: dict) -> tuple[int, int] | None: ...
     def is_urgent_visual(self, event: dict) -> bool: ...                   # shown as combat/alert in the game's log
     def is_ledger_end(self, event: dict) -> bool: ...
-    def told_intents(self) -> dict[str, str]: ...                          # intent -> visibility of the told memory
+    def told_intents(self) -> dict[str, str]: ...
+    def about_intents(self) -> set[str]: ...                               # intents that must name a third actor (gossip)                          # intent -> visibility of the told memory
 
     # ---- roster, snapshots, scenes -----------------------------------------------
     def roster(self, resp: dict) -> list[tuple[int, Any]]: ...             # (id, raw name)

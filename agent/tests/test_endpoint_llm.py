@@ -4,10 +4,10 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.calllog import CallLog
-from hermesvoice_agent.config import LLMConfig
-from hermesvoice_agent.endpoint_test import test_endpoint
-from hermesvoice_agent.llm import HttpLLM, gemma_prompt, normalise_base
+from hermesvoice_agent.core.calllog import CallLog
+from hermesvoice_agent.core.config import LLMConfig
+from hermesvoice_agent.core import endpoint_test as ept
+from hermesvoice_agent.core.llm import HttpLLM, gemma_prompt, normalise_base
 
 
 def client(handler):
@@ -33,7 +33,7 @@ def test_normalise_base():
 
 def test_endpoint_green_and_timed():
     seen = []
-    r = run(test_endpoint(LLMConfig(base_url="http://h:1"), client(ok_server(seen))))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h:1"), client(ok_server(seen))))
     assert r.ok and r.completion_ms is not None and r.models == ["m1"]
     assert ("GET", "/v1/models") in seen and ("POST", "/v1/chat/completions") in seen
 
@@ -45,26 +45,26 @@ def test_endpoint_404_retries_once_without_v1():
         if req.url.path.startswith("/v1"):
             return httpx.Response(404, json={})
         return ok_server()(req)
-    r = run(test_endpoint(LLMConfig(base_url="http://h:1/v1"), client(h)))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h:1/v1"), client(h)))
     assert r.ok and seen[0] == "/v1/models" and seen[1] == "/models" and r.base_url == "http://h:1"
     seen.clear()
-    r = run(test_endpoint(LLMConfig(base_url="http://h:1"), client(lambda q: httpx.Response(404, json={}))))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h:1"), client(lambda q: httpx.Response(404, json={}))))
     assert r.status == "red" and "404" in r.cause
 
 
 def test_endpoint_503_is_amber_and_causes_one_line():
-    r = run(test_endpoint(LLMConfig(base_url="http://h"), client(lambda q: httpx.Response(503, json={}))))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h"), client(lambda q: httpx.Response(503, json={}))))
     assert r.status == "amber" and "loading" in r.cause and "\n" not in r.cause
-    r = run(test_endpoint(LLMConfig(base_url="http://h"), client(lambda q: httpx.Response(401, json={}))))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h"), client(lambda q: httpx.Response(401, json={}))))
     assert r.status == "red" and "API key" in r.cause
     def boom(q): raise httpx.ConnectError("x")
-    r = run(test_endpoint(LLMConfig(base_url="http://h"), client(boom)))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h"), client(boom)))
     assert r.status == "red" and "refused" in r.cause
     def comp503(q):
         return ok_server()(q) if q.url.path.endswith("models") else httpx.Response(503, json={})
-    r = run(test_endpoint(LLMConfig(base_url="http://h"), client(comp503)))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h"), client(comp503)))
     assert r.status == "amber"
-    r = run(test_endpoint(LLMConfig(base_url="http://h", model="nope"), client(ok_server())))
+    r = run(ept.test_endpoint(LLMConfig(base_url="http://h", model="nope"), client(ok_server())))
     assert r.status == "red" and "nope" in r.cause
 
 
@@ -78,13 +78,13 @@ def test_call_log_has_cache_stats_and_effective_prefill(tmp_path):
                                                      "predicted_n": 3, "predicted_ms": 40.0}})
     log = CallLog(tmp_path / "calls.jsonl")
     llm = HttpLLM(LLMConfig(base_url="http://h"), log, client(h))
-    c = run(llm.complete([("system", "s"), ("user", "u")], slot=1, kind="line", pawn=5))
+    c = run(llm.complete([("system", "s"), ("user", "u")], slot=1, kind="line", actor=5))
     assert c.text == "Eat."
     row = json.loads((tmp_path / "calls.jsonl").read_text().splitlines()[0])
     assert row["prompt_n"] == 154 and row["cache_n"] == 1721 and row["prompt_ms"] == 260.0 and row["predicted_ms"] == 40.0
     assert row["raw_prefill_tps"] == pytest.approx(154 / 0.26, rel=1e-3)
     assert row["effective_prefill_tps"] == pytest.approx((154 + 1721) / 0.26, rel=1e-3)
-    assert row["kind"] == "line" and row["slot"] == 1 and row["pawn"] == 5
+    assert row["kind"] == "line" and row["slot"] == 1 and row["actor"] == 5
 
 
 def test_native_mode_payload():

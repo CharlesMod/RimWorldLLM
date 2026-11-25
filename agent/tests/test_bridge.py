@@ -2,13 +2,14 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.bridge import BridgeClient, BridgeError, EventPoller
-from hermesvoice_agent.fakes import FakeBridge
+from hermesvoice_agent.core.bridge import BridgeClient, BridgeError, EventPoller
+from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from hermesvoice_agent.games.rimworld.fakes import FakeBridge
 
 
 def mk(fb=None, token="tok"):
     fb = fb or FakeBridge("tok")
-    return fb, BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", token)
+    return fb, BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", token, RimWorldAdapter().protocol)
 
 
 def test_envelope_and_auth():
@@ -16,14 +17,14 @@ def test_envelope_and_auth():
         fb, b = mk()
         fb.tick, fb.speed, fb.paused = 777, 3, True
         await b.config()
-        assert (b.env.tick, b.env.speed, b.env.paused, b.env.save_epoch) == (777, 3, True, 1)
+        assert (b.env.game, b.env.speed, b.env.paused, b.env.epoch) == (777, 3, True, 1)
         assert (await b.health())["mod"] == "HermesVoice"
         _, bad = mk(fb, "wrong")
         with pytest.raises(BridgeError) as e:
             await bad.config()
         assert e.value.code == "unauthorized"
         with pytest.raises(BridgeError) as e:
-            await b.pawn(99)
+            await b.actor(99)
         assert e.value.code == "not_found"
     run(go())
 
@@ -32,7 +33,7 @@ def test_write_op_id_expiry_duplicate():
     async def go():
         fb, b = mk(); fb.add_pawn(1, "Ana"); fb.tick = 1000
         await b.config()
-        r = await b.say(1, "Hi.", intent="kind", expires_tick=1500, op_id="op-1")
+        r = await b.say(1, "Hi.", intent="kind", expires_at=1500, op_id="op-1")
         assert r["applied"]["effect"] == "kind"
         body = fb.say_log[0]
         assert body["op_id"] == "op-1" and body["expires_tick"] == 1500
@@ -41,7 +42,7 @@ def test_write_op_id_expiry_duplicate():
         assert e.value.code == "duplicate"
         fb.tick = 2000
         with pytest.raises(BridgeError) as e:
-            await b.say(1, "late", expires_tick=1500)
+            await b.say(1, "late", expires_at=1500)
         assert e.value.code == "expired"
         await b.say(1, "player talk never expires")           # no expires_tick sent
         assert "expires_tick" not in fb.say_log[-1] and fb.say_log[-1]["op_id"]
@@ -82,7 +83,7 @@ def test_epoch_change_flagged_and_mind_rev_conflict():
         assert not b.epoch_changed
         fb.reload_game()
         await b.config()
-        assert b.epoch_changed and b.env.save_epoch == 2
+        assert b.epoch_changed and b.env.epoch == 2
         assert await b.get_mind(1) == (None, 0)
         assert await b.put_mind(1, {"a": 1}, 0) == 1
         with pytest.raises(BridgeError) as e:
@@ -104,7 +105,7 @@ def test_unreachable():
 
 def test_from_config_reads_bridge_json(tmp_path):
     import json
-    from hermesvoice_agent.config import Config
+    from hermesvoice_agent.core.config import Config
     p = tmp_path / "bridge.json"
     p.write_text(json.dumps({"port": 9766, "bind": "127.0.0.1", "token": "abc", "pid": 1, "version": "2.0.0", "save_epoch": 1}))
     b = BridgeClient.from_config(Config(bridge_json=p))

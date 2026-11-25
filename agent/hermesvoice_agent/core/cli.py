@@ -1,18 +1,18 @@
-"""hermesvoice-agent: run | test-endpoint | replay"""
+"""Game-agnostic CLI shell: run | test-endpoint | replay, for the adapter passed to ``main``.
+``hermesvoice_agent.cli`` is the entry point that supplies one."""
 from __future__ import annotations
 
 import argparse
 import asyncio
 import logging
-import sys
 
 from .bridge import BridgeClient
 from .calllog import CallLog
 from .config import Config, load_config
+from .adapter import GameAdapter
 from .director import Director
 from .endpoint_test import test_endpoint
 from .llm import HttpLLM
-from .replay import replay
 
 
 def _cfg(args) -> Config:
@@ -26,11 +26,11 @@ def _cfg(args) -> Config:
     return cfg
 
 
-async def _run(cfg: Config) -> int:
+async def _run(cfg: Config, adapter: GameAdapter) -> int:
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
-    bridge = BridgeClient.from_config(cfg)
+    bridge = BridgeClient.from_config(cfg, adapter.protocol, adapter.default_bridge_json())
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "calls.jsonl"))
-    d = Director(cfg, bridge, llm)
+    d = Director(cfg, bridge, llm, adapter)
     try:
         await d.run()
     finally:
@@ -47,9 +47,9 @@ async def _test(cfg: Config) -> int:
     return 0 if r.ok else (2 if r.status == "amber" else 1)
 
 
-async def _replay(cfg: Config, path: str, use_llm: bool) -> int:
+async def _replay(cfg: Config, adapter: GameAdapter, path: str, use_llm: bool) -> int:
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "replay-calls.jsonl")) if use_llm else None
-    for item in await replay(path, cfg, llm):
+    for item in await adapter.replay(path, cfg, llm):
         if "dropped" in item:
             print(f"  (actor {item['actor']} dropped: {item['dropped']})")
         else:
@@ -58,7 +58,7 @@ async def _replay(cfg: Config, path: str, use_llm: bool) -> int:
     return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(adapter: GameAdapter, argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="hermesvoice-agent")
     ap.add_argument("--config", help="TOML or JSON config file (or $HERMESVOICE_CONFIG)")
     ap.add_argument("-v", "--verbose", action="store_true")
@@ -75,11 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     cfg = _cfg(args)
     if args.cmd == "run":
-        return asyncio.run(_run(cfg))
+        return asyncio.run(_run(cfg, adapter))
     if args.cmd == "test-endpoint":
         return asyncio.run(_test(cfg))
-    return asyncio.run(_replay(cfg, args.events, args.llm))
+    return asyncio.run(_replay(cfg, adapter, args.events, args.llm))
 
 
-if __name__ == "__main__":
-    sys.exit(main())

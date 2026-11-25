@@ -31,17 +31,17 @@ class RimWorldAdapter:
                              actor_field="pawn", time_field="tick", epoch_field="save_epoch",
                              expiry_field="expires_tick")
     units_per_day = 60000                      # ticks
-    intent_labels = ["none", "comfort", "insult", "kind", "confide", "gossip", "threaten", "flirt", "joke", "argue"]
+    intent_labels = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
     common_words = {"colony", "colonist", "colonists", "rimworld", "pirates", "tribals", "mechanoids"}
     narrator_prompt = ("You are a dry narrator of a RimWorld colony. Write one short third-person line "
                        "about what just happened. No speech, no invention.")
 
     def __init__(self) -> None:
         self.block_a = (_HERE / "block_a.txt").read_text()
-        self.intent_labels = self._labels_from_block_a() or self.intent_labels
 
-    def _labels_from_block_a(self) -> list[str]:
-        return []
+    async def replay(self, path: str, cfg: Any, llm: Any) -> list[dict]:
+        from .replay import replay
+        return await replay(path, cfg, llm)
 
     def default_bridge_json(self) -> Path:
         home = Path(os.environ.get("HOME", "~")).expanduser()
@@ -103,6 +103,9 @@ class RimWorldAdapter:
 
     def is_ledger_end(self, event: dict) -> bool:
         return event.get("type", "").endswith("_end")
+
+    def about_intents(self) -> set[str]:
+        return {"gossip"}
 
     def told_intents(self) -> dict[str, str]:
         return {"confide": "private", "gossip": "public"}

@@ -5,9 +5,9 @@ import os
 import pytest
 
 from conftest import run
-from hermesvoice_agent.config import LLMConfig
-from hermesvoice_agent.endpoint_test import test_endpoint
-from hermesvoice_agent.llm import HttpLLM
+from hermesvoice_agent.core.config import LLMConfig
+from hermesvoice_agent.core import endpoint_test as ept
+from hermesvoice_agent.core.llm import HttpLLM
 
 URL = os.environ.get("HERMESVOICE_TEST_LLM_URL")
 pytestmark = [pytest.mark.gpu, pytest.mark.skipif(not URL, reason="HERMESVOICE_TEST_LLM_URL not set")]
@@ -15,6 +15,6 @@ pytestmark = [pytest.mark.gpu, pytest.mark.skipif(not URL, reason="HERMESVOICE_T
 
 def test_live_endpoint_and_line():
     cfg = LLMConfig(base_url=URL, mode=os.environ.get("HERMESVOICE_TEST_LLM_MODE", "native"))
-    assert run(test_endpoint(cfg)).status in ("green", "amber")
+    assert run(ept.test_endpoint(cfg)).status in ("green", "amber")
     c = run(HttpLLM(cfg).complete([("user", "Say one short line.")], slot=1, max_tokens=24))
     assert c.text.strip() and c.stats.prompt_n >= 0

@@ -1,7 +1,7 @@
 import random
 
 from conftest import run
-from hermesvoice_agent.conversation import Conversation, opener_obliges, repetitive, template_memory, template_relation
+from hermesvoice_agent.core.conversation import Conversation, opener_obliges, repetitive, template_memory, template_relation
 
 
 def mk(**kw):
@@ -96,7 +96,7 @@ def test_director_conversation_end_writes_memory_and_relation(world):
         assert str(other) in mind.relations and mind.relations[str(other)].feeling   # one relation update
     assert w.d.leases.leases == {}                                # both leases ended
     # two windows: each pawn's lines came from its own slot
-    slots = {c["pawn"]: c["slot"] for c in w.llm.calls if c["kind"] == "line"}
+    slots = {c["actor"]: c["slot"] for c in w.llm.calls if c["kind"] == "line"}
     assert slots[1] != slots[2]
 
 

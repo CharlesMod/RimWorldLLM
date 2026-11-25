@@ -47,7 +47,8 @@ class Bridge(Protocol):
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int: ...
     async def say(self, actor: int, text: str, *, listener: int | None = None, intent: str = "none",
                   conversation_id: str | None = None, combat: bool = False, talk_id: str | None = None,
-                  expires_at: int | None = None, op_id: str | None = None) -> dict: ...
+                  expires_at: int | None = None, op_id: str | None = None,
+                  about: int | None = None) -> dict: ...
     async def thought(self, actor: int, text: str, op_id: str | None = None) -> dict: ...
     async def aclose(self) -> None: ...
 
@@ -157,10 +158,13 @@ class BridgeClient:
     async def say(self, actor: int, text: str, *, listener: int | None = None,
                   intent: str = "none", conversation_id: str | None = None,
                   combat: bool = False, talk_id: str | None = None,
-                  expires_at: int | None = None, op_id: str | None = None) -> dict:
+                  expires_at: int | None = None, op_id: str | None = None,
+                  about: int | None = None) -> dict:
         body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text, "intent": intent, "combat": combat}
         if listener is not None:
             body["listener"] = listener
+        if about is not None:
+            body["about"] = about
         if conversation_id:
             body["conversation_id"] = conversation_id
         if talk_id:
