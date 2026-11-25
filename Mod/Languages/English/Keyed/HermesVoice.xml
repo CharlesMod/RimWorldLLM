@@ -160,6 +160,7 @@
   <HV_Ev_Weather>Extreme weather</HV_Ev_Weather>
   <HV_Ev_Thought>Notable thoughts</HV_Ev_Thought>
   <HV_Ev_Art>Finished artworks</HV_Ev_Art>
+  <HV_Ev_Firsts>First-time sights (snow, eclipse, a corpse...)</HV_Ev_Firsts>
   <HV_Art_Enable>Show written art descriptions</HV_Art_Enable>
   <HV_Art_EnableTip>When a colonist finishes an artwork, the engine writes a short description from the colony's history. It replaces the game's generated text on the info card; the title stays. Turn off to see the game's own text again.</HV_Art_EnableTip>
   <HV_Bubbles_Title>Speech bubbles</HV_Bubbles_Title>

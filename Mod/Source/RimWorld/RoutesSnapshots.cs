@@ -60,7 +60,7 @@ namespace HermesVoice
             {
                 ["injury"] = s.evInjury, ["death"] = s.evDeath, ["mental_break"] = s.evMentalBreak, ["level_up"] = s.evLevelUp,
                 ["tend"] = s.evTend, ["social"] = s.evSocial, ["raid"] = s.evRaid, ["quest"] = s.evQuest, ["lodger"] = s.evLodger,
-                ["prisoner"] = s.evPrisoner, ["funeral"] = s.evFuneral, ["weather_extreme"] = s.evWeather, ["thought"] = s.evThought, ["art"] = s.evArt
+                ["prisoner"] = s.evPrisoner, ["funeral"] = s.evFuneral, ["weather_extreme"] = s.evWeather, ["thought"] = s.evThought, ["art"] = s.evArt, ["first_cue"] = s.evFirsts
             };
         }
 
