@@ -85,6 +85,8 @@ namespace HermesVoice
 
         public const float MaxTextWidth = 230f;
         public const int MaxLines = 4;
+        public const float BelowOffset = 56f;     // balloon top below the target when it does not fit above (clears the pawn)
+        public const float HeadDrop = 18f;        // when the balloon is below the label point, aim at the head top this far down
         public const float TailGap = 16f;         // default distance from balloon bottom to the target
         public const float MaxTailAngle = 70f;    // max deviation from the edge normal
         public const float PopSeconds = 0.12f;
@@ -236,6 +238,19 @@ namespace HermesVoice
             return Math.Max(s, 0.05f);
         }
 
+        /// <summary>
+        /// Where a balloon of the given size sits before collision handling: centred above the target, or, when the
+        /// pawn is so near the top of the screen that it would not fit, below the pawn so it never covers the speaker.
+        /// </summary>
+        public static BRect DefaultRect(float w, float h, float tx, float ty, BRect bounds)
+        {
+            float above = ty - BubbleMetrics.TailGap - h;
+            if (above >= bounds.Y) return new BRect(tx - w * 0.5f, above, w, h);
+            float below = ty + BubbleMetrics.BelowOffset;
+            if (below + h <= bounds.Bottom) return new BRect(tx - w * 0.5f, below, w, h);
+            return new BRect(tx - w * 0.5f, above, w, h);
+        }
+
         // ------------------------------------------------------------------------------ tail
         /// <summary>
         /// Picks the edge, anchor and angle of the tail from the balloon rect and the point to aim at (above the speaker's
@@ -247,6 +262,7 @@ namespace HermesVoice
         {
             var t = new TailInfo { Side = TailSide.None };
             if (kind == BubbleKind.Narrator) return t;
+            if (balloon.Y > ty) ty += BubbleMetrics.HeadDrop;   // balloon below the label point: aim at the head, not above it
             float m = BubbleMetrics.Margin(kind);
             // Inside the body: nothing to point at.
             if (new BRect(balloon.X + m, balloon.Y + m, balloon.W - 2f * m, balloon.H - 2f * m).Contains(tx, ty)) return t;
@@ -281,7 +297,7 @@ namespace HermesVoice
             float dev = Wrap180(toward - baseAngle);
             dev = Clamp(dev, -BubbleMetrics.MaxTailAngle, BubbleMetrics.MaxTailAngle);
             t.Angle = baseAngle + dev;
-            t.Length = Clamp(dist - 3f, 14f, 90f);
+            t.Length = Clamp(dist - 3f, 14f, 70f);
             double rad = (t.Angle) * Math.PI / 180.0;
             t.DirX = (float)-Math.Sin(rad); t.DirY = (float)Math.Cos(rad);
             return t;
@@ -291,9 +307,9 @@ namespace HermesVoice
         public static int ThoughtDots(TailInfo tail, float[] xs, float[] ys, float[] diam)
         {
             if (!tail.Has) return 0;
-            float[] frac = { 0.18f, 0.5f, 0.82f };
+            float[] frac = { 0.3f, 0.62f, 0.92f };
             float[] d = { 10f, 7.5f, 5f };
-            float len = Math.Max(tail.Length, 18f);
+            float len = Math.Max(tail.Length, 20f);
             for (int i = 0; i < 3 && i < xs.Length; i++)
             {
                 xs[i] = tail.AnchorX + tail.DirX * len * frac[i];
@@ -306,7 +322,7 @@ namespace HermesVoice
         // ------------------------------------------------------------------------------ placement
         /// <summary>
         /// Clamps every balloon into <paramref name="bounds"/> and pushes overlapping ones apart vertically
-        /// (earlier entries keep their place; later ones move away along the shorter way). Rects are mutated in place.
+        /// (earlier entries keep their place; later ones stack upward, or go below when there is no room above). Rects are mutated in place.
         /// </summary>
         public static void Separate(List<BRect> rects, BRect bounds, float gap)
         {
@@ -324,7 +340,7 @@ namespace HermesVoice
                         float down = o.Bottom + gap;               // r below o
                         bool fitUp = up >= bounds.Y, fitDown = down + r.H <= bounds.Bottom;
                         float ny;
-                        if (fitUp && (!fitDown || Math.Abs(up - r.Y) <= Math.Abs(down - r.Y))) ny = up;
+                        if (fitUp) ny = up;                       // comics stack upward
                         else if (fitDown) ny = down;
                         else ny = Clamp(up, bounds.Y, bounds.Bottom - r.H);
                         r.Y = ny; moved = true;

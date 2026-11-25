@@ -262,6 +262,19 @@ namespace HermesVoice.Tests
             foreach (var r in rs) { Assert.True(r.Y >= bounds.Y && r.Bottom <= bounds.Bottom); }
         }
 
+        [Fact]
+        public void DefaultRectSitsAboveThePawnOrBelowWhenTheTopIsTooClose()
+        {
+            var bounds = new BRect(4, 4, 600, 400);
+            var above = BubbleLayout.DefaultRect(100, 40, 300, 200, bounds);
+            Assert.True(above.Bottom < 200);
+            Assert.Equal(300f, above.CenterX, 3);
+            var near = BubbleLayout.DefaultRect(100, 40, 300, 30, bounds);
+            Assert.True(near.Y > 30, "flipped below the pawn");
+            var tail = BubbleLayout.ChooseTail(BubbleKind.Say, near, 300, 30);
+            Assert.Equal(TailSide.Top, tail.Side);
+        }
+
         // ------------------------------------------------------------------ motion
         [Fact]
         public void PopStartsSmallOvershootsAndSettles()

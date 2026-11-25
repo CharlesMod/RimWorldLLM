@@ -53,7 +53,7 @@ namespace HermesVoice
                 float tx = pos.x, ty = pos.y - 4f;
                 _targets[i] = new Vector2(tx, ty);
                 Live.Add(b);
-                Rects.Add(new BRect(tx - b.W * 0.5f, ty - BubbleMetrics.TailGap - b.H, b.W, b.H));
+                Rects.Add(BubbleLayout.DefaultRect(b.W, b.H, tx, ty, bounds));
             }
             BubbleLayout.Separate(Rects, bounds, 3f);
 
