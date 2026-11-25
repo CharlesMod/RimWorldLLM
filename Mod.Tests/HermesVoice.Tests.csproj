@@ -17,5 +17,6 @@
         <Compile Include="../Mod/Source/Bridge/**/*.cs" />
         <Compile Include="../Mod/Source/RimWorld/Rules.cs" />
         <Compile Include="../Mod/Source/RimWorld/Effects.cs" />
+        <Compile Include="../Mod/Source/RimWorld/BubbleLayout.cs" />
     </ItemGroup>
 </Project>

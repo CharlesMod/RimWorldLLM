@@ -146,6 +146,11 @@
   <HV_Bubbles_Title>Speech bubbles</HV_Bubbles_Title>
   <HV_Bubbles_Show>Show overhead speech bubbles</HV_Bubbles_Show>
   <HV_Bubbles_Colors>Give each pawn their own bubble colour</HV_Bubbles_Colors>
+  <HV_Bubbles_Style>Bubble style</HV_Bubbles_Style>
+  <HV_Bubbles_StyleComic>Comic (round balloons with tails)</HV_Bubbles_StyleComic>
+  <HV_Bubbles_StyleClassic>Classic (plain boxes)</HV_Bubbles_StyleClassic>
+  <HV_Bubbles_Opacity>Bubble opacity: {0}%</HV_Bubbles_Opacity>
+  <HV_Bubbles_Lettering>Comic lettering (ALL CAPS)</HV_Bubbles_Lettering>
   <HV_Bubbles_Duration>Bubble duration (seconds)</HV_Bubbles_Duration>
   <HV_Adv_Title>Advanced</HV_Adv_Title>
   <HV_Adv_FixedToken>Fixed shared token (blank = a random token each run)</HV_Adv_FixedToken>

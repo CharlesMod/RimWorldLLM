@@ -78,7 +78,7 @@ namespace HermesVoice
             if (listener == speaker) listener = null;
 
             // Show.
-            SpeechBubbles.Add(speaker, text);
+            SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
             bool logged = false;
             try
             {

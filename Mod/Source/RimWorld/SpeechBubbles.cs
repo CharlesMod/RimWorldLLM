@@ -12,24 +12,46 @@ namespace HermesVoice
         public string Text;
         public int StartTick;
         public bool Active;
+
+        // Comic style (see SpeechBubbles.DrawComic). Set at creation.
+        public BubbleKind Kind;
+        public string Clean;          // text without kind markers
+        public float AnimT;           // seconds of pop-in played (frozen while the game is paused)
+
+        // Layout cache: rebuilt only when the text, kind, lettering, font or UI scale changes.
+        internal bool CacheValid;
+        internal bool CacheCaps;
+        internal float CacheUiScale;
+        internal string Display;      // text with explicit line breaks, centred when drawn
+        internal float TextW, TextH, W, H;
     }
 
     /// <summary>
     /// Overhead dialogue bubbles. Drawn via a Harmony postfix on the map OnGUI (before the main
     /// tabs), which is where overhead labels are drawn, so the z-order is correct.
     /// </summary>
-    public static class SpeechBubbles
+    public static partial class SpeechBubbles
     {
         const int MaxBubbles = 24;
         static readonly List<Bubble> Active = new List<Bubble>();
 
-        public static void Add(Pawn pawn, string text)
+        /// <param name="kind">optional explicit look ("thought", "narrator", "shout", "whisper")</param>
+        /// <param name="intent">the /say intent, used to pick the look</param>
+        public static void Add(Pawn pawn, string text, string kind = null, string intent = null, bool combat = false)
         {
             if (pawn == null || string.IsNullOrWhiteSpace(text)) return;
+            string clean;
+            var look = BubbleLayout.ChooseKind(kind, intent, text, combat, out clean);
             for (int i = Active.Count - 1; i >= 0; i--)
                 if (Active[i].Pawn == pawn) Active.RemoveAt(i);
             if (Active.Count >= MaxBubbles) Active.RemoveAt(0);
-            Active.Add(new Bubble { Pawn = pawn, Text = text, StartTick = Find.TickManager.TicksGame, Active = true });
+            Active.Add(new Bubble
+            {
+                Pawn = pawn, Text = text, StartTick = Find.TickManager.TicksGame, Active = true,
+                Kind = look, Clean = string.IsNullOrWhiteSpace(clean) ? text : clean,
+                // Born while paused: skip the pop so it does not sit frozen at 85%.
+                AnimT = Find.TickManager.Paused ? BubbleMetrics.PopSeconds : 0f
+            });
         }
 
         public static void Clear() { Active.Clear(); }
@@ -49,6 +71,12 @@ namespace HermesVoice
             var map = Find.CurrentMap;
             var s = HermesVoiceMod.Settings;
             if (map == null || s == null) return;
+            if (s.bubbleStyle == "classic") DrawClassic(map, s); else DrawComic(map, s);
+        }
+
+        /// <summary>The original rectangular boxes, kept for the "Classic" bubble style.</summary>
+        static void DrawClassic(Map map, HermesVoiceSettings s)
+        {
             bool draw = s.showBubbles;
 
             int now = Find.TickManager.TicksGame;
@@ -98,10 +126,11 @@ namespace HermesVoice
                 Color bg = new Color(0.05f, 0.06f, 0.09f, 0.9f), border = new Color(0.4f, 0.42f, 0.5f, 1f), text = Color.white;
                 if (s.colorBubbles) PawnColors(pawn.thingIDNumber, out bg, out border, out text);
                 // The box carries its own dark fill, so the text reads on both dark and light terrain.
-                Widgets.DrawBoxSolid(boxRect, bg);
-                GUI.color = border;
+                float opacity = Mathf.Clamp01(s.bubbleOpacity);
+                Widgets.DrawBoxSolid(boxRect, new Color(bg.r, bg.g, bg.b, bg.a * opacity));
+                GUI.color = new Color(border.r, border.g, border.b, border.a * opacity);
                 Widgets.DrawBox(boxRect, 2, null);
-                GUI.color = text;
+                GUI.color = new Color(text.r, text.g, text.b, text.a * opacity);
 
                 Widgets.Label(boxRect.ContractedBy(pad), display);
                 Text.Font = prevFont;

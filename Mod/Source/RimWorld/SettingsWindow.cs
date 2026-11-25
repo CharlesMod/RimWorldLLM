@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HermesVoice.Bridge;
 using UnityEngine;
 using Verse;
@@ -277,6 +278,19 @@ namespace HermesVoice
             Title(l, "HV_Bubbles_Title");
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Show"), ref s.showBubbles);
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Colors"), ref s.colorBubbles);
+            bool comic = s.bubbleStyle != "classic";
+            l.Label(UiUtil.T("HV_Bubbles_Style"));
+            if (l.ButtonText(UiUtil.T(comic ? "HV_Bubbles_StyleComic" : "HV_Bubbles_StyleClassic")))
+            {
+                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
+                {
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleComic"), () => s.bubbleStyle = "comic"),
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleClassic"), () => s.bubbleStyle = "classic")
+                }));
+            }
+            l.Label(UiUtil.T("HV_Bubbles_Opacity", Mathf.RoundToInt(s.bubbleOpacity * 100f)));
+            s.bubbleOpacity = l.Slider(s.bubbleOpacity, 0.3f, 1f);
+            if (comic) l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Lettering"), ref s.comicLettering);
             l.Label(UiUtil.T("HV_Bubbles_Duration"));
             if (_durBuf == null) _durBuf = s.bubbleDurationSec.ToString();
             l.TextFieldNumeric(ref s.bubbleDurationSec, ref _durBuf, 1, 120);
