@@ -107,6 +107,13 @@ class Config(BaseModel):
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
     repeat_guard: bool = True          # a conversation turn that repeats an earlier line is refused (core/loopguard.py)
     repeat_retries: int = 1            # retries with the reason in the prompt, then the talk ends with no line
+    inner_monologue: bool = True       # master: aim in the intent pass, inner stream in the Mind, contrast clouds (core/inner.py)
+    inner_stream_keep: int = 6         # inner thoughts kept per Mind
+    inner_solo_aim: bool = True        # a line with no listener still gets an aim-only call
+    inner_cloud: bool = True           # sometimes show the aim as a thought cloud after a line
+    inner_cloud_chance: float = 0.35
+    inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock
+    inner_aim_fresh_days: float = 0.25     # an aim guides the next line for this many game days
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

@@ -15,6 +15,9 @@ _CANNED = {
 }
 
 
+_AIM = "I just want this to be over with."
+
+
 _DEFAULTS = {
     "reflect": '{"bio": "The recent days have left a mark on me, and I am changing slowly.", '
                '"wants": ["Get through the week"], "relations": [], "merge": []}',
@@ -50,6 +53,8 @@ class FakeLLM:
             last_line = messages[-2][1] if len(messages) >= 2 else ""
             text = ("kind" if re.search(r"\b(thanks|friend|sit|eat)\b", last_line, re.I) else
                     "insult" if re.search(r"\b(idiot|useless|fool)\b", last_line, re.I) else "none")
+            if grammar and "aim ::=" in grammar:      # the grammar asks for an aim (core/inner.py)
+                text = _AIM if grammar.startswith("root ::= aim") else f"{text} normal {_AIM}"
         elif kind in _DEFAULTS:
             text = _DEFAULTS[kind]
         elif kind == "line":

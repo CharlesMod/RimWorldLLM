@@ -8,6 +8,7 @@ the transport is any ``Bridge`` and events come from any ``EventSource``.
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 import hashlib
 import logging
 import random
@@ -30,6 +31,7 @@ from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, 
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
+from . import inner
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
@@ -103,6 +105,8 @@ class Director:
         self._raw_last: float | None = None
         self._play = 0.0                          # play clock: real seconds with the game's pauses taken out
         self._speed_seen = 1
+        self.inner_rng = random.Random(11)         # its own stream, so the chance roll never shifts the others
+        self.cloud_gate = inner.CloudGate()        # contrast clouds: per-actor rate limit on the play clock
 
     # ---- clock ----------------------------------------------------------
     def now(self) -> Now:
@@ -425,7 +429,8 @@ class Director:
         for m in mems:
             known |= {p for p in m.people if p in self.names}
         led = self.ledger.known_to(aid)
-        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc)
+        thoughts = ([t.text for t in inner.recent_inner(mind, 3)] if self.cfg.inner_monologue else None)
+        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts)
         lease.data.update(prefix=prefix, turns=[], snap=snap)
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
@@ -488,7 +493,8 @@ class Director:
             else:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                   turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
-                                  labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens)
+                                  labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens,
+                                  **self._inner_kw(mind))
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -548,18 +554,44 @@ class Director:
         self.shout_until[aid] = now + self.cfg.shout_gap_real_s
         return "shout"
 
+    def _inner_kw(self, mind: Mind) -> dict:
+        """speak() arguments for the inner monologue: empty when the master switch is off (today's calls, byte for byte)."""
+        if not self.cfg.inner_monologue:
+            return {}
+        window = int(self.cfg.inner_aim_fresh_days * self.day)
+        return {"aim": True, "solo_aim": self.cfg.inner_solo_aim,
+                "fresh_aim": inner.fresh_aim(mind, self.bridge.env.game, window)}
+
+    async def _inner_after_say(self, aid: int, sp: Spoken, minor: bool) -> None:
+        """A line the game applied: its aim joins the stream and may show as a contrast cloud."""
+        if not self.cfg.inner_monologue or not sp.aim:
+            return
+        inner.add_inner(self.minds[aid], sp.aim, "aim", self.bridge.env.game, self.cfg.inner_stream_keep)
+        self.dirty.add(aid)
+        if not self.cfg.inner_cloud or (minor and sp.aim_gated) or len(sp.aim) > self.cfg.thought_max_chars:
+            return
+        if self.bridge.env.speed >= self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed):
+            return
+        if not self.cloud_gate.allow(aid, self.now().real, self.cfg.inner_cloud_gap_real_s,
+                                     self.cfg.inner_cloud_chance, self.inner_rng.random()):
+            return
+        try:
+            await self.bridge.thought(aid, sp.aim, surface=sp.aim)
+        except BridgeError as e:
+            log.warning("aim cloud refused for %s: %s", aid, e)
+
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
                    conv: str | None = None, talk_id: str | None = None, combat: bool = False,
                    event: dict | None = None, vanilla_ref: str | None = None, minor: bool = False) -> bool:
         if agegate.refuse_intent(sp.intent, self._romantic(), minor or self.is_minor(aid) or self.is_minor(listener)):
             self.gate.refused_intents += 1                       # last guard before the write
             self.gate.note("intent", actor=aid, intent=sp.intent)
-            sp = Spoken(sp.text, self.adapter.intent_labels[0])
+            sp = replace(sp, intent=self.adapter.intent_labels[0])
         about = None
         if sp.intent in self.adapter.about_intents():
             about = self._pick_about(aid, listener, event)
             if about is None or listener is None:
-                sp = Spoken(sp.text, self.adapter.intent_labels[0], sp.delivery)   # nobody to gossip about
+                sp = replace(sp, intent=self.adapter.intent_labels[0])   # nobody to gossip about
         kind = self._delivery(aid, sp, combat, event)
         try:
             r = await self.bridge.say(aid, sp.text, listener=listener, intent=sp.intent, conversation_id=conv,
@@ -572,6 +604,8 @@ class Director:
         self.leases.budget.spend(self.now())
         self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent, "delivery": kind,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
+        if applied:
+            await self._inner_after_say(aid, sp, minor or self.is_minor(aid) or self.is_minor(listener))
         told = self.adapter.told_intents()
         # the agent records only what the game applied
         if applied and listener in self.minds and sp.intent in told:
@@ -622,7 +656,8 @@ class Director:
                                   turn_no=len(conv.turns) // 2, ctx=ctxs[sp_id],
                                   listener_name=self.names[lis], labels=self.labels_for(ctxs[sp_id].minor_involved),
                                   max_tokens=self.cfg.llm.line_max_tokens,
-                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check)
+                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check,
+                                  **self._inner_kw(self.minds[sp_id]))
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))
