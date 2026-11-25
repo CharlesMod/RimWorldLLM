@@ -11,7 +11,7 @@ python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 hermesvoice-agent test-endpoint --llm-url http://127.0.0.1:8080     # the Test button
 hermesvoice-agent run                                               # needs the game running
 hermesvoice-agent replay events.jsonl                               # offline, fake bridge + fake LLM
-.venv/bin/python -m pytest                                          # 90 tests; the `gpu` test is skipped
+.venv/bin/python -m pytest                                          # 132 tests; the `gpu` test is skipped
 ```
 
 Config: defaults, then a TOML/JSON file (`--config` or `$HERMESVOICE_CONFIG`), then `HERMESVOICE_*`
@@ -65,8 +65,11 @@ runs one job at a time and is cancelled the moment an actor window is wanted. `r
 shows reflections, diaries and chronicle entries over four days. Player edits to director's notes or the voice
 card win on a `PUT /mind` conflict.
 
-Not built: Skyrim/Fallout or emulator adapters, a chronicle endpoint in the contract (`POST /chronicle` is a proposal,
-off unless `chronicle_bridge` is set).
+Chronicle entries are also sent to the mod as `POST /chronicle {op_id, day, text, kind}` (on by default; set
+`chronicle_bridge = false` to keep them in the agent's data dir only; an older mod without the endpoint just logs a warning).
+`BridgeClient.get_chronicle(since_day)` reads `GET /chronicle` back.
+
+Not built: Skyrim/Fallout or emulator adapters.
 
 ## Contract notes (docs/BRIDGE-API.md v2, Parts 1 and 2)
 

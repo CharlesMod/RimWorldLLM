@@ -173,16 +173,21 @@ class BridgeClient:
         return await self._req("POST", "/say", json_body=self._write_body(body, expires_at, op_id))
 
     async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict:
-        """Inner monologue. ``kind`` ("diary") is a proposed optional field; omitted for plain thoughts."""
+        """Inner monologue. ``kind`` is optional: "thought" (the default, omitted) or "diary" (contract: POST /thought)."""
         body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text}
         if kind:
             body["kind"] = kind
         return await self._req("POST", "/thought", json_body=self._write_body(body, None, op_id))
 
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict:
-        """Proposed endpoint (not in the contract yet): store a chronicle entry beside the save."""
+        """Contract: POST /chronicle {op_id, day, text, kind: "day"|"major"}; the mod saves it with the game."""
         return await self._req("POST", "/chronicle",
                                json_body=self._write_body({"day": day, "text": text, "kind": kind}, None, op_id))
+
+    async def get_chronicle(self, since_day: int = 0) -> list[dict]:
+        """Contract: GET /chronicle?since_day=N -> entries, oldest first (day, kind, text and the mod's receive time)."""
+        b = await self._req("GET", "/chronicle", params={"since_day": since_day})
+        return list(b.get("entries", []))
 
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int:
         b = await self._req("PUT", f"{self.protocol.mind_path}/{actor_id}",

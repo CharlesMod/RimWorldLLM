@@ -42,7 +42,8 @@ class FakeBridge:
         self.say_log: list[dict] = []
         self.thought_log: list[dict] = []
         self.chronicle_log: list[dict] = []
-        self.chronicle_supported = False       # POST /chronicle is a proposal, off unless a test enables it
+        self.chronicle_supported = True        # POST/GET /chronicle are in the contract; a test can turn it off (an older mod: 404)
+        self.chronicle: list[dict] = []        # what the mod holds (cap 120)
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -160,13 +161,23 @@ class FakeBridge:
                 self.talk_queue = [t for t in self.talk_queue if t["id"] != body["talk_id"]]
             return self._ok(**res)
         if path == "/thought" and req.method == "POST":
+            if body.get("kind", "thought") not in ("thought", "diary"):
+                return self._err(400, "bad_request", "kind must be thought or diary")
             self.thought_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok()
-        if path == "/chronicle" and req.method == "POST" and self.chronicle_supported:
+        if path == "/chronicle" and self.chronicle_supported:
+            if req.method == "GET":
+                since = int(req.url.params.get("since_day", 0))
+                return self._ok(entries=[e for e in self.chronicle if e["day"] >= since])
+            day, text, kind = body.get("day"), str(body.get("text", "")).strip(), body.get("kind", "day")
+            if not isinstance(day, int) or isinstance(day, bool) or day < 0 or not text or kind not in ("day", "major"):
+                return self._err(400, "bad_request", "day, text and kind are required")
             self.chronicle_log.append(body)
+            self.chronicle.append({"day": day, "kind": kind, "text": text[:2000], "tick": self.tick})
+            del self.chronicle[:-120]
             self.seen_ops[body["op_id"]] = {}
-            return self._ok()
+            return self._ok(stored=True, count=len(self.chronicle))
         return self._err(404, "not_found", path)
 
     def _mind(self, req: httpx.Request, pid: int, body: dict) -> httpx.Response:
