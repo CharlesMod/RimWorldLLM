@@ -163,6 +163,8 @@ namespace HermesVoice
             int tick = Find.TickManager.TicksGame;
             if (kind == MindBook.KindDiary) HermesBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
             else HermesBridge.Minds.AddThought(p.thingIDNumber, tick, text);
+            // A thought also shows on the map as a short cloud (never a diary). "surface" is the short line for the map.
+            if (kind == MindBook.KindThought) SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
 
