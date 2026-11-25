@@ -1,0 +1,323 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace HermesVoice.Bridge
+{
+    // ------------------------------------------------------------------------------------ DTOs (docs/ENGINE.md §7)
+
+    public sealed class EngineProgress
+    {
+        [JsonProperty("done_bytes")] public long DoneBytes;
+        [JsonProperty("total_bytes")] public long TotalBytes;
+        [JsonProperty("rate_bps")] public double RateBps;
+        [JsonProperty("eta_s")] public double EtaSeconds;
+        [JsonProperty("step")] public string Step;
+        public double Fraction { get { return TotalBytes > 0 ? Math.Min(1.0, (double)DoneBytes / TotalBytes) : 0.0; } }
+    }
+
+    public sealed class EngineShape
+    {
+        [JsonProperty("slots")] public int Slots;
+        [JsonProperty("ctx_per_slot")] public int CtxPerSlot;
+        [JsonProperty("n_cpu_moe")] public int NCpuMoe;
+        [JsonProperty("kv_type")] public string KvType;
+        [JsonProperty("vram_mib")] public int VramMib;
+    }
+
+    public sealed class EngineStatus
+    {
+        [JsonProperty("version")] public string Version;
+        [JsonProperty("port")] public int Port;
+        [JsonProperty("mode")] public string Mode;
+        [JsonProperty("phase")] public string Phase;
+        [JsonProperty("message")] public string Message;
+        [JsonProperty("progress")] public EngineProgress Progress;
+        [JsonProperty("model")] public string Model;
+        [JsonProperty("backend")] public string Backend;
+        [JsonProperty("shape")] public EngineShape Shape;
+        [JsonProperty("server_url")] public string ServerUrl;
+        [JsonProperty("agent")] public JToken Agent;
+        [JsonProperty("parents")] public JToken Parents;
+        [JsonProperty("errors")] public List<string> Errors;
+    }
+
+    public sealed class EngineGpu
+    {
+        [JsonProperty("Index")] public int Index;
+        [JsonProperty("Vendor")] public string Vendor;
+        [JsonProperty("Name")] public string Name;
+        [JsonProperty("VRAMTotalMiB")] public int VramTotalMiB;
+        [JsonProperty("VRAMUsedMiB")] public int VramUsedMiB;
+        [JsonProperty("UnifiedMemory")] public bool UnifiedMemory;
+        [JsonProperty("Source")] public string Source;
+    }
+
+    public sealed class EngineHardware
+    {
+        [JsonProperty("OS")] public string OS;
+        [JsonProperty("Arch")] public string Arch;
+        [JsonProperty("CPUName")] public string CpuName;
+        [JsonProperty("Cores")] public int Cores;
+        [JsonProperty("AVX2")] public bool Avx2;
+        [JsonProperty("RAMTotalMiB")] public int RamTotalMiB;
+        [JsonProperty("RAMAvailMiB")] public int RamAvailMiB;
+        [JsonProperty("DiskFreeMiB")] public int DiskFreeMiB;
+        [JsonProperty("GPUs")] public List<EngineGpu> Gpus;
+    }
+
+    public sealed class EnginePlanModel
+    {
+        [JsonProperty("id")] public string Id;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("size")] public long Size;
+        [JsonProperty("fits")] public string Fits;        // yes | tight | no
+        [JsonProperty("why")] public string Why;
+        [JsonProperty("shape")] public EngineShape Shape;
+        [JsonProperty("est_vram_mib")] public int EstVramMib;
+        [JsonProperty("est_ram_mib")] public int EstRamMib;
+        [JsonProperty("installed")] public bool Installed;
+        /// <summary>True when the catalog has no download URL (import-only). Not in the contract; read when the engine sends it.</summary>
+        [JsonProperty("import_only")] public bool ImportOnly;
+    }
+
+    public sealed class EnginePlan
+    {
+        [JsonProperty("recommended")] public string Recommended;
+        [JsonProperty("models")] public List<EnginePlanModel> Models;
+        [JsonProperty("backend")] public string Backend;
+    }
+
+    public sealed class EngineTestResult
+    {
+        [JsonProperty("light")] public string Light;      // green | amber | red
+        [JsonProperty("message")] public string Message;
+        [JsonProperty("latency_ms")] public int LatencyMs;
+        [JsonProperty("model")] public string Model;
+    }
+
+    public sealed class EngineExternal
+    {
+        [JsonProperty("base_url")] public string BaseUrl = "";
+        [JsonProperty("model")] public string Model = "";
+        [JsonProperty("api_key")] public string ApiKey = "";
+    }
+
+    public sealed class EngineSettings
+    {
+        [JsonProperty("mode")] public string Mode = "external";
+        [JsonProperty("external")] public EngineExternal External;
+        [JsonProperty("linger_s", NullValueHandling = NullValueHandling.Ignore)] public int? LingerSeconds;
+        [JsonProperty("kv_type", NullValueHandling = NullValueHandling.Ignore)] public string KvType;
+    }
+
+    /// <summary>Phase names of /engine/v1/status.</summary>
+    public static class EnginePhase
+    {
+        public const string NotInstalled = "not_installed", Downloading = "downloading", Installing = "installing",
+            Starting = "starting", Loading = "loading", Ready = "ready", Resizing = "resizing",
+            Sleeping = "sleeping", External = "external", Error = "error";
+
+        public static bool IsBusy(string p)
+        {
+            return p == Downloading || p == Installing || p == Starting || p == Loading || p == Resizing;
+        }
+    }
+
+    /// <summary>Outcome of one engine call; never throws.</summary>
+    public sealed class EngineResult<T>
+    {
+        public bool Ok;
+        public T Value;
+        public int HttpStatus;
+        public string Error;     // short reason when !Ok
+        public bool TimedOut;
+        public bool Unreachable;
+    }
+
+    /// <summary>
+    /// Client for the engine's control API (<c>/engine/v1/*</c>, docs/ENGINE.md §7). No game references.
+    /// Every call is async with a short timeout and returns an <see cref="EngineResult{T}"/>; non-GET calls carry
+    /// the anti-CSRF header <c>X-Hermes-Engine: 1</c>.
+    /// </summary>
+    public sealed class EngineClient
+    {
+        public const int FirstPort = 47480, LastPort = 47489;
+        public const string CsrfHeader = "X-Hermes-Engine";
+
+        static readonly HttpClient Http = MakeHttp();
+        static HttpClient MakeHttp()
+        {
+            var c = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };   // per-call timeouts below
+            return c;
+        }
+
+        public string BaseUrl { get; private set; }
+        public int ShortTimeoutMs = 3000;      // status, plan, cancel, attach...
+        public int LongTimeoutMs = 60000;      // test (an 8-token chat), import (hash a big file)
+
+        public EngineClient(string baseUrl) { BaseUrl = (baseUrl ?? "").TrimEnd('/'); }
+        public EngineClient(int port) : this("http://127.0.0.1:" + port) { }
+
+        /// <summary>The OpenAI base URL clients should use against the engine's proxy.</summary>
+        public string OpenAiBase { get { return BaseUrl + "/v1"; } }
+
+        // ---------------------------------------------------------------------------------- calls
+        public Task<EngineResult<EngineStatus>> GetStatusAsync() { return Send<EngineStatus>("GET", "status", null, ShortTimeoutMs); }
+        public Task<EngineResult<EngineHardware>> GetHardwareAsync(bool refresh = false) { return Send<EngineHardware>("GET", refresh ? "hardware?refresh=1" : "hardware", null, refresh ? LongTimeoutMs : ShortTimeoutMs); }
+        public Task<EngineResult<EnginePlan>> GetPlanAsync() { return Send<EnginePlan>("GET", "plan", null, ShortTimeoutMs * 2); }
+        public Task<EngineResult<JObject>> InstallAsync(string model, string backend = null)
+        {
+            var o = new JObject { ["model"] = model };
+            if (!string.IsNullOrEmpty(backend)) o["backend"] = backend;
+            return Send<JObject>("POST", "install", o, ShortTimeoutMs);
+        }
+        public Task<EngineResult<JObject>> CancelAsync() { return Send<JObject>("POST", "cancel", null, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> ImportAsync(string path) { return Send<JObject>("POST", "import", new JObject { ["path"] = path }, LongTimeoutMs); }
+        public Task<EngineResult<JObject>> StartAsync() { return Send<JObject>("POST", "start", null, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> StopAsync() { return Send<JObject>("POST", "stop", null, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> SleepAsync() { return Send<JObject>("POST", "sleep", null, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> WakeAsync() { return Send<JObject>("POST", "wake", null, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> PutSettingsAsync(EngineSettings s) { return Send<JObject>("PUT", "settings", JObject.FromObject(s), ShortTimeoutMs); }
+        public Task<EngineResult<EngineTestResult>> TestAsync() { return Send<EngineTestResult>("POST", "test", null, LongTimeoutMs); }
+        public Task<EngineResult<JObject>> AttachAsync(int pid) { return Send<JObject>("POST", "attach", new JObject { ["pid"] = pid }, ShortTimeoutMs); }
+        public Task<EngineResult<string>> GetLogsAsync(string name, int tail = 200)
+        {
+            return Send<string>("GET", "logs?name=" + Uri.EscapeDataString(name ?? "engine") + "&tail=" + tail, null, ShortTimeoutMs);
+        }
+
+        // ---------------------------------------------------------------------------------- transport
+        async Task<EngineResult<T>> Send<T>(string method, string path, JObject body, int timeoutMs)
+        {
+            var res = new EngineResult<T>();
+            using (var cts = new CancellationTokenSource(timeoutMs))
+            {
+                try
+                {
+                    var req = new HttpRequestMessage(new HttpMethod(method), BaseUrl + "/engine/v1/" + path);
+                    if (method != "GET")
+                    {
+                        req.Headers.TryAddWithoutValidation(CsrfHeader, "1");
+                        req.Content = new StringContent(body == null ? "{}" : body.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                    }
+                    using (var resp = await Http.SendAsync(req, HttpCompletionOption.ResponseContentRead, cts.Token).ConfigureAwait(false))
+                    {
+                        string text = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        res.HttpStatus = (int)resp.StatusCode;
+                        if (!resp.IsSuccessStatusCode)
+                        {
+                            res.Error = ErrorText(text, res.HttpStatus);
+                            return res;
+                        }
+                        try
+                        {
+                            if (typeof(T) == typeof(string)) res.Value = (T)(object)text;
+                            else if (string.IsNullOrWhiteSpace(text)) res.Value = default(T);
+                            else res.Value = JsonConvert.DeserializeObject<T>(text);
+                            res.Ok = true;
+                        }
+                        catch (JsonException e) { res.Error = "bad reply: " + e.Message; }
+                    }
+                }
+                catch (OperationCanceledException) { res.TimedOut = true; res.Error = "timeout"; }
+                catch (HttpRequestException e) { res.Unreachable = true; res.Error = e.InnerException != null ? e.InnerException.Message : e.Message; }
+                catch (Exception e) { res.Error = e.Message; }
+            }
+            return res;
+        }
+
+        static string ErrorText(string body, int status)
+        {
+            try
+            {
+                var j = JObject.Parse(body);
+                var e = j["error"];
+                if (e is JObject) return (string)e["message"] ?? ("HTTP " + status);
+                if (e != null) return e.ToString();
+                if (j["message"] != null) return (string)j["message"];
+            }
+            catch { }
+            return "HTTP " + status;
+        }
+
+        // ---------------------------------------------------------------------------------- discovery
+        /// <summary>The engine data dir (docs/ENGINE.md §2). <paramref name="env"/> reads environment variables (injectable).</summary>
+        public static string DataDir(string os, Func<string, string> env, string home)
+        {
+            string over = env("HERMES_ENGINE_HOME");
+            if (!string.IsNullOrWhiteSpace(over)) return over;
+            switch (os)
+            {
+                case "windows":
+                    {
+                        string la = env("LOCALAPPDATA");
+                        if (string.IsNullOrWhiteSpace(la)) la = Path.Combine(home ?? "", "AppData", "Local");
+                        return Path.Combine(la, "HermesEngine");
+                    }
+                case "darwin":
+                    return Path.Combine(home ?? "", "Library", "Application Support", "HermesEngine");
+                default:
+                    {
+                        string x = env("XDG_DATA_HOME");
+                        if (string.IsNullOrWhiteSpace(x)) x = Path.Combine(home ?? "", ".local", "share");
+                        return Path.Combine(x, "hermes-engine");
+                    }
+            }
+        }
+
+        /// <summary>Reads the port from engine.lock. Accepts JSON ({"pid":1,"port":47480}) or "pid port" / "port=N" text. 0 when unreadable.</summary>
+        public static int ReadLockPort(string lockPath)
+        {
+            try
+            {
+                if (!File.Exists(lockPath)) return 0;
+                string t = File.ReadAllText(lockPath).Trim();
+                if (t.Length == 0) return 0;
+                if (t[0] == '{')
+                {
+                    var j = JObject.Parse(t);
+                    int p = (int?)j["port"] ?? 0;
+                    return p >= 1 && p <= 65535 ? p : 0;
+                }
+                var m = System.Text.RegularExpressions.Regex.Match(t, @"port\D{0,3}(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success) return int.Parse(m.Groups[1].Value);
+                var parts = t.Split(new[] { ' ', '\t', '\n', '\r', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                int q;
+                if (parts.Length >= 2 && int.TryParse(parts[1], out q) && q >= 1 && q <= 65535) return q;
+            }
+            catch { }
+            return 0;
+        }
+
+        /// <summary>Ports to try, in order: the one in engine.lock (when given) first, then 47480-47489.</summary>
+        public static List<int> CandidatePorts(int lockPort)
+        {
+            var l = new List<int>();
+            if (lockPort > 0) l.Add(lockPort);
+            for (int p = FirstPort; p <= LastPort; p++) if (p != lockPort) l.Add(p);
+            return l;
+        }
+
+        /// <summary>Finds a running engine: tries each candidate port's status with a short timeout. Null when none answers.</summary>
+        public static async Task<EngineClient> DiscoverAsync(int lockPort, int perPortTimeoutMs = 600, IEnumerable<int> ports = null)
+        {
+            foreach (int p in ports ?? CandidatePorts(lockPort))
+            {
+                var c = new EngineClient(p) { ShortTimeoutMs = perPortTimeoutMs };
+                var r = await c.GetStatusAsync().ConfigureAwait(false);
+                if (r.Ok && r.Value != null && !string.IsNullOrEmpty(r.Value.Phase))
+                {
+                    c.ShortTimeoutMs = 3000;
+                    return c;
+                }
+            }
+            return null;
+        }
+    }
+}
