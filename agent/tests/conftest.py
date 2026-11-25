@@ -37,3 +37,11 @@ class World:
 @pytest.fixture
 def world(tmp_path):
     return World(tmp_path)
+
+
+@pytest.fixture(autouse=True)
+def _adult_setting_default():
+    from hermesvoice_agent.core import adult
+    adult.set_enabled(False)
+    yield
+    adult.set_enabled(False)

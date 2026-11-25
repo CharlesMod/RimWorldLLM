@@ -242,6 +242,13 @@ namespace HermesVoice
             l.CheckboxLabeled(UiUtil.T("HV_Dreams_Enable"), ref s.dreamsEnabled, UiUtil.T("HV_Dreams_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Recap_Enable"), ref s.recapOnLoad, UiUtil.T("HV_Recap_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Art_Enable"), ref s.artDescriptions, UiUtil.T("HV_Art_EnableTip"));
+            bool adult = s.adultContent;
+            l.CheckboxLabeled(UiUtil.T("HV_Adult_Enable"), ref adult, UiUtil.T("HV_Adult_EnableTip"));
+            if (adult != s.adultContent)
+            {
+                if (!adult) s.adultContent = false;
+                else Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(UiUtil.T("HV_Adult_ConfirmText"), () => s.adultContent = true));
+            }
             l.CheckboxLabeled(UiUtil.T("HV_Wants_Enable"), ref s.wantsEnabled, UiUtil.T("HV_Wants_EnableTip"));
             if (s.wantsEnabled)
             {

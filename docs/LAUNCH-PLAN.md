@@ -25,7 +25,7 @@ Decided with the keeper on 2026-11-25. This is the order of work from here to a 
 | Comic-style speech bubbles | done (in-game look unchecked) |
 | Repetition control for conversation loops | done: loop guard (11/15 caught offline, 0 false alarms) |
 | Age gate: no romantic or sexual content for or about any pawn under 18, enforced in code | done |
-| Adult content off by default, behind a setting | to do |
+| Adult content off by default, behind a setting | built, needs in-game check: mod setting `adultContent` (default off, confirmation dialog on enabling, GET /config `adult_content`); agent core/adult.py reads it on each config refresh, adds a fade-to-black prompt rule when off, drops explicit lines in the sanitiser (reason `adult_off`, own vocabulary apart from the age gate's, covers speech, diary, chronicle, art, dream, thought), counted in Director.gate_stats()["adult_off_dropped"]; the age gate is untouched in both modes |
 | Fast first run: start on the small model, swap to the big one when its download finishes | to do |
 | "Share this moment": export an exchange or diary page as an image or text, with the mod name | to do |
 | Tune effect sizes in a real colony (SPEC milestone 4) | to do |

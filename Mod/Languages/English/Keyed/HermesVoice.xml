@@ -179,6 +179,9 @@
   <HV_Recap_Enable>Recap when a save is loaded</HV_Recap_Enable>
   <HV_Recap_EnableTip>After you load a save, a letter titled "Previously on ..." gives a three-line recap of the colony's chronicle. It never pauses the game.</HV_Recap_EnableTip>
   <HV_Recap_Title>Previously on {0}...</HV_Recap_Title>
+  <HV_Adult_Enable>Adult content</HV_Adult_Enable>
+  <HV_Adult_EnableTip>Off: romance and affection are fine, anything sexual fades to black. On: explicit sexual content between adult colonists. Never involving anyone under 18, in either setting.</HV_Adult_EnableTip>
+  <HV_Adult_ConfirmText>Turn on adult content? This allows explicit sexual content between adult colonists; never involving anyone under 18.</HV_Adult_ConfirmText>
   <HV_Wants_Enable>Pawns act on their wants</HV_Wants_Enable>
   <HV_Wants_EnableTip>In quiet moments a pawn may decide to seek someone out for a chat or to keep clear of someone for a while. Only ever small social moves; anything more important interrupts them.</HV_Wants_EnableTip>
   <HV_Wants_AvoidHours>How long a pawn avoids someone: {0} game hours</HV_Wants_AvoidHours>

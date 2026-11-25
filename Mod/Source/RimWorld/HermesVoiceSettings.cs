@@ -81,6 +81,7 @@ namespace HermesVoice
         public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
+        public bool adultContent = false;              // explicit sexual content between adult colonists; OFF by default; also GET /config adult_content. The agent's age gate ignores it.
         public float wantsAvoidHours = 1f;             // how long an "avoid" want lasts, in game hours
 
         // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
@@ -150,6 +151,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref wantsEnabled, "wantsEnabled", true);
             Scribe_Values.Look(ref recapOnLoad, "recapOnLoad", true);
+            Scribe_Values.Look(ref adultContent, "adultContent", false);
             Scribe_Values.Look(ref wantsAvoidHours, "wantsAvoidHours", 1f);
             Scribe_Values.Look(ref showQuotes, "showQuotes", true);
             Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
