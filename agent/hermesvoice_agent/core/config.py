@@ -81,6 +81,9 @@ class Config(BaseModel):
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
     idle_retry_real_s: float = 60.0    # backoff after a failed idle job
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
+    repeat_guard: bool = True          # a conversation turn that repeats an earlier line is refused (core/loopguard.py)
+    repeat_retries: int = 1            # retries with the reason in the prompt, then the talk ends with no line
+    repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property
     def actor_slots(self) -> list[int]:

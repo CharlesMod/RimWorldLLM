@@ -23,6 +23,7 @@ from .config import Config
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
 from .ledger import Ledger
+from .loopguard import LoopStats, find_repeat, retry_request
 from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, WorkItem
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
@@ -82,6 +83,8 @@ class Director:
         self.dropped: list[tuple[int, str]] = []
         self.line_count: dict[int, int] = {}     # per-actor lines spoken (drives the habit rule)
         self._conv_n = 0
+        self.loop = LoopStats()                  # repeat guard counters and trace (core/loopguard.py)
+        self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
         self.idle = IdleRunner(self)
@@ -414,6 +417,7 @@ class Director:
                 self.leases.mark_spoke(aid, sig)
                 mind.last_line_time = now.game
                 self.line_count[aid] = self.line_count.get(aid, 0) + 1
+                self._remember_own(aid, res.text)
                 self.dirty.add(aid)
         except asyncio.CancelledError:
             raise
@@ -490,15 +494,18 @@ class Director:
                 lis = conv.listener_of(sp_id)
                 li.generating = True
                 ctxs[sp_id].secrets = memory.secret_texts(self.minds[sp_id], self.names.get(lis))
+                check, on_check = self._repeat_check(conv, sp_id)
                 res = await speak(self.llm, slot=li.slot, mind=self.minds[sp_id], name=self.names[sp_id],
                                   prefix=li.data["prefix"], turns=conv.turns_for_prompt(),
                                   turn_no=len(conv.turns) // 2, ctx=ctxs[sp_id],
                                   listener_name=self.names[lis], labels=self.adapter.intent_labels,
-                                  max_tokens=self.cfg.llm.line_max_tokens)
+                                  max_tokens=self.cfg.llm.line_max_tokens,
+                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check)
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))
-                    conv.ended = "dropped"
+                    # a repeat that survived its retry ends the talk with no line: never a repeat on screen
+                    conv.ended = "repeat" if res.reason == "repeat" else "dropped"
                     break
                 if lease_a.preempted or lease_b.preempted:
                     conv.ended = "preempted"
@@ -512,6 +519,7 @@ class Director:
                     conv.ended = "apart"       # the game's liveness check refused: gone or out of range
                     break
                 conv.add(sp_id, res.text, res.intent)
+                self._remember_own(sp_id, res.text)
                 self.leases.quotas.record(sp_id, lis, self.now())
                 self.line_count[sp_id] = self.line_count.get(sp_id, 0) + 1
                 for l in (lease_a, lease_b):
@@ -541,6 +549,46 @@ class Director:
                     l.generating = False
                     if not l.ended:
                         self.leases.release(l, "conversation_end")
+
+    def _repeat_check(self, conv: Conversation, speaker: int):
+        """(check, on_check) for speak(): refuse a turn that repeats an earlier turn of this conversation or the
+        speaker's own recent lines; count and trace every check (self.loop)."""
+        if not self.cfg.repeat_guard:
+            return None, None
+        turns = [(t.speaker, t.text) for t in conv.turns]
+        own = list(self.recent_own.get(speaker, []))
+        hits: dict[str, object] = {}
+
+        def check(text: str):
+            hit = find_repeat(text, speaker, turns, own)
+            if hit is None:
+                return None
+            hits[text] = hit
+            return "repeat", retry_request(self.names[speaker], hit)
+
+        def on_check(ev: dict) -> None:
+            st = self.loop
+            if ev["attempt"] == 0:
+                st.checked += 1
+            hit = hits.get(ev["text"])
+            if ev["refused"]:
+                if ev["attempt"] == 0:
+                    st.caught += 1
+                    st.retried += 1 if self.cfg.repeat_retries > 0 else 0
+                if ev["attempt"] >= self.cfg.repeat_retries:
+                    st.ended += 1
+            elif ev["attempt"] > 0:
+                st.recovered += 1
+            st.trace.append({"conv": conv.id, "speaker": speaker, "turn": len(conv.turns), "attempt": ev["attempt"],
+                             "text": ev["text"], "refused": ev["refused"],
+                             "against": getattr(hit, "other", None), "score": round(getattr(hit, "score", 0.0), 3),
+                             "kind": getattr(hit, "kind", None)})
+        return check, on_check
+
+    def _remember_own(self, aid: int, text: str) -> None:
+        lst = self.recent_own.setdefault(aid, [])
+        lst.append(text)
+        del lst[:-max(1, self.cfg.repeat_own_recent)]
 
     async def finish_conversation(self, conv: Conversation, leases: dict[int, Lease]) -> None:
         """One memory and one relation update per actor, written by that actor's window (template fallback)."""

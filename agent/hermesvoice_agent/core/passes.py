@@ -3,6 +3,7 @@ GBNF-constrained intent in the same slot. A failed line is dropped, never shown.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Callable
 
 from .llm import LLMClient, LLMError, Messages
 from .minds import Mind
@@ -72,9 +73,26 @@ async def intent_pass(llm: LLMClient, *, slot: int, msgs: Messages, line: str,
 async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str,
                 turns: list[tuple[str, str]], turn_no: int, ctx: SanitizeCtx,
                 listener_name: str | None, labels: list[str], max_tokens: int = 48,
-                request: str | None = None) -> Spoken | Dropped:
+                request: str | None = None,
+                check: Callable[[str], tuple[str, str] | None] | None = None,
+                retries: int = 0, on_check: Callable[[dict], None] | None = None) -> Spoken | Dropped:
+    """A line, then its intent. ``check(text)`` is a further validation of a sanitised line: it returns None when
+    the line is fine, or (reason code, request text for the retry). A refused line is retried up to ``retries``
+    times with that request, then the result is Dropped(reason code). ``on_check`` gets one event per check."""
     s, msgs = await line_pass(llm, slot=slot, mind=mind, name=name, prefix=prefix, turns=turns,
                               turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=request)
+    attempt = 0
+    while s.ok and check is not None:
+        bad = check(s.text)
+        if on_check:
+            on_check({"attempt": attempt, "text": s.text, "refused": bool(bad), "reason": bad[0] if bad else ""})
+        if bad is None:
+            break
+        if attempt >= retries:
+            return Dropped(bad[0])
+        attempt += 1
+        s, msgs = await line_pass(llm, slot=slot, mind=mind, name=name, prefix=prefix, turns=turns,
+                                  turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=bad[1])
     if not s.ok:
         return Dropped(s.reason)
     intent = await intent_pass(llm, slot=slot, msgs=msgs, line=s.text, listener_name=listener_name,
