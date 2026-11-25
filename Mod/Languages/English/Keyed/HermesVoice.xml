@@ -25,4 +25,35 @@
   <HV_Refused_no_about>no valid subject for gossip</HV_Refused_no_about>
   <HV_Refused_pair_cap>daily limit for this pair</HV_Refused_pair_cap>
   <HV_Refused_stack_full>the listener already has this thought</HV_Refused_stack_full>
+  <!-- Mind tab -->
+  <HV_MindTab>Mind</HV_MindTab>
+  <HV_MindNoMind>The agent has not built a mind for {0} yet. It appears once the agent has run for this pawn.</HV_MindNoMind>
+  <HV_MindLatestThought>Latest inner thought</HV_MindLatestThought>
+  <HV_MindNoThought>No inner thought yet.</HV_MindNoThought>
+  <HV_MindThoughtAt>at {0}</HV_MindThoughtAt>
+  <HV_MindFixedBio>Fixed bio (from game data)</HV_MindFixedBio>
+  <HV_MindVoice>Voice</HV_MindVoice>
+  <HV_MindVoiceRegister>Register: {0}</HV_MindVoiceRegister>
+  <HV_MindVoiceTics>Tics: {0}</HV_MindVoiceTics>
+  <HV_MindVoiceExample>Example: {0}</HV_MindVoiceExample>
+  <HV_MindVoicePlayerEdited>(edited by the player)</HV_MindVoicePlayerEdited>
+  <HV_MindEvolvingBio>Evolving bio</HV_MindEvolvingBio>
+  <HV_MindNoEvolvingBio>The bio has not changed yet.</HV_MindNoEvolvingBio>
+  <HV_MindBioHistory>Bio revisions</HV_MindBioHistory>
+  <HV_MindBioRevision>Revision {0}, {1}</HV_MindBioRevision>
+  <HV_MindWants>Wants</HV_MindWants>
+  <HV_MindNone>None.</HV_MindNone>
+  <HV_MindRelations>Relations</HV_MindRelations>
+  <HV_MindRelationLine>{0}: {1}</HV_MindRelationLine>
+  <HV_MindMemories>Memories</HV_MindMemories>
+  <HV_MindMemoryMeta>{0}  |  {1}{2}  |  {3}  |  confidence {4}</HV_MindMemoryMeta>
+  <HV_MindMemoryFrom> from {0}</HV_MindMemoryFrom>
+  <HV_MindPinned>pinned</HV_MindPinned>
+  <HV_MindUnpinned>not pinned</HV_MindUnpinned>
+  <HV_MindNotes>Director's notes</HV_MindNotes>
+  <HV_MindNotesHint>Your notes to this pawn's mind. The agent keeps them and merges them with what it writes; it never overwrites them.</HV_MindNotesHint>
+  <HV_MindNotesSave>Save notes</HV_MindNotesSave>
+  <HV_MindNotesSaved>Notes saved.</HV_MindNotesSaved>
+  <HV_MindNotesConflict>Could not save the notes: {0}</HV_MindNotesConflict>
+  <HV_MindNotesRevert>Revert</HV_MindNotesRevert>
 </LanguageData>
