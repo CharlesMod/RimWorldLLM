@@ -75,6 +75,8 @@ namespace HermesVoice
                 ["talk_frequency"] = s.talkFrequency,
                 ["wants_enabled"] = s.wantsEnabled,
                 ["recap"] = s.recapOnLoad,
+                ["recap_open"] = HermesVoiceGameComponent.Instance != null
+                    && HermesVoiceGameComponent.Instance.RecapGate.IsOpen(Environment.TickCount64, s.recapOnLoad),
                 ["dreams"] = s.dreamsEnabled,
                 ["art_descriptions"] = s.artDescriptions,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,

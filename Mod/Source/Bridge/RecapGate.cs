@@ -33,6 +33,13 @@ namespace HermesVoice.Bridge
         /// <summary>The game ended: nothing is accepted until the next Arm.</summary>
         public void Disarm() { _epoch = -1; _loaded = false; }
 
+        /// <summary>True while a recap would still be accepted for the current epoch (loaded save, not shown, inside the window).
+        /// Read-only: GET /config exposes it so an agent that connects late can still recap.</summary>
+        public bool IsOpen(long nowMs, bool enabled)
+        {
+            return enabled && _epoch >= 0 && _loaded && !_shown && nowMs - _armedAt <= WindowMs;
+        }
+
         /// <summary>Accept consumes the epoch's one recap; every other verdict leaves the state alone.</summary>
         public RecapVerdict Check(int epoch, long nowMs, bool enabled)
         {

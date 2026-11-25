@@ -542,7 +542,7 @@ namespace HermesVoice
         }
 
         [HarmonyPostfix]
-        public static void Postfix(MentalStateHandler __instance, bool __result, MentalStateDef stateDef, string reason)
+        public static void Postfix(MentalStateHandler __instance, bool __result, MentalStateDef stateDef, string reason, Pawn otherPawn)
         {
             EventPayload.Safe("mental break", () =>
             {
@@ -558,6 +558,13 @@ namespace HermesVoice
                     Data = new JObject { ["state"] = stateDef.defName, ["state_label"] = label, ["reason"] = reason }
                 };
                 spec.Involve(pawn, "subject");
+                // A social fight names who it is against: the pawn the state was started with, else the live state's otherPawn.
+                var foe = otherPawn ?? (__instance.CurState as MentalState_SocialFighting)?.otherPawn;
+                if (foe != null && foe != pawn && stateDef.defName == "SocialFighting" && foe.thingIDNumber >= 0)
+                {
+                    spec.Data["target"] = foe.thingIDNumber;
+                    spec.Involve(foe, "target");
+                }
                 EventGate.Emit(EventKind.MentalBreak, pawn, spec);
             });
         }

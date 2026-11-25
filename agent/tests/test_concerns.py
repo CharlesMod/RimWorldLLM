@@ -147,9 +147,21 @@ def test_raid_worry_ends_with_the_raid_ledger_entry(world):
         await step(w)
         return mid, w
     mid, w = run(go())
-    assert all(len(m) == 1 and m[0].kind == "threat" for m in mid)
+    worried = [i for i, m in zip((1, 2, 3), mid) if m]
+    assert len(worried) == 2 and all(mid[i - 1][0].kind == "threat" for i in worried)    # capped at two witnesses
     assert all(not cn.open_concerns(w.d.minds[i]) for i in (1, 2, 3))
-    assert all(w.d.minds[i].concerns[0].status == "resolved" for i in (1, 2, 3))
+    assert all(w.d.minds[i].concerns[0].status == "resolved" for i in worried)
+    assert not w.d.minds[({1, 2, 3} - set(worried)).pop()].concerns
+
+
+def test_raid_worry_prefers_those_with_a_loved_one_and_is_deterministic():
+    from hermesvoice_agent.games.rimworld.concern_rules import raid_worriers
+    e = {"type": "raid_start", "ledger_id": "raid:1", "witnesses": [5, 3, 9, 1]}
+    holders = [1, 3, 5, 9]
+    assert raid_worriers(e, holders, lambda h, o: False) == [1, 3]
+    assert raid_worriers(e, holders, lambda h, o: (h, o) in {(9, 1), (5, 3), (5, 9)}) == [5, 9]
+    assert raid_worriers(e, [1, 3], lambda h, o: False) == [1, 3]               # only colonists with a mind can worry
+    assert raid_worriers({"witnesses": []}, holders, lambda h, o: False) == []
 
 
 def test_block_c_shows_one_worries_line_and_only_when_there_are_some(world):
