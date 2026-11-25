@@ -60,13 +60,17 @@ def block_b(mind: Mind) -> str:
     return s
 
 
-def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -> str:
+def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6, max_rep: int = 3) -> str:
     """Changes only when a reflection runs: bio, wants and the relations digest are all written there."""
     lines = []
+    shown = 0
     for r in mind.c_relations[:max_rel]:
         op = f", opinion {r.opinion:+d}" if r.opinion is not None else ""
+        rep = (f" (people say: {gd.clean(r.reputation, 'line', max_len=90)})"
+               if r.reputation and shown < max_rep else "")
+        shown += 1 if rep else 0
         lines.append(f"- {gd.name(r.name)}{op}: {gd.clean(r.feeling, 'line')}" +
-                     (f" {gd.clean(r.history, 'line')}" if r.history else ""))
+                     (f" {gd.clean(r.history, 'line')}" if r.history else "") + rep)
     body = "Becoming: " + gd.clean(mind.evolving_bio or "(nothing yet)", "desc") + "\n"
     body += "Wants: " + ("; ".join(gd.clean(w, "label") for w in mind.wants) if mind.wants else "none in particular") + "\n"
     if mind.notes:
@@ -75,9 +79,12 @@ def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -
     return "=== WHO YOU ARE BECOMING ===\n" + gd.data_section("character", body)
 
 
-def block_d(memories: list[Memory], ledger_lines: list[str], thoughts: list[str] | None = None) -> str:
+def block_d(memories: list[Memory], ledger_lines: list[str], thoughts: list[str] | None = None,
+            talk: list[str] | None = None) -> str:
     def mline(m: Memory) -> str:
         tag = {"saw": "", "heard": " (heard)", "told": f" (told by {gd.name(m.told_by)}, not sure)"}[m.source]
+        if m.source == "told" and m.sources > 1:
+            tag = f" (heard from several people, led by {gd.name(m.told_by)}, not sure)"
         if m.visibility == "private":
             tag += " [private]"
         elif m.visibility == "told" and m.told_to:
@@ -90,6 +97,8 @@ def block_d(memories: list[Memory], ledger_lines: list[str], thoughts: list[str]
     if thoughts:       # the actor's own recent inner thoughts (fixed per lease, so cache-safe)
         out += "=== YOUR RECENT THOUGHTS ===\n" + gd.data_section(
             "thoughts", "\n".join(f"- {gd.clean(t, 'line')}" for t in thoughts))
+    if talk:         # shared lore and the pass-on hint (core/lore.py, core/gossip.py): per lease, so cache-safe
+        out += "=== COMMON TALK ===\n" + gd.data_section("talk", "\n".join(gd.clean(c, "line", max_len=160) for c in talk))
     return out
 
 
@@ -105,13 +114,13 @@ def block_e(sc: Scene) -> str:
 
 
 def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines: list[str], sc: Scene,
-                 thoughts: list[str] | None = None) -> str:
+                 thoughts: list[str] | None = None, talk: list[str] | None = None) -> str:
     """A-E as one string. Freeze it at lease start; never rebuild mid-lease."""
     if gd.DATA_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + gd.DATA_RULE
     if agegate.MINOR_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + agegate.MINOR_RULE
-    return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines, thoughts), block_e(sc)])
+    return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines, thoughts, talk), block_e(sc)])
 
 
 def block_f(turns: list[tuple[str, str]]) -> str:

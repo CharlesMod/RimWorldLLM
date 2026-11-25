@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 
 from . import art
 from . import gamedata as gd
-from . import inner, memory
+from . import inner, lore, memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
@@ -246,7 +246,10 @@ class IdleRunner:
             d.dropped.append((aid, "reflect_failed"))
             return
         name_ids = {n.lower(): i for i, n in d.names.items()}
-        out = apply_reflection(mind, res, now, name_ids, inner_keep=2 if d.cfg.inner_monologue else None)
+        d.refresh_reputations()
+        out = apply_reflection(mind, res, now, name_ids, inner_keep=2 if d.cfg.inner_monologue else None,
+                               reputations={str(k): v for k, v in d.reputations.items()} if d.cfg.reputation else None,
+                               rep_limit=d.cfg.reputation_show)
         out.update(memory.upkeep(mind, now, d.day, d.cfg.memory_floor, d.cfg.memory_merge_similarity))
         d.dirty.add(aid)
         self.log.append({"kind": "reflection", "actor": aid, "name": d.names.get(aid), "game": now, **out})
@@ -390,7 +393,8 @@ class IdleRunner:
             e = await d.chronicle.write(d.llm, d.adapter, slot=d.cfg.narrator_slot, today=today, ledger_lines=led,
                                         name_tokens=d.name_tokens, budget=d.cfg.narrator_context_tokens,
                                         max_tokens=d.cfg.chronicle_max_tokens,
-                                        common_words=set(d.adapter.common_words), minor_names=d.minor_tokens())
+                                        common_words=set(d.adapter.common_words), minor_names=d.minor_tokens(),
+                                        lore_lines=d.lore.lines() if d.cfg.lore else None)
             if e is None:
                 self._fail("chronicle", -1)
                 return
@@ -401,6 +405,10 @@ class IdleRunner:
                     await d.bridge.chronicle(e.day, e.text, e.kind)
                 except (BridgeError, AttributeError) as ex:
                     log.warning("chronicle not written to the bridge: %s", ex)
+            if e.kind == "major" and d.cfg.lore:
+                made = await lore.coin(d, e.text, e.game, e.day)       # one small extra narrator call
+                if made is not None:
+                    self.log.append({"kind": "lore", "name": made.name, "what": made.what, "game": e.game})
         finally:
             d.leases.narrator_busy = False
             if self.lease is None:

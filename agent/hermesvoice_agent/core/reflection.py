@@ -132,7 +132,7 @@ def _clean(t: str, max_words: int) -> str:
 
 
 def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[str, int],
-                     inner_keep: int | None = None) -> dict:
+                     inner_keep: int | None = None, reputations: dict[str, str] | None = None, rep_limit: int = 3) -> dict:
     """Write a reflection into the mind: new bio (as a diff), wants, relation lines, merged memories.
     Resets the unreflected counter and refreshes block C's relations digest."""
     out = {"bio": res.bio, "wants": [], "relations": 0, "merged": 0}
@@ -169,7 +169,7 @@ def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[st
         out["merged"] += len(ms)
     mind.unreflected_importance = 0.0
     mind.last_reflect_time = now
-    mind.freeze_relations()
+    mind.freeze_relations(reputations=reputations, rep_limit=rep_limit)
     if inner_keep is not None:
         mind.inner = mind.inner[-inner_keep:] if inner_keep > 0 else []     # the reflection condensed the stream
     return out

@@ -161,16 +161,19 @@ off, the text is still stored but the card shows the game's own text; `GET /conf
 `{"op_id": "...", "day": 12, "text": "The colony buried Bram without speeches.", "kind": "day"}`.
 One entry of the colony chronicle (the narrator's running history). `day` is an integer day index
 on the game clock (0 is the first day; the same count the agent uses for diaries). `kind` is `"day"`
-(the usual summary of a day) or `"major"` (written at once after a major event); it defaults to
-`"day"`. The mod trims the text and cuts it at 2,000 characters, appends the entry, and keeps the
-newest 120 (older ones are dropped). `text` empty, `day` not an integer or below 0, or an unknown
+(the usual summary of a day), `"major"` (written at once after a major event) or `"lore"` (a shared
+name the narrator coined for a place or event, text `"Name: what it refers to"`; not history: the Voices
+window and the recap skip it, the mod keeps at most 12 and drops the oldest); it defaults to `"day"`. The mod trims the text and cuts it at 2,000 characters, appends the entry, and keeps the
+newest 120 (older ones are dropped; lore entries count in the 120). `text` empty, `day` not an integer or below 0, or an unknown
 `kind` is `bad_request`. Reply `{"stored": true, "count": 37}` (the entries now held). The
 chronicle belongs to the game: it is saved with it, so a reload brings back the chronicle as it
 was at that save (the agent sees the `save_epoch` change).
 
 ### `GET /chronicle?since_day=<N>`
 `{"entries": [{"day": 12, "kind": "day", "text": "...", "tick": 734000}, ...]}` (plus the envelope):
-the entries whose `day` is at least `N` (default 0), oldest first, in the order stored. `tick` is
+the entries whose `day` is at least `N` (default 0), oldest first, in the order stored (kind `lore`
+included: readers that want history skip it; the agent reads it back after a `save_epoch` change to
+refill its lore cache). `tick` is
 the game tick at which the mod received the entry. `since_day` that is not an integer is
 `bad_request`. After a `save_epoch` change the agent can read this to see what the loaded save
 holds.
