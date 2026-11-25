@@ -39,6 +39,9 @@ namespace HermesVoice
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
         public bool colorBubbles = true;
+        public string bubbleStyle = "comic";   // comic | classic
+        public float bubbleOpacity = 1f;
+        public bool comicLettering = false;     // ALL-CAPS comic lettering
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -92,6 +95,9 @@ namespace HermesVoice
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);
+            Scribe_Values.Look(ref bubbleStyle, "bubbleStyle", "comic");
+            Scribe_Values.Look(ref bubbleOpacity, "bubbleOpacity", 1f);
+            Scribe_Values.Look(ref comicLettering, "comicLettering", false);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);

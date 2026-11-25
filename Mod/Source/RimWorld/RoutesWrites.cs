@@ -79,7 +79,7 @@ namespace HermesVoice
             if (listener == speaker) listener = null;
 
             // Show.
-            SpeechBubbles.Add(speaker, text);
+            SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
             bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
             if (talkId != null) HermesBridge.Talk.Remove(talkId);
 
