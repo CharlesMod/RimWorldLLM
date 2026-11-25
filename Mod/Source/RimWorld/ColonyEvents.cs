@@ -132,7 +132,7 @@ namespace HermesVoice
 
         public static void Reset()
         {
-            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear();
+            Sleep.Clear(); Lodgers.Clear(); Prisoners.Clear(); Quests.Clear(); Weather.Clear(); Funerals.Clear(); FirstSeen.Clear();
         }
 
         static bool Want(EventKind k) { return EventGate.GameLive() && EventGate.KindEnabled(k); }
@@ -148,6 +148,7 @@ namespace HermesVoice
             PollFunerals(now, quiet);
             PollRaids(now);
             PollSleep(now, quiet);
+            if (!quiet) PollFirsts();
         }
 
         static readonly SleepTracker Sleep = new SleepTracker();
@@ -169,6 +170,45 @@ namespace HermesVoice
                 EventBus.Publish(spec);
             }
             Sleep.Retain(present);
+        }
+
+        static readonly FirstCues.Seen FirstSeen = new FirstCues.Seen();
+
+        /// <summary>Emit a first_cue for one pawn, once per pawn and cue per session (the agent keeps the lasting record).</summary>
+        public static void FirstCue(Pawn pawn, string cue)
+        {
+            if (cue == null || pawn == null || !EventGate.GameLive() || !EventGate.Wanted(EventKind.Firsts, pawn)) return;
+            if (!FirstSeen.First(pawn.thingIDNumber, cue)) return;
+            var spec = new EventSpec { Type = FirstCues.EventType, Map = pawn.MapHeld, At = pawn.PositionHeld, Severity = 0.4f,
+                Summary = FirstCues.Summary(cue, pawn.LabelShort), Data = new JObject { ["cue"] = cue } };
+            spec.Involve(pawn, "subject");
+            EventGate.Emit(EventKind.Firsts, pawn, spec);
+        }
+
+        static void MapCue(Map map, string cue)
+        {
+            if (cue == null || !FirstSeen.First(-1 - map.Index, cue)) return;
+            EventBus.Publish(new EventSpec { Type = FirstCues.EventType, Map = map, AllOnMap = true, Severity = 0.4f,
+                Summary = FirstCues.Summary(cue, ""), Data = new JObject { ["cue"] = cue } });
+        }
+
+        static void PollFirsts()
+        {
+            if (!Want(EventKind.Firsts)) return;
+            foreach (var map in Find.Maps)
+            {
+                if (!map.IsPlayerHome) continue;
+                MapCue(map, FirstCues.WeatherCue(map.weatherManager?.curWeather?.defName));
+                var conds = map.gameConditionManager?.ActiveConditions;
+                if (conds != null) foreach (var c in conds) MapCue(map, FirstCues.ConditionCue(c.def.defName));
+                foreach (var p in map.mapPawns.FreeColonistsSpawned)
+                {
+                    if (p.Dead || !p.Awake()) continue;
+                    var room = p.GetRoom();
+                    if (room == null || room.PsychologicallyOutdoors) continue;
+                    FirstCue(p, FirstCues.RoomCue(room.GetStat(RoomStatDefOf.Impressiveness)));
+                }
+            }
         }
 
         static IEnumerable<Pawn> HomePawns()
@@ -750,6 +790,7 @@ namespace HermesVoice
             {
                 var pawn = newThought.pawn;
                 if (newThought.def == null || newThought.def.defName.StartsWith("HV_", System.StringComparison.Ordinal)) return;
+                Pollers.FirstCue(pawn, FirstCues.ThoughtCue(newThought.def.defName));
                 if (newThought.def.IsSocial) return;
                 float off = newThought.MoodOffset();
                 if (Math.Abs(off) < MinOffset) return;

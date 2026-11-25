@@ -15,6 +15,7 @@ from .inner import thoughts_text
 from .llm import LLMClient, LLMError, Messages, strip_thought
 from .memory import weight_sorted
 from . import gamedata as gd
+from .habits import apply_habit, clean_habit, habits_line
 from .minds import Memory, Mind
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -42,6 +43,14 @@ REFLECT_SCHEMA: dict = {
 }
 
 
+def schema_for(habits: bool) -> dict:
+    """REFLECT_SCHEMA, plus the optional "habit" field (item 7) when this reflection may change a habit."""
+    if not habits:
+        return REFLECT_SCHEMA
+    return {**REFLECT_SCHEMA, "properties": {**REFLECT_SCHEMA["properties"], "habit": {"type": "string"}},
+            "required": [*REFLECT_SCHEMA["required"], "habit"]}
+
+
 class ReflectRelation(BaseModel):
     who: str
     feeling: str = ""
@@ -58,6 +67,7 @@ class ReflectResult(BaseModel):
     wants: list[str] = Field(default_factory=list)
     relations: list[ReflectRelation] = Field(default_factory=list)
     merge: list[ReflectMerge] = Field(default_factory=list)
+    habit: str = ""
 
 
 def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days: float) -> bool:
@@ -69,7 +79,8 @@ def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days
     return now - mind.last_reflect_time >= every_days * day
 
 
-def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int, inner: bool = False) -> Messages:
+def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int, inner: bool = False,
+                        habits: bool = False) -> Messages:
     mems = weight_sorted(mind, now, day)[:MAX_PROMPT_MEMORIES]
     mems.sort(key=lambda m: (m.game, m.id))
     mem_lines = "\n".join(f"{m.id}{' [pinned]' if m.pinned else ''}: {gd.clean(m.text, 'event')}" for m in mems) or "(none)"
@@ -86,7 +97,9 @@ def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, da
             f"=== THE PEOPLE YOU KNOW ===\n{gd.data_section('people', rel_lines)}"
             + (f"=== WHAT YOU HAVE BEEN THINKING ===\n{gd.data_section('thoughts', thoughts_text(mind.inner))}"
                if inner and mind.inner else "") +
-            f"=== REQUEST ===\n{adapter.reflection_request}")
+            (f"=== YOUR VERBAL HABITS NOW ===\n{gd.data_section('habits', habits_line(mind))}" if habits else "") +
+            f"=== REQUEST ===\n{adapter.reflection_request}"
+            + (f" {getattr(adapter, 'reflection_habit_request', '')}" if habits else ""))
     return [("system", adapter.reflection_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
 
@@ -104,12 +117,14 @@ def parse_result(text: str) -> ReflectResult | None:
 async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, str], *, slot: int, now: int,
                          day: int, max_tokens: int = 500, name_tokens: dict[int, set[str]] | None = None,
                          common_words: set[str] | None = None, involves_minor: bool = False,
-                         minor_names: set[str] | None = None, inner: bool = False) -> ReflectResult | None:
-    """The one call. None if the model failed, was malformed or wrote an ungrounded bio."""
-    msgs = reflection_messages(adapter, mind, names, now, day, inner)
+                         minor_names: set[str] | None = None, inner: bool = False,
+                         habits: bool = False) -> ReflectResult | None:
+    """The one call. None if the model failed, was malformed or wrote an ungrounded bio. ``habits``: this reflection may
+    carry a new verbal habit (the caller checked core/habits.habit_allowed); a bad one is blanked, never fatal."""
+    msgs = reflection_messages(adapter, mind, names, now, day, inner, habits)
     try:
         c = await llm.complete(msgs, slot=slot, kind="reflect", max_tokens=max_tokens, stop=[],
-                               temperature=0.7, actor=mind.actor_id, json_schema=REFLECT_SCHEMA)
+                               temperature=0.7, actor=mind.actor_id, json_schema=schema_for(habits))
     except LLMError:
         return None
     res = parse_result(c.text)
@@ -124,6 +139,9 @@ async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, s
     if not s.ok:
         return None
     res.bio = s.text
+    res.habit = clean_habit(res.habit, prompt=msgs[1][1], name_tokens=toks, actor_id=mind.actor_id,
+                            common_words=common_words, involves_minor=involves_minor,
+                            minor_names=minor_names) if habits else ""
     return res
 
 
@@ -132,10 +150,13 @@ def _clean(t: str, max_words: int) -> str:
 
 
 def apply_reflection(mind: Mind, res: ReflectResult, now: int, name_ids: dict[str, int],
-                     inner_keep: int | None = None, reputations: dict[str, str] | None = None, rep_limit: int = 3) -> dict:
+                     inner_keep: int | None = None, reputations: dict[str, str] | None = None, rep_limit: int = 3,
+                     habit_every_days: float | None = None, day: int = 60000) -> dict:
     """Write a reflection into the mind: new bio (as a diff), wants, relation lines, merged memories.
     Resets the unreflected counter and refreshes block C's relations digest."""
     out = {"bio": res.bio, "wants": [], "relations": 0, "merged": 0}
+    if habit_every_days is not None and res.habit:       # None: habits are off, a stray field is ignored
+        out["habit"] = res.habit if apply_habit(mind, res.habit, now, day, habit_every_days) else ""
     mind.add_bio_diff(now, res.bio)
     wants = [w for w in (_clean(w, MAX_WANT_WORDS) for w in res.wants) if w][:3]
     if wants:

@@ -128,6 +128,12 @@ class Config(BaseModel):
     reputation_show: int = 3           # at most this many relation lines carry a reputation
     lore: bool = True                  # shared lore: shared names coined after a major chronicle entry (core/lore.py)
     lore_max: int = 12                 # lore entries kept; the oldest fade
+    habits: bool = True                # reflection may evolve a voice-card tic (core/habits.py)
+    habit_every_days: float = 3.0      # at most one habit change per this many game days, per actor
+    firsts: bool = True                # first-time reactions (core/firsts.py; also the mod's first_cue event toggle)
+    firsts_per_day: int = 2            # first-time lines per actor per game day
+    bystanders: bool = True            # a bystander's reaction cloud to an argument (core/bystanders.py)
+    bystander_gap_real_s: float = 120.0    # per actor, on the play clock
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 
 from . import art, dreams
 from . import gamedata as gd
-from . import inner, lore, memory
+from . import habits, inner, lore, memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
@@ -236,11 +236,12 @@ class IdleRunner:
         now = d.bridge.env.game
         lease = self.lease
         lease.generating = True
+        ask_habit = d.cfg.habits and habits.habit_allowed(mind, now, d.day, d.cfg.habit_every_days)
         res = await run_reflection(d.llm, d.adapter, mind, d.names, slot=lease.slot, now=now, day=d.day,
                                    max_tokens=d.cfg.reflection_max_tokens, name_tokens=d.name_tokens,
                                    common_words=set(d.adapter.common_words),
                                    involves_minor=d.is_minor(aid), minor_names=d.minor_tokens(),
-                                   inner=d.cfg.inner_monologue)
+                                   inner=d.cfg.inner_monologue, habits=ask_habit)
         lease.generating = False
         if lease.preempted:
             return
@@ -252,7 +253,8 @@ class IdleRunner:
         d.refresh_reputations()
         out = apply_reflection(mind, res, now, name_ids, inner_keep=2 if d.cfg.inner_monologue else None,
                                reputations={str(k): v for k, v in d.reputations.items()} if d.cfg.reputation else None,
-                               rep_limit=d.cfg.reputation_show)
+                               rep_limit=d.cfg.reputation_show,
+                               habit_every_days=d.cfg.habit_every_days if ask_habit else None, day=d.day)
         out.update(memory.upkeep(mind, now, d.day, d.cfg.memory_floor, d.cfg.memory_merge_similarity))
         d.dirty.add(aid)
         self.log.append({"kind": "reflection", "actor": aid, "name": d.names.get(aid), "game": now, **out})

@@ -293,7 +293,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk, art_created, sleep_start`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created, sleep_start, first_cue`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
@@ -308,6 +308,17 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   witness (the mod lists it explicitly, because sleepers are never witnesses otherwise). Severity 0.1, not chronicle-worthy; the
   agent writes no memory for it, it only may queue one dream. Toggle `events.sleep` (also off when `dreams` is off).
   `GET /pawn/{id}` carries `asleep` (true while the pawn is not awake). The agent answers with `POST /thought` `kind: "dream"`.
+- `first_cue` is a signal that a pawn may be seeing something for the first time. `data.cue` is one of
+  `snow, eclipse, aurora, solar_flare, corpse, beautiful_room, no_table`. Map-wide cues (`snow`,
+  `eclipse`, `aurora`, `solar_flare`) are `AllOnMap` events, sent once per map per session when the
+  weather or game condition first shows; `corpse` (vanilla thoughts ObservedLayingCorpse and
+  ObservedLayingRottingCorpse) and `no_table` (AteWithoutTable) go to that pawn only, even though their mood
+  offset is below the `thought` floor; `beautiful_room` goes to an awake colonist standing in an indoor room
+  of impressiveness 65 or more. The mod sends each (pawn or map, cue) once per session; the agent keeps the
+  lasting record of who has had which first, so a repeat costs nothing. Severity 0.4. Toggle `events.first_cue`.
+- A bystander's cloud over an insult or slight is an ordinary `POST /thought` with `kind: "thought"` and a
+  `surface`; the mod needs nothing new. The agent works out who heard a `/say` itself, from the `present`
+  list of `GET /scene/{id}` and hearing range.
 - `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
   The mod's own `HV_` thoughts never produce one.
 - Per-event toggles in settings apply to the ring as well as to the push. Events are throttled
