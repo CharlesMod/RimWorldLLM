@@ -29,6 +29,7 @@
          Layouts: <dir>/Mods (Linux, Windows, and macOS from 1.7 on), <dir>/RimWorldMac.app/Mods (macOS before 1.7), or <dir> itself being a Mods folder. -->
     <Target Name="DeployToModsFolder" AfterTargets="Build" Condition=" '$(BuildingWithScript)' != 'true' AND '$(RimWorldDir)' != '' ">
         <PropertyGroup>
+            <EasyEngineDir Condition=" '$(EasyEngineDir)' == '' ">$(ProjectDir)../../easyEngine</EasyEngineDir>
             <ModsDir Condition=" Exists('$(RimWorldDir)/Mods') ">$(RimWorldDir)/Mods</ModsDir>
             <ModsDir Condition=" '$(ModsDir)' == '' And Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
             <ModsDir Condition=" '$(ModsDir)' == '' ">$(RimWorldDir)/Mods</ModsDir>
@@ -39,8 +40,8 @@
             <DeployDefs Include="$(ProjectDir)Defs/**/*" />
             <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
             <DeployTextures Include="$(ProjectDir)Textures/**/*" />
-            <!-- Engine binaries (engine/build.sh -> engine/dist/<os>-<arch>/) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
-            <DeployEngine Include="$(ProjectDir)../engine/dist/**/*" Exclude="$(ProjectDir)../engine/dist/SHA256SUMS" />
+            <!-- Engine binaries (easyEngine build.sh -> $(EasyEngineDir)/dist/<os>-<arch>/; EasyEngineDir defaults to a sibling checkout ../easyEngine) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
+            <DeployEngine Include="$(EasyEngineDir)/dist/**/*" Exclude="$(EasyEngineDir)/dist/SHA256SUMS" />
             <DeployWheel Include="$(ProjectDir)../agent/dist/*.whl" />
             <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
         </ItemGroup>
