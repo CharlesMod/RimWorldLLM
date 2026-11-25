@@ -214,6 +214,10 @@ walks to chatting distance of the target and starts one normal vanilla interacti
 adults) through `TryInteractWith`, so the existing vanilla-interaction hook voices it. The job gives up after 1500 game
 ticks or 60 real seconds, and ends early if the target is despawned, downed, dead, in a mental state or hostile.
 The topic is flavour for the agent's own line; the mod does not use it. Never a romance interaction.
+The agent's grudge loop (core/grudges.py) also calls this endpoint directly from rules, not through the wants tool loop:
+`avoid` at once after an insult, later `seek_out` with topic `apologise`, `make up` or `confront`. Because the mod does
+not carry the topic into the chat, the agent keeps the pending reunion itself and, when the resulting `social` event
+for that pair arrives, tells both pawns in the conversation trigger what the talk is about. No contract change.
 
 `avoid`: for `wantsAvoidHours` game hours (setting, default 1) no social interaction starts between the pawn and the
 target in either direction (a Harmony prefix on `TryInteractWith` answers "no", which also stops the game's random chitchat picking them).
