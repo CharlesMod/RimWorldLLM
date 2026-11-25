@@ -42,9 +42,13 @@ def scen(i):
     return sl[i % len(sl)]
 
 
-def msgs_for(pid, sc, turns=None, turn_no=0):
+LONG_REQ = "=== REQUEST ===\nWrite {n}'s next line of speech now: two or three sentences, about 30 words. One line only."
+
+
+def msgs_for(pid, sc, turns=None, turn_no=0, long=False):
     prefix, mind, ctx, _ = prefix_for(pid, sc)
-    return line_messages(prefix, turns or [], mind, mind.name, turn_no)
+    req = LONG_REQ.format(n=mind.name) if long else None
+    return line_messages(prefix, turns or [], mind, mind.name, turn_no, req)
 
 
 def stats(rs, key):
@@ -99,5 +103,23 @@ async def run(reps=12):
                 rs += res
             out[label] = {"summary": summarise(rs), "round_wall_s": {"median": med(wall), "p90": p90(wall)},
                           "aggregate_decode_tps_median": med([sum(r["decode_tps"] or 0 for r in rs[k:k + 3]) for k in range(0, len(rs), 3)]), "runs": rs}
+        # same three cases with a 24-40 token line (the real request yields ~10-token lines; this asks for two or three sentences)
+        rs = []
+        for i in range(reps):
+            erase_slots()
+            rs.append(await stream_call(client, msgs_for(*scen(i + 3), long=True), 0))
+        out["long_cold_erased"] = {"summary": summarise(rs), "runs": rs}
+        rs = []
+        for i in range(reps):
+            pid, sc = scen(i * 3 + 1)
+            await stream_call(client, msgs_for(pid, sc, long=True), 1)
+            rs.append(await stream_call(client, msgs_for(pid, sc, [("Someone", "Hm. Rough day.")], 1, long=True), 1))
+        out["long_warm"] = {"summary": summarise(rs), "runs": rs}
+        rs = []
+        for i in range(max(4, reps // 2)):
+            ss = [scen(i * 5 + j) for j in range(3)]
+            await asyncio.gather(*[stream_call(client, msgs_for(*ss[j], long=True), j) for j in range(3)])
+            rs += await asyncio.gather(*[stream_call(client, msgs_for(*ss[j], [("Someone", "Hm. Rough day.")], 1, long=True), j) for j in range(3)])
+        out["long_concurrent3_warm"] = {"summary": summarise(rs), "runs": rs}
     out["vram_mib"] = vram_mib()
     return out

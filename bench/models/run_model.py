@@ -1,7 +1,7 @@
 """usage: run_model.py MODEL [section ...]   sections: lines conv struct tools speed voice (default: all)"""
 import asyncio, sys, time, json
 from common import *
-import lines, conv, struct, tools, speed, voice
+import lines, conv, structured, tools, speed, voice
 
 
 async def main(model, sections):
@@ -20,8 +20,8 @@ async def main(model, sections):
             save(model, "conv", {"summary": s, "rows": rows}); print("conv", s["turn_drop_rate"], s["repetition_loop_exchanges"], flush=True)
         if "struct" in sections:
             erase_slots()
-            rows = await struct.intent(llm); s = struct.intent_summary(rows)
-            rr = await struct.reflection(llm); rs = struct.reflection_summary(rr)
+            rows = await structured.intent(llm); s = structured.intent_summary(rows)
+            rr = await structured.reflection(llm); rs = structured.reflection_summary(rr)
             save(model, "struct", {"intent": {"summary": s, "rows": rows}, "reflection": {"summary": rs, "rows": rr}})
             print("intent acc", {m: s[m]["accuracy"] for m in s}, "reflect accepted", rs["accepted_by_agent_rate"], flush=True)
         if "voice" in sections:

@@ -152,7 +152,7 @@ def summarise(rows):
             "hallucinated_tool_calls": sum(len(r["hallucinated"]) for r in rows),
             "hallucinated_names": sorted({n for r in rows for n in r["hallucinated"]}),
             "tool_call_text_in_content": sum(r["tool_in_content"] for r in rows),
-            "round2_n": len(r2), "round2_ok_rate": rate(x["ok"] for x in r2) if r2 else None,
+            "round2_n": len(r2), "round2_http_ok_rate": rate(x["status"] == 200 for x in r2) if r2 else None, "round2_empty_reply": sum(1 for x in r2 if x["status"] == 200 and not x["ok"]), "round2_ok_rate": rate(x["ok"] for x in r2) if r2 else None,
             "round2_completes_missing_rate": rate(x["completes_missing"] for r in rows for x in [r.get("round2")] if x and r["kind"] == "double"),
             "latency_median_s": med([r["wall_s"] for r in rows]),
             "failures": [{"prompt": r["prompt"], "expected": r["expected"], "called": r["called"], "content": r["content"], "args": [c["raw_args"] for c in r["calls"]]}
