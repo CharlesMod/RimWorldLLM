@@ -1,0 +1,542 @@
+[
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>I think... well, if I'm careful, the incision should, um, stay clean enough?",
+  "finish": "stop",
+  "total_s": 1.9309336989972508
+ },
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>I think, well, if I can just... if I can just get the incision clean, then maybe it will work?",
+  "finish": "stop",
+  "total_s": 0.34624744299799204
+ },
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>I think, well, if I can just... if I can just get the incision clean, then maybe we'll have the silver.",
+  "finish": "stop",
+  "total_s": 0.3789155690028565
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Take the cuts, Rook. This is good meat.",
+  "finish": "stop",
+  "total_s": 1.4442141229956178
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Put the good meat in the freezer, Rook. Do not let it spoil.",
+  "finish": "stop",
+  "total_s": 0.23816093000641558
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Put the cuts in the freezer, Rook. This is good meat.",
+  "finish": "stop",
+  "total_s": 0.21974480600329116
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Sit down, Pip. It is good meat.",
+  "finish": "stop",
+  "total_s": 0.6108575679973001
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Sit and eat, Pip. It is good meat.",
+  "finish": "stop",
+  "total_s": 0.18503199199039955
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Sit down, Pip. It is good meat.",
+  "finish": "stop",
+  "total_s": 0.17317477500182576
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Hm. Don't just walk by, Ash. The stew's still warm.",
+  "finish": "stop",
+  "total_s": 1.5534866150119342
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Hm. Keep walking, Ash. This stew's for me.",
+  "finish": "stop",
+  "total_s": 0.21528736100299284
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Hm. Don't just walk past. Stew's still warm.",
+  "finish": "stop",
+  "total_s": 0.22599658300168812
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>One target down. He gave us the heading. Move out.",
+  "finish": "stop",
+  "total_s": 1.507105960001354
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>One target. One round. It is finished.",
+  "finish": "stop",
+  "total_s": 0.16269015800207853
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>One shot. He is dead. Move him to the disposal pile.",
+  "finish": "stop",
+  "total_s": 0.21124858599796426
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Move along, Verhoeven. This is not your sector.",
+  "finish": "stop",
+  "total_s": 0.644740699994145
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Move along, Verhoeven. This is not your sector.",
+  "finish": "stop",
+  "total_s": 0.20404563700139988
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Move along, Verhoeven. You are blocking the corridor.",
+  "finish": "stop",
+  "total_s": 0.1967875069967704
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Okay so Ash is totally running and Rook has a knife and I think everything is going wrong...",
+  "finish": "stop",
+  "total_s": 1.560998141008895
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Okay so, Ash is like, actually running after them and Rook has a cleaver, is everything totally breaking?",
+  "finish": "stop",
+  "total_s": 0.31312763200548943
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Okay so Ash is totally running for the gate and Rook looks so scary with that cleaver...",
+  "finish": "stop",
+  "total_s": 0.27020447999530006
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>I think, well, maybe the dosage was... no, the plague was just too aggressive, probably.",
+  "finish": "stop",
+  "total_s": 0.9558468559989706
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>I think, well, I did everything I could, but the infection was... it was just too fast.",
+  "finish": "stop",
+  "total_s": 0.3043645420111716
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>I think, well, I thought the medicine would... it probably wouldn't have worked anyway.",
+  "finish": "stop",
+  "total_s": 0.2864381190011045
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>He bleeds a lot. He will be good meat soon.",
+  "finish": "stop",
+  "total_s": 0.7759007400018163
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>He is bleeding fast. He will be good meat soon.",
+  "finish": "stop",
+  "total_s": 0.19439142099872697
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>He will bleed out soon. He is good meat.",
+  "finish": "stop",
+  "total_s": 0.18133382199448533
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Negative. Leave him. We do not need more mouths to feed.",
+  "finish": "stop",
+  "total_s": 0.800606112999958
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Negative. Leave him. He is a liability.",
+  "finish": "stop",
+  "total_s": 0.1630455119884573
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Negative. We do not need more mouths to feed. Stay at your post.",
+  "finish": "stop",
+  "total_s": 0.22881184201105498
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Nate, I shall attend to the wood once I have finished disposing of these unsightly remains.",
+  "finish": "stop",
+  "total_s": 1.6645759689999977
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Nate, I shall move the wood once I have finished performing the duties of a common laborer.",
+  "finish": "stop",
+  "total_s": 0.33018150700081605
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Nate, I shall move the wood once I have finished performing this rather ghastly chore.",
+  "finish": "stop",
+  "total_s": 0.31842223199782893
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Okay so, Ines, please, just like, breathe, it's totally okay, we can fix this...",
+  "finish": "stop",
+  "total_s": 0.9781593270017765
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Okay so, Ines, please, like, just breathe, it's okay, we're okay... please stop shaking...",
+  "finish": "stop",
+  "total_s": 0.37356136199377943
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Okay so, please, like, just breathe, Ines, it's okay, it's totally okay now...",
+  "finish": "stop",
+  "total_s": 0.3462748940073652
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Do it now. Tuk will not scream.",
+  "finish": "stop",
+  "total_s": 0.7284439370123437
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Just do it. Tuk is ready.",
+  "finish": "stop",
+  "total_s": 0.13666327200189698
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Just do it, Moth. Tuk is ready.",
+  "finish": "stop",
+  "total_s": 0.15836300600494724
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Of course, a child\u2019s grave deserves more than this wretched, splintered wood.",
+  "finish": "stop",
+  "total_s": 0.9096382649877341
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Of course, a child's grave is a particularly dreary subject for a morning's work.",
+  "finish": "stop",
+  "total_s": 0.2868266020086594
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Of course, even the soil here seems to possess a certain grim indifference to such a small, tragic loss.",
+  "finish": "stop",
+  "total_s": 0.314016652002465
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Ash, one does not simply haggle over human lives while standing in such a wretched cloud of dust.",
+  "finish": "stop",
+  "total_s": 0.8041630149964476
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Ash, do try to look less like a common sentry while we conduct actual commerce.",
+  "finish": "stop",
+  "total_s": 0.31308526899374556
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Of course, my dear Ash, do try to look less like a sentry and more like a person of consequence while we conduct business.",
+  "finish": "stop",
+  "total_s": 0.37310753601195756
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>I think, well, maybe the infection will, um, stabilize on its own? Probably.",
+  "finish": "stop",
+  "total_s": 0.947824065995519
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>I think, well, if the infection spreads, it might, um, become systemic? Or... probably just fatal.",
+  "finish": "stop",
+  "total_s": 0.3347103369887918
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>I think, well, if the infection spreads, it might, um, become fatal? Probably.",
+  "finish": "stop",
+  "total_s": 0.28935024100064766
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Hm. Don't just stare, Pip. Help me with these boots.",
+  "finish": "stop",
+  "total_s": 0.8653206669987412
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Hm. Don't just stand there staring, Pip. Help me with this leather.",
+  "finish": "stop",
+  "total_s": 0.2548783700040076
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Hm. Stop staring, Pip. Help me bag this leather.",
+  "finish": "stop",
+  "total_s": 0.19793208299961407
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Okay so, it's like, totally fine, I can eat it, I just... it's just a little weird, isn't it?",
+  "finish": "stop",
+  "total_s": 1.0277503470133524
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Okay so, thanks Nate, but like, I think I'm totally full...",
+  "finish": "stop",
+  "total_s": 0.25312839999969583
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Okay so, thanks Rook, it's totally fine, I just... I think I need a minute...",
+  "finish": "stop",
+  "total_s": 0.30631257699860726
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>This one still breathes. Tuk will make him good meat.",
+  "finish": "stop",
+  "total_s": 0.8293566530046519
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>He is still twitching. Tuk will finish him.",
+  "finish": "stop",
+  "total_s": 0.17878219499834813
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>He is still breathing. Tuk will make him good meat.",
+  "finish": "stop",
+  "total_s": 0.19961458300531376
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "<|channel>thought\n<channel|>Hm. Shut it, Lux. It's paste, not a feast. Just take it.",
+  "finish": "stop",
+  "total_s": 0.8961804309947183
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "<|channel>thought\n<channel|>Hm. Shut it, Lux. It's paste, not a banquet. He'll eat it.",
+  "finish": "stop",
+  "total_s": 0.306320780000533
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "<|channel>thought\n<channel|>Hm. Shut it, Lux. It's paste, not a feast, so stop your whining.",
+  "finish": "stop",
+  "total_s": 0.28511374499066733
+ }
+]

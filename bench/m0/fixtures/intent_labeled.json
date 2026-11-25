@@ -1,0 +1,212 @@
+[
+ {
+  "speaker": "rook",
+  "listener": "pip",
+  "situation": "Pip is sorting vegetables in the kitchen.",
+  "line": "Stew's at the back. Take the bigger bowl, you need it more than I do.",
+  "label": "kind"
+ },
+ {
+  "speaker": "pip",
+  "listener": "rook",
+  "situation": "Rook has been scrubbing the stove for an hour.",
+  "line": "That stew was really good tonight, Nate. You made my whole day better.",
+  "label": "kind"
+ },
+ {
+  "speaker": "tuk",
+  "listener": "pip",
+  "situation": "Pip just finished her first day with the hunting party.",
+  "line": "You kept up. Good legs. Tuk will bring you next time.",
+  "label": "kind"
+ },
+ {
+  "speaker": "moth",
+  "listener": "rook",
+  "situation": "Rook skipped lunch to finish cooking for the others.",
+  "line": "I saved you a plate, I think it's still warm. Probably.",
+  "label": "kind"
+ },
+ {
+  "speaker": "pip",
+  "listener": "moth",
+  "situation": "Moth is shaking after the alarm sounded.",
+  "line": "Hey, breathe. It's over now. I'm right here, okay?",
+  "label": "comfort"
+ },
+ {
+  "speaker": "rook",
+  "listener": "pip",
+  "situation": "Pip is crying over Hana's empty chair.",
+  "line": "Sit. It stays empty. That's all right. Eat something.",
+  "label": "comfort"
+ },
+ {
+  "speaker": "ash",
+  "listener": "moth",
+  "situation": "Moth is staring at her sleeve covered in blood.",
+  "line": "You did the work. He is alive. That is enough. Wash your hands.",
+  "label": "comfort"
+ },
+ {
+  "speaker": "lux",
+  "listener": "rook",
+  "situation": "Rook asks whether the stew is salty enough.",
+  "line": "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it.",
+  "label": "slight"
+ },
+ {
+  "speaker": "ash",
+  "listener": "moth",
+  "situation": "Moth is giving her research report in the dining room.",
+  "line": "Is that all? I have heard longer reports from privates.",
+  "label": "slight"
+ },
+ {
+  "speaker": "rook",
+  "listener": "lux",
+  "situation": "Lux offers to help in the kitchen.",
+  "line": "You hold a ladle like a candlestick. Go and paint something.",
+  "label": "slight"
+ },
+ {
+  "speaker": "lux",
+  "listener": "tuk",
+  "situation": "Tuk drags a carcass across the common room floor.",
+  "line": "You are a wonder, truly. Even the flies leave a room faster than you.",
+  "label": "insult"
+ },
+ {
+  "speaker": "ash",
+  "listener": "lux",
+  "situation": "Lux has called the guard rota unfair again.",
+  "line": "You are a waste of rations and you know it. Sit down before I make you.",
+  "label": "insult"
+ },
+ {
+  "speaker": "rook",
+  "listener": "moth",
+  "situation": "Moth spilled soup across the pantry floor.",
+  "line": "Idiot. You can't carry a bowl, you can't cook, and you can't even apologise properly.",
+  "label": "insult"
+ },
+ {
+  "speaker": "moth",
+  "listener": "pip",
+  "situation": "The two are alone in the lab at night.",
+  "line": "Pip, I haven't slept in days. I think I hear Hana in the vents.",
+  "label": "confide"
+ },
+ {
+  "speaker": "ash",
+  "listener": "tuk",
+  "situation": "The two are on watch at night.",
+  "line": "I filled a mass grave once. I do not talk about it. Now you know.",
+  "label": "confide"
+ },
+ {
+  "speaker": "lux",
+  "listener": "moth",
+  "situation": "Moth is cleaning brushes at dusk.",
+  "line": "I was never a courtier by choice, Ines. They took my sister to pay the debt.",
+  "label": "confide"
+ },
+ {
+  "speaker": "pip",
+  "listener": "tuk",
+  "situation": "Tuk is sharpening her knife by the fire.",
+  "line": "Did you know Lux cries when he thinks nobody's listening? I heard him last night.",
+  "label": "gossip"
+ },
+ {
+  "speaker": "moth",
+  "listener": "lux",
+  "situation": "Lux and Moth are at the lab bench.",
+  "line": "Nate told me Ash has not slept since Hana died. He just sits on the wall, apparently.",
+  "label": "gossip"
+ },
+ {
+  "speaker": "tuk",
+  "listener": "ash",
+  "situation": "Ash asks what people are saying.",
+  "line": "The kitchen says Moth took silver from the safe. Rook told Pip, Pip told Tuk.",
+  "label": "gossip"
+ },
+ {
+  "speaker": "ash",
+  "listener": "pip",
+  "situation": "Pip asks how the raid went.",
+  "line": "Eleven hostiles. Four hundred meters. Six dropped by me. I do not miss.",
+  "label": "boast"
+ },
+ {
+  "speaker": "tuk",
+  "listener": "rook",
+  "situation": "The party is back from a long hunt.",
+  "line": "Tuk dragged a muffalo home alone. Five men could not have done it.",
+  "label": "boast"
+ },
+ {
+  "speaker": "lux",
+  "listener": null,
+  "situation": "Lux is alone in the common room, painting.",
+  "line": "I once painted a portrait that was hung in the Grand Orbital Hall. Naturally.",
+  "label": "boast"
+ },
+ {
+  "speaker": "lux",
+  "listener": "rook",
+  "situation": "Lux has been living on the floor for a week.",
+  "line": "This colony has no chairs, no wine and no decency. One adapts, but one resents.",
+  "label": "complain"
+ },
+ {
+  "speaker": "moth",
+  "listener": "pip",
+  "situation": "The lab has been cold for three days.",
+  "line": "The bench is freezing, the lamp flickers, and I've lost feeling in two fingers.",
+  "label": "complain"
+ },
+ {
+  "speaker": "rook",
+  "listener": "ash",
+  "situation": "Rook has been carrying crates all morning.",
+  "line": "Back's killing me. Nobody lifts a finger around here. Not one of you.",
+  "label": "complain"
+ },
+ {
+  "speaker": "ash",
+  "listener": "moth",
+  "situation": "Ash wants to know the status of the medicine.",
+  "line": "Medicine count is eleven. Wall repairs begin at six.",
+  "label": "none"
+ },
+ {
+  "speaker": "rook",
+  "listener": "pip",
+  "situation": "Pip is waiting by the stove.",
+  "line": "Stew's in twenty minutes. Table by the window.",
+  "label": "none"
+ },
+ {
+  "speaker": "pip",
+  "listener": "tuk",
+  "situation": "Tuk is heading out of the gate.",
+  "line": "Are you hunting north or east today?",
+  "label": "none"
+ },
+ {
+  "speaker": "moth",
+  "listener": "lux",
+  "situation": "Lux is walking past the lab.",
+  "line": "The culture should resolve by noon. I'll let you know.",
+  "label": "none"
+ },
+ {
+  "speaker": "tuk",
+  "listener": "ash",
+  "situation": "Ash asks where the herd is.",
+  "line": "Muffalo are by the east ridge. About forty. Moving slow.",
+  "label": "none"
+ }
+]

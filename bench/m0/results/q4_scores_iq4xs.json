@@ -1,0 +1,155 @@
+{
+ "A": {
+  "n": 156,
+  "acc_mean": 0.9471270161290322,
+  "acc_std": 0.0356810341562382,
+  "words_mean": 12.634615384615385,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 0
+  },
+  "samples": {
+   "rook": [
+    "Hm. Moth, get back inside before you freeze solid like a slab of meat.",
+    "Hm. Rain's just rain. If the corn rots, we eat cornmeal.",
+    "Hm. Leave it. I've got meals to prep."
+   ],
+   "pip": [
+    "Okay so, Ash is just... he's totally not moving, is he?",
+    "Okay so that jelly is like, totally gross, but the kibble is actually okay... maybe?",
+    "Okay so it's not just a dirt farm, we're like, totally building something real here..."
+   ],
+   "ash": [
+    "Forty tiles. Target is a muffalo. Do not spook it, Verhoeven.",
+    "Negative. The meat is gone. Move on.",
+    "Negative. I do not have a forecast."
+   ],
+   "moth": [
+    "I think, well, maybe we should check the infection again, though we probably only have herbal left.",
+    "I think, well, maybe we could be more, but... it's mostly just survival, isn't it?",
+    "I think, well, Tuk is bleeding too much, maybe we should\u2014no, stay down!"
+   ],
+   "tuk": [
+    "Stay quiet, Pip. Big meat is near.",
+    "Run, soft one. Tuk will find the meat.",
+    "Tuk does not know about the wires. Tuk wants to hunt."
+   ],
+   "lux": [
+    "Of course, my dear Ash, you shall freeze to death in the mountains, which is a rather dramatic way to avoid work.",
+    "Of course, my dear Nate, one must eventually succumb to the urge to destroy everything of value.",
+    "Of course you would ask me, my dear Nate, as if my tongue were a tool intended for such unsavory labor."
+   ]
+  }
+ },
+ "B": {
+  "n": 156,
+  "acc_mean": 0.7051915322580644,
+  "acc_std": 0.08442832204872555,
+  "words_mean": 13.871794871794872,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 0
+  },
+  "samples": {
+   "rook": [
+    "Where the hell is she going without a coat in this frost?",
+    "Don't worry about the dirt, Pip. Just focus on keeping those knives sharp.",
+    "If you're done staring at that glass, get back to the kitchen."
+   ],
+   "pip": [
+    "Oh no, oh no, Ash, please get up, please please please get up!",
+    "Oh Tuk, you can't just eat that kibble by itself, it's so gross and we really need some actual meals!",
+    "Oh don't say that because we're getting better every day and we'll have real walls and stuff soon, I promise!"
+   ],
+   "ash": [
+    "Stay back, Lux. I will take the shot.",
+    "The meat is gone, Moth. Move on.",
+    "I do not know. The clouds are heavy."
+   ],
+   "moth": [
+    "I think we're running low on medicine, Tuk, so please try to stay still.",
+    "I think we're doing enough, Rook, really, the research is... it's progressing.",
+    "Oh god, Tuk, please, stay still, I think I can fix the bleeding, just please don't move."
+   ],
+   "tuk": [
+    "Stay low, Pip. One good shot and we eat well tonight.",
+    "Lux, stop running like a rabbit and get a gun.",
+    "Yes, electricity comes after this. Drink your coffee, Pip."
+   ],
+   "lux": [
+    "Do try not to freeze to death, Corin, it would be dreadfully inconvenient for the rest of us.",
+    "Must you behave like a common animal, Nate, when we are trying to maintain some semblance of order?",
+    "Naturally, you would expect me to perform the labor of a diplomat in a room that smells so aggressively of unwashed desperation."
+   ]
+  }
+ },
+ "A_dry": {
+  "n": 156,
+  "acc_mean": 0.9518649193548386,
+  "acc_std": 0.025672763203811778,
+  "words_mean": 12.679487179487179,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 0
+  },
+  "samples": {
+   "rook": [
+    "Hm. Moth, get back here. You'll freeze solid like a slab of meat.",
+    "Hm. Rain's just water. If the crops rot, we eat dried meat.",
+    "Hm. Leave me be. I've got stew to stir."
+   ],
+   "pip": [
+    "Okay so Ash is just... he's totally not moving and the grass is so red...",
+    "Okay so, that jelly looks totally gross, like, are we seriously eating this now...",
+    "Okay so it's not totally just a dirt farm, we have like, actual walls and stuff now..."
+   ],
+   "ash": [
+    "Forty tiles. The muffalo is moving north. Keep your distance, Verhoeven.",
+    "Negative. The meat is gone. Stop talking.",
+    "Negative. I do not predict the weather."
+   ],
+   "moth": [
+    "I think, well, maybe the infection is spreading, since we only have the herbal left.",
+    "I think, well, maybe we're just, um, surviving for now. Mostly.",
+    "I think, well, Tuk is bleeding, and it's... it's a lot of blood, probably."
+   ],
+   "tuk": [
+    "Stay quiet, Pip. Big muffalo is there. Good meat if Tuk hits.",
+    "Six tribals in the fog. Tuk needs a knife.",
+    "Tuk is tired of this bench. Electricity comes after."
+   ],
+   "lux": [
+    "Of course, my dear Ash, wandering into the frost without a jacket is a remarkably dramatic way to commit suicide.",
+    "Naturally, my dear Nate, you have decided that destroying the furniture is a suitable substitute for actual grace.",
+    "Naturally, my dear Rook, you expect me to perform diplomacy in a room that smells so aggressively of unwashed desperation."
+   ]
+  }
+ }
+}

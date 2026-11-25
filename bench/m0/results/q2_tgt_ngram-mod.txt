@@ -1,0 +1,1 @@
+tgt_ngram-mod: n=58 median tps=82.0 pooled tps=86.6 accept=0/0=0.00 median line total=0.677s ttft=0.434s median pred_n=19.0

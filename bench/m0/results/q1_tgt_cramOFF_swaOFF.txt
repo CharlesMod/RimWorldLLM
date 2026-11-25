@@ -1,0 +1,69 @@
+warmup    rep-1 rook     slot1 prompt_n= 1822 cache_n=    0 prompt_s=1.334 ttft=1.341 total=1.563 eff=1366
+a_cold    rep0 rook     slot1 prompt_n= 1822 cache_n=    0 prompt_s=1.059 ttft=1.066 total=1.221 eff=1720
+b_warm    rep0 rook     slot1 prompt_n=  138 cache_n= 1714 prompt_s=0.248 ttft=0.256 total=0.412 eff=7461
+b_warm2   rep0 rook     slot1 prompt_n=  136 cache_n= 1748 prompt_s=0.256 ttft=0.264 total=0.471 eff=7353
+cold_other rep0 ash      slot2 prompt_n= 1873 cache_n=    0 prompt_s=1.089 ttft=1.095 total=1.290 eff=1720
+cold_other rep0 pip      slot1 prompt_n= 1818 cache_n=    0 prompt_s=1.068 ttft=1.075 total=1.341 eff=1702
+c_old_slot rep0 rook     slot1 prompt_n= 1842 cache_n=    0 prompt_s=1.061 ttft=1.068 total=1.299 eff=1736
+cold_other rep0 pip      slot1 prompt_n= 1842 cache_n=    0 prompt_s=1.069 ttft=1.076 total=1.344 eff=1722
+c_old_same rep0 rook     slot1 prompt_n= 1842 cache_n=    0 prompt_s=1.056 ttft=1.063 total=1.231 eff=1744
+cold_other rep0 pip      slot1 prompt_n= 1813 cache_n=    0 prompt_s=1.066 ttft=1.074 total=1.355 eff=1700
+d_other_slot rep0 rook     slot2 prompt_n= 1812 cache_n=    0 prompt_s=1.224 ttft=1.243 total=1.437 eff=1481
+cold_other rep0 ash      slot2 prompt_n= 1815 cache_n=    0 prompt_s=1.137 ttft=1.144 total=1.317 eff=1597
+d_other_same rep0 rook     slot2 prompt_n= 1812 cache_n=    0 prompt_s=1.102 ttft=1.110 total=1.285 eff=1644
+a_cold    rep1 pip      slot1 prompt_n= 1818 cache_n=    0 prompt_s=1.116 ttft=1.123 total=1.438 eff=1629
+b_warm    rep1 pip      slot1 prompt_n=  155 cache_n= 1701 prompt_s=0.304 ttft=0.311 total=0.610 eff=6103
+b_warm2   rep1 pip      slot1 prompt_n=  157 cache_n= 1743 prompt_s=0.260 ttft=0.267 total=0.565 eff=7320
+cold_other rep1 moth     slot2 prompt_n= 1851 cache_n=    0 prompt_s=1.080 ttft=1.086 total=1.367 eff=1714
+cold_other rep1 ash      slot1 prompt_n= 1873 cache_n=    0 prompt_s=1.159 ttft=1.166 total=1.372 eff=1616
+c_old_slot rep1 pip      slot1 prompt_n= 1842 cache_n=    0 prompt_s=1.066 ttft=1.074 total=1.315 eff=1728
+cold_other rep1 ash      slot1 prompt_n= 1815 cache_n=    0 prompt_s=1.073 ttft=1.080 total=1.262 eff=1691
+c_old_same rep1 pip      slot1 prompt_n= 1842 cache_n=    0 prompt_s=1.056 ttft=1.062 total=1.293 eff=1744
+cold_other rep1 ash      slot1 prompt_n= 1817 cache_n=    0 prompt_s=1.078 ttft=1.084 total=1.232 eff=1686
+d_other_slot rep1 pip      slot2 prompt_n= 1813 cache_n=    0 prompt_s=1.047 ttft=1.053 total=1.302 eff=1732
+cold_other rep1 moth     slot2 prompt_n= 1854 cache_n=    0 prompt_s=1.060 ttft=1.066 total=1.261 eff=1750
+d_other_same rep1 pip      slot2 prompt_n= 1813 cache_n=    0 prompt_s=1.052 ttft=1.058 total=1.299 eff=1723
+a_cold    rep2 ash      slot1 prompt_n= 1873 cache_n=    0 prompt_s=1.072 ttft=1.078 total=1.266 eff=1748
+b_warm    rep2 ash      slot1 prompt_n=  143 cache_n= 1764 prompt_s=0.251 ttft=0.257 total=0.399 eff=7607
+b_warm2   rep2 ash      slot1 prompt_n=  140 cache_n= 1802 prompt_s=0.253 ttft=0.259 total=0.475 eff=7684
+cold_other rep2 tuk      slot2 prompt_n= 1847 cache_n=    0 prompt_s=1.055 ttft=1.063 total=1.228 eff=1750
+cold_other rep2 moth     slot1 prompt_n= 1851 cache_n=    0 prompt_s=1.069 ttft=1.077 total=1.382 eff=1732
+c_old_slot rep2 ash      slot1 prompt_n= 1815 cache_n=    0 prompt_s=1.075 ttft=1.081 total=1.231 eff=1688
+cold_other rep2 moth     slot1 prompt_n= 1854 cache_n=    0 prompt_s=1.066 ttft=1.072 total=1.336 eff=1739
+c_old_same rep2 ash      slot1 prompt_n= 1815 cache_n=    0 prompt_s=1.063 ttft=1.070 total=1.258 eff=1707
+cold_other rep2 moth     slot1 prompt_n= 1832 cache_n=    0 prompt_s=1.070 ttft=1.076 total=1.324 eff=1713
+d_other_slot rep2 ash      slot2 prompt_n= 1817 cache_n=    0 prompt_s=1.057 ttft=1.063 total=1.234 eff=1720
+cold_other rep2 tuk      slot2 prompt_n= 1850 cache_n=    0 prompt_s=1.057 ttft=1.063 total=1.183 eff=1751
+d_other_same rep2 ash      slot2 prompt_n= 1817 cache_n=    0 prompt_s=1.054 ttft=1.061 total=1.270 eff=1723
+a_cold    rep3 moth     slot1 prompt_n= 1851 cache_n=    0 prompt_s=1.067 ttft=1.074 total=1.347 eff=1735
+b_warm    rep3 moth     slot1 prompt_n=  172 cache_n= 1721 prompt_s=0.265 ttft=0.272 total=0.578 eff=7139
+b_warm2   rep3 moth     slot1 prompt_n=  176 cache_n= 1767 prompt_s=0.281 ttft=0.288 total=0.557 eff=6904
+cold_other rep3 lux      slot2 prompt_n= 1882 cache_n=    0 prompt_s=1.073 ttft=1.079 total=1.338 eff=1754
+cold_other rep3 tuk      slot1 prompt_n= 1847 cache_n=    0 prompt_s=1.090 ttft=1.096 total=1.260 eff=1694
+c_old_slot rep3 moth     slot1 prompt_n= 1854 cache_n=    0 prompt_s=1.075 ttft=1.081 total=1.363 eff=1725
+cold_other rep3 tuk      slot1 prompt_n= 1850 cache_n=    0 prompt_s=1.058 ttft=1.064 total=1.185 eff=1749
+c_old_same rep3 moth     slot1 prompt_n= 1854 cache_n=    0 prompt_s=1.073 ttft=1.079 total=1.352 eff=1729
+cold_other rep3 tuk      slot1 prompt_n= 1860 cache_n=    0 prompt_s=1.130 ttft=1.136 total=1.350 eff=1646
+d_other_slot rep3 moth     slot2 prompt_n= 1832 cache_n=    0 prompt_s=1.073 ttft=1.079 total=1.306 eff=1707
+cold_other rep3 lux      slot2 prompt_n= 1888 cache_n=    0 prompt_s=1.070 ttft=1.076 total=1.422 eff=1765
+d_other_same rep3 moth     slot2 prompt_n= 1832 cache_n=    0 prompt_s=1.068 ttft=1.075 total=1.327 eff=1716
+a_cold    rep4 tuk      slot1 prompt_n= 1847 cache_n=    0 prompt_s=1.094 ttft=1.100 total=1.239 eff=1688
+b_warm    rep4 tuk      slot1 prompt_n=  154 cache_n= 1724 prompt_s=0.253 ttft=0.260 total=0.396 eff=7412
+b_warm2   rep4 tuk      slot1 prompt_n=  154 cache_n= 1759 prompt_s=0.268 ttft=0.274 total=0.398 eff=7151
+cold_other rep4 rook     slot2 prompt_n= 1822 cache_n=    0 prompt_s=1.047 ttft=1.054 total=1.201 eff=1739
+cold_other rep4 lux      slot1 prompt_n= 1882 cache_n=    0 prompt_s=1.072 ttft=1.078 total=1.315 eff=1756
+c_old_slot rep4 tuk      slot1 prompt_n= 1850 cache_n=    0 prompt_s=1.047 ttft=1.054 total=1.180 eff=1766
+cold_other rep4 lux      slot1 prompt_n= 1888 cache_n=    0 prompt_s=1.059 ttft=1.065 total=1.363 eff=1784
+c_old_same rep4 tuk      slot1 prompt_n= 1850 cache_n=    0 prompt_s=1.051 ttft=1.058 total=1.183 eff=1760
+cold_other rep4 lux      slot1 prompt_n= 1868 cache_n=    0 prompt_s=1.062 ttft=1.068 total=1.281 eff=1759
+d_other_slot rep4 tuk      slot2 prompt_n= 1860 cache_n=    0 prompt_s=1.073 ttft=1.079 total=1.247 eff=1734
+cold_other rep4 rook     slot2 prompt_n= 1842 cache_n=    0 prompt_s=1.057 ttft=1.063 total=1.224 eff=1743
+d_other_same rep4 tuk      slot2 prompt_n= 1860 cache_n=    0 prompt_s=1.059 ttft=1.066 total=1.230 eff=1757
+kinds:
+a_cold        n=5 ttft=1.078 total=1.266 prompt_n=1847 cache_n=0 raw=1720 eff=1720
+b_warm        n=5 ttft=0.260 total=0.412 prompt_n=154 cache_n=1721 raw=570 eff=7412
+b_warm2       n=5 ttft=0.267 total=0.475 prompt_n=154 cache_n=1759 raw=576 eff=7320
+c_old_slot    n=5 ttft=1.074 total=1.299 prompt_n=1842 cache_n=0 raw=1728 eff=1728
+c_old_same    n=5 ttft=1.063 total=1.258 prompt_n=1842 cache_n=0 raw=1744 eff=1744
+d_other_slot  n=5 ttft=1.079 total=1.302 prompt_n=1817 cache_n=0 raw=1720 eff=1720
+d_other_same  n=5 ttft=1.066 total=1.285 prompt_n=1817 cache_n=0 raw=1723 eff=1723

@@ -1,0 +1,40 @@
+g01 <|channel>thought
+<channel|>I think, well, if I can just... if I can just get the incision clean, th
+g02 <|channel>thought
+<channel|>Put the cuts in the freezer, Rook. This is good meat.
+g03 <|channel>thought
+<channel|>Sit down, Pip. It is good meat.
+g04 <|channel>thought
+<channel|>Hm. Don't just walk past. Stew's still warm.
+g05 <|channel>thought
+<channel|>One shot. He is dead. Move him to the disposal pile.
+g06 <|channel>thought
+<channel|>Move along, Verhoeven. You are blocking the corridor.
+g07 <|channel>thought
+<channel|>Okay so Ash is totally running for the gate and Rook looks so scary with
+g08 <|channel>thought
+<channel|>I think, well, I thought the medicine would... it probably wouldn't have
+g09 <|channel>thought
+<channel|>He will bleed out soon. He is good meat.
+g10 <|channel>thought
+<channel|>Negative. We do not need more mouths to feed. Stay at your post.
+g11 <|channel>thought
+<channel|>Of course, my dear Nate, I shall move the wood once I have finished perf
+g12 <|channel>thought
+<channel|>Okay so, please, like, just breathe, Ines, it's okay, it's totally okay 
+g13 <|channel>thought
+<channel|>Just do it, Moth. Tuk is ready.
+g14 <|channel>thought
+<channel|>Of course, even the soil here seems to possess a certain grim indifferen
+g15 <|channel>thought
+<channel|>Of course, my dear Ash, do try to look less like a sentry and more like 
+g16 <|channel>thought
+<channel|>I think, well, if the infection spreads, it might, um, become fatal? Pro
+g17 <|channel>thought
+<channel|>Hm. Stop staring, Pip. Help me bag this leather.
+g18 <|channel>thought
+<channel|>Okay so, thanks Rook, it's totally fine, I just... I think I need a minu
+g19 <|channel>thought
+<channel|>He is still breathing. Tuk will make him good meat.
+g20 <|channel>thought
+<channel|>Hm. Shut it, Lux. It's paste, not a feast, so stop your whining.

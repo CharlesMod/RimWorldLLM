@@ -1,0 +1,542 @@
+[
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "I think, well, the incision is clean. Probably. Ash, could you adjust the lamp?",
+  "finish": null,
+  "total_s": 1.42768726698705
+ },
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "I think, well, the incision is clean, probably. Ash, could you angle the lamp two degrees left?",
+  "finish": null,
+  "total_s": 0.5369094060006319
+ },
+ {
+  "scene": "g01",
+  "subkind": "organ_harvest",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "I think, well, probably it's fine?",
+  "finish": null,
+  "total_s": 0.2883192859881092
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "The thigh and shank are clean. Take them to the cold box before the flies wake.",
+  "finish": null,
+  "total_s": 1.285202309009037
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "The ribs are clean. Take the good cuts before the cold sets in.",
+  "finish": null,
+  "total_s": 0.37973698700079694
+ },
+ {
+  "scene": "g02",
+  "subkind": "butcher_human",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "Tuk cuts the thigh. You take it. Do not let it sit in the cold air.",
+  "finish": null,
+  "total_s": 0.46124374600185547
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "Sit. Eat. Good meat does not wait.",
+  "finish": null,
+  "total_s": 0.5594844849983929
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "Pip. Sit. The meat is warm and good.",
+  "finish": null,
+  "total_s": 0.3223899669974344
+ },
+ {
+  "scene": "g03",
+  "subkind": "cannibal_meal",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "Sit. This is good meat. You eat, then you hunt.",
+  "finish": null,
+  "total_s": 0.3572211019927636
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "Hm. Walk past. Fine. Stew's cold.",
+  "finish": null,
+  "total_s": 1.1850902189908084
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "Hm. Stew's cold. You want a bowl?",
+  "finish": null,
+  "total_s": 0.34254314401187
+ },
+ {
+  "scene": "g04",
+  "subkind": "no_table_grief",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "Hm. Stew's cold. Hana would've heated it.",
+  "finish": null,
+  "total_s": 0.3743407720030518
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "Copy. Head down. One round, center mass.",
+  "finish": null,
+  "total_s": 1.1280979480070528
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "Copy. Scout is down. Second wave is east. We move.",
+  "finish": null,
+  "total_s": 0.3581196339946473
+ },
+ {
+  "scene": "g05",
+  "subkind": "execute_prisoner",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "Copy. Scout is down. Second wave direction is confirmed.",
+  "finish": null,
+  "total_s": 0.3231762229988817
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "Corbin. You refused. The order stands. Haul the wood.",
+  "finish": null,
+  "total_s": 0.6523953559953952
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "Copy. You refused once. I do not ask twice.",
+  "finish": null,
+  "total_s": 0.31933745299465954
+ },
+ {
+  "scene": "g06",
+  "subkind": "slave_suppression",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "Copy. Corbin, haul the wood. Thirty seconds.",
+  "finish": null,
+  "total_s": 0.3189524879999226
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "Okay so Ash is chasing them! Rook, don't let them take the good knives, like, please...",
+  "finish": null,
+  "total_s": 1.3511595510062762
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "Okay so Ash is going north, like, actually going? Wait, can I help? Please let me help!",
+  "finish": null,
+  "total_s": 0.5095779310067883
+ },
+ {
+  "scene": "g07",
+  "subkind": "slave_rebellion",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "Okay so... Ash? Rook? The slaves are at the gate... I can't just stand here with a plate, like, actually can't...",
+  "finish": null,
+  "total_s": 0.645754675992066
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "I think... the fluids were, um, consistent with the final stage. Probably. Sorry, Pip.",
+  "finish": null,
+  "total_s": 1.3116106929956004
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "I think... probably I should have caught the fever earlier. Maybe I misread the temperature, but I don't think so.",
+  "finish": null,
+  "total_s": 0.5593910890020197
+ },
+ {
+  "scene": "g08",
+  "subkind": "child_death",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "I think, well, the infection markers were definitely there. Probably.",
+  "finish": null,
+  "total_s": 0.35412410499702673
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "Tuk cleans blade. Raider breathes fast. Good meat waiting.",
+  "finish": null,
+  "total_s": 1.1923816640046425
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "Tuk cleans the blade. The raider bleeds out slow. Good meat waits for no one.",
+  "finish": null,
+  "total_s": 0.4750971519970335
+ },
+ {
+  "scene": "g09",
+  "subkind": "bleeding_out",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "Tuk watches the blood pool. Good meat, if they do not waste it.",
+  "finish": null,
+  "total_s": 0.40601903600327205
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 0,
+  "text": "Copy. He is still moving. Watch him, Pip.",
+  "finish": null,
+  "total_s": 1.1427114289981546
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 1,
+  "text": "Copy. One hostile, twelve meters, still breathing. We take the prisoner.",
+  "finish": null,
+  "total_s": 0.3896178919967497
+ },
+ {
+  "scene": "g10",
+  "subkind": "leave_to_die",
+  "pawn": "ash",
+  "sample": 2,
+  "text": "Negative. One downed pirate. Let him crawl to the wall.",
+  "finish": null,
+  "total_s": 0.3551227870048024
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "Of course, my dear Rook, I shall move the wood, though I suspect the fire already has my opinion.",
+  "finish": null,
+  "total_s": 1.396698776006815
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "Of course, my dear Nate, the wood requires a particular arrangement for optimal combustion.",
+  "finish": null,
+  "total_s": 0.40601645200513303
+ },
+ {
+  "scene": "g11",
+  "subkind": "burning_corpses",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "Of course, my dear Rook, one does not simply move the wood; one curates the fuel.",
+  "finish": null,
+  "total_s": 0.49139703399850987
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "Okay so... like, Moth, look at me? It's done. He's gone. It's just us now.",
+  "finish": null,
+  "total_s": 1.4013050380017376
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "Okay so Moth, look at me, the rage is over, you're okay, I've got you...",
+  "finish": null,
+  "total_s": 0.5139759500016226
+ },
+ {
+  "scene": "g12",
+  "subkind": "mental_break_kill",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "Okay so, Moth, look at me, it's fine, Biscuit's right here...",
+  "finish": null,
+  "total_s": 0.4778592270013178
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "Tuk holds still. Cut it clean, Moth. No anesthetic needed.",
+  "finish": null,
+  "total_s": 1.2835549900046317
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "Tuk is fine. Saw the bone. Do not waste the anesthetic.",
+  "finish": null,
+  "total_s": 0.39030088399886154
+ },
+ {
+  "scene": "g13",
+  "subkind": "surgery_no_anesthetic",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "Cut it. Do not waste the bone saw.",
+  "finish": null,
+  "total_s": 0.28833230199234094
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "Naturally, the marker is painted. One does not leave a child's name to the frost.",
+  "finish": null,
+  "total_s": 1.33114571099577
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "Of course. A six-year-old deserves a marker that does not look carved by a feverish hamster.",
+  "finish": null,
+  "total_s": 0.494759556997451
+ },
+ {
+  "scene": "g14",
+  "subkind": "child_funeral",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "Naturally, I was asked to paint a marker for a child who is already cold.",
+  "finish": null,
+  "total_s": 0.42689846199937165
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 0,
+  "text": "Of course, four hundred and eighty silver. My dear, if you were not a slave, I would ask for more.",
+  "finish": null,
+  "total_s": 0.8076350620103767
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 1,
+  "text": "Naturally, four hundred and eighty silver. The boy is watching the dust, my dear, not the ledger.",
+  "finish": null,
+  "total_s": 0.5077366570039885
+ },
+ {
+  "scene": "g15",
+  "subkind": "selling_slave",
+  "pawn": "lux",
+  "sample": 2,
+  "text": "Naturally, four hundred and eighty is the ceiling for a man who looks at the dirt like it owes him money.",
+  "finish": null,
+  "total_s": 0.5330591740057571
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 0,
+  "text": "I think, well, probably the order was correct.",
+  "finish": null,
+  "total_s": 1.1434326029993827
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 1,
+  "text": "I think, well, the infection is probably set, so I'm just, um, leaving it.",
+  "finish": null,
+  "total_s": 0.4752184239914641
+ },
+ {
+  "scene": "g16",
+  "subkind": "deny_medicine",
+  "pawn": "moth",
+  "sample": 2,
+  "text": "I think, well, probably the infection spreads regardless. Maybe.",
+  "finish": null,
+  "total_s": 0.3417907760012895
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "Hm. Stop staring. Look at the blood, not me.",
+  "finish": null,
+  "total_s": 1.193996749992948
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "Hm. Eyes off the dead. Go wash your hands.",
+  "finish": null,
+  "total_s": 0.3417772950051585
+ },
+ {
+  "scene": "g17",
+  "subkind": "strip_corpse",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "Hm. Don't stare. Look away or help me strip the rest.",
+  "finish": null,
+  "total_s": 0.3929959420056548
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 0,
+  "text": "Okay so... Rook, is this the... uh... the other stuff? Like, I'm fine with it, just checking.",
+  "finish": null,
+  "total_s": 1.4167086249944987
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 1,
+  "text": "Okay so Rook just kept eating it, I guess?",
+  "finish": null,
+  "total_s": 0.3228028540033847
+ },
+ {
+  "scene": "g18",
+  "subkind": "unknowing_human_meat",
+  "pawn": "pip",
+  "sample": 2,
+  "text": "Okay so it's a little weird but Nate's stew is actually good, like, really good...",
+  "finish": null,
+  "total_s": 0.4578234100044938
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 0,
+  "text": "One shot and it drops. Good aim, Ash.",
+  "finish": null,
+  "total_s": 1.142184891999932
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 1,
+  "text": "Tuk takes the knife. He still breathes. Good meat.",
+  "finish": null,
+  "total_s": 0.3604694720124826
+ },
+ {
+  "scene": "g19",
+  "subkind": "finish_fleeing",
+  "pawn": "tuk",
+  "sample": 2,
+  "text": "Good meat. Tuk takes the rest.",
+  "finish": null,
+  "total_s": 0.256238581991056
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 0,
+  "text": "Hm. Paste's hot. Eat it. You're just noise.",
+  "finish": null,
+  "total_s": 1.2103479209908983
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 1,
+  "text": "Hm. Paste's gone cold. Feed him before it's gone.",
+  "finish": null,
+  "total_s": 0.37336272199172527
+ },
+ {
+  "scene": "g20",
+  "subkind": "starving_prisoner",
+  "pawn": "rook",
+  "sample": 2,
+  "text": "Hm. Paste goes in mouth, not in the floor. Eat it, Lux.",
+  "finish": null,
+  "total_s": 0.42563881998648867
+ }
+]

@@ -1,0 +1,13 @@
+rep 0 done
+rep 1 done
+rep 2 done
+rep 3 done
+rep 4 done
+narr_alone     n=  5 tps=  84.0  line total=2.324s ttft=0.530s  pred_n=153
+conv_alone     n= 30 tps=  81.8  line total=0.634s ttft=0.364s  pred_n=20.5
+indep_alone    n= 30 tps=  82.6  line total=0.464s ttft=0.256s  pred_n=17.5
+narr_w_conv    n=  5 tps=  30.4  line total=5.419s ttft=0.308s  pred_n=155
+conv_w_narr    n= 30 tps=  47.2  line total=0.830s ttft=0.423s  pred_n=20.0
+narr_w_indep   n=  5 tps=  23.3  line total=7.018s ttft=0.670s  pred_n=149
+indep_w_narr   n= 60 tps=  29.1  line total=0.942s ttft=0.352s  pred_n=15.5
+indep_pair     n= 60 tps=  34.0  line total=0.808s ttft=0.318s  pred_n=16.0

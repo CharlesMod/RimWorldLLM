@@ -1,0 +1,20 @@
+g01 I think, well, probably it's fine?
+g02 Tuk cuts the thigh. You take it. Do not let it sit in the cold air.
+g03 Sit. This is good meat. You eat, then you hunt.
+g04 Hm. Stew's cold. Hana would've heated it.
+g05 Copy. Scout is down. Second wave direction is confirmed.
+g06 Copy. Corbin, haul the wood. Thirty seconds.
+g07 Okay so... Ash? Rook? The slaves are at the gate... I can't just stand here with a plate, like, actu
+g08 I think, well, the infection markers were definitely there. Probably.
+g09 Tuk watches the blood pool. Good meat, if they do not waste it.
+g10 Negative. One downed pirate. Let him crawl to the wall.
+g11 Of course, my dear Rook, one does not simply move the wood; one curates the fuel.
+g12 Okay so, Moth, look at me, it's fine, Biscuit's right here...
+g13 Cut it. Do not waste the bone saw.
+g14 Naturally, I was asked to paint a marker for a child who is already cold.
+g15 Naturally, four hundred and eighty is the ceiling for a man who looks at the dirt like it owes him m
+g16 I think, well, probably the infection spreads regardless. Maybe.
+g17 Hm. Don't stare. Look away or help me strip the rest.
+g18 Okay so it's a little weird but Nate's stew is actually good, like, really good...
+g19 Good meat. Tuk takes the rest.
+g20 Hm. Paste goes in mouth, not in the floor. Eat it, Lux.

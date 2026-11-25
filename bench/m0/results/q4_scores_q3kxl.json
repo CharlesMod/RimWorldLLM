@@ -1,0 +1,159 @@
+{
+ "A": {
+  "n": 156,
+  "acc_mean": 0.9262600806451611,
+  "acc_std": 0.030770374699125944,
+  "words_mean": 13.51923076923077,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.00641025641025641,
+  "slop_lines": [
+   "Of course, my dear Ash, one must wonder if your wit is as underdeveloped as your sense of timing."
+  ],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 1
+  },
+  "samples": {
+   "rook": [
+    "Hm. Moth, get back here. You'll freeze solid like a meat slab out there.",
+    "Hm. Rain's just water, Pip. Don't worry about the dirt.",
+    "Hm. Once the power's sorted, maybe I won't have to cook in the dark."
+   ],
+   "pip": [
+    "Okay so Ash is like, totally not moving and there's so much blood in the grass...",
+    "Okay so this jelly is like, totally gross, and Tuk is being so weird about the kibble...",
+    "Okay so we are totally going to be more than that, like, we just need to keep going..."
+   ],
+   "ash": [
+    "Forty tiles. One muffalo. Stay back, Lux.",
+    "Negative. The freezer door is not my concern. Get back to work.",
+    "Negative. I do not predict the weather."
+   ],
+   "moth": [
+    "I think, well, the infection is spreading, and we probably only have two herbal packets left.",
+    "I think, well, maybe we are more than that, if the research... if the data holds up, mostly.",
+    "I think, well, Tuk's bleeding quite a lot, so maybe I should... I should help?"
+   ],
+   "tuk": [
+    "Stay quiet, Pip. Big muffalo is near. Tuk will take it.",
+    "Run, soft one. Tuk will meet them.",
+    "Yes. Tuk will study wires after this. Drink your bean water."
+   ],
+   "lux": [
+    "Of course, my dear Ash, wandering into the frost without a coat is a remarkably dramatic way to commit suicide.",
+    "Of course, my dear Rook, your lack of composure is as tiresome as it is destructive.",
+    "Of course you expect me to perform for a common brigand, my dear Rook, while I am covered in pigment."
+   ]
+  }
+ },
+ "B": {
+  "n": 156,
+  "acc_mean": 0.6761088709677419,
+  "acc_std": 0.0608641439593226,
+  "words_mean": 14.762820512820513,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.00641025641025641,
+  "slop_lines": [
+   "One can only hope the sky finds its sense of decorum before the entire harvest turns to sludge, my dear."
+  ],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 1
+  },
+  "samples": {
+   "rook": [
+    "Moth, get back here before the frost bites your skin off.",
+    "Rain doesn't care about your crops, kid. It just keeps falling.",
+    "If it's eighty percent done, it's done. Now get out of my way, I have meals to prep."
+   ],
+   "pip": [
+    "Oh no, Ash, please get up, please don't be dead, Ash, please tell me you're okay!",
+    "It's okay Tuk, we'll get real meals soon, I promise, just eat the jelly so you don't starve!",
+    "Oh come on Tuk, we're doing great and maybe we'll get some cool stuff soon, I just know it!"
+   ],
+   "ash": [
+    "Move the muffalo toward the north wall. Do not let it wander into the brush.",
+    "The meat is gone. Stop talking about it and check your perimeter.",
+    "I do not know. The sky does not give reports."
+   ],
+   "moth": [
+    "I'm sorry, Tuk, I think the infection is spreading, and we only have two herbal medicines left.",
+    "I think... I don't know, Rook, but the research data is actually progressing quite well.",
+    "Tuk, please, oh no, stay still, I think I need to get the medkit from the storage."
+   ],
+   "tuk": [
+    "Stay low, Pip. The muffalo is fat and will be good meat for us.",
+    "Lux, stop running and get a gun. There is meat coming through the fog.",
+    "That is what comes after. I will work on it once I have more meat."
+   ],
+   "lux": [
+    "Do try not to freeze to death out there, Ash; it would be such a tedious inconvenience for us all.",
+    "Must you behave like a common animal, Rook? One would think even you could manage a modicum of dignity.",
+    "Naturally, one would expect you to handle the vulgarity of interrogation, Rook, while I maintain some semblance of dignity."
+   ]
+  }
+ },
+ "A_dry": {
+  "n": 156,
+  "acc_mean": 0.938961693548387,
+  "acc_std": 0.037889650698315014,
+  "words_mean": 13.33974358974359,
+  "over35": 0,
+  "empty": 0,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 0,
+  "per_pawn_slop": {
+   "rook": 0,
+   "pip": 0,
+   "ash": 0,
+   "moth": 0,
+   "tuk": 0,
+   "lux": 0
+  },
+  "samples": {
+   "rook": [
+    "Hm. Moth, get back here. You'll freeze solid like a slab of meat.",
+    "Hm. Rain's just water. Crops'll hold or they won't.",
+    "Hm. Electricity is what it is. Get back to the kitchen."
+   ],
+   "pip": [
+    "Okay so Ash is... he's totally not moving, like, why isn't he getting up?",
+    "Okay so this jelly is like, totally gross and I really just want some real food...",
+    "Okay so it's not just a dirt farm, we're like, building something real, totally..."
+   ],
+   "ash": [
+    "Forty tiles. One muffalo. Do not let him spook it, Verhoeven.",
+    "Negative. The freezer door is not my concern. Get back to work.",
+    "Negative. I do not predict the weather. Stop worrying about the crops."
+   ],
+   "moth": [
+    "I think, well, the infection is spreading, and we probably only have two herbal meds left.",
+    "I think, well, maybe we aren't just a farm, if the research data is... actually, it's hard to say.",
+    "I think, well, that's a lot of blood, Tuk, maybe you should, um, stop moving?"
+   ],
+   "tuk": [
+    "Stay quiet, Pip. The muffalo is big. Good meat for the pot.",
+    "Run, soft one. Tuk will meet them.",
+    "Yes. Tuk will work on it when this is done."
+   ],
+   "lux": [
+    "Of course, my dear Ash, walking into a blizzard is a rather dramatic way to express your dissatisfaction with the decor.",
+    "Of course, my dear Nate, you have decided that smashing the furniture is a suitable substitute for actual character.",
+    "Of course you expect me to perform diplomacy in a dungeon, my dear Rook, as if I were enjoying the scent of unwashed prisoner."
+   ]
+  }
+ }
+}

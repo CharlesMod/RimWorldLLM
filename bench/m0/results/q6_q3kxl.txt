@@ -1,0 +1,35 @@
+0 Hm. Just a cramp. Don't look at me like that, Pip. Get that  complain
+1 Okay so it's totally fine, it's just a little scratch from t comfort
+2 I think, well, the bleeding is... it's still quite heavy, ma comfort
+3 Do not be so rough, Ash. Tuk can handle it. complain
+4 Hm. Stop the leaking, Pip. Go wash your face. comfort
+5 Okay so, Moth, please stop, you're totally scaring me and th comfort
+6 Nine pirates. North wall. Pip, stay low behind the sandbags. none
+7 I think, well, maybe we should check if they have more medic none
+8 Hm. Don't just stand there grinning, Pip. Get those potatoes slight
+9 Of course the ridge looks better on canvas than it does in t complain
+10 This is good meat. Tuk is full. none
+11 Of course, my dear Nate, one must assume eating from the flo slight
+12 Hm. Watch the angle on those carrots, Pip, or you'll ruin th slight
+13 This steel is hard. Tuk needs more light in this hole. none
+14 Of course, my dear Marlowe, if you find such primitive labor insult
+15 I think, well, the culture resolved, so it's... it's actuall none
+16 Tuk sees the calf. One arrow for good meat. none
+17 Okay so, I'm totally bored and there's nothing to do, so can kind
+18 I think, well, maybe I should have eaten something earlier,  none
+19 Put that meat in the freezer, Tuk. It will rot out here. slight
+20 Of course, my dear Nate, one would think a chef might develo slight
+21 I think, well, maybe you shouldn't bring the dog in here, Pi complain
+22 Sit on the hay, Pip. Do not just stare at the blood. slight
+23 Loosen your grip on the rifle. You are pulling the shot. slight
+24 Okay so, like, you could totally just stay here and help us  none
+25 You have had twenty minutes. Talk about the second wave or w slight
+26 Okay so it's just so quiet without her, like, it's totally t confide
+27 Of course, we shall all freeze to death while you play with  complain
+28 Hm. Back's killing me. Too cold in here. complain
+29 Negative. Do not let the fire reach the pantry. Move faster. none
+grammar n=30 intent total med=0.285s ttft=0.258 new prompt tokens=119.0 cached=1858.0 line total med=0.769
+schema n=30 intent total med=0.334s ttft=0.287 new prompt tokens=119.0 cached=1860.0 line total med=0.266
+free n=30 intent total med=0.285s ttft=0.257 new prompt tokens=119.0 cached=1860.5 line total med=0.283
+grammar accuracy 27 / 30
+schema accuracy 27 / 30

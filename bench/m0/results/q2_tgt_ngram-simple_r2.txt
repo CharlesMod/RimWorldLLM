@@ -1,0 +1,1 @@
+tgt_ngram-simple_r2: n=58 median tps=82.3 pooled tps=87.0 accept=0/0=0.00 median line total=0.660s ttft=0.438s median pred_n=20.0

@@ -1,0 +1,1 @@
+tgt_ngram-map-k4v: n=58 median tps=82.2 pooled tps=86.8 accept=0/0=0.00 median line total=0.679s ttft=0.435s median pred_n=20.0
