@@ -61,6 +61,10 @@ namespace HermesVoice.Bridge
         [JsonProperty("agent")] public EngineAgent Agent;
         [JsonProperty("parents")] public List<EngineParent> Parents;
         [JsonProperty("errors")] public List<string> Errors;
+        /// <summary>True when the selected local model is the catalog's fallback (the smallest one).</summary>
+        [JsonProperty("model_fallback")] public bool ModelFallback;
+        /// <summary>What to expect from the fallback model, one sentence from the engine (empty otherwise).</summary>
+        [JsonProperty("model_note")] public string ModelNote;
     }
 
     public sealed class EngineGpu
@@ -100,6 +104,9 @@ namespace HermesVoice.Bridge
         [JsonProperty("installed")] public bool Installed;
         /// <summary>True when the catalog has no download URL (import-only).</summary>
         [JsonProperty("import_only")] public bool ImportOnly;
+        /// <summary>True for a model kept as a last resort; the UI warns about it.</summary>
+        [JsonProperty("fallback")] public bool Fallback;
+        [JsonProperty("fallback_note")] public string FallbackNote;
     }
 
     public sealed class EnginePlan

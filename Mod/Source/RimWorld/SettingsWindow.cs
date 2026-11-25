@@ -143,6 +143,13 @@ namespace HermesVoice
             GUI.color = c;
             Widgets.Label(new Rect(row.x + 24f, row.y + 3f, row.width - 24f, 26f), EngineManager.StatusLine());
             GUI.color = Color.white;
+            string fb = EngineManager.FallbackLine();
+            if (fb != null)
+            {
+                GUI.color = Amber;
+                l.Label(fb);
+                GUI.color = Color.white;
+            }
             if (l.ButtonText(UiUtil.T("HV_Eng_SetUpButton"))) Find.WindowStack.Add(new Window_EngineSetup());
 
             var trow = l.GetRect(30f);
@@ -162,6 +169,8 @@ namespace HermesVoice
             Widgets.Label(new Rect(trow.x + 154f, trow.y + 3f, trow.width - 154f, 26f), tmsg);
             GUI.color = Color.white;
             Note(l, UiUtil.T("HV_Eng_LocalNote"));
+            var hs = HermesVoiceMod.Settings;
+            if (hs != null) l.CheckboxLabeled(UiUtil.T("HV_Fallback_HideSetting"), ref hs.hideFallbackWarning);
         }
 
         static void AgentLine(Listing_Standard l)

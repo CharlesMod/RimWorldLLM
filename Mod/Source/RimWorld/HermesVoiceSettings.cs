@@ -32,6 +32,9 @@ namespace HermesVoice
         // The player answered the first-run "set up a local model" prompt with Set up or My own endpoint.
         public bool engineSetupDismissed = false;
 
+        // The player asked not to be told (once per session) that the smallest fallback model is in use.
+        public bool hideFallbackWarning = false;
+
         // Dialogue display.
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
@@ -77,6 +80,7 @@ namespace HermesVoice
                 llmSource = string.IsNullOrWhiteSpace(llmBaseUrl) ? "local" : "own";
             Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
             Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
+            Scribe_Values.Look(ref hideFallbackWarning, "hideFallbackWarning", false);
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);

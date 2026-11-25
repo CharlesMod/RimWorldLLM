@@ -36,6 +36,21 @@ namespace HermesVoice
         public override void GameComponentUpdate()
         {
             base.GameComponentUpdate();
+            CheckFallbackNotice();
+        }
+
+        // One per game session: the engine may still be starting when the save loads, so a loaded game arms the notice and
+        // this waits (polling status through EngineManager) until the engine says which model is in use.
+        static readonly Bridge.FallbackNotice _fallbackNotice = new Bridge.FallbackNotice();
+
+        static void CheckFallbackNotice()
+        {
+            long now = Environment.TickCount64;
+            bool hidden = HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.hideFallbackWarning;
+            if (!_fallbackNotice.Waiting(now, hidden)) return;
+            EngineManager.Touch();
+            if (_fallbackNotice.Check(now, EngineManager.Status != null, EngineManager.FallbackInUse, hidden))
+                Messages.Message(UiUtil.T("HV_Fallback_MessageText"), MessageTypeDefOf.NeutralEvent, false);
         }
 
         /// <summary>Called when the game ends (return to main menu): stop serving and drop per-game state.</summary>
@@ -46,6 +61,7 @@ namespace HermesVoice
             HermesBridge.Minds.Clear();
             HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();
+            _fallbackNotice.Disarm();
             Instance = null;
         }
 
@@ -54,12 +70,14 @@ namespace HermesVoice
             base.LoadedGame();
             SaveEpoch = _sessionEpoch = Math.Max(SaveEpoch, _sessionEpoch) + 1;
             SpeechBubbles.Clear();
+            _fallbackNotice.Arm(Environment.TickCount64);
         }
 
         public override void StartedNewGame()
         {
             base.StartedNewGame();
             SaveEpoch = _sessionEpoch = _sessionEpoch + 1;
+            _fallbackNotice.Arm(Environment.TickCount64);
             Minds.Clear();
             HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();
