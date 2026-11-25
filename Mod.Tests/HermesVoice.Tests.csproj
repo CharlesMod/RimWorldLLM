@@ -14,8 +14,10 @@
     </ItemGroup>
     <ItemGroup>
         <!-- The game-agnostic bridge and the pure rules compile straight into the tests; nothing here references the game. -->
+        <Compile Remove="PreviewEmit/**" />
         <Compile Include="../Mod/Source/Bridge/**/*.cs" />
         <Compile Include="../Mod/Source/RimWorld/Rules.cs" />
         <Compile Include="../Mod/Source/RimWorld/Effects.cs" />
+        <Compile Include="../Mod/Source/RimWorld/BubbleLayout.cs" />
     </ItemGroup>
 </Project>

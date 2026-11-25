@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HermesVoice.Bridge;
 using RimWorld;
 using Verse;
 
@@ -22,19 +23,24 @@ namespace HermesVoice
     public class PlayLogEntry_HermesSay : PlayLogEntry_Interaction
     {
         string text = "";
+        string effect = "";     // the intent the game applied for this line, "" when none: one merged entry, never a second one
 
         public PlayLogEntry_HermesSay() { }
 
-        public PlayLogEntry_HermesSay(InteractionDef def, Pawn speaker, Pawn listener, string line)
+        public PlayLogEntry_HermesSay(InteractionDef def, Pawn speaker, Pawn listener, string line, string appliedEffect = null)
             : base(def, speaker, listener ?? speaker, new List<RulePackDef>())
         {
             text = line ?? "";
+            effect = EntryKinds.EffectWording(appliedEffect) ?? "";
         }
 
         public string Line { get { return text; } }
 
         protected override string ToGameStringFromPOV_Worker(Thing pov, bool forceLog)
         {
+            var s = HermesVoiceMod.Settings;
+            if (effect.Length > 0 && (s == null || s.showQuotes) && recipient != null && recipient != initiator)
+                return UiUtil.T("HV_LogEffect_" + effect, initiator.LabelShort, recipient.LabelShort, text);
             return SayLogFormat.Format(initiator, recipient, text);
         }
 
@@ -42,6 +48,7 @@ namespace HermesVoice
         {
             base.ExposeData();
             Scribe_Values.Look(ref text, "hvText", "");
+            Scribe_Values.Look(ref effect, "hvEffect", "");
         }
     }
 
@@ -80,48 +87,6 @@ namespace HermesVoice
             Scribe_References.Look(ref speaker, "hvSpeaker", true);
             Scribe_References.Look(ref listener, "hvListener", true);
             Scribe_Values.Look(ref text, "hvText", "");
-        }
-    }
-
-    /// <summary>Mood thought that shows the line that caused it as its description.</summary>
-    public class Thought_HVMemory : Thought_Memory
-    {
-        public string line;
-
-        public override string Description
-        {
-            get
-            {
-                string d = base.Description;
-                return string.IsNullOrEmpty(line) ? d : d + "\n\n\"" + line + "\"";
-            }
-        }
-
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            Scribe_Values.Look(ref line, "hvLine");
-        }
-    }
-
-    /// <summary>Opinion thought that shows the line that caused it as its description.</summary>
-    public class Thought_HVSocial : Thought_MemorySocial
-    {
-        public string line;
-
-        public override string Description
-        {
-            get
-            {
-                string d = base.Description;
-                return string.IsNullOrEmpty(line) ? d : d + "\n\n\"" + line + "\"";
-            }
-        }
-
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            Scribe_Values.Look(ref line, "hvLine");
         }
     }
 }

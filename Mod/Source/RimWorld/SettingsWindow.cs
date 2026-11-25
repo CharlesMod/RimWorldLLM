@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HermesVoice.Bridge;
 using UnityEngine;
 using Verse;
@@ -143,6 +144,13 @@ namespace HermesVoice
             GUI.color = c;
             Widgets.Label(new Rect(row.x + 24f, row.y + 3f, row.width - 24f, 26f), EngineManager.StatusLine());
             GUI.color = Color.white;
+            string fb = EngineManager.FallbackLine();
+            if (fb != null)
+            {
+                GUI.color = Amber;
+                l.Label(fb);
+                GUI.color = Color.white;
+            }
             if (l.ButtonText(UiUtil.T("HV_Eng_SetUpButton"))) Find.WindowStack.Add(new Window_EngineSetup());
 
             var trow = l.GetRect(30f);
@@ -162,6 +170,8 @@ namespace HermesVoice
             Widgets.Label(new Rect(trow.x + 154f, trow.y + 3f, trow.width - 154f, 26f), tmsg);
             GUI.color = Color.white;
             Note(l, UiUtil.T("HV_Eng_LocalNote"));
+            var hs = HermesVoiceMod.Settings;
+            if (hs != null) l.CheckboxLabeled(UiUtil.T("HV_Fallback_HideSetting"), ref hs.hideFallbackWarning);
         }
 
         static void AgentLine(Listing_Standard l)
@@ -239,6 +249,9 @@ namespace HermesVoice
                 bool on = s.effects == key;
                 if (l.RadioButton(UiUtil.T("HV_Effects_" + key), on)) s.effects = key;
             }
+            l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Quotes_Show"), ref s.showQuotes, UiUtil.T("HV_Quotes_ShowTip"));
+            l.CheckboxLabeled(UiUtil.T("HV_Quotes_Vanilla"), ref s.voiceVanillaSocial, UiUtil.T("HV_Quotes_VanillaTip"));
         }
 
         static void Events(Listing_Standard l, HermesVoiceSettings s)
@@ -268,6 +281,19 @@ namespace HermesVoice
             Title(l, "HV_Bubbles_Title");
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Show"), ref s.showBubbles);
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Colors"), ref s.colorBubbles);
+            bool comic = s.bubbleStyle != "classic";
+            l.Label(UiUtil.T("HV_Bubbles_Style"));
+            if (l.ButtonText(UiUtil.T(comic ? "HV_Bubbles_StyleComic" : "HV_Bubbles_StyleClassic")))
+            {
+                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
+                {
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleComic"), () => s.bubbleStyle = "comic"),
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleClassic"), () => s.bubbleStyle = "classic")
+                }));
+            }
+            l.Label(UiUtil.T("HV_Bubbles_Opacity", Mathf.RoundToInt(s.bubbleOpacity * 100f)));
+            s.bubbleOpacity = l.Slider(s.bubbleOpacity, 0.3f, 1f);
+            if (comic) l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Lettering"), ref s.comicLettering);
             l.Label(UiUtil.T("HV_Bubbles_Duration"));
             if (_durBuf == null) _durBuf = s.bubbleDurationSec.ToString();
             l.TextFieldNumeric(ref s.bubbleDurationSec, ref _durBuf, 1, 120);

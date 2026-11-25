@@ -3,6 +3,21 @@
   <!-- Conversation log -->
   <HV_LogLine>{0}: "{1}"</HV_LogLine>
   <HV_LogLineTo>{0} to {1}: "{2}"</HV_LogLineTo>
+  <HV_LogEffect_kind>{0} said something kind to {1}: "{2}"</HV_LogEffect_kind>
+  <HV_LogEffect_comfort>{0} comforted {1}: "{2}"</HV_LogEffect_comfort>
+  <HV_LogEffect_slight>{0} slighted {1}: "{2}"</HV_LogEffect_slight>
+  <HV_LogEffect_insult>{0} insulted {1}: "{2}"</HV_LogEffect_insult>
+  <HV_LogEffect_confide>{0} confided in {1}: "{2}"</HV_LogEffect_confide>
+  <HV_LogEffect_gossip>{0} gossiped to {1}: "{2}"</HV_LogEffect_gossip>
+  <HV_LogEffect_boast>{0} boasted to {1}: "{2}"</HV_LogEffect_boast>
+  <HV_LogEffect_complain>{0} complained to {1}: "{2}"</HV_LogEffect_complain>
+  <HV_LogLeadIn>{0}: "{1}"</HV_LogLeadIn>
+  <HV_QuoteThought>{0} by {1}: "{2}"</HV_QuoteThought>
+  <HV_QuoteNoSpeaker>{0}: "{1}"</HV_QuoteNoSpeaker>
+  <HV_Quotes_Show>Show quotes in thoughts and log</HV_Quotes_Show>
+  <HV_Quotes_ShowTip>Thoughts and log entries made by a spoken line show the line itself.</HV_Quotes_ShowTip>
+  <HV_Quotes_Vanilla>Voice the game's own social interactions</HV_Quotes_Vanilla>
+  <HV_Quotes_VanillaTip>When two voiced colonists have a vanilla insult, slight, kind words, chat and so on, the mod writes the words for it. The game's own effects stay as they are.</HV_Quotes_VanillaTip>
   <HV_LogTitle>Conversation log</HV_LogTitle>
   <HV_LogFilterAll>All pawns</HV_LogFilterAll>
   <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>
@@ -23,6 +38,7 @@
   <HV_Refused_not_negative>listener had nothing to be comforted about</HV_Refused_not_negative>
   <HV_Refused_no_about>no valid subject for gossip</HV_Refused_no_about>
   <HV_Refused_pair_cap>daily limit for this pair</HV_Refused_pair_cap>
+  <HV_Refused_vanilla_interaction>the game already applied its own effect</HV_Refused_vanilla_interaction>
   <HV_Refused_stack_full>the listener already has this thought</HV_Refused_stack_full>
   <!-- Chronicle tab of the Voices window -->
   <HV_TabConversation>Conversation</HV_TabConversation>
@@ -146,6 +162,11 @@
   <HV_Bubbles_Title>Speech bubbles</HV_Bubbles_Title>
   <HV_Bubbles_Show>Show overhead speech bubbles</HV_Bubbles_Show>
   <HV_Bubbles_Colors>Give each pawn their own bubble colour</HV_Bubbles_Colors>
+  <HV_Bubbles_Style>Bubble style</HV_Bubbles_Style>
+  <HV_Bubbles_StyleComic>Comic (round balloons with tails)</HV_Bubbles_StyleComic>
+  <HV_Bubbles_StyleClassic>Classic (plain boxes)</HV_Bubbles_StyleClassic>
+  <HV_Bubbles_Opacity>Bubble opacity: {0}%</HV_Bubbles_Opacity>
+  <HV_Bubbles_Lettering>Comic lettering (ALL CAPS)</HV_Bubbles_Lettering>
   <HV_Bubbles_Duration>Bubble duration (seconds)</HV_Bubbles_Duration>
   <HV_Adv_Title>Advanced</HV_Adv_Title>
   <HV_Adv_FixedToken>Fixed shared token (blank = a random token each run)</HV_Adv_FixedToken>
@@ -233,4 +254,13 @@
   <HV_Setup_OpenPage>Open setup page in browser</HV_Setup_OpenPage>
   <HV_Eng_TokS>{0} tok/s</HV_Eng_TokS>
   <HV_Setup_Agent>Agent: {0} (restarts: {1})</HV_Setup_Agent>
+  <HV_Fallback_DefaultNote>Smallest model: expect repeated lines and weaker understanding of what was said.</HV_Fallback_DefaultNote>
+  <HV_Fallback_Badge>Fallback model</HV_Fallback_Badge>
+  <HV_Fallback_RowWarning>Warning: this is the smallest model, kept only as a fallback. {0}</HV_Fallback_RowWarning>
+  <HV_Fallback_ConfirmText>This is the smallest model, kept only as a fallback for computers that cannot run a larger one. {0}
+
+Use it anyway?</HV_Fallback_ConfirmText>
+  <HV_Fallback_StatusLine>Warning: the smallest (fallback) model is in use. {0}</HV_Fallback_StatusLine>
+  <HV_Fallback_MessageText>HermesVoice is using its smallest model. Speech will be simpler and may repeat. To change it, open Options, Mod settings, HermesVoice, then "Set up / Change model...".</HV_Fallback_MessageText>
+  <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
 </LanguageData>

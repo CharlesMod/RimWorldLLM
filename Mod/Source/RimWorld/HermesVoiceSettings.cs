@@ -32,10 +32,16 @@ namespace HermesVoice
         // The player answered the first-run "set up a local model" prompt with Set up or My own endpoint.
         public bool engineSetupDismissed = false;
 
+        // The player asked not to be told (once per session) that the smallest fallback model is in use.
+        public bool hideFallbackWarning = false;
+
         // Dialogue display.
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
         public bool colorBubbles = true;
+        public string bubbleStyle = "comic";   // comic | classic
+        public float bubbleOpacity = 1f;
+        public bool comicLettering = false;     // ALL-CAPS comic lettering
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -59,6 +65,14 @@ namespace HermesVoice
         public int pauseAmbientAtSpeed = 3;
         public string language = "en";
 
+        // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
+        public bool showQuotes = true;
+        public bool voiceVanillaSocial = true;
+        public int quoteMaxChars = 140;
+        public int attachWindowMinutes = 10;                         // in-game minutes a line may take to attach to its interaction
+        public string interactionHigh = Bridge.InteractionPolicy.DefaultHigh;   // def names, voiced first
+        public string interactionIdle = Bridge.InteractionPolicy.DefaultIdle;   // def names, voiced only when the speaker is otherwise idle
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -77,9 +91,13 @@ namespace HermesVoice
                 llmSource = string.IsNullOrWhiteSpace(llmBaseUrl) ? "local" : "own";
             Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
             Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
+            Scribe_Values.Look(ref hideFallbackWarning, "hideFallbackWarning", false);
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);
+            Scribe_Values.Look(ref bubbleStyle, "bubbleStyle", "comic");
+            Scribe_Values.Look(ref bubbleOpacity, "bubbleOpacity", 1f);
+            Scribe_Values.Look(ref comicLettering, "comicLettering", false);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);
@@ -98,6 +116,12 @@ namespace HermesVoice
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 3);
             Scribe_Values.Look(ref language, "language", "en");
+            Scribe_Values.Look(ref showQuotes, "showQuotes", true);
+            Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
+            Scribe_Values.Look(ref quoteMaxChars, "quoteMaxChars", 140);
+            Scribe_Values.Look(ref attachWindowMinutes, "attachWindowMinutes", 10);
+            Scribe_Values.Look(ref interactionHigh, "interactionHigh", Bridge.InteractionPolicy.DefaultHigh);
+            Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
         }
     }
 }

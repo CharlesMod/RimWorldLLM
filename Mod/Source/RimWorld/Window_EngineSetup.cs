@@ -74,6 +74,13 @@ namespace HermesVoice
             GUI.color = Color.white;
 
             var st = EngineManager.Status;
+            string fbLine = EngineManager.FallbackLine();
+            if (fbLine != null)
+            {
+                GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber);
+                l.Label(fbLine);
+                GUI.color = Color.white;
+            }
             if (st != null && st.Agent != null && !string.IsNullOrEmpty(st.Agent.Phase))
             {
                 string am = string.IsNullOrEmpty(st.Agent.Message) ? "" : " - " + st.Agent.Message;
@@ -186,7 +193,7 @@ namespace HermesVoice
 
         void ModelRow(Listing_Standard l, EnginePlanModel m, bool busy, EngineStatus st, bool big)
         {
-            var row = l.GetRect(big ? 54f : 44f);
+            var row = l.GetRect((big ? 54f : 44f) + (m.Fallback ? 36f : 0f));
             float btnW = 110f;
             Color vc = m.Fits == "yes" ? EngineManager.ColorOf(EngineManager.Light.Green)
                      : m.Fits == "tight" ? EngineManager.ColorOf(EngineManager.Light.Amber)
@@ -201,10 +208,24 @@ namespace HermesVoice
             string est = m.EstVramMib > 0 ? "  " + UiUtil.T("HV_Setup_Est", Mib(m.EstVramMib), Mib(m.EstRamMib)) : "";
             Widgets.Label(new Rect(row.x, row.y + 20f, row.width - btnW - 10f, big ? 34f : 24f), verdict + why + est);
             GUI.color = Color.white;
+            if (m.Fallback)
+            {
+                GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber);
+                Widgets.Label(new Rect(row.x, row.y + (big ? 54f : 44f), row.width - btnW - 10f, 36f), UiUtil.T("HV_Fallback_RowWarning", EngineManager.FallbackNote(m.FallbackNote)));
+                Widgets.Label(new Rect(row.xMax - btnW, row.y + 34f, btnW, 22f), UiUtil.T("HV_Fallback_Badge"));
+                GUI.color = Color.white;
+            }
             var btn = new Rect(row.xMax - btnW, row.y + 4f, btnW, 28f);
             if (m.ImportOnly && !m.Installed) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("HV_Setup_ImportOnly")); GUI.color = Color.white; }
             else if (Widgets.ButtonText(btn, UiUtil.T(m.Installed ? "HV_Setup_Use" : "HV_Setup_Install"), true, true, !busy && m.Fits != "no"))
-                EngineManager.Install(m.Id);
+            {
+                if (!m.Fallback) EngineManager.Install(m.Id);
+                else
+                {
+                    string id = m.Id;
+                    Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(UiUtil.T("HV_Fallback_ConfirmText", EngineManager.FallbackNote(m.FallbackNote)), () => EngineManager.Install(id)));
+                }
+            }
         }
     }
 }

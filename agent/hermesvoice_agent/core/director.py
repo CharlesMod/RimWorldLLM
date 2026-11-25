@@ -26,7 +26,7 @@ from .ledger import Ledger
 from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, WorkItem
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
-from .passes import Dropped, SanitizeCtx, Spoken, speak
+from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
@@ -226,6 +226,14 @@ class Director:
         roles = [(int(a["id"]), a.get("role", "")) for a in e.get("actors", [])]
         ids = [i for i, _ in roles]
         witnesses = [int(w) for w in e.get("witnesses", ids)]
+        vanilla = getattr(self.adapter, "vanilla_social", lambda ev: None)(e)
+        if vanilla and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
+            # The game's own interaction: one line for it, in its priority tier (chitchat only when idle).
+            vcls = Cls.SOCIAL if vanilla["tier"] == "high" else Cls.AMBIENT
+            item = self.leases.make_item(vanilla["initiator"], "vanilla_social", now, e, listener=vanilla["recipient"],
+                                         cls=vcls, payload={"vanilla": vanilla})
+            self.leases.submit(item, now, self.bridge.env.speed)
+            return
         pair = self.adapter.conversation_pair(e)
         if pair and pair[0] in self.minds and pair[1] in self.minds:
             item = self.leases.make_item(pair[0], etype, now, e, listener=pair[1], cls=Cls.SOCIAL,
@@ -337,7 +345,8 @@ class Director:
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
-                          prompt_cap_words(prefix), set(self.adapter.common_words))
+                          prompt_cap_words(prefix), set(self.adapter.common_words),
+                          third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())))
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
 
@@ -353,9 +362,12 @@ class Director:
     async def serve(self, item: WorkItem, lease: Lease) -> None:
         aid = item.actor_id
         try:
+            vanilla = item.payload.get("vanilla")
             if item.kind == "player_talk":
                 trigger = f"The player says to you: {item.payload['text']}"
                 lease.data["talk_id"] = item.payload["talk_id"]
+            elif vanilla:
+                trigger = vanilla["sentence"] or (item.event or {}).get("summary", item.kind)
             else:
                 trigger = (item.event or {}).get("summary", item.kind)
             try:
@@ -371,9 +383,17 @@ class Director:
             lname = self.names.get(listener) if listener is not None else None
             ctx.secrets = memory.secret_texts(mind, lname)
             lease.generating = True
-            res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
-                              turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
-                              labels=self.adapter.intent_labels, max_tokens=self.cfg.llm.line_max_tokens)
+            if vanilla:
+                # Words for the game's own interaction: no intent pass, the game applies its own effects.
+                s, _ = await line_pass(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
+                                       turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx,
+                                       max_tokens=self.cfg.llm.line_max_tokens,
+                                       request=self.adapter.vanilla_request(vanilla, self.names[aid], lname or "them"))
+                res = Spoken(s.text, self.adapter.intent_labels[0]) if s.ok else Dropped(s.reason)
+            else:
+                res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
+                                  turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
+                                  labels=self.adapter.intent_labels, max_tokens=self.cfg.llm.line_max_tokens)
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -387,8 +407,8 @@ class Director:
                 return
             ok = await self._say(aid, res, listener=listener, expires=item.expires_at,
                                  talk_id=item.payload.get("talk_id"),
-                                 combat=bool(item.event and self.adapter.is_urgent_visual(item.event)),
-                                 event=item.event)
+                                 combat=bool(item.event and self.adapter.is_urgent_visual(item.event)) and not vanilla,
+                                 event=item.event, vanilla_ref=vanilla["ref"] if vanilla else None)
             if ok:
                 self.leases.quotas.record(aid, listener, now)
                 self.leases.mark_spoke(aid, sig)
@@ -420,7 +440,7 @@ class Director:
 
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
                    conv: str | None = None, talk_id: str | None = None, combat: bool = False,
-                   event: dict | None = None) -> bool:
+                   event: dict | None = None, vanilla_ref: str | None = None) -> bool:
         about = None
         if sp.intent in self.adapter.about_intents():
             about = self._pick_about(aid, listener, event)
@@ -428,7 +448,8 @@ class Director:
                 sp = Spoken(sp.text, self.adapter.intent_labels[0])   # nobody to gossip about
         try:
             r = await self.bridge.say(aid, sp.text, listener=listener, intent=sp.intent, conversation_id=conv,
-                                      combat=combat, talk_id=talk_id, expires_at=expires, about=about)
+                                      combat=combat, talk_id=talk_id, expires_at=expires, about=about,
+                                      vanilla_ref=vanilla_ref)
         except BridgeError as e:
             self.dropped.append((aid, f"say:{e.code}"))
             return False
