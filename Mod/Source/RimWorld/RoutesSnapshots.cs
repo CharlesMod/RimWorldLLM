@@ -74,6 +74,7 @@ namespace HermesVoice
                 ["events"] = EventToggles(s),
                 ["talk_frequency"] = s.talkFrequency,
                 ["wants_enabled"] = s.wantsEnabled,
+                ["recap"] = s.recapOnLoad,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
                 ["dlc"] = new JArray(ActiveDlc()),
                 ["llm"] = LlmConfig(s)

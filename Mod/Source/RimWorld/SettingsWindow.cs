@@ -239,6 +239,7 @@ namespace HermesVoice
             l.TextFieldNumeric(ref s.pauseAmbientAtSpeed, ref _speedBuf, 0, 4);
             Note(l, UiUtil.T("HV_Talk_PauseHelp"));
             l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Recap_Enable"), ref s.recapOnLoad, UiUtil.T("HV_Recap_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Wants_Enable"), ref s.wantsEnabled, UiUtil.T("HV_Wants_EnableTip"));
             if (s.wantsEnabled)
             {

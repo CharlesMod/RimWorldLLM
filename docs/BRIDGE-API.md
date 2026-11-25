@@ -159,6 +159,20 @@ the game tick at which the mod received the entry. `since_day` that is not an in
 `bad_request`. After a `save_epoch` change the agent can read this to see what the loaded save
 holds.
 
+### `POST /recap`
+`{"op_id": "...", "epoch": 3, "lines": ["Ana dug the first trench.", "...", "..."]}`.
+The "Previously on <colony>..." recap shown after a save is loaded. The agent writes it from the loaded
+save's chronicle (`GET /chronicle`) once per `save_epoch` change. `lines` is 1 to 3 strings; the mod
+collapses whitespace, drops empty lines, cuts each at 160 characters and keeps three. The mod shows
+it as a neutral letter titled "Previously on <colony name>..." in the letter stack (never a dialog,
+never a pause). It is accepted only when all hold, else it is refused with the code in brackets:
+the player's `recap` setting is on (`refused`); `epoch` is the current `save_epoch` (`conflict`);
+that epoch began with a loaded save, not a new game (`refused`); no recap was shown yet for this
+epoch (`conflict`); and the load was at most 180 s of real time ago (`expired`, 410). `epoch` not an
+integer, `lines` not an array of strings or empty after cleaning is `bad_request`. Reply
+`{"shown": true}`. An agent that is refused simply drops the recap. The agent also skips the whole
+step when `GET /config` says `"recap": false`.
+
 ### `GET /mind/{id}` and `PUT /mind/{id}`
 The pawn's mind blob, opaque to the mod, saved in the save file.
 - `GET` returns `{"mind": {...} | null, "rev": 4}`.
@@ -223,7 +237,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).

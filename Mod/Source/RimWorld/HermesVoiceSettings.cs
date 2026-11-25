@@ -69,6 +69,7 @@ namespace HermesVoice
         public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
         public string language = "en";
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
+        public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
         public float wantsAvoidHours = 1f;             // how long an "avoid" want lasts, in game hours
 
         // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
@@ -128,6 +129,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
             Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref wantsEnabled, "wantsEnabled", true);
+            Scribe_Values.Look(ref recapOnLoad, "recapOnLoad", true);
             Scribe_Values.Look(ref wantsAvoidHours, "wantsAvoidHours", 1f);
             Scribe_Values.Look(ref showQuotes, "showQuotes", true);
             Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
