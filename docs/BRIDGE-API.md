@@ -95,7 +95,19 @@ reply has `"gap": true`. Each event:
   of sight and hearing range × Hearing capacity.
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
-  lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, thought, player_talk`.
+  quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
+  thought, player_talk`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
+  `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
+  `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
+  (`weather_extreme`..`weather_extreme_end`).
+- `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
+  The mod's own `HV_` thoughts never produce one.
+- Per-event toggles in settings apply to the ring as well as to the push. Events are throttled
+  by per-pawn cooldowns (injury 30 s, social 60 s, tend 20 s, mental break and thought 10 s).
+  The 20 per real minute cap applies only to the push to the agent URL, not to `/events`.
+- After a game load, lodgers, prisoners and quests already present are learned silently (no
+  arrive events); raids in progress are saved with the game and still end with `raid_end`.
 - Long-running facts carry a `ledger_id`. A matching `*_end` event closes the entry.
   `GET /colony` lists the open entries.
 - The existing push to the agent URL stays, sending the same event objects.

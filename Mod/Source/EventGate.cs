@@ -5,7 +5,7 @@ using Verse;
 
 namespace HermesVoice
 {
-    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid }
+    public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought }
 
     /// <summary>
     /// Throttling and filtering for colony events. Game thread only (not thread-safe by design).
@@ -19,6 +19,7 @@ namespace HermesVoice
         const int SocialCooldown = 60 * 60;
         const int TendCooldown = 20 * 60;
         const int MentalCooldown = 10 * 60;
+        const int ThoughtCooldown = 10 * 60;
 
         static readonly Dictionary<(EventKind, int), int> LastTick = new Dictionary<(EventKind, int), int>();
         static readonly Queue<float> RealTimes = new Queue<float>();
@@ -27,7 +28,7 @@ namespace HermesVoice
         public static bool KindEnabled(EventKind kind)
         {
             var s = HermesVoiceMod.Settings;
-            if (s == null || !s.enabled || !s.sendColonyEvents) return false;
+            if (s == null || !s.enabled) return false;
             switch (kind)
             {
                 case EventKind.Injury: return s.evInjury;
@@ -37,6 +38,12 @@ namespace HermesVoice
                 case EventKind.Tend: return s.evTend;
                 case EventKind.Social: return s.evSocial;
                 case EventKind.Raid: return s.evRaid;
+                case EventKind.Quest: return s.evQuest;
+                case EventKind.Lodger: return s.evLodger;
+                case EventKind.Prisoner: return s.evPrisoner;
+                case EventKind.Funeral: return s.evFuneral;
+                case EventKind.Weather: return s.evWeather;
+                case EventKind.Thought: return s.evThought;
             }
             return false;
         }
@@ -65,7 +72,6 @@ namespace HermesVoice
         public static bool Wanted(EventKind kind, Pawn pawn, bool allowAnimals = false)
         {
             if (!GameLive() || !KindEnabled(kind)) return false;
-            if (string.IsNullOrWhiteSpace(HermesVoiceMod.Settings.agentUrl)) return false;
             return IsColonyPawn(pawn, allowAnimals);
         }
 
@@ -93,11 +99,12 @@ namespace HermesVoice
                 case EventKind.Social: return SocialCooldown;
                 case EventKind.Tend: return TendCooldown;
                 case EventKind.MentalBreak: return MentalCooldown;
+                case EventKind.Thought: return ThoughtCooldown;
                 default: return 0;
             }
         }
 
-        /// <summary>Global cap: at most MaxPerRealMinute events per real minute; extras are dropped.</summary>
+        /// <summary>Push cap: at most MaxPerRealMinute events per real minute go to the agent URL; extras are not pushed (they stay in the ring).</summary>
         public static bool GlobalCapOk()
         {
             float now = Time.realtimeSinceStartup;
@@ -107,12 +114,11 @@ namespace HermesVoice
             return true;
         }
 
-        /// <summary>Apply cooldown + global cap, then send. Returns true if sent.</summary>
-        public static bool Emit(EventKind kind, string eventType, Pawn pawn, object payload)
+        /// <summary>Apply the per (kind, pawn) cooldown, then record and push. Returns true if published.</summary>
+        public static bool Emit(EventKind kind, Pawn pawn, EventSpec spec)
         {
             if (!CooldownOk(kind, pawn?.thingIDNumber ?? 0, CooldownFor(kind))) return false;
-            if (!GlobalCapOk()) return false;
-            AgentDialOut.Send(eventType, payload);
+            EventBus.Publish(spec);
             return true;
         }
 

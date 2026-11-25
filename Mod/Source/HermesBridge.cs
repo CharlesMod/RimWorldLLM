@@ -44,6 +44,7 @@ namespace HermesVoice
         public static void Start()
         {
             Stop();
+            Routes.Register(Router);
             var s = HermesVoiceMod.Settings;
             if (s == null || !s.enabled) return;
             int first = SettingsMigration.Port(s.bridgePort);

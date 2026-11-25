@@ -32,6 +32,18 @@ namespace HermesVoice
         public bool evTend = true;
         public bool evSocial = true;
         public bool evRaid = true;
+        public bool evQuest = true;
+        public bool evLodger = true;
+        public bool evPrisoner = true;
+        public bool evFuneral = true;
+        public bool evWeather = true;
+        public bool evThought = true;
+
+        // What the agent must honour (GET /config).
+        public string effects = "normal";          // off | light | normal
+        public float talkFrequency = 1f;
+        public int pauseAmbientAtSpeed = 3;
+        public string language = "en";
 
         public override void ExposeData()
         {
@@ -52,6 +64,16 @@ namespace HermesVoice
             Scribe_Values.Look(ref evTend, "evTend", true);
             Scribe_Values.Look(ref evSocial, "evSocial", true);
             Scribe_Values.Look(ref evRaid, "evRaid", true);
+            Scribe_Values.Look(ref evQuest, "evQuest", true);
+            Scribe_Values.Look(ref evLodger, "evLodger", true);
+            Scribe_Values.Look(ref evPrisoner, "evPrisoner", true);
+            Scribe_Values.Look(ref evFuneral, "evFuneral", true);
+            Scribe_Values.Look(ref evWeather, "evWeather", true);
+            Scribe_Values.Look(ref evThought, "evThought", true);
+            Scribe_Values.Look(ref effects, "effects", "normal");
+            Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
+            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 3);
+            Scribe_Values.Look(ref language, "language", "en");
         }
     }
 }

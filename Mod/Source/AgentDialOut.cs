@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Verse;
 
 namespace HermesVoice
@@ -32,26 +33,13 @@ namespace HermesVoice
         static string _lastFailure = "";
         static long _lastLogTs = -1;
 
-        /// <summary>Call on the game thread. No-op when the mod is disabled or agentUrl is blank.</summary>
-        public static void Send(string eventType, object payload)
+        /// <summary>Call on the game thread: push an event object (the same one GET /events returns). No-op when pushing is off.</summary>
+        public static void Push(JObject ev)
         {
             var s = HermesVoiceMod.Settings;
-            if (s == null || !s.enabled || string.IsNullOrWhiteSpace(s.agentUrl)) return;
-            string json;
-            try
-            {
-                json = JsonConvert.SerializeObject(new
-                {
-                    type = eventType,
-                    tick = Find.TickManager?.TicksGame ?? 0,
-                    payload
-                });
-            }
-            catch (Exception e)
-            {
-                Log.Warning($"[HermesVoice] Could not serialize '{eventType}' event: {e.Message}");
-                return;
-            }
+            if (s == null || !s.enabled || !s.sendColonyEvents || string.IsNullOrWhiteSpace(s.agentUrl)) return;
+            if (!EventGate.GlobalCapOk()) return;
+            string json = ev.ToString(Formatting.None);
             var item = new Item { Url = s.agentUrl.Trim(), Token = (s.sharedToken ?? "").Trim(), Json = json };
             lock (Gate)
             {

@@ -84,8 +84,7 @@ namespace HermesVoice
 
             // --- Colony events (improve/events) ---
             list.Label("Colony events (mod POSTs these to the agent URL)");
-            list.CheckboxLabeled("Send colony events", ref s.sendColonyEvents);
-            if (s.sendColonyEvents)
+            list.CheckboxLabeled("Push events to the agent URL (events are always kept for GET /events)", ref s.sendColonyEvents);
             {
                 list.CheckboxLabeled("  Injuries", ref s.evInjury);
                 list.CheckboxLabeled("  Deaths", ref s.evDeath);
@@ -94,7 +93,20 @@ namespace HermesVoice
                 list.CheckboxLabeled("  Medical tending", ref s.evTend);
                 list.CheckboxLabeled("  Social interactions", ref s.evSocial);
                 list.CheckboxLabeled("  Raids", ref s.evRaid);
+                list.CheckboxLabeled("  Quests", ref s.evQuest);
+                list.CheckboxLabeled("  Lodgers", ref s.evLodger);
+                list.CheckboxLabeled("  Prisoners", ref s.evPrisoner);
+                list.CheckboxLabeled("  Funerals", ref s.evFuneral);
+                list.CheckboxLabeled("  Extreme weather", ref s.evWeather);
+                list.CheckboxLabeled("  Notable thoughts", ref s.evThought);
             }
+            list.GapLine();
+
+            list.Label("Effects of spoken lines: " + s.effects);
+            if (list.ButtonText("Effects: " + s.effects + " (click to change)"))
+                s.effects = s.effects == "normal" ? "light" : (s.effects == "light" ? "off" : "normal");
+            list.Label("Talk frequency: " + s.talkFrequency.ToString("0.0"));
+            s.talkFrequency = list.Slider(s.talkFrequency, 0f, 2f);
             list.GapLine();
 
             string status = HermesBridge.IsRunning ? $"Bridge running on port {HermesBridge.Port}" : "Bridge not running";
