@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from .llm import LLMClient, LLMError, Messages, strip_thought
 from .memory import weight_sorted
+from . import gamedata as gd
 from .minds import Memory, Mind
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -70,18 +71,20 @@ def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days
 def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int) -> Messages:
     mems = weight_sorted(mind, now, day)[:MAX_PROMPT_MEMORIES]
     mems.sort(key=lambda m: (m.game, m.id))
-    mem_lines = "\n".join(f"{m.id}{' [pinned]' if m.pinned else ''}: {m.text}" for m in mems) or "(none)"
+    mem_lines = "\n".join(f"{m.id}{' [pinned]' if m.pinned else ''}: {gd.clean(m.text, 'event')}" for m in mems) or "(none)"
     rels = sorted(mind.relations.values(), key=lambda r: -abs(r.opinion or 0))[:8]
     rel_lines = "\n".join(
-        f"- {r.name}" + (f" (opinion {r.opinion:+d})" if r.opinion is not None else "") +
-        (f": {r.feeling}" if r.feeling else "") for r in rels) or "(nobody yet)"
-    user = (f"=== WHO YOU ARE ===\n{mind.fixed.text}\n"
-            f"=== WHO YOU ARE BECOMING NOW ===\n{mind.evolving_bio or '(nothing yet)'}\n"
-            f"Wants: {'; '.join(mind.wants) or 'none'}\n"
-            f"=== WHAT YOU REMEMBER (id: text) ===\n{mem_lines}\n"
-            f"=== THE PEOPLE YOU KNOW ===\n{rel_lines}\n"
+        f"- {gd.name(r.name)}" + (f" (opinion {r.opinion:+d})" if r.opinion is not None else "") +
+        (f": {gd.clean(r.feeling, 'line')}" if r.feeling else "") for r in rels) or "(nobody yet)"
+    bio = gd.clean(mind.fixed.text, "line", max_len=600, multiline=True)
+    becoming = gd.clean(mind.evolving_bio or "(nothing yet)", "desc")
+    wants = "; ".join(gd.clean(w, "label") for w in mind.wants) or "none"
+    user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', bio)}"
+            f"=== WHO YOU ARE BECOMING NOW ===\n{gd.data_section('character', f'Becoming: {becoming}' + chr(10) + f'Wants: {wants}')}"
+            f"=== WHAT YOU REMEMBER (id: text) ===\n{gd.data_section('memories', mem_lines)}"
+            f"=== THE PEOPLE YOU KNOW ===\n{gd.data_section('people', rel_lines)}"
             f"=== REQUEST ===\n{adapter.reflection_request}")
-    return [("system", adapter.reflection_system), ("user", user)]
+    return [("system", adapter.reflection_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
 
 def parse_result(text: str) -> ReflectResult | None:
@@ -97,7 +100,8 @@ def parse_result(text: str) -> ReflectResult | None:
 
 async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, str], *, slot: int, now: int,
                          day: int, max_tokens: int = 500, name_tokens: dict[int, set[str]] | None = None,
-                         common_words: set[str] | None = None) -> ReflectResult | None:
+                         common_words: set[str] | None = None, involves_minor: bool = False,
+                         minor_names: set[str] | None = None) -> ReflectResult | None:
     """The one call. None if the model failed, was malformed or wrote an ungrounded bio."""
     msgs = reflection_messages(adapter, mind, names, now, day)
     try:
@@ -112,7 +116,8 @@ async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, s
     all_names = set().union(*toks.values()) if toks else set()
     s = sanitize_prose(res.bio, known_names=all_names, all_names=all_names,
                        prompt_words=prompt_cap_words(msgs[1][1]), common_words=common_words,
-                       speaker_names=toks.get(mind.actor_id, set()), min_words=4, max_words=MAX_BIO_WORDS)
+                       speaker_names=toks.get(mind.actor_id, set()), min_words=4, max_words=MAX_BIO_WORDS,
+                       involves_minor=involves_minor, minor_names=minor_names)
     if not s.ok:
         return None
     res.bio = s.text

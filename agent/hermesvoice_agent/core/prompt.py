@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from . import agegate
+from . import gamedata as gd
 from .minds import Memory, Mind
 
 
@@ -39,15 +41,16 @@ class Scene:
     job: str = "idle"
     thoughts: list[str] = field(default_factory=list)  # "text (+/-n)"
     trigger: str = ""
+    minor_self: bool = False             # the speaker is under 18 (or of unknown age)
 
 
 def block_b(mind: Mind) -> str:
     v = mind.voice
-    s = "=== WHO YOU ARE ===\n" + mind.fixed.text + "\n"
+    s = "=== WHO YOU ARE ===\n" + gd.data_section("bio", gd.clean(mind.fixed.text, "line", max_len=600, multiline=True))
     s += ("\n=== HOW YOU TALK ===\n"
-          f"Register: {v.register_line}\n"
-          f"Habits: {'; '.join(v.tics)} (use a habit in at most one line in three)\n"
-          "Example lines:\n" + "\n".join(f"- {e}" for e in v.examples) + "\n")
+          f"Register: {gd.clean(v.register_line, 'desc')}\n"
+          f"Habits: {'; '.join(gd.clean(t, 'label') for t in v.tics)} (use a habit in at most one line in three)\n"
+          "Example lines:\n" + "\n".join(f"- {gd.clean(e, 'line')}" for e in v.examples) + "\n")
     return s
 
 
@@ -56,45 +59,54 @@ def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -
     lines = []
     for r in mind.c_relations[:max_rel]:
         op = f", opinion {r.opinion:+d}" if r.opinion is not None else ""
-        lines.append(f"- {r.name}{op}: {r.feeling}" + (f" {r.history}" if r.history else ""))
-    s = "=== WHO YOU ARE BECOMING ===\n" + (mind.evolving_bio or "(nothing yet)") + "\n"
-    s += "Wants: " + ("; ".join(mind.wants) if mind.wants else "none in particular") + "\n"
+        lines.append(f"- {gd.name(r.name)}{op}: {gd.clean(r.feeling, 'line')}" +
+                     (f" {gd.clean(r.history, 'line')}" if r.history else ""))
+    body = "Becoming: " + gd.clean(mind.evolving_bio or "(nothing yet)", "desc") + "\n"
+    body += "Wants: " + ("; ".join(gd.clean(w, "label") for w in mind.wants) if mind.wants else "none in particular") + "\n"
     if mind.notes:
-        s += "Director's notes: " + mind.notes + "\n"
-    s += "Relations:\n" + ("\n".join(lines) if lines else "- none yet") + "\n"
-    return s
+        body += "Director's notes (written by the player): " + gd.clean(mind.notes, "note") + "\n"
+    body += "Relations:\n" + ("\n".join(lines) if lines else "- none yet") + "\n"
+    return "=== WHO YOU ARE BECOMING ===\n" + gd.data_section("character", body)
 
 
 def block_d(memories: list[Memory], ledger_lines: list[str]) -> str:
     def mline(m: Memory) -> str:
-        tag = {"saw": "", "heard": " (heard)", "told": f" (told by {m.told_by}, not sure)"}[m.source]
+        tag = {"saw": "", "heard": " (heard)", "told": f" (told by {gd.name(m.told_by)}, not sure)"}[m.source]
         if m.visibility == "private":
             tag += " [private]"
         elif m.visibility == "told" and m.told_to:
-            tag += f" [private, told to {', '.join(m.told_to)}]"
-        return f"- {m.text}{tag}"
+            tag += f" [private, told to {', '.join(gd.name(x) for x in m.told_to)}]"
+        return f"- {gd.clean(m.text, 'event')}{tag}"
     ms = "\n".join(mline(m) for m in memories) or "- nothing in particular"
-    led = "\n".join(f"- {l}" for l in ledger_lines) or "- nothing ongoing that you know of"
-    return f"=== WHAT YOU REMEMBER ===\n{ms}\n=== WHAT IS GOING ON THAT YOU KNOW OF ===\n{led}\n"
+    led = "\n".join(f"- {gd.clean(l, 'event')}" for l in ledger_lines) or "- nothing ongoing that you know of"
+    return (f"=== WHAT YOU REMEMBER ===\n{gd.data_section('memories', ms)}"
+            f"=== WHAT IS GOING ON THAT YOU KNOW OF ===\n{gd.data_section('ongoing', led)}")
 
 
 def block_e(sc: Scene) -> str:
-    th = "\n".join(f"- {t}" for t in sc.thoughts) or "- nothing much"
-    return (f"=== THE SCENE ===\nWhere: {sc.where}\nWhen: {sc.when}\n"
-            f"Present: {', '.join(sc.present) or 'nobody else'}\n"
-            f"Your state: {sc.state}\nCurrent job: {sc.job}\nYour current thoughts:\n{th}\n"
-            f"What just happened: {sc.trigger}\n")
+    c = gd.clean
+    th = "\n".join(f"- {c(t, 'label')}" for t in sc.thoughts) or "- nothing much"
+    body = (f"Where: {c(sc.where, 'label')}\nWhen: {c(sc.when, 'label')}\n"
+            f"Present: {', '.join(c(p, 'label') for p in sc.present) or 'nobody else'}\n"
+            + ("You are a minor (under 18).\n" if sc.minor_self else "") +
+            f"Your state: {c(sc.state, 'line')}\nCurrent job: {c(sc.job, 'label')}\nYour current thoughts:\n{th}\n"
+            f"What just happened: {c(sc.trigger, 'event')}\n")
+    return "=== THE SCENE ===\n" + gd.data_section("scene", body)
 
 
 def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines: list[str], sc: Scene) -> str:
     """A-E as one string. Freeze it at lease start; never rebuild mid-lease."""
+    if gd.DATA_RULE not in block_a:
+        block_a = block_a.rstrip("\n") + "\n\n" + gd.DATA_RULE
+    if agegate.MINOR_RULE not in block_a:
+        block_a = block_a.rstrip("\n") + "\n\n" + agegate.MINOR_RULE
     return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines), block_e(sc)])
 
 
 def block_f(turns: list[tuple[str, str]]) -> str:
     if not turns:
         return "=== TURNS SO FAR ===\n(none yet)\n"
-    return "=== TURNS SO FAR ===\n" + "\n".join(f"{n}: {t}" for n, t in turns) + "\n"
+    return "=== TURNS SO FAR ===\n" + "\n".join(f"{gd.name(n)}: {t}" for n, t in turns) + "\n"
 
 
 def block_g(mind: Mind, name: str, turn_no: int = 0, request: str | None = None) -> str:

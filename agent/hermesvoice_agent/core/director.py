@@ -14,7 +14,7 @@ import random
 import time
 from typing import Callable
 
-from . import memory
+from . import agegate, memory
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -23,6 +23,9 @@ from .config import Config
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
 from .ledger import Ledger
+from .agegate import GateStats
+from .wants import WantsStats
+from .loopguard import LoopStats, find_repeat, retry_request
 from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, VoiceBudget, WorkItem
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
@@ -84,6 +87,14 @@ class Director:
         self.dropped: list[tuple[int, str]] = []
         self.line_count: dict[int, int] = {}     # per-actor lines spoken (drives the habit rule)
         self._conv_n = 0
+        self.loop = LoopStats()                  # repeat guard counters and trace (core/loopguard.py)
+        self.ages: dict[int, float | None] = {}      # biological age per actor; missing or None counts as a minor
+        self.tool_backend = None                 # a toolloop Backend; wants with follow-through is off while None
+        self.tool_mode = "auto"                  # toolloop protocol: auto | grammar | json | native
+        self.wants = WantsStats()                # core/wants.py
+        self.wants_last: dict[int, int] = {}     # game time of each actor's last wants decision
+        self.gate = GateStats()                  # age gate counters and trace (core/agegate.py)
+        self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
         self.idle = IdleRunner(self)
@@ -117,6 +128,39 @@ class Director:
         now = self.now()
         dl = item.deadline(now.rate)
         return None if dl is None else dl + int(0.5 * now.rate)
+
+    # ---- age gate (core/agegate.py) ---------------------------------------
+    def is_minor(self, aid: int | None) -> bool:
+        """Under 18; an actor whose age was never read counts as a minor."""
+        return aid is not None and agegate.is_minor(self.ages.get(aid))
+
+    def minor_ids(self) -> set[int]:
+        return {i for i in self.names if self.is_minor(i)}
+
+    def minor_tokens(self) -> set[str]:
+        return set().union(*(self.name_tokens.get(i, set()) for i in self.minor_ids())) if self.names else set()
+
+    def _romantic(self) -> frozenset[str]:
+        return getattr(self.adapter, "romantic_intents", frozenset())
+
+    def _learn_age(self, aid: int, snap: dict) -> None:
+        fn = getattr(self.adapter, "snapshot_age", None)
+        self.ages[aid] = fn(snap) if fn else None
+
+    async def _learn_ages(self, ids) -> None:
+        for i in ids:
+            if i in self.names and i not in self.ages:
+                try:
+                    self._learn_age(i, await self.bridge.actor(i))
+                except BridgeError:
+                    self.ages[i] = None
+
+    def labels_for(self, minor: bool) -> list[str]:
+        return agegate.labels_for(self.adapter.intent_labels, self._romantic(), minor)
+
+    def tools_allowed(self, names, minor: bool) -> set[str]:
+        """The tool-loop allowed set for a scene: romance-type tools are removed when a minor is involved."""
+        return agegate.allowed_tools(names, self._romantic(), minor)
 
     # ---- loading --------------------------------------------------------
     async def start(self) -> None:
@@ -158,6 +202,7 @@ class Director:
             log.warning("cannot load actor %s: %s", aid, e)
             return None
         self._remember_name(aid, self.adapter.snapshot_name(snap))
+        self._learn_age(aid, snap)
         mind = Mind.from_blob(blob, aid, self.names.get(aid, ""))
         self.revs[aid] = rev
         self.minds[aid] = mind
@@ -259,6 +304,10 @@ class Director:
         roles = [(int(a["id"]), a.get("role", "")) for a in e.get("actors", [])]
         ids = [i for i, _ in roles]
         witnesses = [int(w) for w in e.get("witnesses", ids)]
+        if vanilla and vanilla.get("romantic") and (self.is_minor(vanilla["initiator"]) or self.is_minor(vanilla["recipient"])):
+            self.gate.skipped_events += 1             # no words, no memory of words, for a romantic move with a minor
+            self.gate.note("vanilla_romance", ref=vanilla["ref"], initiator=vanilla["initiator"], recipient=vanilla["recipient"])
+            return
         if vanilla and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
             # The game's own interaction: one line for it, in its priority tier (chitchat only when idle).
             vcls = Cls.SOCIAL if vanilla["tier"] == "high" else Cls.AMBIENT
@@ -366,7 +415,11 @@ class Director:
             mind.relations.setdefault(str(other), Relation(name=self.names.get(other, str(other)))).opinion = opinion
         ev_ids = {int(a["id"]) for a in (event or {}).get("actors", [])}
         known = (present_ids | rel_ids | ev_ids | {aid}) & set(self.names)
-        sc = self.adapter.build_scene(snap, scene, trigger, self.names, known)
+        self._learn_age(aid, snap)
+        await self._learn_ages(self.names)
+        minors = self.minor_ids()
+        hearers = {i for i, can_hear in self.adapter.scene_present(scene) if can_hear and i != aid}
+        sc = self.adapter.build_scene(snap, scene, trigger, self.names, known, minors)
         mems = memory.select_memories(mind, self.now().game, present_ids | ev_ids,
                                       trigger + " " + " ".join(sc.present), self.day)
         for m in mems:
@@ -378,7 +431,8 @@ class Director:
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
                           prompt_cap_words(prefix), set(self.adapter.common_words),
-                          third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())))
+                          third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())),
+                          minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens())
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
 
@@ -414,6 +468,15 @@ class Director:
             listener = self._listener(scene, aid, item.listener)
             lname = self.names.get(listener) if listener is not None else None
             ctx.secrets = memory.secret_texts(mind, lname)
+            ctx.minor_involved = ctx.minor_involved or self.is_minor(listener)
+            minor = ctx.minor_involved
+            if item.kind == "player_talk" and agegate.violation(item.payload["text"], involves_minor=minor,
+                                                                minor_names=ctx.minor_names):
+                # a romantic or sexual message to or about a minor never reaches the model
+                self.gate.skipped_player_text += 1
+                self.gate.note("player_text", actor=aid)
+                self.dropped.append((aid, "minor_safety"))
+                return
             lease.generating = True
             if vanilla:
                 # Words for the game's own interaction: no intent pass, the game applies its own effects.
@@ -425,7 +488,7 @@ class Director:
             else:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                   turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
-                                  labels=self.adapter.intent_labels, max_tokens=self.cfg.llm.line_max_tokens)
+                                  labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens)
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -440,12 +503,13 @@ class Director:
             ok = await self._say(aid, res, listener=listener, expires=self.wire_expiry(item),
                                  talk_id=item.payload.get("talk_id"),
                                  combat=bool(item.event and self.adapter.is_urgent_visual(item.event)) and not vanilla,
-                                 event=item.event, vanilla_ref=vanilla["ref"] if vanilla else None)
+                                 event=item.event, vanilla_ref=vanilla["ref"] if vanilla else None, minor=minor)
             if ok:
                 self.leases.quotas.record(aid, listener, now, pair=not vanilla)
                 self.leases.mark_spoke(aid, sig)
                 mind.last_line_time = now.game
                 self.line_count[aid] = self.line_count.get(aid, 0) + 1
+                self._remember_own(aid, res.text)
                 self.dirty.add(aid)
         except asyncio.CancelledError:
             raise
@@ -486,7 +550,11 @@ class Director:
 
     async def _say(self, aid: int, sp: Spoken, *, listener: int | None, expires: int | None,
                    conv: str | None = None, talk_id: str | None = None, combat: bool = False,
-                   event: dict | None = None, vanilla_ref: str | None = None) -> bool:
+                   event: dict | None = None, vanilla_ref: str | None = None, minor: bool = False) -> bool:
+        if agegate.refuse_intent(sp.intent, self._romantic(), minor or self.is_minor(aid) or self.is_minor(listener)):
+            self.gate.refused_intents += 1                       # last guard before the write
+            self.gate.note("intent", actor=aid, intent=sp.intent)
+            sp = Spoken(sp.text, self.adapter.intent_labels[0])
         about = None
         if sp.intent in self.adapter.about_intents():
             about = self._pick_about(aid, listener, event)
@@ -531,6 +599,9 @@ class Director:
             for aid, trig in ((a, f"{summary} You start talking to {self.names[b]}."),
                               (b, f"{summary} {self.names[a]} is talking to you.")):
                 ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid]))[0]
+            pair_minor = self.is_minor(a) or self.is_minor(b)
+            for c in ctxs.values():
+                c.minor_involved = c.minor_involved or pair_minor
             start_jobs = {aid: self.adapter.snapshot_job(leases[aid].data["snap"]) for aid in (a, b)}
             last_turn_real = self.now().real
             while not conv.ended:
@@ -545,15 +616,18 @@ class Director:
                 lis = conv.listener_of(sp_id)
                 li.generating = True
                 ctxs[sp_id].secrets = memory.secret_texts(self.minds[sp_id], self.names.get(lis))
+                check, on_check = self._repeat_check(conv, sp_id)
                 res = await speak(self.llm, slot=li.slot, mind=self.minds[sp_id], name=self.names[sp_id],
                                   prefix=li.data["prefix"], turns=conv.turns_for_prompt(),
                                   turn_no=len(conv.turns) // 2, ctx=ctxs[sp_id],
-                                  listener_name=self.names[lis], labels=self.adapter.intent_labels,
-                                  max_tokens=self.cfg.llm.line_max_tokens)
+                                  listener_name=self.names[lis], labels=self.labels_for(ctxs[sp_id].minor_involved),
+                                  max_tokens=self.cfg.llm.line_max_tokens,
+                                  check=check, retries=self.cfg.repeat_retries, on_check=on_check)
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))
-                    conv.ended = "dropped"
+                    # a repeat that survived its retry ends the talk with no line: never a repeat on screen
+                    conv.ended = "repeat" if res.reason == "repeat" else "dropped"
                     break
                 if lease_a.preempted or lease_b.preempted:
                     conv.ended = "preempted"
@@ -562,11 +636,12 @@ class Director:
                     conv.ended = "expired"
                     break
                 ok = await self._say(sp_id, res, listener=lis, expires=self.wire_expiry(item) if not conv.turns else None,
-                                     conv=conv.id, event=item.event)
+                                     conv=conv.id, event=item.event, minor=ctxs[sp_id].minor_involved)
                 if not ok:
                     conv.ended = "apart"       # the game's liveness check refused: gone or out of range
                     break
                 conv.add(sp_id, res.text, res.intent)
+                self._remember_own(sp_id, res.text)
                 last_turn_real = self.now().real
                 self.leases.quotas.record(sp_id, lis, self.now(), pair=len(conv.turns) == 1)
                 self.line_count[sp_id] = self.line_count.get(sp_id, 0) + 1
@@ -615,6 +690,46 @@ class Director:
                 wait -= step
             for l in leases:
                 self.leases.touch(l, self.now())
+
+    def _repeat_check(self, conv: Conversation, speaker: int):
+        """(check, on_check) for speak(): refuse a turn that repeats an earlier turn of this conversation or the
+        speaker's own recent lines; count and trace every check (self.loop)."""
+        if not self.cfg.repeat_guard:
+            return None, None
+        turns = [(t.speaker, t.text) for t in conv.turns]
+        own = list(self.recent_own.get(speaker, []))
+        hits: dict[str, object] = {}
+
+        def check(text: str):
+            hit = find_repeat(text, speaker, turns, own)
+            if hit is None:
+                return None
+            hits[text] = hit
+            return "repeat", retry_request(self.names[speaker], hit)
+
+        def on_check(ev: dict) -> None:
+            st = self.loop
+            if ev["attempt"] == 0:
+                st.checked += 1
+            hit = hits.get(ev["text"])
+            if ev["refused"]:
+                if ev["attempt"] == 0:
+                    st.caught += 1
+                    st.retried += 1 if self.cfg.repeat_retries > 0 else 0
+                if ev["attempt"] >= self.cfg.repeat_retries:
+                    st.ended += 1
+            elif ev["attempt"] > 0:
+                st.recovered += 1
+            st.trace.append({"conv": conv.id, "speaker": speaker, "turn": len(conv.turns), "attempt": ev["attempt"],
+                             "text": ev["text"], "refused": ev["refused"],
+                             "against": getattr(hit, "other", None), "score": round(getattr(hit, "score", 0.0), 3),
+                             "kind": getattr(hit, "kind", None)})
+        return check, on_check
+
+    def _remember_own(self, aid: int, text: str) -> None:
+        lst = self.recent_own.setdefault(aid, [])
+        lst.append(text)
+        del lst[:-max(1, self.cfg.repeat_own_recent)]
 
     async def finish_conversation(self, conv: Conversation, leases: dict[int, Lease]) -> None:
         """One memory and one relation update per actor, written by that actor's window (template fallback).

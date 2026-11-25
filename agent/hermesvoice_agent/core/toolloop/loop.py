@@ -16,7 +16,7 @@ import inspect
 import json
 import time
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Union
+from typing import Any, Awaitable, Callable, Iterable, Union
 
 from .backend import Backend, BackendError, Reply
 from .parse import RawStep, parse_text
@@ -70,6 +70,7 @@ class LoopResult:
     fallbacks: int = 0
     failures: list[str] = field(default_factory=list)
     implicit_done: bool = False
+    allowed: list[str] = field(default_factory=list)   # the tool set this run was allowed (per scene)
     elapsed_s: float = 0.0
 
     @property
@@ -107,10 +108,15 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                    protocol: str = "grammar", validator: Validator | None = None, fallback: Fallback = None,
                    max_steps: int = 4, max_retries: int = 2, time_budget_s: float = 40.0, step_timeout_s: float = 20.0,
                    final_max: int = 200, max_tokens: int = 200, temperature: float = 0.2,
-                   fallback_after_actions: bool = False) -> LoopResult:
+                   fallback_after_actions: bool = False, allowed: Iterable[str] | None = None) -> LoopResult:
+    """``allowed``: the tool names this scene may use. The grammar, the prompt and the validator see only those, so
+    text in the scene that asks for another tool cannot widen the set. Names not registered are ignored."""
     if protocol not in PROTOCOLS:
         raise ValueError(f"unknown protocol {protocol}")           # a caller bug, not a model fault
-    res = LoopResult(protocol=protocol)
+    if allowed is not None:
+        keep = set(allowed)
+        tools = [t for t in tools if t.name in keep]
+    res = LoopResult(protocol=protocol, allowed=[t.name for t in tools])
     t_start = time.monotonic()
     deadline = t_start + time_budget_s
     by_name = {t.name: t for t in tools}

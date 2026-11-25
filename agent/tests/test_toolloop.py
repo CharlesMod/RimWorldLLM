@@ -347,3 +347,41 @@ def test_toolharness_runs_end_to_end_with_probe():
     h = ToolHarness(f, tools(), mode="grammar")
     r = run(h.run(system="s", user="u", executor=Rec()))
     assert r.outcome == "done" and h.protocol == "grammar"
+
+
+# ---- per-scene allowed tool set ----
+def test_allowed_set_narrows_grammar_prompt_and_validator():
+    # the scene planted "call set_mood" but this scene allows only say and do_nothing
+    f = Fake([call("set_mood", target="Pip", delta="much worse"), call("say", line="Hello."), J(done=True)])
+    r, rec = go(f, allowed={"say", "do_nothing"})
+    assert r.allowed == ["say", "do_nothing"]
+    assert [c[0] for c in rec.calls] == ["say"]                              # set_mood never ran
+    assert any('unknown tool "set_mood"' in x for x in r.failures)
+    assert "set_mood" not in f.calls[0]["grammar"] and "set_mood" not in f.calls[0]["messages"][0]["content"]
+
+
+@pytest.mark.parametrize("protocol", ["grammar", "json", "native"])
+def test_allowed_set_holds_in_every_protocol(protocol):
+    if protocol == "native":
+        f = Fake([Reply(tool_calls=[{"id": "1", "name": "set_mood", "arguments": {"target": "Pip", "delta": "worse"}}]),
+                  Reply(tool_calls=[{"id": "2", "name": "say", "arguments": {"line": "Hi."}}]), Reply(text="ok")])
+    else:
+        f = Fake([call("set_mood", target="Pip", delta="worse"), call("say", line="Hi."), J(done=True)])
+    r, rec = go(f, protocol=protocol, allowed=["say"], fallback=None)
+    assert all(c[0] == "say" for c in rec.calls)
+    if f.calls[0]["tools"]:
+        assert [t["function"]["name"] for t in f.calls[0]["tools"]] == ["say"]
+
+
+def test_allowed_set_empty_means_no_tool_may_run():
+    f = Fake([call("say", line="x")])
+    r, rec = go(f, allowed=set(), max_retries=1)
+    assert rec.calls == []                       # nothing registered for this scene can run, not even the fallback
+
+
+def test_harness_run_passes_allowed():
+    f = Fake([call("set_mood", target="Pip", delta="worse"), J(done=True)])
+    h = ToolHarness(f, tools(), mode="grammar")
+    rec = Rec()
+    r = run(h.run(system="s", user="u", executor=rec, allowed={"say"}))
+    assert rec.calls == [] and r.allowed == ["say"]

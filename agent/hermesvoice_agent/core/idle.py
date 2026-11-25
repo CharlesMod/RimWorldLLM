@@ -5,18 +5,21 @@ Rules (SPEC §5, §7):
   slots share one machine's tokens per second, so idle work never runs beside a live conversation.
 - Lowest priority. The moment actor work is queued or leased, the running idle job is cancelled (its LLM call
   is dropped, nothing is applied) and its window is released.
-- Order: reflection, then the chronicle, then diaries.
+- Order: reflection, then the chronicle, then diaries, then wants with follow-through (core/wants.py).
 """
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 from typing import TYPE_CHECKING
 
+from . import gamedata as gd
 from . import memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
+from .wants import run_wants
 from .reflection import apply_reflection, reflection_due, run_reflection
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -164,6 +167,39 @@ class IdleRunner:
         for aid, mems in self.due_thought():
             if self._start_actor("thought", aid, self._thought(aid, mems)):
                 return
+        for aid in self.due_wants():
+            if self._start_actor("wants", aid, self._wants(aid)):
+                return
+
+    def due_wants(self) -> list[int]:
+        """Wants with follow-through (core/wants.py), paced by the existing ambient pacing: off while no tool backend
+        is set, off while ambient talk is paused (speed), at least the ambient per-actor game gap between decisions,
+        and thinned by the player's talk-frequency setting."""
+        d = self.d
+        if d.tool_backend is None or d.leases.ambient_paused(d.bridge.env.speed):
+            return []
+        freq = float(d.bridge_cfg.get("talk_frequency", 1.0))
+        if freq <= 0 or d.bridge_cfg.get("effects") == "off":
+            return []
+        now, gap = d.bridge.env.game, d.cfg.quotas.min_gap_game_ambient
+        out = []
+        for aid in sorted(d.minds):
+            if now - d.wants_last.get(aid, -10**12) < gap or not self._ok("wants", aid):
+                continue
+            roll = int(hashlib.sha1(f"wants:{aid}:{now // max(gap, 1)}".encode()).hexdigest(), 16) % 1000 / 1000
+            if roll < min(1.0, d.weights.get(aid, 1.0) * freq * 0.5):
+                out.append(aid)
+        return out
+
+    async def _wants(self, aid: int) -> None:
+        d = self.d
+        d.wants_last[aid] = d.bridge.env.game
+        self.lease.generating = True
+        try:
+            await run_wants(d, aid, d.tool_backend, d.tool_mode)
+        except Exception:
+            log.exception("wants failed")
+            self._fail("wants", aid)
 
     def _start_actor(self, kind: str, aid: int, coro) -> bool:
         d = self.d
@@ -196,7 +232,8 @@ class IdleRunner:
         lease.generating = True
         res = await run_reflection(d.llm, d.adapter, mind, d.names, slot=lease.slot, now=now, day=d.day,
                                    max_tokens=d.cfg.reflection_max_tokens, name_tokens=d.name_tokens,
-                                   common_words=set(d.adapter.common_words))
+                                   common_words=set(d.adapter.common_words),
+                                   involves_minor=d.is_minor(aid), minor_names=d.minor_tokens())
         lease.generating = False
         if lease.preempted:
             return
@@ -217,13 +254,14 @@ class IdleRunner:
         lease = self.lease
         mems = [m for m in memory.weight_sorted(mind, now, d.day) if m.game // d.day == target][:MAX_DIARY_MEMORIES]
         mems.sort(key=lambda m: (m.game, m.id))
-        user = (f"=== WHO YOU ARE ===\n{mind.fixed.text}\n"
-                f"=== WHO YOU ARE BECOMING ===\n{mind.evolving_bio or '(nothing yet)'}\n"
-                f"=== WHAT HAPPENED TODAY ===\n" + "\n".join(f"- {m.text}" for m in mems) +
-                f"\n=== REQUEST ===\n{d.adapter.diary_request}")
+        today = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
+        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
+                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
+                f"=== WHAT HAPPENED TODAY ===\n{gd.data_section('events', today)}"
+                f"=== REQUEST ===\n{d.adapter.diary_request}")
         lease.generating = True
         try:
-            c = await d.llm.complete([("system", d.adapter.diary_system), ("user", user)], slot=lease.slot,
+            c = await d.llm.complete([("system", d.adapter.diary_system + "\n\n" + gd.DATA_RULE), ("user", user)], slot=lease.slot,
                                      kind="diary", max_tokens=d.cfg.diary_max_tokens, stop=[], temperature=0.8,
                                      actor=aid)
         except LLMError:
@@ -238,7 +276,7 @@ class IdleRunner:
         known = set(toks.get(aid, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
         s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(user),
                            common_words=set(d.adapter.common_words), speaker_names=toks.get(aid, set()),
-                           min_words=5, max_words=90)
+                           min_words=5, max_words=90, involves_minor=d.is_minor(aid), minor_names=d.minor_tokens())
         if not s.ok:
             self._fail("diary", aid)
             d.dropped.append((aid, f"diary:{s.reason}"))
@@ -302,7 +340,7 @@ class IdleRunner:
             e = await d.chronicle.write(d.llm, d.adapter, slot=d.cfg.narrator_slot, today=today, ledger_lines=led,
                                         name_tokens=d.name_tokens, budget=d.cfg.narrator_context_tokens,
                                         max_tokens=d.cfg.chronicle_max_tokens,
-                                        common_words=set(d.adapter.common_words))
+                                        common_words=set(d.adapter.common_words), minor_names=d.minor_tokens())
             if e is None:
                 self._fail("chronicle", -1)
                 return

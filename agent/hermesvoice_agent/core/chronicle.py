@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from . import gamedata as gd
 from .llm import LLMClient, LLMError, Messages
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -123,15 +124,15 @@ class Chronicle:
         ledger = list(ledger_lines)[:12]
 
         def build() -> Messages:
-            ev = "\n".join(f"- {n.text}" for n in notes) or "- (nothing noted)"
-            led = "\n".join(f"- {l}" for l in ledger) or "- nothing ongoing"
+            ev = "\n".join(f"- {gd.clean(n.text, 'event')}" for n in notes) or "- (nothing noted)"
+            led = "\n".join(f"- {gd.clean(l, 'event')}" for l in ledger) or "- nothing ongoing"
             rec = "\n\n".join(f"Day {e.day + 1}: {e.text}" for e in recent) or "(none yet)"
             user = (f"=== THE STORY SO FAR ===\n{summary or '(the chronicle begins)'}\n"
                     f"=== RECENT ENTRIES ===\n{rec}\n"
-                    f"=== ONGOING MATTERS ===\n{led}\n"
-                    f"=== WHAT HAPPENED (day {day + 1}) ===\n{ev}\n"
+                    f"=== ONGOING MATTERS ===\n{gd.data_section('ongoing', led)}"
+                    f"=== WHAT HAPPENED (day {day + 1}) ===\n{gd.data_section('events', ev)}"
                     f"=== REQUEST ===\n{adapter.chronicle_request}")
-            return [("system", adapter.chronicle_system), ("user", user)]
+            return [("system", adapter.chronicle_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
         limit = budget - RESERVE_TOKENS
         while messages_tokens(build()) > limit:
@@ -151,7 +152,7 @@ class Chronicle:
 
     async def write(self, llm: LLMClient, adapter, *, slot: int, today: int, ledger_lines: list[str],
                     name_tokens: dict[int, set[str]], budget: int = 6000, max_tokens: int = 220,
-                    common_words: set[str] | None = None) -> Entry | None:
+                    common_words: set[str] | None = None, minor_names: set[str] | None = None) -> Entry | None:
         d = self.due(today)
         if d is None:
             return None
@@ -165,7 +166,7 @@ class Chronicle:
         allnames = set().union(*name_tokens.values()) if name_tokens else set()
         s = sanitize_prose(c.text, known_names=allnames, all_names=allnames,
                            prompt_words=prompt_cap_words(msgs[1][1]), common_words=common_words,
-                           min_words=8, max_words=150)
+                           min_words=8, max_words=150, minor_names=minor_names)
         if not s.ok:
             return None
         game = max(n.game for n in notes)

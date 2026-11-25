@@ -174,6 +174,16 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
   `voice.{register_line,tics,examples,edited_by_player}`, `evolving_bio`, `bio_history`, `wants`,
   `memories`, `relations`, `notes`); unknown keys are ignored.
 
+### `POST /social_action` (PROPOSED, not implemented in the mod)
+One small social move chosen by the agent's wants-with-follow-through window (agent/hermesvoice_agent/core/wants.py).
+Body: `{op_id, pawn, action: "seek_out"|"avoid", target: <pawn id>, topic?: <short text, <= 80 chars>}`.
+`seek_out`: the pawn walks to the target and the mod may start a vanilla chat (topic is flavour for the agent's own
+line, the mod need not use it). `avoid`: the pawn keeps clear of the target for a while (mod's choice of duration).
+Reply `{ok: true, applied: true}`; errors: `not_found` (unknown pawn/target), `refused` (pawn busy, downed, drafted or
+asleep; the agent does not retry). Until the mod implements it, the route answers 404 and the agent counts it as
+unsupported and does nothing else. The agent never sends it when a minor is involved with a romantic topic, and no
+romance-type action exists in this op.
+
 ### `GET /talk`
 Talk requests waiting for the agent: player-typed lines, other mods' requests through the
 hook API, and debug-window requests:
@@ -215,6 +225,10 @@ mood {value, thoughts[{label, offset, cause_pawn}]}, job, gear {worn[], held},
 relations[{pawn, kind, opinion}], status ("colonist"|"prisoner"|"slave"|"guest"|"lodger"),
 faction, map, pos, room, alive, spawned`.
 DLC fields appear only when that DLC is active.
+
+`age` is the pawn's **biological** age in years (`AgeBiologicalYears`), not chronological. The agent's age gate
+(`core/agegate.py`) reads it: under 18 is a minor, and a missing or non-numeric `age` counts as a minor, so
+`age` must always be sent. Scene `present[]` entries carry no age; the agent reads it from each pawn's snapshot.
 
 ### `GET /scene/{id}`
 What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
