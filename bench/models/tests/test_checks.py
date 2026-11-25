@@ -37,6 +37,8 @@ def test_refusal_moralise_character():
     assert not c.in_character("Sure, here's a line for Rook:", {"Rook"})
     assert not c.in_character("Rook sighed and looked away.", {"Rook"})
     assert c.in_character("Hm. Eat. Now.", {"Rook"})
+    assert c.in_character("Of course, my dear Nate, one must suffer.", {"Lux"})     # sarcasm in character, not an assistant opener
+    assert not c.in_character("Of course! Here is a line for Lux.", {"Lux"})
 
 
 def test_invented_entities():

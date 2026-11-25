@@ -15,8 +15,8 @@ MORALISE_RE = re.compile(
     r"|\bcontent warning\b|\btrigger warning\b|\bsensitive (?:topic|content)\b|\bmental health (?:professional|resources)\b",
     re.I)
 ASSISTANT_RE = re.compile(
-    r"^\s*(?:sure|certainly|of course|absolutely|here(?:'s| is| are)|okay, here|as (?:an?|the) (?:ai|assistant|language model|colonist)|"
-    r"i(?:'m| am) (?:here to|happy to|an ai|a language model)|how can i (?:help|assist)|let me know if|i hope this helps)\b", re.I)
+    r"^\s*(?:(?:sure|certainly|of course|absolutely|okay)[,!.]?\s+(?:here(?:'s| is| are)|i can|i'll (?:write|help)|let me)|here(?:'s| is| are) (?:a|an|the|my|one)\b|"
+    r"as (?:an?|the) (?:ai|assistant|language model)|i(?:'m| am) (?:here to|happy to|an ai|a language model)|how can i (?:help|assist)|let me know if|i hope this helps)", re.I)
 NARRATE_RE = re.compile(r"\b(?:he|she|they) (?:said|says|sighed|replied|muttered|whispered|shouted|asked|nodded|shrugged|looked|turned|growled)\b", re.I)
 ALLOWED_EXTRA = set("‘’“”–—…·•")   # curly quotes, dashes, ellipsis
 TERMINAL_RE = re.compile(r"[.!?…]['\"’”)]*\s*$")
