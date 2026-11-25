@@ -195,7 +195,7 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
             if first.kind == "done":
                 res.outcome = "done"
                 break
-            await _run_calls(actions, by_name, executor, res, seen, hist, protocol)
+            await _run_calls(actions, by_name, executor, res, seen, hist, protocol, user)
     except Exception as e:                                     # the loop itself must not raise either
         res.failures.append(f"loop fault {type(e).__name__}: {e}"[:200])
         reason = reason or "loop_fault"
@@ -273,7 +273,7 @@ async def _interpret(reply: Reply, protocol: str, by_name: dict[str, ToolSpec], 
     return out, "", False
 
 
-async def _run_calls(actions, by_name, executor, res: LoopResult, seen: set[str], hist: list[dict], protocol: str):
+async def _run_calls(actions, by_name, executor, res: LoopResult, seen: set[str], hist: list[dict], protocol: str, user: str = ""):
     done_calls: list[tuple[Action, Executed]] = []
     for a, _, values in actions:
         ex = Executed(a.tool, dict(a.args), dict(values))
