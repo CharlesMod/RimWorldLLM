@@ -1,0 +1,7 @@
+pyproject.toml
+hermesvoice_agent.egg-info/PKG-INFO
+hermesvoice_agent.egg-info/SOURCES.txt
+hermesvoice_agent.egg-info/dependency_links.txt
+hermesvoice_agent.egg-info/entry_points.txt
+hermesvoice_agent.egg-info/requires.txt
+hermesvoice_agent.egg-info/top_level.txt
