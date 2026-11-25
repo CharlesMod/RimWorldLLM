@@ -47,6 +47,7 @@ namespace HermesVoice.Bridge
         public int FirstPort = Const.DefaultPort;
         public int LastPort = Const.LastPort;
         public string Token = "";
+        public Func<JObject> LlmInfo;       // the "llm" block for bridge.json ({base_url, model, api_key}); null = none
         public string ConfigDir;            // bridge.json goes to <ConfigDir>/HermesVoice/bridge.json; null = not written
         public string Version = Const.Version;
         public TimeSpan GameThreadTimeout = TimeSpan.FromSeconds(20);
@@ -74,6 +75,7 @@ namespace HermesVoice.Bridge
         public bool IsRunning { get { var l = _listener; return l != null && l.IsListening; } }
         public GameState State { get { return _state; } }
         public int PendingCount { get { return _pending.Count; } }
+        public readonly RequestLog Requests = new RequestLog();
 
         public BridgeServer(BridgeOptions opt, ApiRouter router)
         {
@@ -133,13 +135,16 @@ namespace HermesVoice.Bridge
             return false;
         }
 
+        /// <summary>Rewrites bridge.json (after the LLM settings changed). Any thread.</summary>
+        public void RefreshInfo() { if (IsRunning) TryWriteInfo(); }
+
         void TryWriteInfo()
         {
             if (string.IsNullOrEmpty(_opt.ConfigDir)) return;
             try
             {
                 int pid = Process.GetCurrentProcess().Id;
-                BridgeInfo.Write(_opt.ConfigDir, BridgeInfo.Build(Port, string.IsNullOrWhiteSpace(_opt.BindAddress) ? "0.0.0.0" : _opt.BindAddress, _token, pid, _opt.Version, _state.SaveEpoch));
+                BridgeInfo.Write(_opt.ConfigDir, BridgeInfo.Build(Port, string.IsNullOrWhiteSpace(_opt.BindAddress) ? "0.0.0.0" : _opt.BindAddress, _token, pid, _opt.Version, _state.SaveEpoch, _opt.LlmInfo != null ? _opt.LlmInfo() : null));
             }
             catch (Exception e) { LogError("[HermesVoice] Could not write bridge.json: " + e.Message); }
         }
@@ -231,10 +236,15 @@ namespace HermesVoice.Bridge
         void HandleContext(HttpListenerContext ctx, SemaphoreSlim gate)
         {
             bool acquired = false;
+            bool authed = false;
             InboundRequest req = null;
+            var clock = Stopwatch.StartNew();
+            string logMethod = "", logPath = "";
             try
             {
                 var r = ctx.Request;
+                logMethod = r.HttpMethod;
+                logPath = r.Url != null ? r.Url.AbsolutePath : "/";
                 string path = r.Url != null ? r.Url.AbsolutePath : "/";
                 if (r.HttpMethod == "GET" && path.TrimEnd('/') == "/health")
                 {
@@ -246,7 +256,7 @@ namespace HermesVoice.Bridge
                     Write(ctx, 503, Envelope.Json(_state, ApiResult.Fail("busy", "too many requests in flight")));
                     return;
                 }
-                if (!AuthOk(r))
+                if (!(authed = AuthOk(r)))
                 {
                     Write(ctx, 401, Envelope.Json(_state, ApiResult.Fail("unauthorized", "missing or wrong bearer token")));
                     return;
@@ -288,6 +298,9 @@ namespace HermesVoice.Bridge
             {
                 if (acquired) gate.Release();
                 if (req != null) req.Dispose();
+                int status = 0;
+                try { status = ctx.Response.StatusCode; } catch { }
+                Requests.Add(logMethod, logPath, status, clock.Elapsed.TotalMilliseconds, authed);
             }
         }
 

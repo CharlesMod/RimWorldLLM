@@ -59,6 +59,17 @@ namespace HermesVoice.Bridge
             }
         }
 
+        /// <summary>The newest max events, newest first (copies).</summary>
+        public List<JObject> Tail(int max)
+        {
+            lock (_lock)
+            {
+                var l = new List<JObject>();
+                for (var n = _items.Last; n != null && l.Count < max; n = n.Previous) l.Add((JObject)n.Value.DeepClone());
+                return l;
+            }
+        }
+
         public void Clear() { lock (_lock) { _items.Clear(); } } // seq keeps counting so an agent cursor never repeats
     }
 }

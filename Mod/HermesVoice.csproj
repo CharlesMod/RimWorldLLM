@@ -36,12 +36,14 @@
         <ItemGroup>
             <DeployAbout Include="$(ProjectDir)About/**/*" />
             <DeployDefs Include="$(ProjectDir)Defs/**/*" />
+            <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
             <DeployTextures Include="$(ProjectDir)Textures/**/*" />
             <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
         </ItemGroup>
         <RemoveDir Directories="$(DeployPath)" />
         <Copy SourceFiles="@(DeployAbout)" DestinationFiles="@(DeployAbout->'$(DeployPath)About/%(RecursiveDir)%(Filename)%(Extension)')" />
         <Copy SourceFiles="@(DeployDefs)" DestinationFiles="@(DeployDefs->'$(DeployPath)Defs/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployDefs)' != '' " />
+        <Copy SourceFiles="@(DeployLanguages)" DestinationFiles="@(DeployLanguages->'$(DeployPath)Languages/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployLanguages)' != '' " />
         <Copy SourceFiles="@(DeployTextures)" DestinationFiles="@(DeployTextures->'$(DeployPath)Textures/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployTextures)' != '' " />
         <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
         <Message Text="--- HermesVoice deployed to $(DeployPath) ---" Importance="high" />

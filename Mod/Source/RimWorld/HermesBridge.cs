@@ -64,11 +64,39 @@ namespace HermesVoice
                 LastPort = Math.Min(65535, first + (Const.LastPort - Const.DefaultPort)),
                 Token = EffectiveToken(s),
                 ConfigDir = GenFilePaths.ConfigFolderPath,
+                LlmInfo = LlmInfoForFile,
                 Version = HermesVoiceMod.Version
             });
         }
 
         public static void Stop() { Runtime.Stop(); }
+
+        /// <summary>The "llm" block of bridge.json: the only place the API key is written (the file is owner-only).</summary>
+        static Newtonsoft.Json.Linq.JObject LlmInfoForFile()
+        {
+            var s = HermesVoiceMod.Settings;
+            if (s == null) return null;
+            return new Newtonsoft.Json.Linq.JObject
+            {
+                ["base_url"] = (s.llmBaseUrl ?? "").Trim(),
+                ["model"] = (s.llmModel ?? "").Trim(),
+                ["api_key"] = (s.llmApiKey ?? "").Trim()
+            };
+        }
+
+        /// <summary>Rewrites bridge.json after the LLM settings changed.</summary>
+        public static void RefreshLlm() { Runtime.RefreshInfo(); }
+
+        /// <summary>New token: replaces a fixed one in settings, or makes a fresh per-run one. Restarts the bridge; the agent re-reads bridge.json.</summary>
+        public static void RegenerateToken()
+        {
+            var s = HermesVoiceMod.Settings;
+            _sessionToken = Secure.NewToken();
+            if (s != null && !string.IsNullOrWhiteSpace(s.sharedToken)) s.sharedToken = _sessionToken;
+            Start();
+        }
+
+        public static string CurrentToken { get { return Runtime.Server != null ? Runtime.Server.Token : ""; } }
 
         public static GameState BuildState()
         {

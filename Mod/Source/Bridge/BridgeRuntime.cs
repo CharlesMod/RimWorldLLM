@@ -30,6 +30,10 @@ namespace HermesVoice.Bridge
             Router = new ApiRouter(OpIds) { LogWarning = game.Warn };
         }
 
+        public RequestLog Requests { get { return Server != null ? Server.Requests : _noRequests; } }
+        readonly RequestLog _noRequests = new RequestLog();
+        public void RefreshInfo() { var s = Server; if (s != null) s.RefreshInfo(); }
+
         public bool IsRunning { get { return Server != null && Server.IsRunning; } }
         public int Port { get { return Server != null ? Server.Port : Const.DefaultPort; } }
         public string LastError { get { return Server != null ? Server.LastError : ""; } }

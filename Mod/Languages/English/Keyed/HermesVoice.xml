@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <!-- Conversation log -->
+  <HV_LogTitle>Conversation log</HV_LogTitle>
+  <HV_LogFilterAll>All pawns</HV_LogFilterAll>
+  <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>
+  <HV_LogEmpty>No spoken lines yet.</HV_LogEmpty>
+  <HV_LogCount>{0} of {1} lines (the log keeps the last {2}).</HV_LogCount>
+  <HV_LogTriggerPlayer>player request</HV_LogTriggerPlayer>
+  <HV_LogTriggerAgent>agent's initiative</HV_LogTriggerAgent>
+  <HV_LogIntent>intent: {0}</HV_LogIntent>
+  <HV_LogEffectApplied>effect applied: {0}</HV_LogEffectApplied>
+  <HV_LogEffectRefused>effect refused: {0}</HV_LogEffectRefused>
+  <HV_LogNoEffect>no effect sought</HV_LogNoEffect>
+  <HV_LogJumpTip>Jump to {0}</HV_LogJumpTip>
+  <HV_LogPawnGone>{0} is no longer in the game.</HV_LogPawnGone>
+  <HV_Refused_effects_off>effects are off</HV_Refused_effects_off>
+  <HV_Refused_no_intent>no intent</HV_Refused_no_intent>
+  <HV_Refused_no_effect>intent has no effect</HV_Refused_no_effect>
+  <HV_Refused_no_listener>no listener</HV_Refused_no_listener>
+  <HV_Refused_not_negative>listener had nothing to be comforted about</HV_Refused_not_negative>
+  <HV_Refused_no_about>no valid subject for gossip</HV_Refused_no_about>
+  <HV_Refused_pair_cap>daily limit for this pair</HV_Refused_pair_cap>
+  <HV_Refused_stack_full>the listener already has this thought</HV_Refused_stack_full>
+  <!-- Mind tab -->
+  <HV_MindTab>Mind</HV_MindTab>
+  <HV_MindNoMind>The agent has not built a mind for {0} yet. It appears once the agent has run for this pawn.</HV_MindNoMind>
+  <HV_MindLatestThought>Latest inner thought</HV_MindLatestThought>
+  <HV_MindNoThought>No inner thought yet.</HV_MindNoThought>
+  <HV_MindThoughtAt>at {0}</HV_MindThoughtAt>
+  <HV_MindFixedBio>Fixed bio (from game data)</HV_MindFixedBio>
+  <HV_MindVoice>Voice</HV_MindVoice>
+  <HV_MindVoiceRegister>Register: {0}</HV_MindVoiceRegister>
+  <HV_MindVoiceTics>Tics: {0}</HV_MindVoiceTics>
+  <HV_MindVoiceExample>Example: {0}</HV_MindVoiceExample>
+  <HV_MindVoicePlayerEdited>(edited by the player)</HV_MindVoicePlayerEdited>
+  <HV_MindEvolvingBio>Evolving bio</HV_MindEvolvingBio>
+  <HV_MindNoEvolvingBio>The bio has not changed yet.</HV_MindNoEvolvingBio>
+  <HV_MindBioHistory>Bio revisions</HV_MindBioHistory>
+  <HV_MindBioRevision>Revision {0}, {1}</HV_MindBioRevision>
+  <HV_MindWants>Wants</HV_MindWants>
+  <HV_MindNone>None.</HV_MindNone>
+  <HV_MindRelations>Relations</HV_MindRelations>
+  <HV_MindRelationLine>{0}: {1}</HV_MindRelationLine>
+  <HV_MindMemories>Memories</HV_MindMemories>
+  <HV_MindMemoryMeta>{0}  |  {1}{2}  |  {3}  |  confidence {4}</HV_MindMemoryMeta>
+  <HV_MindMemoryFrom> from {0}</HV_MindMemoryFrom>
+  <HV_MindPinned>pinned</HV_MindPinned>
+  <HV_MindNotes>Director's notes</HV_MindNotes>
+  <HV_MindNotesHint>Your notes to this pawn's mind. The agent keeps them and merges them with what it writes; it never overwrites them.</HV_MindNotesHint>
+  <HV_MindNotesSave>Save notes</HV_MindNotesSave>
+  <HV_MindNotesSaved>Notes saved.</HV_MindNotesSaved>
+  <HV_MindNotesConflict>Could not save the notes: {0}</HV_MindNotesConflict>
+  <HV_MindNotesRevert>Revert</HV_MindNotesRevert>
+  <!-- Settings -->
+  <HV_Section_Connection>Connection</HV_Section_Connection>
+  <HV_Section_Talk>Talk</HV_Section_Talk>
+  <HV_Section_Effects>Effects</HV_Section_Effects>
+  <HV_Section_Events>Events</HV_Section_Events>
+  <HV_Section_Bubbles>Bubbles</HV_Section_Bubbles>
+  <HV_Section_Advanced>Advanced</HV_Section_Advanced>
+  <HV_Conn_Title>Connection</HV_Conn_Title>
+  <HV_Conn_Enabled>HermesVoice enabled</HV_Conn_Enabled>
+  <HV_Conn_BridgeRunning>Bridge running on port {0}</HV_Conn_BridgeRunning>
+  <HV_Conn_BridgeStopped>Bridge not running</HV_Conn_BridgeStopped>
+  <HV_Conn_LastError>Last start error: {0}</HV_Conn_LastError>
+  <HV_Conn_AgentLabel>Agent: {0}</HV_Conn_AgentLabel>
+  <HV_Conn_AgentNever>no contact since the bridge started</HV_Conn_AgentNever>
+  <HV_Conn_AgentLast>last contact {0}</HV_Conn_AgentLast>
+  <HV_Ago_Seconds>{0} s ago</HV_Ago_Seconds>
+  <HV_Ago_Minutes>{0} min ago</HV_Ago_Minutes>
+  <HV_Ago_Hours>{0} h ago</HV_Ago_Hours>
+  <HV_Conn_Port>Bridge port</HV_Conn_Port>
+  <HV_Conn_Bind>Bind address (127.0.0.1 keeps the bridge on this machine)</HV_Conn_Bind>
+  <HV_Conn_Token>Bridge token (the agent reads it from bridge.json)</HV_Conn_Token>
+  <HV_Conn_Reveal>Reveal</HV_Conn_Reveal>
+  <HV_Conn_Hide>Hide</HV_Conn_Hide>
+  <HV_Conn_Edit>Edit</HV_Conn_Edit>
+  <HV_Conn_Regen>Regenerate</HV_Conn_Regen>
+  <HV_Conn_RegenConfirm>Click to confirm</HV_Conn_RegenConfirm>
+  <HV_Conn_RegenWarn>This restarts the bridge with a new token. A running agent re-reads bridge.json; an agent on another machine needs the new token.</HV_Conn_RegenWarn>
+  <HV_Conn_Restart>Restart bridge</HV_Conn_Restart>
+  <HV_Conn_EndpointTitle>Agent endpoint</HV_Conn_EndpointTitle>
+  <HV_Conn_EndpointHelp>The OpenAI-compatible LLM the agent talks to. The agent reads the URL and model from the bridge and the key from bridge.json.</HV_Conn_EndpointHelp>
+  <HV_Conn_LlmUrl>Base URL (for example http://localhost:4480/v1)</HV_Conn_LlmUrl>
+  <HV_Conn_LlmModel>Model</HV_Conn_LlmModel>
+  <HV_Conn_LlmKey>API key</HV_Conn_LlmKey>
+  <HV_Conn_KeyNone>(none)</HV_Conn_KeyNone>
+  <HV_Conn_KeyNote>The key is stored in the mod settings and in bridge.json, which only your user account can read. It is never sent through the bridge API.</HV_Conn_KeyNote>
+  <HV_Test_Button>Test</HV_Test_Button>
+  <HV_Test_Running>Testing...</HV_Test_Running>
+  <HV_Test_NotRun>Not tested yet.</HV_Test_NotRun>
+  <HV_Probe_Ms>({0} ms)</HV_Probe_Ms>
+  <HV_Probe_Ok>Works.</HV_Probe_Ok>
+  <HV_Probe_OkFixedBase>Works at {0}. The base URL was updated.</HV_Probe_OkFixedBase>
+  <HV_Probe_Loading>The server is up but still loading the model. Try again in a moment.</HV_Probe_Loading>
+  <HV_Probe_Slow>Works, but the reply took {0} ms. Lines may arrive too late.</HV_Probe_Slow>
+  <HV_Probe_ReasoningText>Works, but reasoning text comes back in the output. Turn thinking off on the server.</HV_Probe_ReasoningText>
+  <HV_Probe_NoUrl>Enter a base URL first.</HV_Probe_NoUrl>
+  <HV_Probe_BadUrl>That is not a usable http or https URL.</HV_Probe_BadUrl>
+  <HV_Probe_NothingListening>Nothing is listening there. Check the host, port and that the server is running.</HV_Probe_NothingListening>
+  <HV_Probe_KeyRejected>The server rejected the API key.</HV_Probe_KeyRejected>
+  <HV_Probe_WrongBase>Wrong base URL: no /models there. Did you mean {0}?</HV_Probe_WrongBase>
+  <HV_Probe_ModelNotFound>The server has no model called "{0}".</HV_Probe_ModelNotFound>
+  <HV_Probe_Tls>TLS error: the certificate is not trusted, or the server is not speaking https.</HV_Probe_Tls>
+  <HV_Probe_NotJson>The server answered, but not with an OpenAI-style JSON reply. Is this the right URL?</HV_Probe_NotJson>
+  <HV_Probe_HttpError>The server answered with HTTP {0}.</HV_Probe_HttpError>
+  <HV_Probe_Timeout>No reply in time. The server may be overloaded or still loading.</HV_Probe_Timeout>
+  <HV_Probe_Other>Request failed: {0}</HV_Probe_Other>
+  <HV_Talk_Title>Talk</HV_Talk_Title>
+  <HV_Talk_Frequency>Talk frequency: {0}</HV_Talk_Frequency>
+  <HV_Talk_PauseAt>Pause ambient chatter at game speed (0 = never)</HV_Talk_PauseAt>
+  <HV_Talk_PauseHelp>At or above this speed the agent stops starting ambient conversations.</HV_Talk_PauseHelp>
+  <HV_Effects_Title>Effects of spoken lines</HV_Effects_Title>
+  <HV_Effects_Help>What a line can do to moods and opinions. Sizes and daily limits are fixed by the mod.</HV_Effects_Help>
+  <HV_Effects_off>Off: words have no effect</HV_Effects_off>
+  <HV_Effects_light>Light: half strength</HV_Effects_light>
+  <HV_Effects_normal>Normal</HV_Effects_normal>
+  <HV_Events_Title>Colony events</HV_Events_Title>
+  <HV_Events_AgentUrl>Agent dial-out URL (the mod POSTs events here)</HV_Events_AgentUrl>
+  <HV_Events_Push>Push events to that URL (they are always kept for GET /events)</HV_Events_Push>
+  <HV_Ev_Injury>Injuries</HV_Ev_Injury>
+  <HV_Ev_Death>Deaths</HV_Ev_Death>
+  <HV_Ev_MentalBreak>Mental breaks</HV_Ev_MentalBreak>
+  <HV_Ev_LevelUp>Skill level-ups</HV_Ev_LevelUp>
+  <HV_Ev_Tend>Medical tending</HV_Ev_Tend>
+  <HV_Ev_Social>Social interactions</HV_Ev_Social>
+  <HV_Ev_Raid>Raids</HV_Ev_Raid>
+  <HV_Ev_Quest>Quests</HV_Ev_Quest>
+  <HV_Ev_Lodger>Lodgers</HV_Ev_Lodger>
+  <HV_Ev_Prisoner>Prisoners</HV_Ev_Prisoner>
+  <HV_Ev_Funeral>Funerals</HV_Ev_Funeral>
+  <HV_Ev_Weather>Extreme weather</HV_Ev_Weather>
+  <HV_Ev_Thought>Notable thoughts</HV_Ev_Thought>
+  <HV_Bubbles_Title>Speech bubbles</HV_Bubbles_Title>
+  <HV_Bubbles_Show>Show overhead speech bubbles</HV_Bubbles_Show>
+  <HV_Bubbles_Colors>Give each pawn their own bubble colour</HV_Bubbles_Colors>
+  <HV_Bubbles_Duration>Bubble duration (seconds)</HV_Bubbles_Duration>
+  <HV_Adv_Title>Advanced</HV_Adv_Title>
+  <HV_Adv_FixedToken>Fixed shared token (blank = a random token each run)</HV_Adv_FixedToken>
+  <HV_Adv_FixedTokenHelp>Needed when the agent runs on another machine. Anyone with the token can read colony state and make pawns speak.</HV_Adv_FixedTokenHelp>
+  <HV_Adv_OpenDebug>Open the debug window</HV_Adv_OpenDebug>
+  <HV_Adv_DebugNeedsDev>The debug window needs development mode.</HV_Adv_DebugNeedsDev>
+  <!-- Debug window -->
+  <HV_Debug_Title>HermesVoice debug</HV_Debug_Title>
+  <HV_Debug_State>Bridge: {0}. Requests waiting for the game thread: {1}.</HV_Debug_State>
+  <HV_Debug_Running>running on port {0}</HV_Debug_Running>
+  <HV_Debug_Stopped>not running</HV_Debug_Stopped>
+  <HV_Debug_Stores>Op-id store: {0} remembered. Event ring: {1} kept, last seq {2}. Talk queue: {3} waiting.</HV_Debug_Stores>
+  <HV_Debug_TestLine>Send test line</HV_Debug_TestLine>
+  <HV_Debug_TestHelp>Queues a talk request for the pawn; the agent picks it up from GET /talk and answers with POST /say.</HV_Debug_TestHelp>
+  <HV_Debug_PickPawn>Pick a colonist</HV_Debug_PickPawn>
+  <HV_Debug_Send>Queue</HV_Debug_Send>
+  <HV_Debug_Queued>Queued {0} for {1}.</HV_Debug_Queued>
+  <HV_Debug_TalkQueue>Talk queue</HV_Debug_TalkQueue>
+  <HV_Debug_TalkRow>{0}  pawn {1}  from {2}: {3}</HV_Debug_TalkRow>
+  <HV_Debug_Empty>Nothing yet.</HV_Debug_Empty>
+  <HV_Debug_Requests>Recent bridge requests</HV_Debug_Requests>
+  <HV_Debug_ReqRow>{0} {1}  {2}  {3} ms</HV_Debug_ReqRow>
+  <HV_Debug_Events>Event ring tail (newest first)</HV_Debug_Events>
+  <HV_Debug_EventRow>#{0}  tick {2}  {1}: {3}</HV_Debug_EventRow>
+</LanguageData>

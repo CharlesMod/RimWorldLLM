@@ -74,8 +74,20 @@ namespace HermesVoice
                 ["events"] = EventToggles(s),
                 ["talk_frequency"] = s.talkFrequency,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
-                ["dlc"] = new JArray(ActiveDlc())
+                ["dlc"] = new JArray(ActiveDlc()),
+                ["llm"] = LlmConfig(s)
             });
+        }
+
+        /// <summary>The agent's LLM endpoint for GET /config. Never contains the key, only whether one is set.</summary>
+        public static JObject LlmConfig(HermesVoiceSettings s)
+        {
+            return new JObject
+            {
+                ["base_url"] = (s.llmBaseUrl ?? "").Trim(),
+                ["model"] = (s.llmModel ?? "").Trim(),
+                ["api_key_set"] = !string.IsNullOrWhiteSpace(s.llmApiKey)
+            };
         }
 
         // ------------------------------------------------------------- colony

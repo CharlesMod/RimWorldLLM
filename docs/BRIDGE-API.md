@@ -22,6 +22,12 @@ It is implemented by `Mod/Source/RimWorld/`.
   `{"port": 9765, "bind": "127.0.0.1", "token": "<random per run>", "pid": 1234, "version": "2.0.0", "save_epoch": 3}`.
   The token is regenerated per run unless the player has set a fixed shared token in settings,
   which is needed when the agent runs on another machine.
+- `bridge.json` also carries the agent's LLM endpoint, set in the mod's settings (Connection):
+  `"llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key": "..."}`. This is the only
+  place the API key is written; **the key never travels through the bridge API** (`GET /config` says
+  only `api_key_set`). The mod writes the file owner-only (mode 600 on Linux and macOS) and rewrites
+  it when the player edits these fields. The agent re-reads `bridge.json` when `GET /config` changes
+  or a request fails with `unauthorized` (the player can regenerate the token).
 - **Auth:** every request carries `Authorization: Bearer <token>`. A token is mandatory: the
   bridge refuses to start without one. `?token=` is accepted only on GET.
 - The v1 `/state` endpoint is gone; `GET /colony` replaces it. Default bind is 127.0.0.1; a remote agent needs a different bind address and a fixed token.
@@ -106,6 +112,15 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
 - `GET` returns `{"mind": {...} | null, "rev": 4}`.
 - `PUT {"op_id": "...", "rev": 4, "mind": {...}}` saves it, and replies with the new `rev`
   (or `conflict` if `rev` is stale). Size limit 32 KiB per pawn.
+- **Player edits.** The Mind tab's Director's notes box edits the blob in place through the same
+  rev: it sets `notes` (string, 2,000 characters at most), `notes_edited_by_player: true` and
+  increments `notes_rev` (integer), leaving every other key untouched. The stored `rev` rises too,
+  so the agent's next `PUT` with the old `rev` gets `conflict`. **On `conflict` the agent must
+  re-read the blob and merge**: take `notes` from the mod's copy whenever `notes_edited_by_player`
+  is true, then apply its own changes and `PUT` again. It must never write back an older `notes`.
+- The mod only reads the blob for display, and reads each key under the agent's names (`fixed.text`,
+  `voice.{register_line,tics,examples,edited_by_player}`, `evolving_bio`, `bio_history`, `wants`,
+  `memories`, `relations`, `notes`); unknown keys are ignored.
 
 ### `GET /talk`
 Talk requests waiting for the agent: player-typed lines, other mods' requests through the
@@ -130,7 +145,10 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...]}`.
+"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...],
+"llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
+`llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
+sent here; the agent reads it from `bridge.json` (Part 1, Connection).
 
 ### `GET /colony`
 The colony at a glance: maps, colonists and their ids, active event ledger entries

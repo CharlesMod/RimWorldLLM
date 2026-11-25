@@ -18,6 +18,14 @@ namespace HermesVoice.Bridge
             return id;
         }
 
+        public int Count { get { return _items.Count; } }
+
+        public bool Contains(string id)
+        {
+            foreach (var i in _items) if ((string)i["id"] == id) return true;
+            return false;
+        }
+
         public JArray ToJson() { return new JArray(_items); }
 
         public bool Remove(string id)
