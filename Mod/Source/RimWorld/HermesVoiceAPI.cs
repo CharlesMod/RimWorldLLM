@@ -29,7 +29,7 @@ namespace HermesVoice
         public static void RequestTalk(Pawn pawn, string text)
         {
             if (pawn == null || string.IsNullOrWhiteSpace(text)) return;
-            TalkQueue.Add(pawn.thingIDNumber, text, "mod");
+            HermesBridge.Talk.Add(pawn.thingIDNumber, text, "mod");
         }
 
         internal static JObject CollectContext(Pawn p)

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice.Core
+namespace HermesVoice
 {
     public enum EffectTarget { Listener, Speaker, Witnesses, About }
 

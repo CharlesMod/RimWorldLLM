@@ -50,7 +50,7 @@ namespace HermesVoice
             base.ExposeData();
             Scribe_Values.Look(ref enabled, "enabled", true);
             Scribe_Values.Look(ref bridgePort, "bridgePort", 9765);
-            if (Scribe.mode == LoadSaveMode.PostLoadInit) bridgePort = Core.SettingsMigration.Port(bridgePort);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit) bridgePort = Bridge.SettingsMigration.Port(bridgePort);
             Scribe_Values.Look(ref bindAddress, "bindAddress", "127.0.0.1");
             Scribe_Values.Look(ref agentUrl, "agentUrl", "");
             Scribe_Values.Look(ref sharedToken, "sharedToken", "");

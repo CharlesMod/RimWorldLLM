@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     /// <summary>
     /// Routes a request on the game thread: no_game check, body parsing, op_id dedup, expiry, handler call.

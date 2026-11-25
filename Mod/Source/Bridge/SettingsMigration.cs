@@ -1,4 +1,4 @@
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     public static class SettingsMigration
     {

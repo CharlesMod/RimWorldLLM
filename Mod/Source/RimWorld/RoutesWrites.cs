@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Core;
+using HermesVoice.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
@@ -90,7 +90,7 @@ namespace HermesVoice
                 if (combat) Find.BattleLog.Add(new BattleLogEntry_HermesSay(speaker, listener, text));
             }
             catch (Exception e) { Log.Warning("[HermesVoice] play log write failed: " + e.Message); }
-            if (talkId != null) TalkQueue.Remove(talkId);
+            if (talkId != null) HermesBridge.Talk.Remove(talkId);
 
             // Effects, under the C# caps.
             var witnesses = new List<Pawn>();
@@ -122,7 +122,7 @@ namespace HermesVoice
             if (err != null) return err;
             string text = ((string)c.Body["text"] ?? "").Trim();
             if (text.Length == 0) return ApiResult.Fail("bad_request", "text is empty");
-            HermesVoiceGameComponent.Instance.Minds.AddThought(p.thingIDNumber, Find.TickManager.TicksGame, text);
+            HermesBridge.Minds.AddThought(p.thingIDNumber, Find.TickManager.TicksGame, text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
 
@@ -137,7 +137,7 @@ namespace HermesVoice
             Pawn p;
             var err = MindPawn(c, out p);
             if (err != null) return err;
-            return ApiResult.Success(HermesVoiceGameComponent.Instance.Minds.Get(p.thingIDNumber));
+            return ApiResult.Success(HermesBridge.Minds.Get(p.thingIDNumber));
         }
 
         static ApiResult MindPut(RouteContext c)
@@ -149,7 +149,7 @@ namespace HermesVoice
             if (b["rev"] == null || b["rev"].Type != JTokenType.Integer) return ApiResult.Fail("bad_request", "rev (integer) is required");
             if (b["mind"] == null) return ApiResult.Fail("bad_request", "mind is required (an object, or null to clear)");
             int newRev;
-            var minds = HermesVoiceGameComponent.Instance.Minds;
+            var minds = HermesBridge.Minds;
             switch (minds.Put(p.thingIDNumber, b.Value<int>("rev"), b["mind"], out newRev))
             {
                 case MindBook.PutResult.Conflict:
@@ -163,7 +163,7 @@ namespace HermesVoice
         // -------------------------------------------------------------- talk
         static ApiResult Talk(RouteContext c)
         {
-            return ApiResult.Success(new JObject { ["requests"] = TalkQueue.ToJson() });
+            return ApiResult.Success(new JObject { ["requests"] = HermesBridge.Talk.ToJson() });
         }
     }
 }

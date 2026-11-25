@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     public sealed class MindRecord
     {

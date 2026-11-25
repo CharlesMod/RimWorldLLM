@@ -5,7 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
-using HermesVoice.Core;
+using HermesVoice.Bridge;
 using Newtonsoft.Json.Linq;
 
 namespace HermesVoice
@@ -49,7 +49,7 @@ namespace HermesVoice
             EventBus.Reset();
             Pollers.Reset();
             Routes.TrendBook.Clear();
-            TalkQueue.Clear();
+            HermesBridge.Talk.Clear();
         }
 
         public override void GameComponentTick()

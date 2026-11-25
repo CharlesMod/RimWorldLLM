@@ -11,7 +11,7 @@ namespace HermesVoice
     {
                 public static HermesVoiceGameComponent Instance { get; private set; }
         public readonly ConversationLog ConversationLog = new ConversationLog();
-        public readonly Core.MindBook Minds = new Core.MindBook();
+        public Bridge.MindBook Minds { get { return HermesBridge.Minds; } }
 
         public HermesVoiceGameComponent(Game game) : base()
         {
@@ -43,6 +43,7 @@ namespace HermesVoice
         {
             HermesBridge.OpIds.Clear();
             SayEffects.Reset();
+            HermesBridge.Minds.Clear();
             SpeechBubbles.Clear();
             Instance = null;
         }
@@ -58,6 +59,7 @@ namespace HermesVoice
         {
             base.StartedNewGame();
             SaveEpoch = _sessionEpoch = _sessionEpoch + 1;
+            Minds.Clear();
             SpeechBubbles.Clear();
         }
 
@@ -91,7 +93,7 @@ namespace HermesVoice
     public class MindSave : IExposable
     {
         public int Id;
-        public Core.MindRecord Rec = new Core.MindRecord();
+        public Bridge.MindRecord Rec = new Bridge.MindRecord();
         List<int> _ticks;
         List<string> _texts;
 

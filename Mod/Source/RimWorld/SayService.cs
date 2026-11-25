@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Core;
+using HermesVoice.Bridge;
 using RimWorld;
 using Verse;
 

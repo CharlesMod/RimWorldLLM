@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     public sealed class LedgerEntry
     {

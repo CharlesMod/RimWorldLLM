@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     /// <summary>One inbound HTTP request, routed on the game thread, answered on the HTTP thread.</summary>
     public sealed class InboundRequest : IDisposable

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     /// <summary>Ring buffer of the last N events with increasing sequence numbers.</summary>
     public sealed class EventRing

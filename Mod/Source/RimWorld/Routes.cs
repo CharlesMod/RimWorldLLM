@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using HermesVoice.Core;
+using HermesVoice.Bridge;
 using Newtonsoft.Json.Linq;
 using Verse;
 

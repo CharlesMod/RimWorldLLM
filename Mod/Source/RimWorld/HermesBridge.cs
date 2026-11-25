@@ -1,5 +1,5 @@
 using System;
-using HermesVoice.Core;
+using HermesVoice.Bridge;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -12,18 +12,27 @@ namespace HermesVoice
     /// </summary>
     public static class HermesBridge
     {
-        public static readonly OpIdStore OpIds = new OpIdStore(() => Environment.TickCount64 / 1000.0);
-        public static readonly ApiRouter Router = new ApiRouter(OpIds) { LogWarning = m => Log.Warning("[HermesVoice] " + m) };
-        public static readonly EventRing Events = new EventRing();
-        static BridgeServer _server;
+        sealed class Adapter : IGameAdapter
+        {
+            public GameState BuildState() { return HermesBridge.BuildState(); }
+            public void Info(string m) { Log.Message(m); }
+            public void Warn(string m) { Log.Warning("[HermesVoice] " + m); }
+            public void Error(string m) { Log.Error(m); }
+        }
+
+        public static readonly BridgeRuntime Runtime = new BridgeRuntime(new Adapter(), () => Environment.TickCount64 / 1000.0);
+        public static OpIdStore OpIds { get { return Runtime.OpIds; } }
+        public static ApiRouter Router { get { return Runtime.Router; } }
+        public static EventRing Events { get { return Runtime.Events; } }
+        public static TalkQueue Talk { get { return Runtime.Talk; } }
+        public static MindBook Minds { get { return Runtime.Minds; } }
         static string _sessionToken;
 
         public const string OpenWarning = "Anyone on your network can read colony state and make pawns speak";
 
-        public static BridgeServer Server { get { return _server; } }
-        public static int Port { get { return _server != null ? _server.Port : Const.DefaultPort; } }
-        public static string LastError { get { return _server != null ? _server.LastError : ""; } }
-        public static bool IsRunning { get { return _server != null && _server.IsRunning; } }
+        public static int Port { get { return Runtime.Port; } }
+        public static string LastError { get { return Runtime.LastError; } }
+        public static bool IsRunning { get { return Runtime.IsRunning; } }
 
         public static bool IsLoopback(string bindAddress)
         {
@@ -48,7 +57,7 @@ namespace HermesVoice
             var s = HermesVoiceMod.Settings;
             if (s == null || !s.enabled) return;
             int first = SettingsMigration.Port(s.bridgePort);
-            var opt = new BridgeOptions
+            Runtime.Start(new BridgeOptions
             {
                 BindAddress = string.IsNullOrWhiteSpace(s.bindAddress) ? "127.0.0.1" : s.bindAddress.Trim(),
                 FirstPort = first,
@@ -56,22 +65,10 @@ namespace HermesVoice
                 Token = EffectiveToken(s),
                 ConfigDir = GenFilePaths.ConfigFolderPath,
                 Version = HermesVoiceMod.Version
-            };
-            _server = new BridgeServer(opt, Router)
-            {
-                LogInfo = m => Log.Message(m),
-                LogError = m => Log.Error(m)
-            };
-            _server.SetState(BuildState());
-            _server.Start();
+            });
         }
 
-        public static void Stop()
-        {
-            var s = _server;
-            _server = null;
-            if (s != null) s.Stop();
-        }
+        public static void Stop() { Runtime.Stop(); }
 
         public static GameState BuildState()
         {
@@ -92,12 +89,7 @@ namespace HermesVoice
         /// <summary>Called every frame from the Root.Update postfix, game thread, also while paused and in the menu.</summary>
         public static void FrameUpdate()
         {
-            var s = _server;
-            if (s != null)
-            {
-                s.SetState(BuildState());
-                s.Pump(Const.FrameBudgetMs);
-            }
+            Runtime.FrameUpdate();
             AgentDialOut.FlushLogs();
         }
     }

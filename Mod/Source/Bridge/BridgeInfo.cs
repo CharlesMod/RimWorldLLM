@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Core
+namespace HermesVoice.Bridge
 {
     /// <summary>bridge.json: how the agent finds the bridge.</summary>
     public static class BridgeInfo
