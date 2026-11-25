@@ -77,7 +77,7 @@ namespace HermesVoice
             if (pawn == null || s == null || !s.showBubbles || !s.showThoughts || s.bubbleStyle == "classic") return;
             string line = ThoughtPacing.Surface(surface, text);
             if (line == null) return;
-            int now = Find.TickManager.TicksGame, dur = Mathf.Max(1, s.bubbleDurationSec) * 60;
+            int now = Find.TickManager.TicksGame, dur = ThoughtPacing.GapTicks(Mathf.Max(1, s.bubbleDurationSec), TicksPerRealSec());   // real seconds at any game speed (never shorter than the 1x count)
             bool thoughtActive = false;
             for (int i = 0; i < Active.Count; i++)
                 if (Active[i].Pawn == pawn && Active[i].Ambient && now - Active[i].StartTick <= dur) thoughtActive = true;
@@ -143,7 +143,7 @@ namespace HermesVoice
             bool draw = s.showBubbles;
 
             int now = Find.TickManager.TicksGame;
-            int durationTicks = Mathf.Max(1, s.bubbleDurationSec) * 60;
+            int durationTicks = ThoughtPacing.GapTicks(Mathf.Max(1, s.bubbleDurationSec), TicksPerRealSec());   // readable at 3x: the setting is real seconds of watching
 
             for (int i = Active.Count - 1; i >= 0; i--)
             {
