@@ -13,12 +13,22 @@ from . import builders
 INJURY_MIN = 0.4           # an injury this severe (game severity) can worry someone who loves the victim
 GUARD_ONE_IN = 4           # a captured prisoner is on one colonist in four's mind (deterministic by ids)
 OFFENCES = {"Insult": "insulted", "Slight": "slighted"}
+RAID_WORRIERS = 2          # at most this many witnesses carry a raid worry (and so its payoff line)
 ABRASIVE = {"abrasive", "psychopath", "bloodlust"}
 KIND = {"kind"}
 
 
 def _roles(e: dict, *roles: str) -> list[int]:
     return [int(a["id"]) for a in e.get("actors", []) if a.get("role") in roles]
+
+
+def raid_worriers(e: dict, holders: list[int], loved: Callable[[int, int], bool]) -> list[int]:
+    """The (at most RAID_WORRIERS) witnesses who worry about a raid: most loved ones among the colonists first,
+    then the lowest id (the event carries no mood, so id is the deterministic tie-break)."""
+    held = set(holders)
+    cands = sorted({int(w) for w in e.get("witnesses", [])} & held)
+    score = {h: sum(1 for o in holders if o != h and loved(h, o)) for h in cands}
+    return sorted(cands, key=lambda h: (-score[h], h))[:RAID_WORRIERS]
 
 
 def births(e: dict, holders: list[int], loved: Callable[[int, int], bool]) -> list[dict]:
@@ -45,10 +55,9 @@ def births(e: dict, holders: list[int], loved: Callable[[int, int], bool]) -> li
                     out.append({"actor": h, "text": "I'm worried about {who}; they broke down.", "about": [v],
                                 "kind": "break", "hint": "", "importance": max(0.4, sev)})
     elif t == "raid_start" and e.get("ledger_id"):
-        for h in [int(w) for w in e.get("witnesses", [])]:
-            if h in holders:
-                out.append({"actor": h, "text": "Raiders are at our gates; I fear for us all.", "about": [],
-                            "kind": "threat", "hint": f"ledger:{e['ledger_id']}", "importance": max(0.5, sev)})
+        for h in raid_worriers(e, holders, loved):
+            out.append({"actor": h, "text": "Raiders are at our gates; I fear for us all.", "about": [],
+                        "kind": "threat", "hint": f"ledger:{e['ledger_id']}", "importance": max(0.5, sev)})
     elif t == "prisoner" and data.get("phase") == "captured":
         for p in _roles(e, "prisoner")[:1]:
             for h in [int(w) for w in e.get("witnesses", [])]:

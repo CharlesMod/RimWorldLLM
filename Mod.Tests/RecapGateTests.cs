@@ -22,6 +22,23 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public void IsOpenTracksTheWindowAndShownState()
+        {
+            var g = Loaded();
+            Assert.True(g.IsOpen(1000 + 5000, true));
+            Assert.False(g.IsOpen(1000 + 5000, false));
+            Assert.True(g.IsOpen(1000 + RecapGate.WindowMs, true));
+            Assert.False(g.IsOpen(1000 + RecapGate.WindowMs + 1, true));
+            g.Check(2, 1000 + 5000, true);
+            Assert.False(g.IsOpen(1000 + 6000, true));
+            Assert.False(new RecapGate().IsOpen(0, true));
+            var n = new RecapGate(); n.Arm(1, false, 1000);
+            Assert.False(n.IsOpen(1500, true));
+            var d = Loaded(); d.Disarm();
+            Assert.False(d.IsOpen(1500, true));
+        }
+
+        [Fact]
         public void NewGameEpochIsRefused()
         {
             var g = new RecapGate();

@@ -81,6 +81,10 @@ class ArtQueue:
         self.expire(game, day)
         return self.jobs.pop() if self.jobs else None
 
+    def pending(self, game: int, day: int) -> bool:
+        """True when a job is still within its game day (read-only; take() is what removes it)."""
+        return any(game - j.game <= day for j in self.jobs)
+
     def put_back(self, job: ArtJob) -> None:
         if all(j.thing != job.thing for j in self.jobs):
             self.jobs.insert(0, job)                       # the oldest slot: newer pieces still go first

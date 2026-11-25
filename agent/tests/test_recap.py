@@ -138,3 +138,37 @@ def test_messages_are_short():
     m = rc.messages(RimWorldAdapter(), ENTRIES)
     words = sum(len(t.split()) for _, t in m)
     assert words < 260
+
+
+def test_late_connect_recaps_when_the_mod_says_open(world):
+    async def go():
+        w = world
+        w.fb.chronicle = [dict(e) for e in ENTRIES]
+        w.llm.script["recap"] = [GOOD]
+        w.fb.config["recap_open"] = True
+        await w.go()
+        await w.d.drain()
+        return w
+    w = run(go())
+    assert len(recap_calls(w)) == 1 and len(w.fb.recap_log) == 1
+    assert w.fb.recap_log[0]["epoch"] == w.fb.epoch
+
+
+def test_late_connect_does_nothing_when_closed_or_already_tried(world):
+    async def go():
+        w = world
+        w.fb.chronicle = [dict(e) for e in ENTRIES]
+        w.llm.script["recap"] = [GOOD]
+        await w.go()                                   # recap_open absent: false
+        await w.d.drain()
+        assert not w.fb.recap_log
+        w.fb.config["recap_open"] = True
+        w.d.recap_epoch = w.fb.epoch                   # already attempted for this epoch
+        assert not rc.late_due(w.d)
+        w.d.recap_epoch = 0
+        await w.d.refresh_config()
+        assert rc.late_due(w.d)
+        w.d.cfg.recap_enabled = False
+        assert not rc.late_due(w.d)
+        return w
+    run(go())

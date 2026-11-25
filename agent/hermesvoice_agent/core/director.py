@@ -187,6 +187,8 @@ class Director:
         await self.load_world()
         if self.cfg.lore:
             await lore.load(self)
+        if recap.late_due(self):
+            self._spawn(recap.run(self, self.bridge.env.epoch))     # connected after the load: the window is still open
         self._started = True
 
     async def refresh_config(self) -> None:

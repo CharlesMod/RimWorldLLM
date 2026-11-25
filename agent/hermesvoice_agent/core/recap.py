@@ -106,3 +106,10 @@ async def run(d: "Director", epoch: int) -> bool:
         log.info("recap not shown: %s", ex)
         return False
     return True
+
+
+def late_due(d: "Director") -> bool:
+    """A late connect: the mod says a recap is still open (GET /config recap_open) for an epoch we have not tried."""
+    epoch = d.bridge.env.epoch
+    return (bool(epoch) and d.bridge_cfg.get("recap_open") is True and d.recap_epoch != epoch
+            and d.cfg.recap_enabled and d.bridge_cfg.get("recap") is not False)

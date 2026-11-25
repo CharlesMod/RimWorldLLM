@@ -193,6 +193,9 @@ epoch (`conflict`); and the load was at most 180 s of real time ago (`expired`, 
 integer, `lines` not an array of strings or empty after cleaning is `bad_request`. Reply
 `{"shown": true}`. An agent that is refused simply drops the recap. The agent also skips the whole
 step when `GET /config` says `"recap": false`.
+`GET /config` also carries `"recap_open"`: true while a recap would still be accepted (loaded save, none shown
+yet, inside the 180 s window, setting on). An agent that connects late (first start, or after a config refresh)
+sends the recap for the current epoch when `recap_open` is true and it has not tried that epoch yet.
 
 ### `GET /mind/{id}` and `PUT /mind/{id}`
 The pawn's mind blob, opaque to the mod, saved in the save file.
@@ -262,7 +265,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "dreams": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "dreams": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).
@@ -302,6 +305,8 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
   (`weather_extreme`..`weather_extreme_end`).
+- `mental_break` with `data.state` `SocialFighting` also carries `data.target` (the other pawn's id) and lists that pawn
+  as an actor with role `target`; the target is a witness-style participant, not a second subject.
 - `art_created` fires when a colonist or slave finishes a piece of art (not spawned, traded or
   reinstalled art). `data`: `thing_id` (use with `POST /art`), `def_label`, `quality`, `title`,
   `description` (the game's own tale text, game text, at most 400 characters). The maker has role
