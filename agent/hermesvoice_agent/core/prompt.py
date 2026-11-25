@@ -23,7 +23,7 @@ from .minds import Memory, Mind
 DELIVERIES = ["normal", "shout", "whisper"]     # how a line is said; decided in the intent pass (POST /say kind)
 
 
-AIM_RULE = "aim ::= [a-zA-Z0-9 ,.'!?-] {8,100}"    # the inner aim: a plain first-person phrase (core/inner.py)
+AIM_RULE = "aim ::= [a-zA-Z0-9 ,.'!?-]{8,100}"    # the inner aim: a plain first-person phrase (core/inner.py)
 AIM_ONLY_GRAMMAR = "root ::= aim\n" + AIM_RULE
 
 

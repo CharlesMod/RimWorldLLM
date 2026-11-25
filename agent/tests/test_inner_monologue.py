@@ -47,8 +47,8 @@ def test_grammar_shapes_on_and_off():
     assert grammar_for(LABELS) == "root ::= " + " | ".join(f'"{i}"' for i in LABELS)
     new = grammar_for(LABELS, DELIVERIES, aim=True)
     assert new.startswith('root ::= intent " " delivery " " aim\nintent ::= ')
-    assert new.endswith("aim ::= [a-zA-Z0-9 ,.'!?-] {8,100}")
-    assert AIM_ONLY_GRAMMAR == "root ::= aim\naim ::= [a-zA-Z0-9 ,.'!?-] {8,100}"
+    assert new.endswith("aim ::= [a-zA-Z0-9 ,.'!?-]{8,100}")
+    assert AIM_ONLY_GRAMMAR == "root ::= aim\naim ::= [a-zA-Z0-9 ,.'!?-]{8,100}"
     assert grammar_for(LABELS, None, aim=True) == grammar_for(LABELS)      # an aim needs the delivery shape
 
 
