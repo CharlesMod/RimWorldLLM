@@ -99,7 +99,7 @@ namespace HermesVoice
         // ------------------------------------------------------------------------------ variant choice
         /// <summary>
         /// Picks the look of a line from data the mod already has. An explicit <paramref name="kindField"/>
-        /// ("thought", "narrator", "shout", "whisper"; optional on /say) wins, then text markers (*..* or (..) = thought,
+        /// ("normal", "shout", "whisper"; also "thought", "narrator"; optional on /say) wins, then text markers (*..* or (..) = thought,
         /// [..] = narrator), then the intent (insult = shout; confide, gossip = whisper), then the text itself
         /// (a shouted exclamation, mostly capitals, or "!" in combat). <paramref name="clean"/> is the text without markers.
         /// </summary>
@@ -112,12 +112,14 @@ namespace HermesVoice
             if (k == "narrator" || k == "caption") return BubbleKind.Narrator;
             if (k == "shout") return BubbleKind.Shout;
             if (k == "whisper") return BubbleKind.Whisper;
+            bool plain = k == "normal";    // said at an ordinary volume: no intent or punctuation guess
             if (t.Length > 2)
             {
                 if (t[0] == '*' && t[t.Length - 1] == '*') { clean = t.Substring(1, t.Length - 2).Trim(); return BubbleKind.Thought; }
                 if (t[0] == '(' && t[t.Length - 1] == ')') { clean = t.Substring(1, t.Length - 2).Trim(); return BubbleKind.Thought; }
                 if (t[0] == '[' && t[t.Length - 1] == ']') { clean = t.Substring(1, t.Length - 2).Trim(); return BubbleKind.Narrator; }
             }
+            if (plain) return BubbleKind.Say;
             string i = (intent ?? "none").Trim().ToLowerInvariant();
             if (i == "insult") return BubbleKind.Shout;
             if (i == "confide" || i == "gossip") return BubbleKind.Whisper;
@@ -350,6 +352,130 @@ namespace HermesVoice
                 if (!moved) break;
             }
         }
+
+        // ------------------------------------------------------------------------------ arrangement (no tail crosses a balloon)
+        /// <summary>True when the tail (its centre line and both base edges, anchor to tip) passes through <paramref name="r"/>.</summary>
+        public static bool TailCrossesRect(TailInfo t, BRect r)
+        {
+            if (!t.Has) return false;
+            float tipX = t.AnchorX + t.DirX * t.Length, tipY = t.AnchorY + t.DirY * t.Length;
+            float px = -t.DirY * BubbleMetrics.TailBaseHalf * 0.8f, py = t.DirX * BubbleMetrics.TailBaseHalf * 0.8f;
+            return SegmentHitsRect(t.AnchorX, t.AnchorY, tipX, tipY, r)
+                || SegmentHitsRect(t.AnchorX + px, t.AnchorY + py, tipX, tipY, r)
+                || SegmentHitsRect(t.AnchorX - px, t.AnchorY - py, tipX, tipY, r);
+        }
+
+        public static bool SegmentHitsRect(float x0, float y0, float x1, float y1, BRect r)
+        {
+            float t0 = 0f, t1 = 1f, dx = x1 - x0, dy = y1 - y0;
+            return Clip(-dx, x0 - r.X, ref t0, ref t1) && Clip(dx, r.Right - x0, ref t0, ref t1)
+                && Clip(-dy, y0 - r.Y, ref t0, ref t1) && Clip(dy, r.Bottom - y0, ref t0, ref t1);
+        }
+
+        static bool Clip(float p, float q, ref float t0, ref float t1)
+        {
+            if (Math.Abs(p) < 1e-6f) return q >= 0f;
+            float t = q / p;
+            if (p < 0f) { if (t > t1) return false; if (t > t0) t0 = t; }
+            else { if (t < t0) return false; if (t < t1) t1 = t; }
+            return true;
+        }
+
+        static bool TailHitsOthers(TailInfo t, List<BRect> rects, int self)
+        {
+            for (int j = 0; j < rects.Count; j++)
+                if (j != self && TailCrossesRect(t, rects[j])) return true;
+            return false;
+        }
+
+        static bool FreeSpot(BRect r, List<BRect> rects, int self, int upTo, float gap)
+        {
+            for (int j = 0; j < upTo; j++)
+                if (j != self && r.Overlaps(rects[j], gap)) return false;
+            return true;
+        }
+
+        // Candidate x positions beside every other balloon (left of it, right of it), nearest the wanted centre first.
+        static List<float> SideXs(List<BRect> rects, int self, int upTo, float w, float wantCx, float gap)
+        {
+            var xs = new List<float>();
+            for (int j = 0; j < upTo; j++)
+            {
+                if (j == self) continue;
+                xs.Add(rects[j].X - gap - w); xs.Add(rects[j].Right + gap);
+            }
+            xs.Sort((a, b) => Math.Abs(a + w * 0.5f - wantCx).CompareTo(Math.Abs(b + w * 0.5f - wantCx)));
+            return xs;
+        }
+
+        /// <summary>
+        /// Places all balloons and their tails. Speakers whose balloons would collide sit side by side above their
+        /// own pawns; only when there is no room beside them do they stack upward. Afterwards no tail passes through
+        /// another balloon: a crossing tail first moves its balloon sideways (beside the one in the way), and when
+        /// even that is not possible the tail is shortened until it clears. Rects are mutated; tails are written.
+        /// </summary>
+        public static void Arrange(List<BRect> rects, IList<float> tx, IList<float> ty, IList<BubbleKind> kinds,
+                                   BRect bounds, float gap, TailInfo[] tails)
+        {
+            int n = rects.Count;
+            // 1. side by side: a later balloon that collides moves sideways, as near its own pawn as it can.
+            for (int i = 1; i < n; i++)
+            {
+                if (FreeSpot(rects[i], rects, i, i, gap)) continue;
+                var r = rects[i];
+                foreach (float x in SideXs(rects, i, i, r.W, tx[i], gap))
+                {
+                    var c = new BRect(x, r.Y, r.W, r.H);
+                    if (c.X < bounds.X || c.Right > bounds.Right) continue;
+                    if (!FreeSpot(c, rects, i, i, gap)) continue;
+                    rects[i] = c; break;
+                }
+            }
+            // 2. whatever still collides stacks upward (or below).
+            Separate(rects, bounds, gap);
+            for (int i = 0; i < n; i++) tails[i] = ChooseTail(kinds[i], rects[i], tx[i], ty[i]);
+            // 3. no tail through another balloon.
+            for (int pass = 0; pass < 3; pass++)
+            {
+                bool any = false;
+                for (int i = 0; i < n; i++)
+                {
+                    if (!TailHitsOthers(tails[i], rects, i)) continue;
+                    any = true;
+                    var cur = rects[i];
+                    float homeY = DefaultRect(cur.W, cur.H, tx[i], ty[i], bounds).Y;
+                    bool fixedIt = false;
+                    foreach (float y in new[] { homeY, cur.Y })
+                    {
+                        foreach (float x in SideXs(rects, i, n, cur.W, tx[i], gap))
+                        {
+                            var c = new BRect(x, y, cur.W, cur.H);
+                            if (c.X < bounds.X || c.Right > bounds.Right || c.Y < bounds.Y || c.Bottom > bounds.Bottom) continue;
+                            if (!FreeSpot(c, rects, i, n, gap)) continue;
+                            var t = ChooseTail(kinds[i], c, tx[i], ty[i]);
+                            if (TailHitsOthers(t, rects, i)) continue;
+                            rects[i] = c; tails[i] = t; fixedIt = true; break;
+                        }
+                        if (fixedIt) break;
+                    }
+                    if (fixedIt) continue;
+                    var tail = tails[i];                       // last resort: shorten until it clears
+                    while (tail.Length > 8f && TailCrossesAny(tail, rects, i)) tail.Length -= 4f;
+                    if (TailCrossesAny(tail, rects, i)) tail.Side = TailSide.None;
+                    tails[i] = tail;
+                }
+                if (!any) break;
+            }
+            for (int i = 0; i < n; i++)                        // guarantee: shorten or drop what still crosses
+            {
+                var tail = tails[i];
+                while (tail.Length > 8f && TailCrossesAny(tail, rects, i)) tail.Length -= 4f;
+                if (TailCrossesAny(tail, rects, i)) tail.Side = TailSide.None;
+                tails[i] = tail;
+            }
+        }
+
+        static bool TailCrossesAny(TailInfo t, List<BRect> rects, int self) { return TailHitsOthers(t, rects, self); }
 
         public static BRect ClampInto(BRect r, BRect bounds)
         {

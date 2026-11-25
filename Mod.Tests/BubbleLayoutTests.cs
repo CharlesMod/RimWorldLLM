@@ -32,6 +32,11 @@ namespace HermesVoice.Tests
         [InlineData("narrator", "none", "Later that day", false, BubbleKind.Narrator)]
         [InlineData("whisper", "insult", "psst", false, BubbleKind.Whisper)]
         [InlineData("SHOUT", "none", "hey", false, BubbleKind.Shout)]
+        [InlineData("normal", "insult", "You are a fool", false, BubbleKind.Say)]   // the agent said it normally: no guessing
+        [InlineData("normal", "none", "Get down!!", true, BubbleKind.Say)]
+        [InlineData("normal", "none", "*hmm*", false, BubbleKind.Thought)]          // markers still work
+        [InlineData("bogus", "insult", "You are a fool", false, BubbleKind.Shout)]  // unknown kind: heuristics
+        [InlineData("", "confide", "Between us", false, BubbleKind.Whisper)]
         public void KindFollowsData(string kindField, string intent, string text, bool combat, BubbleKind want)
         {
             string clean;

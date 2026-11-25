@@ -20,9 +20,16 @@ from .minds import Memory, Mind
 
 
 
-def grammar_for(labels: list[str]) -> str:
-    """GBNF restricting the intent pass to the adapter's label set."""
-    return "root ::= " + " | ".join(f'"{i}"' for i in labels)
+DELIVERIES = ["normal", "shout", "whisper"]     # how a line is said; decided in the intent pass (POST /say kind)
+
+
+def grammar_for(labels: list[str], deliveries: list[str] | None = None) -> str:
+    """GBNF restricting the intent pass to the adapter's label set, then (optionally) the delivery."""
+    g = "root ::= " + " | ".join(f'"{i}"' for i in labels)
+    if deliveries:
+        g = "root ::= intent \" \" delivery\nintent ::= " + " | ".join(f'"{i}"' for i in labels) + \
+            "\ndelivery ::= " + " | ".join(f'"{i}"' for i in deliveries)
+    return g
 
 
 @dataclass
@@ -117,11 +124,16 @@ def line_messages(prefix: str, turns: list[tuple[str, str]], mind: Mind, name: s
     return [("system", prefix), ("user", block_f(turns) + "\n" + block_g(mind, name, turn_no, request))]
 
 
-def intent_request(listener_name: str | None) -> str:
+def intent_request(listener_name: str | None, deliveries: list[str] | None = None) -> str:
     to = f" to {listener_name}" if listener_name else ""
+    if deliveries:
+        return (f"=== INTENT ===\nLabel the line you just spoke{to} with one social label from the list, then how you "
+                f"said it ({', '.join(deliveries)}). Say shout only if you really raised your voice; whisper only if "
+                "you kept it low. Most lines are normal. Label and delivery only.")
     return f"=== INTENT ===\nLabel the line you just spoke{to} with one social label from the list. Label only."
 
 
-def intent_messages(line_msgs: list[tuple[str, str]], line: str, listener_name: str | None):
+def intent_messages(line_msgs: list[tuple[str, str]], line: str, listener_name: str | None,
+                    deliveries: list[str] | None = None):
     """Same system+user prefix as the line pass (cache hit), then the line, then the label request."""
-    return line_msgs + [("assistant", line), ("user", intent_request(listener_name))]
+    return line_msgs + [("assistant", line), ("user", intent_request(listener_name, deliveries))]

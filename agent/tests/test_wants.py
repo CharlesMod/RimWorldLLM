@@ -127,7 +127,7 @@ def test_idle_window_schedules_wants_with_pacing(world):
         d.wants_last = {i: d.bridge.env.game for i in d.minds}
         gapped = d.idle.due_wants()
         d.wants_last = {}
-        d.bridge.env.speed = 3
+        d.bridge.env.speed = d.leases.pause_ambient_at_speed   # ambient pause (4x by default since the speed work)
         fast = d.idle.due_wants()
         return due, off, gapped, fast
     due, off, gapped, fast = run(go())

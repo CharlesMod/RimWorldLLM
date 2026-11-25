@@ -52,7 +52,7 @@ class FakeBridge:
         self.pair_effects: dict[tuple, int] = {}
         self.pair_cap = 6
         self.config = {"effects": "normal", "language": "en", "events": {}, "talk_frequency": 1.0,
-                       "pause_ambient_at_speed": 3, "dlc": []}
+                       "pause_ambient_at_speed": 4, "dlc": []}
         self.ledger: list[dict] = []
         self.requests: list[tuple[str, str]] = []
         self.transport = httpx.MockTransport(self._handle)
@@ -69,6 +69,7 @@ class FakeBridge:
              "pawns": [{"id": i, "role": r} for i, r in actors], "summary": summary,
              "severity": severity, "witnesses": witnesses, "ledger_id": ledger_id, "data": data or {}}
         self.events.append(e)
+        del self.events[:-self.max_kept]       # the mod's ring keeps the newest max_kept events
         return e
 
     def reload_game(self) -> None:
@@ -198,7 +199,7 @@ class FakeBridge:
         blob, rev = self.minds.get(pid, (None, 0))
         if req.method == "GET":
             return self._ok(mind=blob, rev=rev)
-        if len(json.dumps(body.get("mind", {})).encode()) > 32 * 1024:
+        if len(json.dumps(body.get("mind", {}), separators=(",", ":"), ensure_ascii=False).encode()) > 32 * 1024:
             return self._err(413, "too_large")
         if body.get("rev") != rev:
             return self._err(409, "conflict", "stale rev", rev=rev)

@@ -89,8 +89,14 @@ reply has `"gap": true`. Each event:
 ### `POST /say`
 ```json
 {"op_id": "...", "expires_tick": 124000, "pawn": 1, "listener": 3, "text": "Hold still.",
- "intent": "comfort", "conversation_id": "c-77", "combat": false, "about": null, "talk_id": null}
+ "intent": "comfort", "kind": "normal", "conversation_id": "c-77", "combat": false, "about": null, "talk_id": null}
 ```
+- `kind`: optional. How the line was delivered: `"normal"`, `"shout"` or `"whisper"`. The agent decides it
+  (in the same constrained completion that labels the intent, so it costs no extra model call) and
+  the mod only presents it. Absent or unknown means the agent did not say: the receiver uses its own
+  heuristics (the intent, the punctuation and capitals of the text, `combat`). `"normal"` means "said at
+  an ordinary volume": the receiver must not guess a shout from `!` or capitals. An agent should send
+  `"shout"` only when the scene justifies it (combat, anger, alarm) and not on every line.
 - `about`: the id of the third pawn a `gossip` line is about. Required for `gossip`; without
   it the effect is refused with `no_about`.
 - `talk_id`: set when the line answers a `GET /talk` request, which removes that request.
@@ -118,14 +124,19 @@ high: Insult, Slight, KindWords, DeepTalk, RomanceAttempt, MarriageProposal, Bre
 Reassure, Counsel; idle: Chitchat) carries extra `data`: `vanilla: true`, `ref` (string, send it back as
 `vanilla_ref`), `tier` (`high` or `idle`), `vanilla_text` (the sentence the game's grammar wrote, the
 line must stay on its subject), `window_ticks` (how long the line may take to attach; default 10 game
-minutes, setting `attachWindowMinutes`), plus the usual `interaction` and `interaction_label`. High tier
+minutes, setting `attachWindowMinutes`) and `window_real_s` (or this many real seconds, whichever is longer; default 5,
+setting `attachRealFloorSec`; at 4x the tick window alone is half a second), plus the usual `interaction` and `interaction_label`. High tier
 events bypass the 60 s social cooldown; idle ones keep it. Romance-type interactions are never sent when
 either pawn is under 18 years biological age. The game's own thoughts, opinions and fights are untouched.
 
 ### `POST /thought`
-`{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed.", "kind": "thought"}`. `kind` is
+`{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed.", "kind": "thought", "surface": "Should have stayed in bed."}`. `kind` is
 optional: `"thought"` (the default) is the inner monologue, `"diary"` is the pawn's daily diary
-entry. Both are shown in the Mind tab; neither makes a bubble or an effect. The mod keeps them in
+entry. Both are shown in the Mind tab; neither makes an effect. `surface` is optional: one short
+sentence (at most about 90 characters) that the receiver may show to players in a transient
+display; the full `text` stays in the Mind tab. A `thought` with no `surface` is shown that way
+only if `text` is already short; a `diary` is never shown that way. The agent fills `surface`
+(its short "passing thought" job sends `text` and `surface` as the same line). The mod keeps them in
 separate lists per pawn, so diaries do not push inner thoughts out: the last 20 thoughts and the
 last 7 diary entries (older ones are dropped). Text is trimmed and cut at 500 characters for a
 thought and 1,500 for a diary entry. An unknown `kind` is `bad_request`. Reply `{"stored": true}`.
@@ -196,7 +207,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).
@@ -263,3 +274,24 @@ daily cap, stack limits). The `POST /say` checks of Part 1 map to RimWorld as: s
 awake, spawned and humanlike; listener alive, spawned, on the same map and within hearing range
 (room or line of sight, distance against hearing range x Hearing capacity). `refused.effect`
 carries the reason (`pair_cap`, `effects_off`, `not_negative`, ...) while the bubble still shows.
+
+## Speech balloons and thought clouds (`kind`, `surface`)
+
+How the RimWorld mod presents Part 1's `kind` on `POST /say` and `surface` on `POST /thought`
+(comic bubble style; the classic style ignores both and shows no thought clouds).
+
+- `POST /say` `kind` picks the balloon: `normal` is the round balloon, `shout` the spiked burst,
+  `whisper` the dashed balloon in the small font. `normal` stops the mod from guessing a shout.
+  When `kind` is missing or unknown the mod falls back to its heuristics, in this order: text markers
+  (`*..*` or `(..)` thought, `[..]` caption), the intent (`insult` shout; `confide`, `gossip`
+  whisper), then the text (two or more `!`, mostly capitals, or one `!` with `combat`).
+  The agent also bounds shouting: a shout is kept only with combat, an `insult` or a major threat
+  event, and a speaker's next shout within `shout_gap_real_s` (default 45 s) is sent as `normal`.
+- `POST /thought` with `kind: "thought"` also shows a cloud balloon over the pawn when the setting
+  "Show pawn thoughts on the map" is on (default on). The cloud shows `surface`, or `text` when
+  `text` is at most 90 characters; longer text with no `surface` shows nothing. A `diary` never
+  shows on the map. The cloud is drawn at 60% of the speech balloon's opacity (setting).
+- Pacing (settings, defaults): one cloud per pawn at a time; at least 120 s between clouds over one
+  pawn; at least 20 s between clouds anywhere. A cloud is never drawn over a pawn whose speech
+  balloon is visible: it waits (one per pawn) and is dropped when it is more than 10 s old. A speech
+  balloon replaces the pawn's cloud.

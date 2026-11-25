@@ -168,6 +168,11 @@
   <HV_Bubbles_Opacity>Bubble opacity: {0}%</HV_Bubbles_Opacity>
   <HV_Bubbles_Lettering>Comic lettering (ALL CAPS)</HV_Bubbles_Lettering>
   <HV_Bubbles_Duration>Bubble duration (seconds)</HV_Bubbles_Duration>
+  <HV_Thoughts_Show>Show pawn thoughts on the map</HV_Thoughts_Show>
+  <HV_Thoughts_ShowTip>Short thoughts appear as faint cloud balloons over a pawn who is not speaking. The full text stays in the Mind tab. Diary entries never appear on the map.</HV_Thoughts_ShowTip>
+  <HV_Thoughts_Opacity>Thought cloud opacity: {0}% of bubble opacity</HV_Thoughts_Opacity>
+  <HV_Thoughts_PerPawn>Seconds between thought clouds over one pawn</HV_Thoughts_PerPawn>
+  <HV_Thoughts_Global>Seconds between thought clouds anywhere</HV_Thoughts_Global>
   <HV_Adv_Title>Advanced</HV_Adv_Title>
   <HV_Adv_FixedToken>Fixed shared token (blank = a random token each run)</HV_Adv_FixedToken>
   <HV_Adv_FixedTokenHelp>Needed when the agent runs on another machine. Anyone with the token can read colony state and make pawns speak.</HV_Adv_FixedTokenHelp>

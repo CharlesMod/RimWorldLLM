@@ -56,7 +56,7 @@ def test_event_speaks_with_expiry_and_op_id(world):
     w = run(go())
     assert len(w.fb.say_log) == 1
     s = w.fb.say_log[0]
-    assert s["pawn"] == 1 and s["expires_tick"] == 1000 + 5000 and s["op_id"] and s["combat"] is True
+    assert s["pawn"] == 1 and 1000 + 3000 <= s["expires_tick"] <= 1000 + 3000 + 30 and s["op_id"] and s["combat"] is True
     assert w.d.said[0]["text"]
 
 
@@ -125,7 +125,7 @@ def test_player_talk_preempts_and_answers_with_talk_id(world):
 def test_ambient_pause_in_director(world):
     async def go():
         w = await world.go()
-        w.fb.speed = 3
+        w.fb.speed = 4
         w.fb.add_event("level_up", [(1, "subject")], "Ana got better.", [1], 0.9)
         await w.d.step(); await w.d.drain()
         w.fb.add_event("injury", [(1, "victim")], "Ana was shot.", [1], 0.9)

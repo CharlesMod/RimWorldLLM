@@ -7,7 +7,7 @@ from typing import Callable
 
 from .llm import LLMClient, LLMError, Messages
 from .minds import Mind
-from .prompt import grammar_for, intent_messages, line_messages
+from .prompt import DELIVERIES, grammar_for, intent_messages, line_messages
 from .sanitize import Sanitized, sanitize_line
 
 
@@ -28,6 +28,7 @@ class SanitizeCtx:
 class Spoken:
     text: str
     intent: str
+    delivery: str | None = None      # "normal" | "shout" | "whisper"; None = the pass did not say (the mod guesses)
 
 
 @dataclass
@@ -60,17 +61,24 @@ def parse_intent(text: str, labels: list[str]) -> str:
     return first if first in labels else labels[0]    # unparseable means the "nothing" label
 
 
+def parse_delivery(text: str) -> str | None:
+    words = text.strip().lower().replace(",", " ").split()
+    return next((w.strip(".:\"'") for w in words[1:] if w.strip(".:\"'") in DELIVERIES), None)
+
+
 async def intent_pass(llm: LLMClient, *, slot: int, msgs: Messages, line: str,
-                      listener_name: str | None, labels: list[str], actor: int | None = None) -> str:
-    """Same warm slot: prefix is byte-identical to the line pass, so only the tail is prefilled."""
+                      listener_name: str | None, labels: list[str], actor: int | None = None) -> tuple[str, str | None]:
+    """Same warm slot: prefix is byte-identical to the line pass, so only the tail is prefilled.
+    One constrained completion gives the social label and the delivery."""
     if listener_name is None:
-        return labels[0]
+        return labels[0], None
     try:
-        c = await llm.complete(intent_messages(msgs, line, listener_name), slot=slot, kind="intent",
-                               max_tokens=4, stop=[], grammar=grammar_for(labels), temperature=0.0, actor=actor)
+        c = await llm.complete(intent_messages(msgs, line, listener_name, DELIVERIES), slot=slot, kind="intent",
+                               max_tokens=8, stop=[], grammar=grammar_for(labels, DELIVERIES), temperature=0.0,
+                               actor=actor)
     except LLMError:
-        return labels[0]
-    return parse_intent(c.text, labels)
+        return labels[0], None
+    return parse_intent(c.text, labels), parse_delivery(c.text)
 
 
 async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str,
@@ -98,6 +106,6 @@ async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str
                                   turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=bad[1])
     if not s.ok:
         return Dropped(s.reason)
-    intent = await intent_pass(llm, slot=slot, msgs=msgs, line=s.text, listener_name=listener_name,
+    intent, delivery = await intent_pass(llm, slot=slot, msgs=msgs, line=s.text, listener_name=listener_name,
                                labels=labels, actor=mind.actor_id)
-    return Spoken(s.text, intent)
+    return Spoken(s.text, intent, delivery)

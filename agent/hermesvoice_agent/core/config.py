@@ -29,12 +29,21 @@ class LLMConfig(BaseModel):
     # "openai": /v1/chat/completions only. "native": llama.cpp /completion with a
     # hand-built Gemma turn format, which gives id_slot control and cache stats.
     mode: str = "openai"
-    temperature: float = 0.8
-    top_k: int = 64
-    top_p: float = 0.95
-    min_p: float = 0.05
+    # Sampler overrides. None (the default) means "let the engine decide": the engine applies the
+    # model's own profile (X-Hermes-Sampler: rp | structured). Set a value only to force it; the
+    # engine's sampler policy may still replace it. Against a non-engine endpoint the agent sends
+    # Google's official Gemma 4 values itself, but only when ``model`` names a known Gemma 4 build.
+    temperature: float | None = None
+    top_k: int | None = None
+    top_p: float | None = None
+    min_p: float | None = None
+    repeat_penalty: float | None = None
+    # True: the endpoint is the hermes engine (sends X-Hermes-Sampler). False: it is not.
+    # None: detect it by asking for the engine's /engine/v1/status once.
+    engine: bool | None = None
     line_max_tokens: int = 48
-    # DRY repetition control for the line pass (llama.cpp): off by default, see docs/MODEL-BENCH.md F6.
+    # DRY repetition control for the line pass (llama.cpp): off by default (no official DRY exists;
+    # DRY made no clear difference, docs/MODEL-BENCH.md F6). The engine's enforce policy strips it.
     line_dry: bool = False
     dry_multiplier: float = 0.8
     dry_base: float = 1.75
@@ -49,6 +58,7 @@ class QuotaConfig(BaseModel):
     units_per_day: int = 60000
     min_gap_game_ambient: int = 1500   # per actor, ambient class
     min_gap_real_s_ambient: float = 20.0
+    ambient_share: float = 0.75         # ambient chatter may use this share of an actor's daily lines
 
 
 class Config(BaseModel):
@@ -61,8 +71,16 @@ class Config(BaseModel):
 
     narrator_slot: int = 0
     windows: int = 2              # slots 1..windows
-    pause_ambient_at_speed: int = 3    # overridden by the bridge's /config
-    poll_interval_s: float = 1.0
+    pause_ambient_at_speed: int = 4    # ambient and social talk stop at this speed (4 = dev speed); the bridge's /config overrides
+    poll_interval_s: float = 1.0       # at 1x; shortened as the game speeds up (director.poll_delay)
+    voice_lines_per_min: float = 5.0   # the ceiling on spoken lines per real minute at every speed (urgent bypasses the gate)
+    voice_burst: float = 5.0
+    voice_fast_scale: float = 0.5      # the ceiling is scaled by this at dev speed (4)
+    turn_gap_ticks: int = 150          # least game time between a conversation's turns (bubbles need reading time)
+    turn_gap_floor_real_s: float = 0.8 # ... and the least real time
+    fast_summary_rate: float = 360.0   # from this game rate (3x) a finished conversation is remembered from a template
+    vanilla_attach_floor_s: float = 5.0   # a line for the game's own interaction keeps this many real seconds to attach
+    idle_starving_fraction: float = 0.25  # idle work due for this share of a game day runs even beside ambient chatter
     event_min_severity: float = 0.15   # below this never reaches the model
     ambient_min_severity: float = 0.25
     narrator_min_gap_real_s: float = 120.0
@@ -79,6 +97,11 @@ class Config(BaseModel):
     chronicle_max_tokens: int = 220
     narrator_context_tokens: int = 6000
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
+    shout_gap_real_s: float = 45.0     # one speaker shouts at most this often (a calm scene cannot burst every line)
+    thought_enabled: bool = True       # short map thoughts (POST /thought kind "thought" + surface), idle work only
+    thought_every_real_s: float = 420.0   # per actor, at most one thought each this many real seconds
+    thought_memory_window_days: float = 1.0   # a thought draws on public memories this recent
+    thought_max_chars: int = 90
     idle_retry_real_s: float = 60.0    # backoff after a failed idle job
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
     repeat_guard: bool = True          # a conversation turn that repeats an earlier line is refused (core/loopguard.py)

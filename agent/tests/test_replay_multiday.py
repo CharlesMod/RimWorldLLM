@@ -11,7 +11,7 @@ DATA = Path(__file__).parent / "data" / "multiday.jsonl"
 
 
 def test_replay_multiday_shows_idle_work_and_leaves_the_data_dir_alone(tmp_path):
-    cfg = Config(data_dir=tmp_path / "real")
+    cfg = Config(data_dir=tmp_path / "real", thought_enabled=False)
     out = run(replay(DATA, cfg))
     kinds = [i.get("kind") for i in out]
     assert {"reflection", "diary", "chronicle"} <= set(kinds)
@@ -25,6 +25,6 @@ def test_replay_multiday_shows_idle_work_and_leaves_the_data_dir_alone(tmp_path)
 
 
 def test_replay_cli_prints_the_new_kinds(tmp_path, capsys):
-    run(_replay(Config(data_dir=tmp_path), RimWorldAdapter(), str(DATA), False))
+    run(_replay(Config(data_dir=tmp_path, thought_enabled=False), RimWorldAdapter(), str(DATA), False))
     out = capsys.readouterr().out
     assert "[diary day 1]" in out and "[chronicle day" in out and "[reflection]" in out

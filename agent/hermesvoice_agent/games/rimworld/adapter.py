@@ -39,6 +39,11 @@ class RimWorldAdapter:
                              actor_field="pawn", time_field="tick", epoch_field="save_epoch",
                              expiry_field="expires_tick")
     units_per_day = 60000                      # ticks
+    # game ticks per real second at each game speed: 1 = 60, 2 = 180, 3 = 360, dev speed 4 = 900 (speed 0 is a pause)
+    _TICKS_PER_S = {0: 60.0, 1: 60.0, 2: 180.0, 3: 360.0, 4: 900.0}
+
+    def units_per_second(self, speed: int) -> float:
+        return self._TICKS_PER_S.get(int(speed), 60.0 if speed < 1 else 900.0)
     intent_labels = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
     # intents and vanilla interactions that are romantic: refused whenever either party is a minor (core/agegate.py)
     romantic_intents = frozenset({"flirt", "romance", "romantic", "seduce", "woo", "propose", "lovin"})
@@ -64,6 +69,12 @@ class RimWorldAdapter:
     diary_request = (
         "Write today's diary entry: 2 to 4 sentences, under 70 words, one paragraph, only about what is listed "
         "under what happened today. Do not name anyone who is not mentioned there.")
+    thought_system = (
+        "You are the passing mind of one RimWorld colonist: the single small thought that crosses their head "
+        "while they work. First person, plain, dry, the colonist's own register. Never narrate, never advise.")
+    thought_request = (
+        "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
+        "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
     chronicle_system = (
         "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
         "words, a little gallows humour at most. You describe only what the notes say happened. You never "
@@ -149,6 +160,7 @@ class RimWorldAdapter:
         key = str(data.get("interaction", ""))
         return {"ref": str(data["ref"]), "initiator": pair[0], "recipient": pair[1],
                 "tier": "high" if data.get("tier") == "high" else "idle",
+                "window_ticks": max(1, int(data.get("window_ticks") or 417)), "window_real_s": float(data.get("window_real_s") or 0.0),
                 "sentence": str(data.get("vanilla_text") or event.get("summary", "")).strip(),
                 "romantic": key in self.romantic_interactions,
                 "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}

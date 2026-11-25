@@ -180,6 +180,14 @@ def pawn(img, x, y, hue, us):
     d.pieslice([(x - 9) * us, (y - 11) * us, (x + 9) * us, (y + 7) * us], 180, 360, fill=hsv((hue + .08) % 1, .6, .35) + (255,))
     d.text((x * us, (y + 32) * us), "", fill=(255, 255, 255, 255))
 
+AMBIENT_ALPHA = 0.6
+
+def tag(img, text, x, y, us):
+    d = ImageDraw.Draw(img); f = ImageFont.truetype(FONT, 11 * us)
+    w = f.getlength(text)
+    d.rectangle([x * us - w / 2 - 3 * us, y * us - 1 * us, x * us + w / 2 + 3 * us, y * us + 14 * us], fill=(0, 0, 0, 150))
+    d.text((x * us, y * us), text, font=f, fill=(255, 255, 255, 255), anchor="lt" if False else "mt")
+
 def scene(name, specs, us, classic_side=None):
     """specs: list of dict(text, kind, intent, x, y, hue, ...) -> image. y is the pawn's head centre; the label point is 20 px above."""
     bs = [dict(text=s["text"], kind=s.get("kind"), intent=s.get("intent"), combat=s.get("combat", False), caps=s.get("caps", False),
@@ -188,7 +196,15 @@ def scene(name, specs, us, classic_side=None):
     img = background(us)
     for s in specs: pawn(img, s["x"], s["y"], s["hue"], us)
     for s, b in zip(specs, res["bubbles"]):
-        draw_comic(img, b, res["metrics"], res["kinds"], us, rim=hsv(s["hue"], .7, .95), lettering=s.get("caps", False))
+        if s.get("ambient"):      # a /thought cloud: drawn fainter (thoughtOpacity 0.6 of the bubble opacity)
+            layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+            draw_comic(layer, b, res["metrics"], res["kinds"], us, rim=hsv(s["hue"], .7, .95))
+            a = layer.split()[3].point(lambda v: int(v * AMBIENT_ALPHA)); layer.putalpha(a)
+            img.alpha_composite(layer)
+        else:
+            draw_comic(img, b, res["metrics"], res["kinds"], us, rim=hsv(s["hue"], .7, .95), lettering=s.get("caps", False))
+    for s in specs:
+        if s.get("tag"): tag(img, s["tag"], s["x"], s["y"] + 30, us)
     return img, res
 
 def label(img, text, us, xy=(8, SCREEN[1] - 26)):
@@ -208,7 +224,27 @@ def scenes(us):
     ], us)[0]
     out["exchange"] = scene("exchange", [
         dict(text="Did you finish the east wall yet?", x=400, y=330, hue=H["a"]),
-        dict(text="Almost, I just need a little more steel.", x=520, y=336, hue=H["b"]),
+        dict(text="Almost, I just need a little more steel.", x=430, y=336, hue=H["b"]),
+        dict(text="Need a hand with that?", x=700, y=300, hue=H["c"]),
+        dict(text="Sure, grab the other end.", x=726, y=310, hue=H["d"]),
+        dict(text="Anyone seen the medicine?", x=560, y=470, hue=H["e"]),
+        dict(text="Shelf by the door.", x=588, y=478, hue=H["a"]),
+        dict(text="Thanks.", x=612, y=470, hue=H["b"]),
+    ], us)[0]
+    out["thoughts"] = scene("thoughts", [
+        dict(text="Bram should not eat alone.", kind="thought", ambient=True, x=170, y=300, hue=H["a"], tag="/thought (no speech)"),
+        dict(text="Mind the fence there.", x=450, y=300, hue=H["b"], tag="/say, speaking"),
+        dict(text="That stew had better be hot.", kind="thought", ambient=True, x=760, y=300, hue=H["c"], tag="/thought (no speech)"),
+        dict(text="Almost done with the wall.", x=300, y=470, hue=H["d"], tag="speaking: its thought waits"),
+        dict(text="I miss the old colony.", kind="thought", ambient=True, x=640, y=470, hue=H["e"], tag="/thought (surface line)"),
+    ], us)[0]
+    out["delivery"] = scene("delivery", [
+        dict(text="Get away from my steak!!", kind="normal", x=140, y=300, hue=H["a"], tag="kind=normal (calm, ignores '!!')"),
+        dict(text="Get down, they have rifles!", kind="shout", combat=True, x=420, y=300, hue=H["b"], tag="kind=shout (combat)"),
+        dict(text="Keep it down, he will hear.", kind="whisper", x=700, y=300, hue=H["c"], tag="kind=whisper"),
+        dict(text="Watch out!!", x=200, y=470, combat=True, hue=H["d"], tag="no kind: mod guesses (old agent)"),
+        dict(text="You stupid, lazy fool.", intent="insult", kind="shout", x=560, y=470, hue=H["e"], tag="kind=shout (insult)"),
+        dict(text="Between us, I like him.", intent="confide", x=860, y=470, hue=H["a"], tag="no kind: intent whisper"),
     ], us)[0]
     out["edge"] = scene("edge", [
         dict(text="Why am I always stuck on night shift duty?", x=24, y=70, hue=H["c"]),
@@ -229,7 +265,9 @@ def scenes(us):
     return out
 
 CAPTIONS = {"overview": "Five variants: round, burst, dashed whisper, cloud thought, caption",
-            "exchange": "Two-pawn exchange: tails point at each speaker",
+            "exchange": "Close speakers sit side by side; no tail crosses a balloon",
+            "thoughts": "Thought clouds: fainter, only over a silent pawn",
+            "delivery": "Delivery chosen by the agent (kind) with the mod's guess as fallback",
             "edge": "Balloons pushed by screen edges: tails flip and re-angle",
             "classic_vs_comic": "Classic (left) vs Comic (right)"}
 
@@ -246,8 +284,8 @@ def main():
             label(img, "%s  (UI scale %dx)" % (CAPTIONS[name], us), us)
             img.convert("RGB").save(os.path.join(outdir, "%s_%dx.png" % (name, us)))
         if us == 2:
-            grid = Image.new("RGB", (SCREEN[0] * 2, SCREEN[1] * 2))
-            for i, name in enumerate(["overview", "exchange", "edge", "classic_vs_comic"]):
+            grid = Image.new("RGB", (SCREEN[0] * 2, SCREEN[1] * 3))
+            for i, name in enumerate(["overview", "exchange", "thoughts", "delivery", "edge", "classic_vs_comic"]):
                 grid.paste(sc[name].convert("RGB").resize(SCREEN, Image.LANCZOS), ((i % 2) * SCREEN[0], (i // 2) * SCREEN[1]))
             big = grid
     big.save(os.path.join(outdir, "overview_grid.png"))

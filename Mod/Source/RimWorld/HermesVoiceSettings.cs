@@ -42,6 +42,10 @@ namespace HermesVoice
         public string bubbleStyle = "comic";   // comic | classic
         public float bubbleOpacity = 1f;
         public bool comicLettering = false;     // ALL-CAPS comic lettering
+        public bool showThoughts = true;        // pawn thoughts as cloud balloons on the map (comic style)
+        public float thoughtOpacity = 0.6f;     // share of the bubble opacity a thought cloud uses
+        public int thoughtPerPawnSec = 120;     // one thought cloud per pawn at most this often
+        public int thoughtGlobalSec = 20;       // and one anywhere at most this often
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -62,13 +66,14 @@ namespace HermesVoice
         // What the agent must honour (GET /config).
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
-        public int pauseAmbientAtSpeed = 3;
+        public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
         public string language = "en";
 
         // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
         public bool showQuotes = true;
         public bool voiceVanillaSocial = true;
         public int quoteMaxChars = 140;
+        public int attachRealFloorSec = 5;                           // ... or this many real seconds, whichever is longer (dual clock)
         public int attachWindowMinutes = 10;                         // in-game minutes a line may take to attach to its interaction
         public string interactionHigh = Bridge.InteractionPolicy.DefaultHigh;   // def names, voiced first
         public string interactionIdle = Bridge.InteractionPolicy.DefaultIdle;   // def names, voiced only when the speaker is otherwise idle
@@ -98,6 +103,10 @@ namespace HermesVoice
             Scribe_Values.Look(ref bubbleStyle, "bubbleStyle", "comic");
             Scribe_Values.Look(ref bubbleOpacity, "bubbleOpacity", 1f);
             Scribe_Values.Look(ref comicLettering, "comicLettering", false);
+            Scribe_Values.Look(ref showThoughts, "showThoughts", true);
+            Scribe_Values.Look(ref thoughtOpacity, "thoughtOpacity", 0.6f);
+            Scribe_Values.Look(ref thoughtPerPawnSec, "thoughtPerPawnSec", 120);
+            Scribe_Values.Look(ref thoughtGlobalSec, "thoughtGlobalSec", 20);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);
@@ -114,12 +123,13 @@ namespace HermesVoice
             Scribe_Values.Look(ref evThought, "evThought", true);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
-            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 3);
+            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
             Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref showQuotes, "showQuotes", true);
             Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
             Scribe_Values.Look(ref quoteMaxChars, "quoteMaxChars", 140);
             Scribe_Values.Look(ref attachWindowMinutes, "attachWindowMinutes", 10);
+            Scribe_Values.Look(ref attachRealFloorSec, "attachRealFloorSec", 5);
             Scribe_Values.Look(ref interactionHigh, "interactionHigh", Bridge.InteractionPolicy.DefaultHigh);
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
         }

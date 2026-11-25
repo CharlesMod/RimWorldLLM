@@ -52,6 +52,7 @@ class GameAdapter(Protocol):
     narrator_prompt: str                # system text for the narrator's one-line coverage
 
     units_per_day: int                  # game-time units in one "day" (memory decay, quotas)
+    def units_per_second(self, speed: int) -> float: ...   # game units per real second at a game speed (pause = the last running speed)
 
     # prompt wording for the idle work (core supplies the facts, the adapter the voice and flavour)
     reflection_system: str              # how to rewrite the evolving bio, wants, relations (bio person and length)

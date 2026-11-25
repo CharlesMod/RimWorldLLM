@@ -38,6 +38,7 @@ namespace HermesVoice
                 }
             }
             if (!s.showBubbles) return;
+            if (s.showThoughts) PromoteThoughts(map, s, now, durationTicks);
 
             float uiScale = Prefs.UIScale;
             var bounds = new BRect(ScreenMargin, ScreenMargin, UI.screenWidth - 2f * ScreenMargin, UI.screenHeight - 2f * ScreenMargin - BottomBar);
@@ -55,18 +56,30 @@ namespace HermesVoice
                 Live.Add(b);
                 Rects.Add(BubbleLayout.DefaultRect(b.W, b.H, tx, ty, bounds));
             }
-            BubbleLayout.Separate(Rects, bounds, 3f);
+            ArrangeInto(n, bounds);
 
             for (int i = 0; i < Live.Count; i++)
             {
                 var b = Live[i];
                 if (b.AnimT < BubbleMetrics.PopSeconds) b.AnimT += dt;
                 float pop = BubbleLayout.PopScale(b.AnimT);
-                float alpha = opacity * BubbleLayout.FadeAlpha(durationTicks - (now - b.StartTick));
+                float alpha = opacity * (b.Ambient ? Mathf.Clamp01(s.thoughtOpacity) : 1f) * BubbleLayout.FadeAlpha(durationTicks - (now - b.StartTick));
                 if (alpha <= 0.003f) continue;
-                DrawOne(b, Rects[i], _targets[i], pop, alpha, s);
+                DrawOne(b, Rects[i], _targets[i], _tails[i], pop, alpha, s);
             }
             Text.Font = prevFont; Text.Anchor = prevAnchor; Text.WordWrap = prevWrap; GUI.color = prevColor;
+        }
+
+        static readonly List<float> _tx = new List<float>(), _ty = new List<float>();
+        static readonly List<BubbleKind> _kinds = new List<BubbleKind>();
+        static TailInfo[] _tails = new TailInfo[32];
+
+        static void ArrangeInto(int n, BRect bounds)
+        {
+            if (_tails.Length < n) _tails = new TailInfo[n * 2];
+            _tx.Clear(); _ty.Clear(); _kinds.Clear();
+            for (int i = 0; i < Live.Count; i++) { _tx.Add(_targets[i].x); _ty.Add(_targets[i].y); _kinds.Add(Live[i].Kind); }
+            BubbleLayout.Arrange(Rects, _tx, _ty, _kinds, bounds, 3f, _tails);
         }
 
         static void BuildCache(Bubble b, bool caps, float uiScale)
@@ -85,12 +98,11 @@ namespace HermesVoice
             b.CacheCaps = caps; b.CacheUiScale = uiScale; b.CacheValid = true;
         }
 
-        static void DrawOne(Bubble b, BRect br, Vector2 target, float pop, float alpha, HermesVoiceSettings s)
+        static void DrawOne(Bubble b, BRect br, Vector2 target, TailInfo tail, float pop, float alpha, HermesVoiceSettings s)
         {
             var kind = b.Kind;
             int ki = (int)kind;
             var balloon = new Rect(br.X, br.Y, br.W, br.H);
-            var tail = BubbleLayout.ChooseTail(kind, br, target.x, target.y);
             float scale = BubbleLayout.CornerScale(kind, br.W, br.H);
             bool tiled = BubbleMetrics.Tiled(kind);
             float mid = BubbleMetrics.MidSrc(kind);
