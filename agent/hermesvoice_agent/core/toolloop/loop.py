@@ -106,7 +106,8 @@ def _one_line(text: str, tolerant: bool, max_len: int) -> tuple[str, str]:
 async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user: str, executor: Executor,
                    protocol: str = "grammar", validator: Validator | None = None, fallback: Fallback = None,
                    max_steps: int = 4, max_retries: int = 2, time_budget_s: float = 40.0, step_timeout_s: float = 20.0,
-                   final_max: int = 200, max_tokens: int = 200, temperature: float = 0.2) -> LoopResult:
+                   final_max: int = 200, max_tokens: int = 200, temperature: float = 0.2,
+                   fallback_after_actions: bool = False) -> LoopResult:
     if protocol not in PROTOCOLS:
         raise ValueError(f"unknown protocol {protocol}")           # a caller bug, not a model fault
     res = LoopResult(protocol=protocol)
@@ -200,8 +201,8 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
         reason = reason or "loop_fault"
     if res.outcome not in ("final", "done"):
         res.reason = reason
-        if res.executed and reason in ("step_budget", "time_budget", "repeat"):
-            res.outcome = "stopped"                              # what ran stands; the turn is not left empty-handed
+        if res.executed and not fallback_after_actions:
+            res.outcome = "stopped"                              # what already ran stands; the turn is not empty-handed
         else:
             await _apply_fallback(fallback, by_name, executor, res, tools)
     res.elapsed_s = time.monotonic() - t_start

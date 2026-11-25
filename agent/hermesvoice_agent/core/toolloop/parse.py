@@ -44,9 +44,13 @@ def json_objects(text: str) -> list[str]:
     return out
 
 
-def _from_obj(o: Any) -> RawStep | None:
+def _from_obj(o: Any, names: set[str] = frozenset()) -> RawStep | None:
     if not isinstance(o, dict):
         return None
+    if len(o) == 1 and names:                      # {"remember": {...}}: the tool name used as the key
+        k, v = next(iter(o.items()))
+        if k in names and isinstance(v, dict):
+            return RawStep("call", tool=k, args=v, salvaged="tool name as key")
     if o.get("done") in (True, "true", 1) and len(o) == 1:
         return RawStep("done")
     for k in ("final", "say", "reply"):
@@ -54,7 +58,8 @@ def _from_obj(o: Any) -> RawStep | None:
             return RawStep("final", text=o[k])
     for k in ("tool", "name", "tool_name", "function"):
         if isinstance(o.get(k), str):
-            args = o.get("args", o.get("arguments", o.get("parameters", {})))
+            rest = {k: v for k, v in o.items() if k not in ("tool", "name", "tool_name", "function", "args", "arguments", "parameters")}
+            args = o.get("args", o.get("arguments", o.get("parameters", rest)))
             if isinstance(args, str):
                 try:
                     args = json.loads(args)
@@ -63,7 +68,7 @@ def _from_obj(o: Any) -> RawStep | None:
             return RawStep("call", tool=o[k], args=args)
     for k in ("tool_call", "call", "function_call"):
         if isinstance(o.get(k), dict):
-            return _from_obj(o[k])
+            return _from_obj(o[k], names)
     return None
 
 
@@ -87,7 +92,7 @@ def parse_text(text: str, tool_names: set[str]) -> tuple[RawStep | None, str]:
     if not t:
         return None, "the reply was empty"
     try:
-        s = _from_obj(json.loads(t))
+        s = _from_obj(json.loads(t), tool_names)
         if s:
             return s, ""
     except ValueError:
@@ -95,7 +100,7 @@ def parse_text(text: str, tool_names: set[str]) -> tuple[RawStep | None, str]:
     t2 = re.sub(r"^```(?:json)?\s*|\s*```$", "", t).strip()
     for cand in json_objects(t2):
         try:
-            s = _from_obj(json.loads(cand))
+            s = _from_obj(json.loads(cand), tool_names)
         except ValueError:
             continue
         if s:
