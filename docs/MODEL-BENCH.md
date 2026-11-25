@@ -628,6 +628,16 @@ Cause of the silent round 2: the model ends its turn at once after the tool resu
 
 All hard invariants held on all six runs. What stays model-limited: E2B stops after the first of several requested calls (two- and three-call kinds 40-50%) and picks the wrong tool on 1 of 4 mood prompts; on injected instructions in scene text all three models comply 50-60% of the time (the harness only guarantees the resulting call is valid). F4 and F5 are closed by the harness for any caller that uses it (ranges are scales or grammar alternatives; raw Gemma syntax cannot be emitted under the grammar and is salvaged in tolerant mode); F7 stands (the harness uses GBNF too).
 
+**F6 follow-up (DRY, 2026-11-25).** `LLMConfig.line_dry` (default False; `dry_multiplier 0.8, dry_base 1.75, dry_allowed_length 2, dry_penalty_last_n 512`, line pass only). `bench/models/dry.py`: lines (100) plus 3x the 10-exchange conversation set (30 exchanges), off/on/off/on per model. Repetition-loop exchanges per 60 (two runs each) and duplicate lines per 200:
+
+| Model | loop exchanges off / on | duplicate lines off / on | distinct-2 (conv) off / on | raw all-pass off / on |
+|---|---|---|---|---|
+| gemma4-e2b | 14 / 11 | 13 / 12 | 0.60-0.62 / 0.63-0.64 | 0.99-1.0 / 1.0 |
+| gemma4-e4b | 0 / 0 | 0 / 0 | 0.76-0.77 / 0.76-0.78 | 0.99 / 0.98-0.99 |
+| gemma4-rp-maxxed | 1 / 0 | 1 / 0 | 0.70-0.73 / 0.71-0.72 | 0.98-0.99 / 0.99 |
+
+Only E2B has a loop problem (about 23% of exchanges); DRY lowers it to about 18%, which is inside the run-to-run spread (7/30 vs 4/30 on the two runs with it). No quality cost was visible (spelling, grammar, in-character, drop rate, words per line unchanged; answers-previous 0.79 to 0.80-0.84). Not clear-cut, so the default stays off in this branch. Recommendation: leave off for E4B and rp-maxxed (nothing to fix); turn on for E2B if it is ever shipped, since it did no harm. A stronger test needs more exchanges (about 100 per arm).
+
 ### Method notes and limits
 
 - Grammar and spelling: no Java here, so `language_tool_python` was not run. `pyspellchecker` plus a rule set stood in; it found no faults in any model's lines, so treat 100% as "no obvious faults", not "perfect grammar".
