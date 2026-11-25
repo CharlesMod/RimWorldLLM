@@ -86,7 +86,7 @@ namespace HermesVoice
                 string quality = ArtSupport.QualityLabel(thing);
                 var spec = new EventSpec
                 {
-                    Type = "art_created", Map = pawn.MapHeld, At = pawn.PositionHeld, Severity = 0.3f,
+                    Type = "art_created", Map = pawn.MapHeld, At = pawn.PositionHeld, Severity = 0.2f,
                     Summary = pawn.LabelShort + " finished " + thing.LabelNoCount + (title.Length > 0 ? " titled \"" + title + "\"" : "") + ".",
                     Data = new JObject
                     {

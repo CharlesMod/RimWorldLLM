@@ -277,7 +277,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `art_created` fires when a colonist or slave finishes a piece of art (not spawned, traded or
   reinstalled art). `data`: `thing_id` (use with `POST /art`), `def_label`, `quality`, `title`,
   `description` (the game's own tale text, game text, at most 400 characters). The maker has role
-  `maker` and witnesses it, as does anyone who normally witnesses. Toggle `events.art`; cooldown
+  `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
   one game hour per maker.
 - `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
   The mod's own `HV_` thoughts never produce one.

@@ -94,6 +94,8 @@ class Config(BaseModel):
     diary_max_tokens: int = 160
     wants: bool = True                 # wants with follow-through (core/wants.py); also needs the mod's wants_enabled
     chronicle_enabled: bool = True
+    art_enabled: bool = True           # LLM art descriptions (core/art.py); also needs the mod's art_descriptions
+    art_max_tokens: int = 110
     chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
     chronicle_max_tokens: int = 220
     narrator_context_tokens: int = 6000

@@ -21,6 +21,7 @@ _DEFAULTS = {
     "diary": "Another day behind me. I kept my head down and got through it.",
     "thought": "That stew had better be hot.",
     "chronicle": "The community got through another day with what it had, and little more than that.",
+    "art": "Hana made this over two quiet evenings, and it shows a lot of patience for a plain piece.",
     "chronicle_summary": "Earlier days: the community endured and kept working.",
 }
 

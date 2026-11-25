@@ -82,6 +82,14 @@ class RimWorldAdapter:
     chronicle_request = (
         "Write the chronicle paragraph for this day: 3 to 5 sentences, under 110 words, one paragraph. Use the "
         "story so far for continuity only; do not repeat it.")
+    art_system = (
+        "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
+        "third person, past tense. State only what the data says: who made it and what it shows or recalls from the "
+        "colony's history or the maker's memories. Never invent people, places, events or numbers. No flowery prose, "
+        "no \"a testament to\", no moral, no addressing the player. Nothing romantic or sexual about anyone, ever.")
+    art_request = (
+        "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. If the history gives nothing to "
+        "draw on, describe the piece and its maker plainly.")
     chronicle_summary_system = (
         "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
         "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")
