@@ -53,6 +53,7 @@ class Conversation:
     turn_cap: int = 6
     continue_p0: float = 0.85
     decay: float = 0.7
+    reunion: str = ""            # the grudge round this talk is the make-up or confrontation for (core/grudges.py)
 
     def next_speaker(self) -> int:
         return self.a if len(self.turns) % 2 == 0 else self.b

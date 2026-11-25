@@ -117,6 +117,18 @@ class Config(BaseModel):
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock
     inner_aim_fresh_days: float = 0.25     # an aim guides the next line for this many game days
+    concerns: bool = True              # ongoing worries per actor (core/concerns.py): born from events and reflection
+    concerns_max: int = 2              # open concerns per actor at most
+    concern_fade_days: float = 5.0     # an open concern nobody resolved fades after this many game days
+    concern_keep_days: float = 1.0     # a resolved or faded concern stays on record this long for the diary
+    concern_loved_opinion: int = 30    # opinion of someone at or above this makes their trouble a worry
+    concern_payoff: bool = True        # one spoken line when a worry is resolved
+    grudges: bool = True               # grudge and make-up loop (core/grudges.py); needs the mod's wants_enabled, effects on
+    grudge_avoid_days: float = 0.25    # the avoid phase, in game days (the mod's avoid table has its own hours setting)
+    grudge_cooldown_days: float = 0.75 # from the offence to the first seek-out
+    grudge_retry_days: float = 0.25    # between seek-out attempts the mod refused or that came to nothing
+    grudge_max_attempts: int = 3       # then the grudge fades
+    grudge_recover_opinion: int = 10   # opinion of the other at or above this counts as recovered (make up, not confront)
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

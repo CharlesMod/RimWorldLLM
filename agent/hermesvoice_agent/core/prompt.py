@@ -60,7 +60,7 @@ def block_b(mind: Mind) -> str:
     return s
 
 
-def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -> str:
+def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6, worries: list[str] | None = None) -> str:
     """Changes only when a reflection runs: bio, wants and the relations digest are all written there."""
     lines = []
     for r in mind.c_relations[:max_rel]:
@@ -71,6 +71,8 @@ def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -
     body += "Wants: " + ("; ".join(gd.clean(w, "label") for w in mind.wants) if mind.wants else "none in particular") + "\n"
     if mind.notes:
         body += "Director's notes (written by the player): " + gd.clean(mind.notes, "note") + "\n"
+    if worries:     # ongoing concerns (core/concerns.py): block C changes only when one is born or closes
+        body += "Worries: " + "; ".join(gd.clean(w, "line") for w in worries) + "\n"
     body += "Relations:\n" + ("\n".join(lines) if lines else "- none yet") + "\n"
     return "=== WHO YOU ARE BECOMING ===\n" + gd.data_section("character", body)
 
@@ -105,13 +107,13 @@ def block_e(sc: Scene) -> str:
 
 
 def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines: list[str], sc: Scene,
-                 thoughts: list[str] | None = None) -> str:
+                 thoughts: list[str] | None = None, worries: list[str] | None = None) -> str:
     """A-E as one string. Freeze it at lease start; never rebuild mid-lease."""
     if gd.DATA_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + gd.DATA_RULE
     if agegate.MINOR_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + agegate.MINOR_RULE
-    return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines, thoughts), block_e(sc)])
+    return "\n".join([block_a, block_b(mind), block_c(mind, worries=worries), block_d(memories, ledger_lines, thoughts), block_e(sc)])
 
 
 def block_f(turns: list[tuple[str, str]]) -> str:

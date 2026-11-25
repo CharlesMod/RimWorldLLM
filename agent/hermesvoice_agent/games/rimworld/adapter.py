@@ -11,7 +11,7 @@ from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
 from ...core.prompt import Scene
 from ...core.sanitize import name_tokens
-from . import builders
+from . import builders, concern_rules
 
 _HERE = Path(__file__).parent
 
@@ -187,6 +187,22 @@ class RimWorldAdapter:
                 f"{speaker} has just done something to {listener}: it is {info['kind']}.{s}\n"
                 f"Write {speaker}'s one line of speech to {listener} that goes with it. It must read as {info['kind']} "
                 "and stay on the same subject the log names. One line only.")
+
+    # ---- ongoing concerns and grudges (core/concerns.py, core/grudges.py) ----------
+    def concern_births(self, event: dict, holders: list[int], loved) -> list[dict]:
+        return concern_rules.births(event, holders, loved)
+
+    def concern_resolutions(self, event: dict) -> list[tuple[str, str]]:
+        return concern_rules.resolutions(event, self.is_ledger_end)
+
+    def social_offence(self, event: dict) -> tuple[int, int, str] | None:
+        return concern_rules.social_offence(event)
+
+    def offence_intents(self) -> set[str]:
+        return {"insult"}
+
+    def grudge_style(self, snap: dict) -> str:
+        return concern_rules.style(snap)
 
     def is_urgent_visual(self, event: dict) -> bool:
         return event.get("type") in ("injury", "death", "raid_start", "mental_break")

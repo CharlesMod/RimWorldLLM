@@ -192,7 +192,7 @@ def test_a_spoken_line_adds_its_aim_and_the_next_line_is_written_knowing_it(worl
     lines = [c for c in w.llm.calls if c["kind"] == "line"]
     assert not any("private aim" in c["messages"][1][1] for c in lines[:1]) and speakers   # made after the line
     first_actor = lines[0]["actor"]
-    assert all(t.kind == "aim" for t in w.d.minds[first_actor].inner) and w.d.minds[first_actor].inner
+    assert all(t.kind in ("aim", "concern") for t in w.d.minds[first_actor].inner) and w.d.minds[first_actor].inner
 
 
 def test_second_turn_of_the_same_speaker_sees_the_aim(world):

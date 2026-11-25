@@ -20,6 +20,9 @@ from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
 from .chronicle import Chronicle
+from . import concerns as concerns_mod
+from .concerns import ConcernEngine
+from .grudges import GrudgeEngine
 from .art import ArtQueue, enabled as art_enabled
 from .config import Config
 from .conversation import Conversation, template_memory, template_relation
@@ -102,6 +105,8 @@ class Director:
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
         self.art = ArtQueue()                    # core/art.py
+        self.concerns = ConcernEngine(self)        # core/concerns.py
+        self.grudges = GrudgeEngine(self)          # core/grudges.py
         self.idle = IdleRunner(self)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
@@ -254,6 +259,7 @@ class Director:
         await self.take_talk()
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
         self.daily_upkeep()
+        self.grudges.advance()
         self.leases.expire(self.now())
         self.leases.expire_leases(self.now())
         self.launch()
@@ -289,6 +295,8 @@ class Director:
                                     float(e.get("severity", 0.3)), self.adapter.chronicle_trigger(e))
             if e.get("type") == "art_created" and art_enabled(self):
                 self.art.note(e, self.bridge.env.game)
+            self.concerns.on_event(e)
+            self.grudges.on_event(e)
             self.react(e)
 
     def react(self, e: dict) -> None:
@@ -300,7 +308,8 @@ class Director:
             return
         sev = float(e.get("severity", 0))
         floor = self.cfg.ambient_min_severity if cls <= Cls.SOCIAL else self.cfg.event_min_severity
-        if sev < floor:
+        reunion = self.grudges.reunion_for(e)      # the chat a seek_out for a grudge leads to: always a conversation
+        if sev < floor and not reunion:
             return                                   # salience first: low scores never reach the model
         now = self.now()
         ex = REQUEST_EXPIRY[cls]
@@ -320,7 +329,7 @@ class Director:
             self.gate.skipped_events += 1             # no words, no memory of words, for a romantic move with a minor
             self.gate.note("vanilla_romance", ref=vanilla["ref"], initiator=vanilla["initiator"], recipient=vanilla["recipient"])
             return
-        if vanilla and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
+        if vanilla and not reunion and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
             # The game's own interaction: one line for it, in its priority tier (chitchat only when idle).
             vcls = Cls.SOCIAL if vanilla["tier"] == "high" else Cls.AMBIENT
             item = self.leases.make_item(vanilla["initiator"], "vanilla_social", born, e, listener=vanilla["recipient"],
@@ -329,8 +338,11 @@ class Director:
             return
         pair = self.adapter.conversation_pair(e)
         if pair and pair[0] in self.minds and pair[1] in self.minds:
+            payload = {"conversation": True}
+            if reunion:
+                payload.update(reunion=self.grudges.note_for(reunion), reunion_id=f"{reunion.holder}|{reunion.grudge}")
             item = self.leases.make_item(pair[0], etype, born, e, listener=pair[1], cls=Cls.SOCIAL,
-                                         payload={"conversation": True})
+                                         payload=payload)
             self.leases.submit(item, now, self.bridge.env.speed)
             return
         cands = [i for i in ids if i in self.minds and i in witnesses]
@@ -409,6 +421,8 @@ class Director:
                               self.cfg.memory_merge_similarity)
             if r["merged"] or r["dropped"]:
                 self.dirty.add(aid)
+        self.concerns.upkeep()
+        self.grudges.upkeep()
 
     @staticmethod
     def _report(t: asyncio.Task) -> None:
@@ -438,7 +452,8 @@ class Director:
             known |= {p for p in m.people if p in self.names}
         led = self.ledger.known_to(aid)
         thoughts = ([t.text for t in inner.recent_inner(mind, 3)] if self.cfg.inner_monologue else None)
-        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts)
+        worries = concerns_mod.worry_lines(mind) if self.cfg.concerns else None
+        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts, worries)
         lease.data.update(prefix=prefix, turns=[], snap=snap)
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
@@ -465,6 +480,8 @@ class Director:
             if item.kind == "player_talk":
                 trigger = f"The player says to you: {item.payload['text']}"
                 lease.data["talk_id"] = item.payload["talk_id"]
+            elif item.payload.get("trigger"):         # a payoff line (core/concerns.py): the trigger is made for it
+                trigger = item.payload["trigger"]
             elif vanilla:
                 trigger = vanilla["sentence"] or (item.event or {}).get("summary", item.kind)
             else:
@@ -613,6 +630,7 @@ class Director:
         self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent, "delivery": kind,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
         if applied:
+            self.grudges.on_say(aid, listener, sp.intent, applied)
             await self._inner_after_say(aid, sp, minor or self.is_minor(aid) or self.is_minor(listener))
         told = self.adapter.told_intents()
         # the agent records only what the game applied
@@ -636,6 +654,9 @@ class Director:
             self._conv_n += 1
             conv = Conversation(f"c-{self._conv_n}", a, b, {a: self.names[a], b: self.names[b]})
             summary = (item.event or {}).get("summary", "")
+            if item.payload.get("reunion"):
+                summary = f"{summary} {item.payload['reunion']}".strip()
+                conv.reunion = item.payload["reunion_id"]
             leases = {a: lease_a, b: lease_b}
             ctxs = {}
             for aid, trig in ((a, f"{summary} You start talking to {self.names[b]}."),
@@ -705,6 +726,7 @@ class Director:
                                             preempted=lease_a.preempted or lease_b.preempted)
             if conv.turns:
                 await self.finish_conversation(conv, leases)
+                self.grudges.on_conversation_done(conv, self.bridge.env.game)
         except asyncio.CancelledError:
             raise
         except Exception:
