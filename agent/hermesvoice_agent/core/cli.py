@@ -50,7 +50,15 @@ async def _test(cfg: Config) -> int:
 async def _replay(cfg: Config, adapter: GameAdapter, path: str, use_llm: bool) -> int:
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "replay-calls.jsonl")) if use_llm else None
     for item in await adapter.replay(path, cfg, llm):
-        if "dropped" in item:
+        k = item.get("kind")
+        if k == "reflection":
+            print(f"[reflection] {item['name']}: {item['bio']}  wants: {'; '.join(item['wants'])}"
+                  f"  (relations {item['relations']}, merged {item['merged']})")
+        elif k == "diary":
+            print(f"[diary day {item['day'] + 1}] {item['name']}: {item['text']}")
+        elif k == "chronicle":
+            print(f"[chronicle day {item['day'] + 1}{' major' if item['entry_kind'] == 'major' else ''}] {item['text']}")
+        elif "dropped" in item:
             print(f"  (actor {item['actor']} dropped: {item['dropped']})")
         else:
             tag = f" -> {item['intent']}" if item["intent"] != "none" else ""

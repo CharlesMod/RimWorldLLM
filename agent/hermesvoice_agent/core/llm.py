@@ -45,7 +45,7 @@ class LLMClient(Protocol):
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
                        grammar: str | None = None, temperature: float | None = None,
-                       actor: int | None = None) -> Completion: ...
+                       actor: int | None = None, json_schema: dict | None = None) -> Completion: ...
 
 
 def gemma_prompt(messages: Messages) -> str:
@@ -89,7 +89,7 @@ class HttpLLM:
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
                        grammar: str | None = None, temperature: float | None = None,
-                       actor: int | None = None) -> Completion:
+                       actor: int | None = None, json_schema: dict | None = None) -> Completion:
         stop = ["\n"] if stop is None else stop
         t0 = time.perf_counter()
         st = CallStats(kind=kind, slot=slot, actor=actor)
@@ -101,6 +101,8 @@ class HttpLLM:
                     body["id_slot"] = slot
                 if grammar:
                     body["grammar"] = grammar
+                if json_schema:
+                    body["json_schema"] = json_schema
                 r = await self.http.post(self.base.removesuffix("/v1") + "/completion",
                                          json=body, headers=self._headers())
                 data = self._ok(r)
@@ -120,6 +122,8 @@ class HttpLLM:
                     body["id_slot"] = slot
                 if grammar:
                     body["grammar"] = grammar
+                if json_schema:
+                    body["json_schema"] = json_schema
                 r = await self.http.post(self.base + "/chat/completions", json=body,
                                          headers=self._headers())
                 data = self._ok(r)

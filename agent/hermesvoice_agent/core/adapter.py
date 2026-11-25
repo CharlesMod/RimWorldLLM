@@ -52,6 +52,15 @@ class GameAdapter(Protocol):
 
     units_per_day: int                  # game-time units in one "day" (memory decay, quotas)
 
+    # prompt wording for the idle work (core supplies the facts, the adapter the voice and flavour)
+    reflection_system: str              # how to rewrite the evolving bio, wants, relations (bio person and length)
+    reflection_request: str
+    diary_system: str                   # a short first-person entry from the day's memories
+    diary_request: str
+    chronicle_system: str               # the narrator's community chronicle paragraph
+    chronicle_request: str
+    chronicle_summary_system: str       # folding an old entry into the running summary
+
     def default_bridge_json(self) -> Path: ...
     def is_controlled(self, actor_id: int) -> bool: ...                    # the player's own character: others talk to it, it has no mind here
 
@@ -64,6 +73,10 @@ class GameAdapter(Protocol):
     def conversation_pair(self, event: dict) -> tuple[int, int] | None: ...
     def is_urgent_visual(self, event: dict) -> bool: ...                   # shown as combat/alert in the game's log
     def is_ledger_end(self, event: dict) -> bool: ...
+    def is_private(self, event: dict, actor_id: int) -> bool: ...          # a secret for this actor from the start
+    def is_major_threat(self, event: dict) -> bool: ...                    # bypasses the narrator's minimum gap
+    def chronicle_worthy(self, event: dict) -> bool: ...                   # goes into the day's chronicle notes
+    def chronicle_trigger(self, event: dict) -> bool: ...                  # writes a chronicle entry now (death, big fight ends)
     def told_intents(self) -> dict[str, str]: ...
     def about_intents(self) -> set[str]: ...                               # intents that must name a third actor (gossip)                          # intent -> visibility of the told memory
 

@@ -18,8 +18,10 @@ from . import memory
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
+from .chronicle import Chronicle
 from .config import Config
 from .conversation import Conversation, template_memory, template_relation
+from .idle import IdleRunner
 from .ledger import Ledger
 from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, WorkItem
 from .llm import LLMClient, LLMError
@@ -29,6 +31,27 @@ from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
 log = logging.getLogger("hermesvoice")
+
+
+def merge_player_edits(mind: Mind, theirs: dict | None) -> bool:
+    """After a PUT /mind conflict: the player's edits in the game's blob win over ours (director's notes
+    and notes_rev, an edited voice card); every other field stays ours. Returns True if anything was taken."""
+    if not theirs:
+        return False
+    took = False
+    if theirs.get("notes_edited_by_player"):
+        mind.notes = theirs.get("notes", mind.notes)
+        mind.notes_rev = int(theirs.get("notes_rev", mind.notes_rev))
+        mind.notes_edited_by_player = True
+        took = True
+    v = theirs.get("voice") or {}
+    if v.get("edited_by_player"):
+        try:
+            mind.voice = type(mind.voice).model_validate(v)
+            took = True
+        except Exception:
+            pass
+    return took
 
 
 class Director:
@@ -60,6 +83,10 @@ class Director:
         self.line_count: dict[int, int] = {}     # per-actor lines spoken (drives the habit rule)
         self._conv_n = 0
         self._started = False
+        self.chronicle = Chronicle(cfg.data_dir, self.day)
+        self.idle = IdleRunner(self)
+        self._upkeep_day = -1
+        self._last_cover: Now | None = None
 
     # ---- clock ----------------------------------------------------------
     def now(self) -> Now:
@@ -109,6 +136,8 @@ class Director:
         self.revs[aid] = rev
         self.minds[aid] = mind
         self.weights[aid] = self.adapter.talk_weight(snap)
+        if not blob:
+            mind.last_reflect_time = self.bridge.env.game      # the interval starts when we first meet them
         if await ensure_mind_built(mind, snap, self.names, self.adapter, self.llm, self.cfg.use_llm_voice_cards):
             self.dirty.add(aid)
         return mind
@@ -119,7 +148,9 @@ class Director:
             t.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)
         self.tasks.clear()
+        self.idle.preempt("reload")
         self.minds.clear(); self.revs.clear(); self.dirty.clear()
+        self._upkeep_day = -1
         self.ledger.clear()
         self.leases.leases.clear(); self.leases.queue.clear(); self.leases.last_signature.clear()
         self.events.reset()
@@ -128,6 +159,7 @@ class Director:
             return                      # no world loaded: nothing to read
         await self.refresh_config()
         await self.load_world()
+        self.chronicle.rollback(self.bridge.env.game)      # the chronicle follows the save back in time
 
     # ---- main loop ------------------------------------------------------
     async def step(self) -> None:
@@ -139,6 +171,8 @@ class Director:
             await self.roster_ids()      # events were lost: resync the ledger from the roster
         await self.ingest(events)
         await self.take_talk()
+        self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
+        self.daily_upkeep()
         self.leases.expire(self.now())
         self.leases.expire_leases(self.now())
         self.launch()
@@ -156,7 +190,9 @@ class Director:
 
     async def drain(self) -> None:
         while self.tasks:
-            await asyncio.gather(*list(self.tasks), return_exceptions=True)
+            await asyncio.wait(list(self.tasks))
+            self.tasks.difference_update([t for t in self.tasks if t.done()])   # cancelled idle jobs finish too
+            await asyncio.sleep(0)
 
     # ---- events ---------------------------------------------------------
     async def ingest(self, events: list[dict]) -> None:
@@ -167,6 +203,9 @@ class Director:
                     await self.load_actor(aid)
             written = memory.remember_event(self.minds, e, self.adapter)
             self.dirty.update(aid for aid, _ in written)
+            if self.adapter.chronicle_worthy(e):
+                self.chronicle.note(e.get("game", self.bridge.env.game), e.get("summary", ""),
+                                    float(e.get("severity", 0.3)), self.adapter.chronicle_trigger(e))
             self.react(e)
 
     def react(self, e: dict) -> None:
@@ -235,15 +274,40 @@ class Director:
             self._spawn(self.run_conversation(item, lease) if item.payload.get("conversation")
                         else self.serve(item, lease))
         for item in list(self.leases.queue):
-            if self.leases.narrator_should_cover(item, now):
+            if self.leases.narrator_should_cover(item, now) and self._cover_allowed(item, now):
                 self.leases.queue.remove(item)
+                self._last_cover = now
                 self._spawn(self.narrator_cover(item))
+        self.idle.run_once()
 
-    def _spawn(self, coro) -> None:
+    def _cover_allowed(self, item: WorkItem, now: Now) -> bool:
+        """The narrator speaks rarely: a minimum gap on both clocks, bypassed by deaths and major threats."""
+        if item.event and self.adapter.is_major_threat(item.event):
+            return True
+        last = self._last_cover
+        if last is None:
+            return True
+        return (now.game - last.game >= self.cfg.narrator_min_gap_game
+                or now.real - last.real >= self.cfg.narrator_min_gap_real_s)
+
+    def _spawn(self, coro) -> asyncio.Task:
         t = asyncio.ensure_future(coro)
         self.tasks.add(t)
         t.add_done_callback(self.tasks.discard)
         t.add_done_callback(self._report)
+        return t
+
+    def daily_upkeep(self) -> None:
+        """Once per game day: merge similar old memories and drop decayed ones, for every mind."""
+        today = self.bridge.env.game // self.day
+        if today == self._upkeep_day:
+            return
+        self._upkeep_day = today
+        for aid, mind in self.minds.items():
+            r = memory.upkeep(mind, self.bridge.env.game, self.day, self.cfg.memory_floor,
+                              self.cfg.memory_merge_similarity)
+            if r["merged"] or r["dropped"]:
+                self.dirty.add(aid)
 
     @staticmethod
     def _report(t: asyncio.Task) -> None:
@@ -305,6 +369,7 @@ class Director:
             mind = self.minds[aid]
             listener = self._listener(scene, aid, item.listener)
             lname = self.names.get(listener) if listener is not None else None
+            ctx.secrets = memory.secret_texts(mind, lname)
             lease.generating = True
             res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                               turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
@@ -373,11 +438,9 @@ class Director:
         told = self.adapter.told_intents()
         # the agent records only what the game applied
         if applied and listener in self.minds and sp.intent in told:
-            m = memory.remember_told(self.minds[listener], aid, self.names.get(aid, "someone"),
-                                     f"{self.names.get(aid)} told me: {sp.text}", self.bridge.env.game,
-                                     people=[aid] + ([about] if about is not None else []))
-            m.visibility = told[sp.intent]
-            self.dirty.add(listener)
+            if memory.record_told_line(self.minds, aid, listener, self.names, sp.text, self.bridge.env.game,
+                                       told[sp.intent], about):
+                self.dirty.update((aid, listener))
         return True
 
     # ---- conversations --------------------------------------------------
@@ -405,6 +468,7 @@ class Director:
                 li = leases[sp_id]
                 lis = conv.listener_of(sp_id)
                 li.generating = True
+                ctxs[sp_id].secrets = memory.secret_texts(self.minds[sp_id], self.names.get(lis))
                 res = await speak(self.llm, slot=li.slot, mind=self.minds[sp_id], name=self.names[sp_id],
                                   prefix=li.data["prefix"], turns=conv.turns_for_prompt(),
                                   turn_no=len(conv.turns) // 2, ctx=ctxs[sp_id],
@@ -520,7 +584,9 @@ class Director:
                 except BridgeError as e:
                     if e.code != "conflict":
                         raise
-                    _, self.revs[aid] = await self.bridge.get_mind(aid)   # stale rev: take the game's, retry once
+                    theirs, self.revs[aid] = await self.bridge.get_mind(aid)   # stale rev: take the game's, retry once
+                    if merge_player_edits(mind, theirs):
+                        blob = mind.to_blob(self.bridge.env.game, self.day)
                     self.revs[aid] = await self.bridge.put_mind(aid, blob, self.revs[aid])
                 self.dirty.discard(aid)
             except BridgeError as e:

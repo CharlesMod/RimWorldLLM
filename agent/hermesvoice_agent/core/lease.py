@@ -17,6 +17,7 @@ from typing import Callable
 
 
 class Cls(enum.IntEnum):
+    IDLE = 0        # reflection and diaries: only in idle time, preempted by anything
     AMBIENT = 1     # background chatter
     SOCIAL = 2
     REACTIVE = 3    # reactions to events that happened to someone
@@ -32,6 +33,7 @@ class Expiry:
 
 # player never; urgent 5 s; social and ambient 20 s; event reactions 5,000 units.
 REQUEST_EXPIRY: dict[Cls, Expiry] = {
+    Cls.IDLE: Expiry(None, None),
     Cls.PLAYER: Expiry(None, None),
     Cls.URGENT: Expiry(600, 5.0),
     Cls.REACTIVE: Expiry(5000, 60.0),
@@ -40,7 +42,7 @@ REQUEST_EXPIRY: dict[Cls, Expiry] = {
 }
 # how long a lease may sit without activity before it ends by rule
 LEASE_IDLE_TTL_S: dict[Cls, float] = {
-    Cls.PLAYER: 300.0, Cls.URGENT: 30.0, Cls.REACTIVE: 30.0, Cls.SOCIAL: 40.0, Cls.AMBIENT: 15.0}
+    Cls.IDLE: 300.0, Cls.PLAYER: 300.0, Cls.URGENT: 30.0, Cls.REACTIVE: 30.0, Cls.SOCIAL: 40.0, Cls.AMBIENT: 15.0}
 
 
 @dataclass
@@ -247,7 +249,7 @@ class LeaseManager:
 
     # ---- narrator -------------------------------------------------------
     def windows_idle(self) -> bool:
-        return not self.leases and not self.queue
+        return not any(l.cls > Cls.IDLE for l in self.leases.values()) and not self.queue
 
     def narrator_may_do_idle_work(self) -> bool:
         """Chronicle, diary, reflection: only when no window is leased and nothing is queued."""

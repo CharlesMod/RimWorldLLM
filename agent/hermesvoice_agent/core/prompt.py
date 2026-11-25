@@ -45,9 +45,9 @@ def block_b(mind: Mind) -> str:
 
 
 def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6) -> str:
-    rels = sorted(mind.relations.items(), key=lambda kv: (-abs(kv[1].opinion or 0), kv[0]))[:max_rel]
+    """Changes only when a reflection runs: bio, wants and the relations digest are all written there."""
     lines = []
-    for pid, r in rels:
+    for r in mind.c_relations[:max_rel]:
         op = f", opinion {r.opinion:+d}" if r.opinion is not None else ""
         lines.append(f"- {r.name}{op}: {r.feeling}" + (f" {r.history}" if r.history else ""))
     s = "=== WHO YOU ARE BECOMING ===\n" + (mind.evolving_bio or "(nothing yet)") + "\n"
@@ -63,6 +63,8 @@ def block_d(memories: list[Memory], ledger_lines: list[str]) -> str:
         tag = {"saw": "", "heard": " (heard)", "told": f" (told by {m.told_by}, not sure)"}[m.source]
         if m.visibility == "private":
             tag += " [private]"
+        elif m.visibility == "told" and m.told_to:
+            tag += f" [private, told to {', '.join(m.told_to)}]"
         return f"- {m.text}{tag}"
     ms = "\n".join(mline(m) for m in memories) or "- nothing in particular"
     led = "\n".join(f"- {l}" for l in ledger_lines) or "- nothing ongoing that you know of"

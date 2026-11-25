@@ -41,6 +41,8 @@ class FakeBridge:
         self.max_kept = 2000
         self.say_log: list[dict] = []
         self.thought_log: list[dict] = []
+        self.chronicle_log: list[dict] = []
+        self.chronicle_supported = False       # POST /chronicle is a proposal, off unless a test enables it
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -159,6 +161,10 @@ class FakeBridge:
             return self._ok(**res)
         if path == "/thought" and req.method == "POST":
             self.thought_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok()
+        if path == "/chronicle" and req.method == "POST" and self.chronicle_supported:
+            self.chronicle_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok()
         return self._err(404, "not_found", path)

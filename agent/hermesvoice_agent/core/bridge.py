@@ -49,7 +49,8 @@ class Bridge(Protocol):
                   conversation_id: str | None = None, combat: bool = False, talk_id: str | None = None,
                   expires_at: int | None = None, op_id: str | None = None,
                   about: int | None = None) -> dict: ...
-    async def thought(self, actor: int, text: str, op_id: str | None = None) -> dict: ...
+    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict: ...
+    async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict: ...
     async def aclose(self) -> None: ...
 
 
@@ -171,9 +172,17 @@ class BridgeClient:
             body["talk_id"] = talk_id
         return await self._req("POST", "/say", json_body=self._write_body(body, expires_at, op_id))
 
-    async def thought(self, actor: int, text: str, op_id: str | None = None) -> dict:
-        return await self._req("POST", "/thought",
-                               json_body=self._write_body({self.protocol.actor_field: actor, "text": text}, None, op_id))
+    async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict:
+        """Inner monologue. ``kind`` ("diary") is a proposed optional field; omitted for plain thoughts."""
+        body: dict[str, Any] = {self.protocol.actor_field: actor, "text": text}
+        if kind:
+            body["kind"] = kind
+        return await self._req("POST", "/thought", json_body=self._write_body(body, None, op_id))
+
+    async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict:
+        """Proposed endpoint (not in the contract yet): store a chronicle entry beside the save."""
+        return await self._req("POST", "/chronicle",
+                               json_body=self._write_body({"day": day, "text": text, "kind": kind}, None, op_id))
 
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int:
         b = await self._req("PUT", f"{self.protocol.mind_path}/{actor_id}",
