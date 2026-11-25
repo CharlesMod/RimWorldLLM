@@ -92,6 +92,7 @@ class Config(BaseModel):
     diary_enabled: bool = True
     diary_day_fraction: float = 0.6    # write a day's entry once this much of the day has passed
     diary_max_tokens: int = 160
+    wants: bool = True                 # wants with follow-through (core/wants.py); also needs the mod's wants_enabled
     chronicle_enabled: bool = True
     chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
     chronicle_max_tokens: int = 220
