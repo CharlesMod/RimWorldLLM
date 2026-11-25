@@ -81,3 +81,42 @@ namespace HermesVoice.Tests
         }
     }
 }
+
+namespace HermesVoice.Tests
+{
+    public class PawnHueTests
+    {
+        [Fact]
+        public void HueIsStableAndInRange()
+        {
+            for (int id = 0; id < 2000; id++)
+            {
+                float h = PawnHue.HueFor(id);
+                Assert.InRange(h, 0f, 0.99999f);
+                Assert.Equal(h, PawnHue.HueFor(id));
+            }
+        }
+
+        [Fact]
+        public void HuesSpreadAcrossTheWheel()
+        {
+            var buckets = new bool[12];
+            for (int id = 1000; id < 1040; id++) buckets[(int)(PawnHue.HueFor(id) * 12)] = true;
+            int hit = 0; foreach (var b in buckets) if (b) hit++;
+            Assert.True(hit >= 10);
+        }
+
+        [Fact]
+        public void TextShadeIsBrightAndBackgroundShadeIsDark()
+        {
+            for (int id = 0; id < 360; id++)
+            {
+                float r, g, b;
+                PawnHue.Hsv(PawnHue.HueFor(id), 0.35f, 1f, out r, out g, out b);
+                Assert.True(PawnHue.Luma(r, g, b) > 0.6f);
+                PawnHue.Hsv(PawnHue.HueFor(id), 0.6f, 0.22f, out r, out g, out b);
+                Assert.True(PawnHue.Luma(r, g, b) < 0.25f);
+            }
+        }
+    }
+}

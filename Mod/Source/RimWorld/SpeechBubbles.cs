@@ -34,6 +34,15 @@ namespace HermesVoice
 
         public static void Clear() { Active.Clear(); }
 
+        /// <summary>Fill, border and text colours for a pawn: one stable hue, dark fill, mid border, pale text.</summary>
+        public static void PawnColors(int pawnId, out Color bg, out Color border, out Color text)
+        {
+            float h = Bridge.PawnHue.HueFor(pawnId), r, g, b;
+            Bridge.PawnHue.Hsv(h, 0.6f, 0.22f, out r, out g, out b); bg = new Color(r, g, b, 0.92f);
+            Bridge.PawnHue.Hsv(h, 0.7f, 0.95f, out r, out g, out b); border = new Color(r, g, b, 1f);
+            Bridge.PawnHue.Hsv(h, 0.3f, 1f, out r, out g, out b); text = new Color(r, g, b, 1f);
+        }
+
         public static void DrawBubbles()
         {
             if (Event.current == null || Event.current.type != EventType.Repaint) return;
@@ -86,9 +95,13 @@ namespace HermesVoice
                 float boxH = h + pad * 2f;
                 Rect boxRect = new Rect(screenPos.x - w * 0.5f, screenPos.y - boxH - 8f, w, boxH);
 
-                GUI.color = new Color(0.05f, 0.06f, 0.09f, 0.9f);
-                Widgets.DrawBox(boxRect, 1, null);
-                GUI.color = Color.white;
+                Color bg = new Color(0.05f, 0.06f, 0.09f, 0.9f), border = new Color(0.4f, 0.42f, 0.5f, 1f), text = Color.white;
+                if (s.colorBubbles) PawnColors(pawn.thingIDNumber, out bg, out border, out text);
+                // The box carries its own dark fill, so the text reads on both dark and light terrain.
+                Widgets.DrawBoxSolid(boxRect, bg);
+                GUI.color = border;
+                Widgets.DrawBox(boxRect, 2, null);
+                GUI.color = text;
 
                 Widgets.Label(boxRect.ContractedBy(pad), display);
                 Text.Font = prevFont;

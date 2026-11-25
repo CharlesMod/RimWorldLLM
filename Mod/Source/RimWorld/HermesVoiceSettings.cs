@@ -22,6 +22,7 @@ namespace HermesVoice
         // Dialogue display.
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
+        public bool colorBubbles = true;
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -56,6 +57,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref sharedToken, "sharedToken", "");
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
+            Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);
