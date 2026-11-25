@@ -15,7 +15,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, bystanders, firsts, gossip, lore, memory, recap
+from . import agegate, bystanders, firsts, gossip, group, lore, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -120,6 +120,7 @@ class Director:
         self.inner_rng = random.Random(11)         # its own stream, so the chance roll never shifts the others
         self.cloud_gate = inner.CloudGate()        # contrast clouds: per-actor rate limit on the play clock
         self.first_cap = firsts.DayCap()           # first-time lines per actor per day (core/firsts.py)
+        self.group = group.GroupState()            # gathering talk: seen keys, counters (core/group.py)
         self.bystand = bystanders.Bystanders()     # bystander reactions: rate limit and counters (core/bystanders.py)
 
     # ---- clock ----------------------------------------------------------
@@ -301,6 +302,8 @@ class Director:
             if e.get("type") == dreams.SLEEP_EVENT:       # a sleeper's night, not a memory: it only queues a dream
                 self.dream_book.note(e, self, self.bridge.env.game)
                 continue
+            if await group.handle(self, e):             # a gathering: its own scene, no memory of the bare event (core/group.py)
+                continue
             fm = self._first_marks(e)
             if e.get("type") == "first_cue" and not fm:
                 continue                                 # a signal only: nobody here meets it for the first time
@@ -334,6 +337,8 @@ class Director:
             return                                   # player talk arrives through take_talk
         if self.bridge_cfg.get("events", {}).get(etype) is False:
             return
+        if etype == "funeral" and group.owns_funeral(self):
+            return                                   # its gathering speaks for it (core/group.py)
         sev = float(e.get("severity", 0))
         floor = self.cfg.ambient_min_severity if cls <= Cls.SOCIAL else self.cfg.event_min_severity
         reunion = self.grudges.reunion_for(e)      # the chat a seek_out for a grudge leads to: always a conversation
@@ -424,6 +429,7 @@ class Director:
         for item, lease in self.leases.pop_runnable(now):
             self._spawn(self.run_conversation(item, lease) if item.payload.get("conversation")
                         else self.run_bystander(item, lease) if item.payload.get("bystander")
+                        else group.run(self, item, lease) if item.payload.get("gathering")
                         else self.serve(item, lease))
         for item in list(self.leases.queue):
             if self.leases.narrator_should_cover(item, now) and self._cover_allowed(item, now):
