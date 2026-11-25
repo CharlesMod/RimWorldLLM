@@ -61,6 +61,8 @@ class GameAdapter(Protocol):
     diary_request: str
     chronicle_system: str               # the narrator's community chronicle paragraph
     chronicle_request: str
+    recap_system: str                   # the load-time "previously on" recap (3 lines)
+    recap_request: str
     chronicle_summary_system: str       # folding an old entry into the running summary
 
     def default_bridge_json(self) -> Path: ...

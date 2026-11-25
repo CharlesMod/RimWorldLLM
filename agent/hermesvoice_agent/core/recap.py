@@ -1,4 +1,4 @@
-"""The "Previously on <colony>..." recap shown when the player loads a save (aliveness item 12).
+"""The "Previously on ..." recap shown when the player loads a save (aliveness item 12).
 
 One narrator-slot call, once per save epoch, built from the save's own chronicle (the mod's copy is the truth after a
 load). The result is 3 short lines POSTed to /recap; the mod decides whether to show them (only right after a load, once
@@ -27,24 +27,17 @@ LINES = 3
 LINE_CHARS = 160
 MAX_TOKENS = 90
 
-RECAP_SYSTEM = (
-    "You write the 'Previously on...' recap that greets the player when a saved RimWorld colony is loaded, like the "
-    "start of a TV episode. Third person, past tense, plain words, a little dry. Use only what the chronicle entries "
-    "say; never invent people, places or numbers, never propose or predict events, never address the player.")
-RECAP_REQUEST = (
-    f"Write exactly {LINES} lines, one short sentence each, under 20 words, most recent last, the last line ending on "
-    "what is still unresolved. No title, no numbering, no quotes.")
 
 _LEAD = re.compile(r"^\s*(?:[-*•>]+|\d+[.)])\s*")
 _SENT = re.compile(r"(?<=[.!?])\s+")
 
 
-def messages(entries: list[dict], day_label=lambda e: int(e.get("day", 0)) + 1) -> list[tuple[str, str]]:
+def messages(adapter, entries: list[dict], day_label=lambda e: int(e.get("day", 0)) + 1) -> list[tuple[str, str]]:
     """System + user messages for the recap call. Every chronicle text is cleaned and wrapped as game data."""
     body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}"
                      for e in entries[-USE_ENTRIES:])
-    user = f"=== CHRONICLE (oldest first) ===\n{gd.data_section('chronicle', body)}=== REQUEST ===\n{RECAP_REQUEST}"
-    return [("system", RECAP_SYSTEM + "\n\n" + gd.DATA_RULE), ("user", user)]
+    user = f"=== CHRONICLE (oldest first) ===\n{gd.data_section('chronicle', body)}=== REQUEST ===\n{adapter.recap_request}"
+    return [("system", adapter.recap_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
 
 def parse_lines(raw: str) -> list[str]:
@@ -71,7 +64,7 @@ def fallback_lines(entries: list[dict], minor_names: set[str] | None = None) -> 
 async def build(d: "Director", entries: list[dict]) -> list[str]:
     """The recap lines (1 to 3), from the model when it gives usable lines, else from the chronicle itself."""
     minors = d.minor_tokens()
-    msgs = messages(entries)
+    msgs = messages(d.adapter, entries)
     allnames = set().union(*d.name_tokens.values()) if d.name_tokens else set()
     lines: list[str] = []
     try:

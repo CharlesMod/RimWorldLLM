@@ -1,5 +1,6 @@
 from conftest import run
 from hermesvoice_agent.core import recap as rc
+from hermesvoice_agent.games.rimworld import RimWorldAdapter
 
 ENTRIES = [
     {"day": 1, "kind": "day", "text": "Ana dug the first trench. Bram sulked.", "tick": 1},
@@ -134,6 +135,6 @@ def test_mod_refusal_is_not_an_error(world):
 
 
 def test_messages_are_short():
-    m = rc.messages(ENTRIES)
+    m = rc.messages(RimWorldAdapter(), ENTRIES)
     words = sum(len(t.split()) for _, t in m)
     assert words < 260
