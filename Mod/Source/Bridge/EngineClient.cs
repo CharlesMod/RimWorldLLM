@@ -65,6 +65,22 @@ namespace HermesVoice.Bridge
         [JsonProperty("model_fallback")] public bool ModelFallback;
         /// <summary>What to expect from the fallback model, one sentence from the engine (empty otherwise).</summary>
         [JsonProperty("model_note")] public string ModelNote;
+        /// <summary>"starter" while a stand-in model answers and the chosen one downloads; "full" for the chosen model.</summary>
+        [JsonProperty("model_tier")] public string ModelTier;
+        /// <summary>starter_downloading, target_downloading, target_retrying, target_no_space, swapping, starter_serving, target_serving.</summary>
+        [JsonProperty("model_stage")] public string ModelStage;
+        [JsonProperty("upgrade")] public EngineUpgrade Upgrade;
+    }
+
+    /// <summary>The background download of the chosen model while a starter model serves (engine ENGINE.md §7a).</summary>
+    public sealed class EngineUpgrade
+    {
+        [JsonProperty("target")] public string Target;
+        [JsonProperty("target_name")] public string TargetName;
+        [JsonProperty("state")] public string State;
+        [JsonProperty("progress")] public EngineProgress Progress;
+        [JsonProperty("error")] public string Error;
+        [JsonProperty("retry_in_s")] public double RetryInSeconds;
     }
 
     public sealed class EngineGpu

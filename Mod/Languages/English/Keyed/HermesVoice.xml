@@ -300,6 +300,10 @@
 Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Fallback_StatusLine>Warning: the smallest (fallback) model is in use. {0}</HV_Fallback_StatusLine>
   <HV_Fallback_MessageText>HermesVoice is using its smallest model. Speech will be simpler and may repeat. To change it, open Options, Mod settings, HermesVoice, then "Set up / Change model...".</HV_Fallback_MessageText>
+  <HV_Starter_MessageText>HermesVoice is talking with a small starter model while the full model downloads. Speech will be simpler until it switches over by itself.</HV_Starter_MessageText>
+  <HV_Starter_ReadyText>HermesVoice switched to the full model ({0}).</HV_Starter_ReadyText>
+  <HV_Starter_StatusLine>Starter model: simpler speech while the full model downloads ({0}%).</HV_Starter_StatusLine>
+  <HV_Starter_StatusLineNoPct>Starter model: simpler speech while the full model downloads.</HV_Starter_StatusLineNoPct>
   <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
   <!-- Director camera -->
   <HV_Camera_ButtonOn>Director camera: on</HV_Camera_ButtonOn>

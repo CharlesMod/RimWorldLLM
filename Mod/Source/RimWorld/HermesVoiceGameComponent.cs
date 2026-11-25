@@ -53,13 +53,32 @@ namespace HermesVoice
 
         static readonly Bridge.FallbackNotice _fallbackNotice = new Bridge.FallbackNotice();
 
+        static readonly Bridge.StarterWatch _starter = new Bridge.StarterWatch();
+
+        // Fast first run: say once that a starter model is speaking while the full one downloads, and once when it is in.
+        static void CheckStarter()
+        {
+            if (!_starter.KeepPolling && !_fallbackNotice.Armed) return;
+            EngineManager.Touch();
+            switch (_starter.Update(EngineManager.Status != null, EngineManager.Status != null ? EngineManager.Status.ModelTier : null))
+            {
+                case Bridge.StarterWatch.Event.Starter:
+                    Messages.Message(UiUtil.T("HV_Starter_MessageText"), MessageTypeDefOf.NeutralEvent, false);
+                    break;
+                case Bridge.StarterWatch.Event.Ready:
+                    Messages.Message(UiUtil.T("HV_Starter_ReadyText", EngineManager.TargetName()), MessageTypeDefOf.PositiveEvent, false);
+                    break;
+            }
+        }
+
         static void CheckFallbackNotice()
         {
+            CheckStarter();
             long now = Environment.TickCount64;
             bool hidden = HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.hideFallbackWarning;
             if (!_fallbackNotice.Waiting(now, hidden)) return;
             EngineManager.Touch();
-            if (_fallbackNotice.Check(now, EngineManager.Status != null, EngineManager.FallbackInUse, hidden))
+            if (_fallbackNotice.Check(now, EngineManager.Status != null, EngineManager.FallbackInUse && !EngineManager.StarterInUse, hidden))
                 Messages.Message(UiUtil.T("HV_Fallback_MessageText"), MessageTypeDefOf.NeutralEvent, false);
         }
 
