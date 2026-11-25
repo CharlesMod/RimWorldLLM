@@ -11,6 +11,7 @@ namespace HermesVoice
     {
                 public static HermesVoiceGameComponent Instance { get; private set; }
         public readonly ConversationLog ConversationLog = new ConversationLog();
+        public readonly Core.MindBook Minds = new Core.MindBook();
 
         public HermesVoiceGameComponent(Game game) : base()
         {
@@ -41,6 +42,7 @@ namespace HermesVoice
         public static void OnGameEnd()
         {
             HermesBridge.OpIds.Clear();
+            SayEffects.Reset();
             SpeechBubbles.Clear();
             Instance = null;
         }
@@ -63,11 +65,54 @@ namespace HermesVoice
         {
             base.ExposeData();
             Scribe_Values.Look(ref SaveEpoch, "saveEpoch", 0);
+            ExposeMinds();
             Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.PostLoadInit && ConversationLog.Entries == null)
                 ConversationLog.Entries = new List<ConversationEntry>();
         }
 
+        void ExposeMinds()
+        {
+            List<MindSave> list = null;
+            if (Scribe.mode == LoadSaveMode.Saving)
+                list = Minds.Records.Select(kv => new MindSave { Id = kv.Key, Rec = kv.Value }).ToList();
+            Scribe_Collections.Look(ref list, "hermesMinds", LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                Minds.Clear();
+                if (list != null) foreach (var m in list) if (m != null && m.Rec != null) Minds.Records[m.Id] = m.Rec;
+            }
+        }
+
         public void RestartBridge() { HermesBridge.Start(); }
+    }
+
+    /// <summary>Save wrapper for one pawn's MindRecord.</summary>
+    public class MindSave : IExposable
+    {
+        public int Id;
+        public Core.MindRecord Rec = new Core.MindRecord();
+        List<int> _ticks;
+        List<string> _texts;
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref Id, "id", 0);
+            Scribe_Values.Look(ref Rec.MindJson, "mind");
+            Scribe_Values.Look(ref Rec.Rev, "rev", 0);
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                _ticks = Rec.Thoughts.Select(t => t.Key).ToList();
+                _texts = Rec.Thoughts.Select(t => t.Value).ToList();
+            }
+            Scribe_Collections.Look(ref _ticks, "thoughtTicks", LookMode.Value);
+            Scribe_Collections.Look(ref _texts, "thoughtTexts", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && _ticks != null && _texts != null)
+            {
+                Rec.Thoughts.Clear();
+                for (int i = 0; i < Math.Min(_ticks.Count, _texts.Count); i++)
+                    Rec.Thoughts.Add(new KeyValuePair<int, string>(_ticks[i], _texts[i]));
+            }
+        }
     }
 }
