@@ -94,6 +94,14 @@ reply has `"gap": true`. Each event:
 - `about`: the id of the third pawn a `gossip` line is about. Required for `gossip`; without
   it the effect is refused with `no_about`.
 - `talk_id`: set when the line answers a `GET /talk` request, which removes that request.
+- `vanilla_ref`: optional. The `ref` of a `social` event with `data.vanilla` (below): the line was
+  written for one of the game's own interactions. The mod attaches the line to that interaction's
+  log entry and thoughts (reply `applied.attached`: `attached`, or why not: `expired`, `unknown`,
+  `wrongpair`, `alreadyattached`), shows the bubble, and applies **no** effect (`intent` is
+  ignored; `refused.effect` is `vanilla_interaction`). A line that cannot attach is spoken as a normal line.
+- One log entry per line. When an effect was applied it reads `Bram insulted Hana: "..."`
+  (the quote is the sanitised line, at most 140 characters, setting "Show quotes in thoughts and log");
+  otherwise `Bram to Hana: "..."`. The thoughts the effect gives carry the same quote and speaker.
 - The mod checks, on the game thread: speaker alive, awake, spawned, on the listener's map
   and within hearing range. Otherwise `conflict`.
 - The mod shows the bubble and writes a play-log entry (and a combat-log entry when `combat`).
@@ -102,6 +110,17 @@ reply has `"gap": true`. Each event:
   or `{"refused": {"effect": "<reason>"}}` with the bubble still shown. Reasons: `pair_cap`
   (the per-pair daily cap is reached), `effects_off`, `not_negative` (`comfort` when the
   listener has no negative mood thought), `no_about`.
+
+#### Social events for the game's own interactions
+When `Voice the game's own social interactions` is on and both pawns are voiced colonists, a `social`
+event for an interaction in the high or idle list (settings `interactionHigh`, `interactionIdle`; default
+high: Insult, Slight, KindWords, DeepTalk, RomanceAttempt, MarriageProposal, Breakup, ConvertIdeoAttempt,
+Reassure, Counsel; idle: Chitchat) carries extra `data`: `vanilla: true`, `ref` (string, send it back as
+`vanilla_ref`), `tier` (`high` or `idle`), `vanilla_text` (the sentence the game's grammar wrote, the
+line must stay on its subject), `window_ticks` (how long the line may take to attach; default 10 game
+minutes, setting `attachWindowMinutes`), plus the usual `interaction` and `interaction_label`. High tier
+events bypass the 60 s social cooldown; idle ones keep it. Romance-type interactions are never sent when
+either pawn is under 18 years biological age. The game's own thoughts, opinions and fights are untouched.
 
 ### `POST /thought`
 `{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed.", "kind": "thought"}`. `kind` is

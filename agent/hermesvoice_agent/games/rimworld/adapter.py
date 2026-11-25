@@ -21,6 +21,13 @@ _EVENT_CLASS = {
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
 }
+# What the game's own interactions are, in words the line prompt can use, so the line fits (an insult reads as an insult).
+_INTERACTION_KIND = {
+    "Insult": "an insult", "Slight": "a cutting remark that slights them", "KindWords": "kind words",
+    "Chitchat": "idle small talk", "DeepTalk": "a deep, personal conversation",
+    "RomanceAttempt": "a romantic advance", "MarriageProposal": "a marriage proposal", "Breakup": "ending their relationship",
+    "ConvertIdeoAttempt": "an attempt to win them over to a belief", "Reassure": "reassurance", "Counsel": "counsel",
+}
 _SUBJECT_ROLES = ("victim", "subject", "target")
 _FIRSTS = ("death", "mental_break", "raid_start", "quest", "funeral", "lodger_arrive")
 
@@ -125,6 +132,29 @@ class RimWorldAdapter:
             return None
         ids = [int(a["id"]) for a in event.get("actors", [])]
         return (ids[0], ids[1]) if len(ids) >= 2 else None
+
+    def vanilla_social(self, event: dict) -> dict | None:
+        """The game's own interaction between two actors, when the mod asked for words for it: reference, pair,
+        priority tier ("high" or "idle"), the game's own sentence and what kind of thing it was."""
+        data = event.get("data") or {}
+        if event.get("type") != "social" or not data.get("vanilla") or not data.get("ref"):
+            return None
+        pair = self.conversation_pair(event)
+        if pair is None:
+            return None
+        key = str(data.get("interaction", ""))
+        return {"ref": str(data["ref"]), "initiator": pair[0], "recipient": pair[1],
+                "tier": "high" if data.get("tier") == "high" else "idle",
+                "sentence": str(data.get("vanilla_text") or event.get("summary", "")).strip(),
+                "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}
+
+    def vanilla_request(self, info: dict, speaker: str, listener: str) -> str:
+        """The line request for a vanilla interaction: what the game wrote, what kind of thing it was, the same subject."""
+        s = f' The game\'s own log reads: "{info["sentence"]}".' if info["sentence"] else ""
+        return ("=== REQUEST ===\n"
+                f"{speaker} has just done something to {listener}: it is {info['kind']}.{s}\n"
+                f"Write {speaker}'s one line of speech to {listener} that goes with it. It must read as {info['kind']} "
+                "and stay on the same subject the log names. One line only.")
 
     def is_urgent_visual(self, event: dict) -> bool:
         return event.get("type") in ("injury", "death", "raid_start", "mental_break")
