@@ -233,4 +233,13 @@
   <HV_Setup_OpenPage>Open setup page in browser</HV_Setup_OpenPage>
   <HV_Eng_TokS>{0} tok/s</HV_Eng_TokS>
   <HV_Setup_Agent>Agent: {0} (restarts: {1})</HV_Setup_Agent>
+  <HV_Fallback_DefaultNote>Smallest model: expect repeated lines and weaker understanding of what was said.</HV_Fallback_DefaultNote>
+  <HV_Fallback_Badge>Fallback model</HV_Fallback_Badge>
+  <HV_Fallback_RowWarning>Warning: this is the smallest model, kept only as a fallback. {0}</HV_Fallback_RowWarning>
+  <HV_Fallback_ConfirmText>This is the smallest model, kept only as a fallback for computers that cannot run a larger one. {0}
+
+Use it anyway?</HV_Fallback_ConfirmText>
+  <HV_Fallback_StatusLine>Warning: the smallest (fallback) model is in use. {0}</HV_Fallback_StatusLine>
+  <HV_Fallback_MessageText>HermesVoice is using its smallest model. Speech will be simpler and may repeat. To change it, open Options, Mod settings, HermesVoice, then "Set up / Change model...".</HV_Fallback_MessageText>
+  <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
 </LanguageData>

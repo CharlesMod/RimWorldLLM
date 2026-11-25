@@ -311,6 +311,25 @@ namespace HermesVoice
             return line;
         }
 
+        /// <summary>True when the local engine reports that the model in use is the catalog's fallback.</summary>
+        public static bool FallbackInUse
+        {
+            get { var st = _status; return LocalSource && st != null && st.ModelFallback; }
+        }
+
+        /// <summary>The engine's note about the fallback model, or the stock sentence when it sent none.</summary>
+        public static string FallbackNote(string fromEngine)
+        {
+            return string.IsNullOrWhiteSpace(fromEngine) ? UiUtil.T("HV_Fallback_DefaultNote") : fromEngine.Trim();
+        }
+
+        /// <summary>The amber warning line for the status area, or null when the model in use is not a fallback.</summary>
+        public static string FallbackLine()
+        {
+            if (!FallbackInUse) return null;
+            return UiUtil.T("HV_Fallback_StatusLine", FallbackNote(_status.ModelNote));
+        }
+
         public static string Ctx(int ctx) { return ctx % 1024 == 0 ? (ctx / 1024) + "k" : ctx.ToString(); }
 
         public static string PhaseLabel(string phase)
