@@ -103,7 +103,7 @@ namespace HermesVoice
     {
         public const int MaxTicks = 1500;       // game ticks the whole job may take
         const long MaxRealMs = 60000;           // and real time (the pace the player sees at any speed)
-        long _startReal;
+        long _lastReal, _playMs;                // play time only: a pause (no ticks) does not count toward the limit
 
         Pawn Other { get { return (Pawn)job.GetTarget(TargetIndex.A).Thing; } }
 
@@ -113,9 +113,15 @@ namespace HermesVoice
         {
             this.FailOnDespawnedOrNull(TargetIndex.A);
             this.FailOn(() => Other.Dead || Other.Downed || Other.InMentalState || pawn.HostileTo(Other));
-            _startReal = Environment.TickCount64;
+            _lastReal = Environment.TickCount64; _playMs = 0;
             var go = Toils_Interpersonal.GotoInteractablePosition(TargetIndex.A);
-            go.AddPreTickAction(() => { if (Environment.TickCount64 - _startReal > MaxRealMs) EndJobWith(JobCondition.Incompletable); });
+            go.AddPreTickAction(() =>
+            {
+                long t = Environment.TickCount64;
+                _playMs += Math.Min(t - _lastReal, 250);  // a gap longer than a frame or two was a pause
+                _lastReal = t;
+                if (_playMs > MaxRealMs || Find.TickManager.TicksGame - startTick > MaxTicks) EndJobWith(JobCondition.Incompletable);
+            });
             yield return go;
             yield return new Toil
             {
