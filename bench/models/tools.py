@@ -1,6 +1,6 @@
 """Section 4: OpenAI-style tool calls on /v1/chat/completions with five game tools."""
 from __future__ import annotations
-import json, time
+import json, re, time
 import httpx, jsonschema
 from common import *
 
@@ -123,7 +123,7 @@ def run(choice: str):
                 row["exact"] = set(names) == exp and len(names) == 1
             else:
                 row["right"] = exp <= set(names)
-            row["tool_in_content"] = (not calls) and ("<tool_call>" in content or '"name"' in content or "tool_call" in content)
+            row["tool_in_content"] = (not calls) and bool(re.search(r"\b(?:say|remember|set_mood|start_conversation|do_nothing)\s*[\{\(]|<tool_call>|tool_call|<\|\"\|>", content))
             # second round: feed a tool result back
             if calls and st == 200:
                 am = {"role": "assistant", "content": m.get("content") or "", "tool_calls": m.get("tool_calls")}

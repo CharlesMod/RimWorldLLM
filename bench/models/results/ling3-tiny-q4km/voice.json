@@ -1,0 +1,406 @@
+{
+ "summary": {
+  "n": 72,
+  "kept": 68,
+  "pawn_id_acc_mean": 0.8491758241758243,
+  "pawn_id_acc_std": 0.06876862582660746,
+  "chance": 0.167,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 8,
+  "samples": {
+   "rook": [
+    "Hm. She's still breathing.",
+    "Hm. Moth. Sit. Eat.",
+    "Hm. Pip's sick. The bed's cold."
+   ],
+   "pip": [
+    "Okay so the raiders got Ash. Like totally bad. Biscuit... just wants to stay.",
+    "Okay so Tuk's running because the stove flare'd up, like at all. Totally not fair, and now we got to find her...",
+    "Okay so I got the two herbs, like... I gotta use them or else we're dead and that's not how it goes..."
+   ],
+   "ash": [
+    "Copy. Moth's bleeding. Three hostiles north.",
+    "Copy. The room is dirty.",
+    "The room's messy. I keep watch."
+   ],
+   "moth": [
+    "I think, well, probably it's fine.",
+    "I think, well, probably it's fine.",
+    "I think the medicine is running short, but maybe it could hold."
+   ],
+   "tuk": [
+    "I hear the bullet, I see the blood. Tuk is not going to let this one sleep.",
+    "The smoke is choking the place. I will get the fire out.",
+    "Tuk feels a cold wind on her face. The sick one must sleep."
+   ],
+   "lux": [
+    "Naturally, the chair is missing again, and the world has no taste.",
+    "Naturally, the chair is missing again.",
+    "Naturally, the fever is a luxury I cannot afford."
+   ]
+  }
+ },
+ "rows": [
+  {
+   "pawn": "rook",
+   "scene": "n01",
+   "text": "Hm. She's still breathing."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n02",
+   "text": "Hm. Moth. Sit. Eat."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n03",
+   "text": "Hm. Pip's sick. The bed's cold."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n04",
+   "text": "Hm. The soup's gone cold."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n05",
+   "text": "Hm. She's dead. I'll fix the stove."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n06",
+   "text": "Hm. Sit. Eat. Now."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n07",
+   "text": "Hm. She's not my problem."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n08",
+   "text": "Hm. Back hurts."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n09",
+   "text": "Hm. I see the fog."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n10",
+   "text": "Hm. That's a new level."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n11",
+   "text": "Hm. You're hungry. Eat."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n12",
+   "text": "Hm. Eat. It's done."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n01",
+   "text": "Okay so the raiders got Ash. Like totally bad. Biscuit... just wants to stay."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n02",
+   "text": "Okay so Tuk's running because the stove flare'd up, like at all. Totally not fair, and now we got to find her..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n03",
+   "text": "Okay so I got the two herbs, like... I gotta use them or else we're dead and that's not how it goes..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n04",
+   "text": "Okay so... I don't know what to do."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n05",
+   "text": "Okay so I'm still thinking about Hana... she was just a good person."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n06",
+   "text": "Okay so Tuk is going nuts and I'm just sitting here watching him eat everything like it's a sport... totally not fair."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n07",
+   "text": "Okay so Ash's doing it again, and I don't know what to do..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n08",
+   "text": ""
+  },
+  {
+   "pawn": "pip",
+   "scene": "n09",
+   "text": ""
+  },
+  {
+   "pawn": "pip",
+   "scene": "n10",
+   "text": "Okay so Tuk just nodded, like that's all it took. Totally not fair."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n11",
+   "text": ""
+  },
+  {
+   "pawn": "pip",
+   "scene": "n12",
+   "text": ""
+  },
+  {
+   "pawn": "ash",
+   "scene": "n01",
+   "text": "Copy. Moth's bleeding. Three hostiles north."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n02",
+   "text": "Copy. The room is dirty."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n03",
+   "text": "The room's messy. I keep watch."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n04",
+   "text": "Copy. Rain's wet."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n05",
+   "text": "Negative. The field is still red."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n06",
+   "text": "Copy. The cook is eating like a dog."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n07",
+   "text": "Eighty meters. Hold fire."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n08",
+   "text": "8. Wind. You left a tool."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n09",
+   "text": "Copy. Six hostiles, north wall."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n10",
+   "text": "Copy. Crafting at level ten."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n11",
+   "text": "1. I hate this spot."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n12",
+   "text": "Copy. Eight kibble, three meals."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n01",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n02",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n03",
+   "text": "I think the medicine is running short, but maybe it could hold."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n04",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n05",
+   "text": "I think, well, probably it's just a bad day."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n06",
+   "text": "I think, well, probably it's fine?"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n07",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n08",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n09",
+   "text": "I think, well, probably the raiders are coming."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n10",
+   "text": "I think the new discovery might just be a trick of the light."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n11",
+   "text": "I think, well, probably it's fine?"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n12",
+   "text": "I think, well, probably it's fine."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n01",
+   "text": "I hear the bullet, I see the blood. Tuk is not going to let this one sleep."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n02",
+   "text": "The smoke is choking the place. I will get the fire out."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n03",
+   "text": "Tuk feels a cold wind on her face. The sick one must sleep."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n04",
+   "text": "The rain is cold and I feel it."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n05",
+   "text": "The blood on the grass smells bad."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n06",
+   "text": "I can hear the blood on her hands."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n07",
+   "text": "The soft one cannot lift a carcass."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n08",
+   "text": "The wind is cold. I'll stay here."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n09",
+   "text": "The fog is thick, but the night is quiet."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n10",
+   "text": "Good meat."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n11",
+   "text": "Good meat."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n12",
+   "text": "Tuk thinks the kibble tastes like nothing."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n01",
+   "text": "Naturally, the chair is missing again, and the world has no taste."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n02",
+   "text": "Naturally, the chair is missing again."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n03",
+   "text": "Naturally, the fever is a luxury I cannot afford."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n04",
+   "text": "Naturally, the rain is too kind for the dead."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n05",
+   "text": "Naturally, the blood on the grass has a way of making you forget what you were painting."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n06",
+   "text": "Naturally, the pantry is a graveyard of good intentions."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n07",
+   "text": "Naturally, the chair is missing again."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n08",
+   "text": "Naturally, the painting is just another way of admitting defeat."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n09",
+   "text": "Naturally, the morning has already begun its own funeral, and I am not invited to the eulogy."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n10",
+   "text": "Naturally, the bench is as familiar as a grave I never left."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n11",
+   "text": "Naturally, I have no chair, and I am not certain I would have wanted one if I had ever possessed the luxury of a choice."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n12",
+   "text": "Naturally, the insect jelly has opinions, and so does the kibble."
+  }
+ ]
+}

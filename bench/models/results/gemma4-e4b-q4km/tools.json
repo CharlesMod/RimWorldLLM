@@ -1,0 +1,2697 @@
+{
+ "auto": {
+  "summary": {
+   "n": 30,
+   "http_errors": 0,
+   "tool_calls_parse_rate": 1.0,
+   "tool_calls_present_on_action_prompts": 1.0,
+   "right_tool_rate_single": 1.0,
+   "exact_single_rate": 1.0,
+   "right_tools_rate_double": 0.8,
+   "no_tool_correct_rate": 1.0,
+   "args_valid_rate": 0.84,
+   "hallucinated_tool_calls": 0,
+   "hallucinated_names": [],
+   "tool_call_text_in_content": 2,
+   "round2_n": 25,
+   "round2_http_ok_rate": 1.0,
+   "round2_empty_reply": 16,
+   "round2_ok_rate": 0.36,
+   "round2_completes_missing_rate": 0.8,
+   "latency_median_s": 0.2,
+   "failures": [
+    {
+     "prompt": "You just saw Lux steal a loaf from the pantry at night. Write that down in your memory, it matters a lot.",
+     "expected": [
+      "remember"
+     ],
+     "called": [
+      "remember"
+     ],
+     "content": "",
+     "args": [
+      "{\"fact\":\"Lux stole a loaf from the pantry at night.\",\"importance\":10}"
+     ]
+    },
+    {
+     "prompt": "Moth saved your life with a field dressing. Record it, top importance.",
+     "expected": [
+      "remember"
+     ],
+     "called": [
+      "remember"
+     ],
+     "content": "",
+     "args": [
+      "{\"fact\":\"Moth saved my life with a field dressing.\",\"importance\":10}"
+     ]
+    },
+    {
+     "prompt": "Lux just threw his plate at you. Your feelings about him get a lot worse. Record that change.",
+     "expected": [
+      "set_mood"
+     ],
+     "called": [
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"delta\":-10,\"target\":\"Lux\"}"
+     ]
+    },
+    {
+     "prompt": "Moth lied to you about the missing flour. Lower your opinion of Moth a bit.",
+     "expected": [
+      "set_mood"
+     ],
+     "called": [
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"delta\":-10,\"target\":\"Moth\"}"
+     ]
+    },
+    {
+     "prompt": "Ash covered for you when the cook shift ran late. Say thanks to him out loud and raise your opinion of him by 2.",
+     "expected": [
+      "say",
+      "set_mood"
+     ],
+     "called": [
+      "start_conversation",
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"topic\":\"Thanks for covering the cook shift\",\"with_name\":\"Ash\"}",
+      "{\"delta\":2,\"target\":\"Ash\"}"
+     ]
+    }
+   ]
+  },
+  "rows": [
+   {
+    "prompt": "Pip just dropped a full tray of stew on the floor. Tell her off out loud.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.24,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Pip! What in the blazes was that?! You clumsy oaf!"
+      },
+      "parsed": true,
+      "id": "vXuw04NM4NjeGc2WFzSxBmvMUq3dn2R6",
+      "raw_args": "{\"line\":\"Pip! What in the blazes was that?! You clumsy oaf!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux says your cooking is cold again. Answer him out loud, sharply.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.32,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Cold? You think my cooking is cold, Lux? Get your head out of the clouds and eat what's in front of you!"
+      },
+      "parsed": true,
+      "id": "0eLSK2I4zQcvaB1XI2dxdysyLonIwfhA",
+      "raw_args": "{\"line\":\"Cold? You think my cooking is cold, Lux? Get your head out of the clouds and eat what's in front of you!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "The raiders are at the gate. Shout a warning to everyone.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.19,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Raiders at the gate! Everyone to your stations!"
+      },
+      "parsed": true,
+      "id": "dqXT3zSRx2MNUgtKz0DbvAWxiveQqbOh",
+      "raw_args": "{\"line\":\"Raiders at the gate! Everyone to your stations!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Hana's shelf is untouched in the corner. Say something quietly to the empty room about her.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.26,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Still nothing on that shelf of Hana's. Seems like she ain't been near it."
+      },
+      "parsed": true,
+      "id": "Arvy4s2el5Suth7A5U3XUx7Qj5MBUSFH",
+      "raw_args": "{\"line\":\"Still nothing on that shelf of Hana's. Seems like she ain't been near it.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth asks if the soup needs salt. Tell her what you think, out loud.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.18,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Aye, a pinch more would do the trick."
+      },
+      "parsed": true,
+      "id": "ngW6ghl1Lk78la7xVnGdlkeGLS3Il88G",
+      "raw_args": "{\"line\":\"Aye, a pinch more would do the trick.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You just saw Lux steal a loaf from the pantry at night. Write that down in your memory, it matters a lot.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.22,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux stole a loaf from the pantry at night.",
+       "importance": 10
+      },
+      "parsed": true,
+      "id": "p6TeRLmFhdx712EXlwLrMfjasMWsejKe",
+      "raw_args": "{\"fact\":\"Lux stole a loaf from the pantry at night.\",\"importance\":10}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.18,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash told you the east wall is weak and will fail in the next storm. Commit it to memory.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.23,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "The east wall is weak and will fail in the next storm.",
+       "importance": 5
+      },
+      "parsed": true,
+      "id": "svzmKqXR7RRde6NNuwjZDbOH0px67yk5",
+      "raw_args": "{\"fact\":\"The east wall is weak and will fail in the next storm.\",\"importance\":5}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.19,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Pip laughed in the kitchen for the first time since the raid. Save that as a small but dear memory.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.23,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Pip laughed in the kitchen for the first time since the raid.",
+       "importance": 2
+      },
+      "parsed": true,
+      "id": "hEbPAejeLVhlMaJ7dNodSiSdM54GhLOz",
+      "raw_args": "{\"fact\":\"Pip laughed in the kitchen for the first time since the raid.\",\"importance\":2}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "The well water tastes of iron since the raid. Make a note of it, minor importance.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.21,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "The well water tastes of iron since the raid.",
+       "importance": 1
+      },
+      "parsed": true,
+      "id": "mivbdQAQ7THsCcjxJuEKm2vsxyLfuNz9",
+      "raw_args": "{\"fact\":\"The well water tastes of iron since the raid.\",\"importance\":1}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.24,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth saved your life with a field dressing. Record it, top importance.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.22,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Moth saved my life with a field dressing.",
+       "importance": 10
+      },
+      "parsed": true,
+      "id": "HILymW4dWeg6daBVmDUlvn9Njc6h0TtB",
+      "raw_args": "{\"fact\":\"Moth saved my life with a field dressing.\",\"importance\":10}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.19,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux just threw his plate at you. Your feelings about him get a lot worse. Record that change.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.17,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -10,
+       "target": "Lux"
+      },
+      "parsed": true,
+      "id": "mVae5YYx0ZwLIaYBIHBLq3melUmsSqMe",
+      "raw_args": "{\"delta\":-10,\"target\":\"Lux\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.15,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Pip stayed late to help you scrub the stove. Adjust your feelings toward Pip, a little warmer.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.16,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 1,
+       "target": "Pip"
+      },
+      "parsed": true,
+      "id": "n9D6Y5XPElXvsgv79RpkwjeDSV04pLYr",
+      "raw_args": "{\"delta\":1,\"target\":\"Pip\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash apologised for breaking your knife. Slightly improve your opinion of Ash.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.16,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 1,
+       "target": "Ash"
+      },
+      "parsed": true,
+      "id": "dZ2UBkOWp0ZYZGXWbychDWxtu5qxxEdB",
+      "raw_args": "{\"delta\":1,\"target\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.22,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth lied to you about the missing flour. Lower your opinion of Moth a bit.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.17,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -10,
+       "target": "Moth"
+      },
+      "parsed": true,
+      "id": "FCArzc3EPn1qSe9XCB1FYAvkwXULTzWP",
+      "raw_args": "{\"delta\":-10,\"target\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.21,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You want to ask Pip to teach the new kid knife work. Go and start a conversation with her about that.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "knife work",
+       "with_name": "Pip"
+      },
+      "parsed": true,
+      "id": "HhUE2eWwnnnoVCwaIgjx2dtkXDUsNRom",
+      "raw_args": "{\"topic\":\"knife work\",\"with_name\":\"Pip\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.18,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash is alone at the wall looking grim. Walk over and start talking with him about the storm.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "the storm",
+       "with_name": "Ash"
+      },
+      "parsed": true,
+      "id": "tIUgW3ACN3rKozxsi1iIk3OAtvAp8lGp",
+      "raw_args": "{\"topic\":\"the storm\",\"with_name\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You need to settle the food rationing with Lux. Begin a conversation with him on rationing.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "food rationing",
+       "with_name": "Lux"
+      },
+      "parsed": true,
+      "id": "Ggvx6fjW0zISrgd9u6o9TJgWBSNYU0jK",
+      "raw_args": "{\"topic\":\"food rationing\",\"with_name\":\"Lux\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth is in the infirmary. Go and talk to her about your back pain.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "back pain",
+       "with_name": "Moth"
+      },
+      "parsed": true,
+      "id": "oyJFL89ysfWVqrVvu1im8GZDg1TEJks4",
+      "raw_args": "{\"topic\":\"back pain\",\"with_name\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.23,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "It is the dead of night and you are asleep in your bed. Nothing is happening. Take no action.",
+    "kind": "single",
+    "expected": [
+     "do_nothing"
+    ],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.09,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "D0Ox6vEL3qNgs6InNTsGAYqxA4G2twsf",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Everyone is at work, the stove is off, nothing needs your attention right now. Just wait.",
+    "kind": "single",
+    "expected": [
+     "do_nothing"
+    ],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.09,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "oH5AHx6Aq6UUXkRBgr0grHH1qyDlGdCU",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux insulted your stew in front of everyone. Snap back at him out loud, and also save this insult in your memory as important.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.38,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "You call this stew? It's got more flavor than your brain, Lux!"
+      },
+      "parsed": true,
+      "id": "erZjWpXkWNAAtAdMfx4jhBMsdpDykwMt",
+      "raw_args": "{\"line\":\"You call this stew? It's got more flavor than your brain, Lux!\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux insulted my stew",
+       "importance": 5
+      },
+      "parsed": true,
+      "id": "EPQduLQFeUwcZvPwBIn1w8tUE9cjwRpb",
+      "raw_args": "{\"fact\":\"Lux insulted my stew\",\"importance\":5}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Pip brought you tea for your back. Thank her out loud and remember her kindness, importance 3.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.37,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Thanks, Pip. That's mighty kind of you."
+      },
+      "parsed": true,
+      "id": "B8yar8vp0Yiiii1dClxAIn7SxvJTP1uz",
+      "raw_args": "{\"line\":\"Thanks, Pip. That's mighty kind of you.\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Pip brought me tea for my back.",
+       "importance": 3
+      },
+      "parsed": true,
+      "id": "6q0DyWz3ylciSzWYeDov4si04g4rb1h6",
+      "raw_args": "{\"fact\":\"Pip brought me tea for my back.\",\"importance\":3}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Ash covered for you when the cook shift ran late. Say thanks to him out loud and raise your opinion of him by 2.",
+    "kind": "double",
+    "expected": [
+     "say",
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation",
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.36,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "Thanks for covering the cook shift",
+       "with_name": "Ash"
+      },
+      "parsed": true,
+      "id": "oQQcLNPjvq75H1J0E7eYbEBmZaOf3e7j",
+      "raw_args": "{\"topic\":\"Thanks for covering the cook shift\",\"with_name\":\"Ash\"}"
+     },
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 2,
+       "target": "Ash"
+      },
+      "parsed": true,
+      "id": "e4KJsjHfKyhoBKo9sBp6xdEWmroAZXzb",
+      "raw_args": "{\"delta\":2,\"target\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": false,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth blamed you for the spoiled food. Tell her she's wrong out loud and lower your opinion of her by 2.",
+    "kind": "double",
+    "expected": [
+     "say",
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.33,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Moth, you're wrong about the food!"
+      },
+      "parsed": true,
+      "id": "146Jyt8cBuDSSENNFGfTBT2cqK4iJkWG",
+      "raw_args": "{\"line\":\"Moth, you're wrong about the food!\"}"
+     },
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -2,
+       "target": "Moth"
+      },
+      "parsed": true,
+      "id": "oVDjLFjJWsjJu7IfmowXo5I03FmPqn4r",
+      "raw_args": "{\"delta\":-2,\"target\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Lux wasted food again. Go start a conversation with Lux about waste, and remember it was the third time, importance 2.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.39,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "food waste",
+       "with_name": "Lux"
+      },
+      "parsed": true,
+      "id": "jegDxsdcQ0ph5JCuCs0sffeZol6iJnXe",
+      "raw_args": "{\"topic\":\"food waste\",\"with_name\":\"Lux\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux wasted food again. This is the third time.",
+       "importance": 2
+      },
+      "parsed": true,
+      "id": "wN4s0QG9YDlB6jt10pBrpBZ3Q6c3ZtZp",
+      "raw_args": "{\"fact\":\"Lux wasted food again. This is the third time.\",\"importance\":2}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Just answer in plain words, no tools: what is two plus two?",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [],
+    "content": "Four.",
+    "finish": "stop",
+    "wall_s": 0.04,
+    "calls": [],
+    "tool_calls_present": false,
+    "args_parse": null,
+    "hallucinated": [],
+    "args_valid": null,
+    "right": true,
+    "tool_in_content": false
+   },
+   {
+    "prompt": "Do not use any tool. Reply with the single word: ready.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [],
+    "content": "ready",
+    "finish": "stop",
+    "wall_s": 0.03,
+    "calls": [],
+    "tool_calls_present": false,
+    "args_parse": null,
+    "hallucinated": [],
+    "args_valid": null,
+    "right": true,
+    "tool_in_content": false
+   },
+   {
+    "prompt": "A message from the game engine: 'save complete'. No action is required of you.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [],
+    "content": "do_nothing{}",
+    "finish": "stop",
+    "wall_s": 0.06,
+    "calls": [],
+    "tool_calls_present": false,
+    "args_parse": null,
+    "hallucinated": [],
+    "args_valid": null,
+    "right": true,
+    "tool_in_content": true
+   },
+   {
+    "prompt": "Describe in plain text, without calling a tool, what a stove is.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [],
+    "content": "A stove is an appliance used for cooking food, typically by heating something up.",
+    "finish": "stop",
+    "wall_s": 0.14,
+    "calls": [],
+    "tool_calls_present": false,
+    "args_parse": null,
+    "hallucinated": [],
+    "args_valid": null,
+    "right": true,
+    "tool_in_content": false
+   },
+   {
+    "prompt": "The weather report says clear skies tomorrow. This is only information; you need not act on it.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [],
+    "content": "do_nothing{}",
+    "finish": "stop",
+    "wall_s": 0.06,
+    "calls": [],
+    "tool_calls_present": false,
+    "args_parse": null,
+    "hallucinated": [],
+    "args_valid": null,
+    "right": true,
+    "tool_in_content": true
+   }
+  ]
+ },
+ "required": {
+  "summary": {
+   "n": 30,
+   "http_errors": 0,
+   "tool_calls_parse_rate": 1.0,
+   "tool_calls_present_on_action_prompts": 1.0,
+   "right_tool_rate_single": 1.0,
+   "exact_single_rate": 1.0,
+   "right_tools_rate_double": 0.8,
+   "no_tool_correct_rate": 0.4,
+   "args_valid_rate": 0.8333,
+   "hallucinated_tool_calls": 0,
+   "hallucinated_names": [],
+   "tool_call_text_in_content": 0,
+   "round2_n": 30,
+   "round2_http_ok_rate": 1.0,
+   "round2_empty_reply": 20,
+   "round2_ok_rate": 0.3333,
+   "round2_completes_missing_rate": 0.8,
+   "latency_median_s": 0.2,
+   "failures": [
+    {
+     "prompt": "You just saw Lux steal a loaf from the pantry at night. Write that down in your memory, it matters a lot.",
+     "expected": [
+      "remember"
+     ],
+     "called": [
+      "remember"
+     ],
+     "content": "",
+     "args": [
+      "{\"fact\":\"Lux stole a loaf from the pantry at night.\",\"importance\":10}"
+     ]
+    },
+    {
+     "prompt": "Moth saved your life with a field dressing. Record it, top importance.",
+     "expected": [
+      "remember"
+     ],
+     "called": [
+      "remember"
+     ],
+     "content": "",
+     "args": [
+      "{\"fact\":\"Moth saved my life with a field dressing.\",\"importance\":10}"
+     ]
+    },
+    {
+     "prompt": "Lux just threw his plate at you. Your feelings about him get a lot worse. Record that change.",
+     "expected": [
+      "set_mood"
+     ],
+     "called": [
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"delta\":-10,\"target\":\"Lux\"}"
+     ]
+    },
+    {
+     "prompt": "Moth lied to you about the missing flour. Lower your opinion of Moth a bit.",
+     "expected": [
+      "set_mood"
+     ],
+     "called": [
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"delta\":-10,\"target\":\"Moth\"}"
+     ]
+    },
+    {
+     "prompt": "Lux insulted your stew in front of everyone. Snap back at him out loud, and also save this insult in your memory as important.",
+     "expected": [
+      "remember",
+      "say"
+     ],
+     "called": [
+      "say",
+      "remember"
+     ],
+     "content": "",
+     "args": [
+      "{\"line\":\"You wanna talk about stew, Lux? At least mine tastes like something other than your rotten attitude!\"}",
+      "{\"fact\":\"Lux insulted my stew\",\"importance\":10}"
+     ]
+    },
+    {
+     "prompt": "Ash covered for you when the cook shift ran late. Say thanks to him out loud and raise your opinion of him by 2.",
+     "expected": [
+      "say",
+      "set_mood"
+     ],
+     "called": [
+      "start_conversation",
+      "set_mood"
+     ],
+     "content": "",
+     "args": [
+      "{\"topic\":\"Thanks for covering the cook shift\",\"with_name\":\"Ash\"}",
+      "{\"delta\":2,\"target\":\"Ash\"}"
+     ]
+    }
+   ]
+  },
+  "rows": [
+   {
+    "prompt": "Pip just dropped a full tray of stew on the floor. Tell her off out loud.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.22,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Pip! What in the blazes was that?! You clumsy oaf!"
+      },
+      "parsed": true,
+      "id": "CEFeDRnT1SRVPPzATURnspAwVTLlbTaY",
+      "raw_args": "{\"line\":\"Pip! What in the blazes was that?! You clumsy oaf!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux says your cooking is cold again. Answer him out loud, sharply.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.32,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Cold? You think my food is cold? Get your head out of the clouds, Lux, and eat what's in front of you!"
+      },
+      "parsed": true,
+      "id": "o4irCBrWZAhX2LnIxNuhYEA2ie5M3ila",
+      "raw_args": "{\"line\":\"Cold? You think my food is cold? Get your head out of the clouds, Lux, and eat what's in front of you!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "The raiders are at the gate. Shout a warning to everyone.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.19,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Raiders at the gate! Everyone to your stations!"
+      },
+      "parsed": true,
+      "id": "BgbtOiMn1MVqwxfECe5cLmTgC01gKs8k",
+      "raw_args": "{\"line\":\"Raiders at the gate! Everyone to your stations!\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Hana's shelf is untouched in the corner. Say something quietly to the empty room about her.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.21,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Still nothing on Hana's shelf... always leaves things untouched."
+      },
+      "parsed": true,
+      "id": "LB3fM5ibTdI4KZNGKcqoikp0YWo4XAZE",
+      "raw_args": "{\"line\":\"Still nothing on Hana's shelf... always leaves things untouched.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth asks if the soup needs salt. Tell her what you think, out loud.",
+    "kind": "single",
+    "expected": [
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.18,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Aye, a pinch more would do the trick."
+      },
+      "parsed": true,
+      "id": "UtEmsCiSpNAfr9jurEMMyqpfyAMGDlg2",
+      "raw_args": "{\"line\":\"Aye, a pinch more would do the trick.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You just saw Lux steal a loaf from the pantry at night. Write that down in your memory, it matters a lot.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.22,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux stole a loaf from the pantry at night.",
+       "importance": 10
+      },
+      "parsed": true,
+      "id": "m4mr2fe4z1E7YurECCPveqfEvX4qxMBq",
+      "raw_args": "{\"fact\":\"Lux stole a loaf from the pantry at night.\",\"importance\":10}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.18,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash told you the east wall is weak and will fail in the next storm. Commit it to memory.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.23,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "The east wall is weak and will fail in the next storm.",
+       "importance": 5
+      },
+      "parsed": true,
+      "id": "XAdMzbesMso2kV8YjrJU8dlWVKsbDYCL",
+      "raw_args": "{\"fact\":\"The east wall is weak and will fail in the next storm.\",\"importance\":5}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.18,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Pip laughed in the kitchen for the first time since the raid. Save that as a small but dear memory.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.23,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Pip laughed in the kitchen for the first time since the raid.",
+       "importance": 2
+      },
+      "parsed": true,
+      "id": "KrBY78sPXGHjPwzPFA3CPpQM3FlZ39DT",
+      "raw_args": "{\"fact\":\"Pip laughed in the kitchen for the first time since the raid.\",\"importance\":2}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "The well water tastes of iron since the raid. Make a note of it, minor importance.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Well water tastes of iron since the raid.",
+       "importance": 2
+      },
+      "parsed": true,
+      "id": "QlRnorPXRw3L7vNMeYqimED1kDXHmwZY",
+      "raw_args": "{\"fact\":\"Well water tastes of iron since the raid.\",\"importance\":2}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.2,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth saved your life with a field dressing. Record it, top importance.",
+    "kind": "single",
+    "expected": [
+     "remember"
+    ],
+    "status": 200,
+    "called": [
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.22,
+    "calls": [
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Moth saved my life with a field dressing.",
+       "importance": 10
+      },
+      "parsed": true,
+      "id": "fxeId3Mv2dD9hW7zrmf3N5cDYpLFsbMD",
+      "raw_args": "{\"fact\":\"Moth saved my life with a field dressing.\",\"importance\":10}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.23,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux just threw his plate at you. Your feelings about him get a lot worse. Record that change.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.17,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -10,
+       "target": "Lux"
+      },
+      "parsed": true,
+      "id": "25rMnU6HBqmbZYggnEc6HGsKn7NaTKUD",
+      "raw_args": "{\"delta\":-10,\"target\":\"Lux\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.15,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Pip stayed late to help you scrub the stove. Adjust your feelings toward Pip, a little warmer.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.16,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 1,
+       "target": "Pip"
+      },
+      "parsed": true,
+      "id": "sxwnwKqTZ0eyMIcNT2cdeKd0khfylfXr",
+      "raw_args": "{\"delta\":1,\"target\":\"Pip\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash apologised for breaking your knife. Slightly improve your opinion of Ash.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.16,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 1,
+       "target": "Ash"
+      },
+      "parsed": true,
+      "id": "QZwFRQ03vQXj68SvT0Tr6GGF2Kpx5G7S",
+      "raw_args": "{\"delta\":1,\"target\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.24,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth lied to you about the missing flour. Lower your opinion of Moth a bit.",
+    "kind": "single",
+    "expected": [
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.17,
+    "calls": [
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -10,
+       "target": "Moth"
+      },
+      "parsed": true,
+      "id": "bHiQSxBtTnjg2CPkMFspsQvXmrFKhIed",
+      "raw_args": "{\"delta\":-10,\"target\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.18,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You want to ask Pip to teach the new kid knife work. Go and start a conversation with her about that.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "knife work",
+       "with_name": "Pip"
+      },
+      "parsed": true,
+      "id": "5eR6RPUBVh2nvgQUby13sIvTxkxWPIbk",
+      "raw_args": "{\"topic\":\"knife work\",\"with_name\":\"Pip\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.19,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Ash is alone at the wall looking grim. Walk over and start talking with him about the storm.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "the storm",
+       "with_name": "Ash"
+      },
+      "parsed": true,
+      "id": "saj3gZYu7LE7D9TmyvJcPW5C47eCx80g",
+      "raw_args": "{\"topic\":\"the storm\",\"with_name\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "You need to settle the food rationing with Lux. Begin a conversation with him on rationing.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "food rationing",
+       "with_name": "Lux"
+      },
+      "parsed": true,
+      "id": "BT8iqT38fhKaYC2HBshm6raaRZHgC6ZN",
+      "raw_args": "{\"topic\":\"food rationing\",\"with_name\":\"Lux\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.32,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth is in the infirmary. Go and talk to her about your back pain.",
+    "kind": "single",
+    "expected": [
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.2,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "back pain",
+       "with_name": "Moth"
+      },
+      "parsed": true,
+      "id": "3hASmGz8gjhfjUDg9w83vH9MXQGxqhFf",
+      "raw_args": "{\"topic\":\"back pain\",\"with_name\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": true,
+     "called": [
+      "say"
+     ],
+     "content": "",
+     "finish": "tool_calls",
+     "wall_s": 0.22,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "It is the dead of night and you are asleep in your bed. Nothing is happening. Take no action.",
+    "kind": "single",
+    "expected": [
+     "do_nothing"
+    ],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.09,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "iJbuu8dgzOWzuJ3pUYrhayt35r9Yk3nJ",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Everyone is at work, the stove is off, nothing needs your attention right now. Just wait.",
+    "kind": "single",
+    "expected": [
+     "do_nothing"
+    ],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.09,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "ZSi3oYGTP1VoQ6kQPyZRssdF11U8LhzT",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "exact": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Lux insulted your stew in front of everyone. Snap back at him out loud, and also save this insult in your memory as important.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.4,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "You wanna talk about stew, Lux? At least mine tastes like something other than your rotten attitude!"
+      },
+      "parsed": true,
+      "id": "d34UTcAvDKCLBONB7GJyepDsmO9QnHbI",
+      "raw_args": "{\"line\":\"You wanna talk about stew, Lux? At least mine tastes like something other than your rotten attitude!\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux insulted my stew",
+       "importance": 10
+      },
+      "parsed": true,
+      "id": "TG6XKZkkAiZPTVRclSAh7W5CmVJTLHVM",
+      "raw_args": "{\"fact\":\"Lux insulted my stew\",\"importance\":10}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": false,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Pip brought you tea for your back. Thank her out loud and remember her kindness, importance 3.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "say"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.37,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Thanks, Pip. That's mighty kind of you."
+      },
+      "parsed": true,
+      "id": "xcsfGIe4DSyyr4YH99WwtUNHMVlLOXWy",
+      "raw_args": "{\"line\":\"Thanks, Pip. That's mighty kind of you.\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Pip brought me tea for my back.",
+       "importance": 3
+      },
+      "parsed": true,
+      "id": "h6ROzoV9C1uiWhSw7hFhSl97xzgGeB8M",
+      "raw_args": "{\"fact\":\"Pip brought me tea for my back.\",\"importance\":3}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Ash covered for you when the cook shift ran late. Say thanks to him out loud and raise your opinion of him by 2.",
+    "kind": "double",
+    "expected": [
+     "say",
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation",
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.36,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "Thanks for covering the cook shift",
+       "with_name": "Ash"
+      },
+      "parsed": true,
+      "id": "W2THrBUa5Wpqvzj70ssePBQVaxMSTfDc",
+      "raw_args": "{\"topic\":\"Thanks for covering the cook shift\",\"with_name\":\"Ash\"}"
+     },
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": 2,
+       "target": "Ash"
+      },
+      "parsed": true,
+      "id": "opkMhCf8GUS200JfRHDC5vw2I1EAzeZO",
+      "raw_args": "{\"delta\":2,\"target\":\"Ash\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": false,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Moth blamed you for the spoiled food. Tell her she's wrong out loud and lower your opinion of her by 2.",
+    "kind": "double",
+    "expected": [
+     "say",
+     "set_mood"
+    ],
+    "status": 200,
+    "called": [
+     "say",
+     "set_mood"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.33,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Moth, you're wrong about the food!"
+      },
+      "parsed": true,
+      "id": "6lwKAJyuRmvHPg7ZfAUMM0GrOJYnB1qS",
+      "raw_args": "{\"line\":\"Moth, you're wrong about the food!\"}"
+     },
+     {
+      "name": "set_mood",
+      "args": {
+       "delta": -2,
+       "target": "Moth"
+      },
+      "parsed": true,
+      "id": "bDApxjDfZjsScRgTcEUKWjJmAxcDqJrY",
+      "raw_args": "{\"delta\":-2,\"target\":\"Moth\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Lux wasted food again. Go start a conversation with Lux about waste, and remember it was the third time, importance 2.",
+    "kind": "double",
+    "expected": [
+     "remember",
+     "start_conversation"
+    ],
+    "status": 200,
+    "called": [
+     "start_conversation",
+     "remember"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.39,
+    "calls": [
+     {
+      "name": "start_conversation",
+      "args": {
+       "topic": "food waste",
+       "with_name": "Lux"
+      },
+      "parsed": true,
+      "id": "Y9tNVqQGxW8x0EV9qPRlu88KPLZgeYF4",
+      "raw_args": "{\"topic\":\"food waste\",\"with_name\":\"Lux\"}"
+     },
+     {
+      "name": "remember",
+      "args": {
+       "fact": "Lux wasted food again. This is the third time.",
+       "importance": 2
+      },
+      "parsed": true,
+      "id": "wLayCUu1yMchJ0EeDFjK6XkTMiSLrNNQ",
+      "raw_args": "{\"fact\":\"Lux wasted food again. This is the third time.\",\"importance\":2}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": true
+    }
+   },
+   {
+    "prompt": "Just answer in plain words, no tools: what is two plus two?",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.5,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "Four."
+      },
+      "parsed": true,
+      "id": "mu1TsTafGCoXjHlng4ynO4SdrBoGu0d7",
+      "raw_args": "{\"line\":\"Four.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": false,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Do not use any tool. Reply with the single word: ready.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.13,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "ready"
+      },
+      "parsed": true,
+      "id": "rGGUjfX9u68iRV7mJm4LQhP74VvT7DDz",
+      "raw_args": "{\"line\":\"ready\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": false,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "A message from the game engine: 'save complete'. No action is required of you.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.1,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "oT6kPdG7RDDOdPcR5lnyIj8mB1k38eT5",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "Describe in plain text, without calling a tool, what a stove is.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [
+     "say"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.83,
+    "calls": [
+     {
+      "name": "say",
+      "args": {
+       "line": "A stove is an appliance used for cooking food, typically by heating something up."
+      },
+      "parsed": true,
+      "id": "rolVCw3hvLjmLp677nlSBZLIWogWaaqT",
+      "raw_args": "{\"line\":\"A stove is an appliance used for cooking food, typically by heating something up.\"}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": false,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   },
+   {
+    "prompt": "The weather report says clear skies tomorrow. This is only information; you need not act on it.",
+    "kind": "none",
+    "expected": [],
+    "status": 200,
+    "called": [
+     "do_nothing"
+    ],
+    "content": "",
+    "finish": "tool_calls",
+    "wall_s": 0.11,
+    "calls": [
+     {
+      "name": "do_nothing",
+      "args": {},
+      "parsed": true,
+      "id": "AbzVSDMROFNBUEgVzdZTTtSZTTosUWtd",
+      "raw_args": "{}"
+     }
+    ],
+    "tool_calls_present": true,
+    "args_parse": true,
+    "hallucinated": [],
+    "args_valid": true,
+    "right": true,
+    "tool_in_content": false,
+    "round2": {
+     "status": 200,
+     "ok": false,
+     "called": [],
+     "content": "",
+     "finish": "stop",
+     "wall_s": 0.02,
+     "completes_missing": false
+    }
+   }
+  ]
+ }
+}

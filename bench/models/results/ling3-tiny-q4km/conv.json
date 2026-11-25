@@ -1,0 +1,516 @@
+{
+ "summary": {
+  "exchanges": 10,
+  "turns": 40,
+  "turn_drop_rate": 0.025,
+  "complete_exchanges": 0.9,
+  "answers_previous_rate": 0.7949,
+  "writes_other_line_rate": 0.0,
+  "repetition_loop_exchanges": 2,
+  "examples": [
+   {
+    "scene": "sc18",
+    "turns": [
+     [
+      "pip",
+      "Okay so I'm just standing here. It's boring, like."
+     ],
+     [
+      "rook",
+      "Hm. Sit. Eat. Now."
+     ],
+     [
+      "pip",
+      "Okay so I'm just standing here. It's boring, like."
+     ],
+     [
+      "rook",
+      "Hm. You're here now."
+     ]
+    ]
+   },
+   {
+    "scene": "sc19",
+    "turns": [
+     [
+      "moth",
+      "I think, well, probably it's fine."
+     ],
+     [
+      "lux",
+      "Naturally, I bring the tea."
+     ],
+     [
+      "moth",
+      "I think, well, probably it's fine."
+     ],
+     [
+      "lux",
+      "Naturally, the tea has opinions."
+     ]
+    ]
+   },
+   {
+    "scene": "sc20",
+    "turns": [
+     [
+      "ash",
+      "Copy. Tuk's haunch on the wall."
+     ],
+     [
+      "tuk",
+      "Tuk ate that haunch. Good meat."
+     ],
+     [
+      "ash",
+      "Copy. Tuk's done."
+     ],
+     [
+      "tuk",
+      "The colonist died. I will build her a cairn."
+     ]
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "scene": "sc18",
+   "a": "pip",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so I'm just standing here. It's boring, like.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Sit. Eat. Now.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so I'm just standing here. It's boring, like.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. You're here now.",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 1,
+    "inner": 0,
+    "loop": true
+   }
+  },
+  {
+   "scene": "sc19",
+   "a": "moth",
+   "b": "lux",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, probably it's fine.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "lux",
+     "text": "Naturally, I bring the tea.",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, well, probably it's fine.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "lux",
+     "text": "Naturally, the tea has opinions.",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 1,
+    "inner": 0,
+    "loop": true
+   }
+  },
+  {
+   "scene": "sc20",
+   "a": "ash",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Copy. Tuk's haunch on the wall.",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Tuk ate that haunch. Good meat.",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Copy. Tuk's done.",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "The colonist died. I will build her a cairn.",
+     "intent": "confide"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc21",
+   "a": "lux",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "lux",
+     "text": "Naturally, I am beginning to suspect that the stew has taken a personal stake in my life.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Stew's ready. Sit. Eat.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "lux",
+     "text": "Naturally, I do not expect the stew to be different, and I resent the thought.",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. Sit. Eat. Now.",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    true,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc22",
+   "a": "moth",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, maybe I'll check the samples.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I'm gonna check the samples, like... Biscuit's all over the place, totally not okay.",
+     "intent": "confide"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, well, I'll check the samples, maybe.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so Biscuit ate my sock. Again!",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc23",
+   "a": "tuk",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "tuk",
+     "text": "The calf's leg is not going to make it.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "dropped": "unknown_name:Tuk's"
+    },
+    {
+     "turn": 2,
+     "speaker": "tuk",
+     "text": "The calf won't make it.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I don't know what to do, I just...",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc24",
+   "a": "ash",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Copy. Six minutes. Hold fire.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I want to shoot again, like I can do it, totally not done yet...",
+     "intent": "confide"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Copy. You grip too tight.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I'm going to try again, like I can do it, don't need to hold back.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc01",
+   "a": "rook",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "rook",
+     "text": "Hm. Pick up that crate.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I'm here and Nate's down and I'm just... standing there with my pan.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "rook",
+     "text": "Hm. Get up. You broke the floor.",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I'm just gonna sit here and wait.",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc02",
+   "a": "pip",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so Biscuit ate my sock. Again!",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "The cut is small. I can handle it.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so the cut's just a scratch, totally fine.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "I'll get the iron first, then I'll take the sock.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc03",
+   "a": "moth",
+   "b": "ash",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, probably it's fine.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "ash",
+     "text": "Copy. It's fine.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, well, maybe this is enough.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "ash",
+     "text": "Copy. It's enough.",
+     "intent": "comfort"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  }
+ ]
+}

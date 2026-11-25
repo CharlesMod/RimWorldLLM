@@ -19,3 +19,16 @@ for m in MODELS:
     d["summary"] = lines.summarise(d["rows"])
     p.write_text(json.dumps(d, indent=1, ensure_ascii=False))
     print(m, d["summary"]["raw_all_pass"])
+
+import tools, re
+for m in MODELS:
+    p = res / m / "tools.json"
+    if not p.exists():
+        continue
+    d = json.loads(p.read_text())
+    for ch in d:
+        for r in d[ch]["rows"]:
+            r["tool_in_content"] = (not r["calls"]) and bool(re.search(r"\b(?:say|remember|set_mood|start_conversation|do_nothing)\s*[\{\(]|<tool_call>|tool_call|<\|\"\|>", r["content"]))
+        d[ch]["summary"] = tools.summarise(d[ch]["rows"])
+    p.write_text(json.dumps(d, indent=1, ensure_ascii=False))
+    print(m, "tools rescored", {ch: d[ch]["summary"]["tool_call_text_in_content"] for ch in d})
