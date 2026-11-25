@@ -45,7 +45,7 @@ class LLMClient(Protocol):
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
                        grammar: str | None = None, temperature: float | None = None,
-                       pawn: int | None = None) -> Completion: ...
+                       actor: int | None = None) -> Completion: ...
 
 
 def gemma_prompt(messages: Messages) -> str:
@@ -89,10 +89,10 @@ class HttpLLM:
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
                        grammar: str | None = None, temperature: float | None = None,
-                       pawn: int | None = None) -> Completion:
+                       actor: int | None = None) -> Completion:
         stop = ["\n"] if stop is None else stop
         t0 = time.perf_counter()
-        st = CallStats(kind=kind, slot=slot, pawn=pawn)
+        st = CallStats(kind=kind, slot=slot, actor=actor)
         try:
             if self.cfg.mode == "native":
                 body = {"prompt": gemma_prompt(messages), "n_predict": max_tokens, "stop": stop,

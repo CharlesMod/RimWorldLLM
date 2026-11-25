@@ -1,74 +1,37 @@
-"""Prompt builder: blocks A-G in SPEC §4 order, from bench/m0/lib.py (measured).
+"""Prompt-block framework: blocks A-G in a fixed order (most stable first), after bench/m0/lib.py.
 
-A: world rules, speech rules, output format, label glosses (same bytes for every pawn)
-B: fixed bio and voice card (never changes for this pawn)
+A: world rules, speech rules, output format, label glosses (adapter text; same bytes for every actor)
+B: fixed bio and voice card (never changes for this actor)
 C: evolving bio, wants, relations digest (changes only at reflection)
-D: 2-4 chosen memories and the ledger entries this pawn knows (once per lease)
+D: 2-4 chosen memories and the ledger entries this actor knows (once per lease)
 E: scene (once per lease)
 F: turns so far (append-only)            G: voice reminder (one line) and the request (every turn)
 
 A-E form the *prefix*: built once at lease start and then frozen as a string, so it is
-byte-identical for the whole lease. Nothing in A-E may carry ticks, timestamps or per-turn data.
+byte-identical for the whole lease. Nothing in A-E may carry units, timestamps or per-turn data.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from importlib import resources
 
-from .builders import short_name
 from .minds import Memory, Mind
 
-INTENTS = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
-GRAMMAR_INTENT = 'root ::= ' + " | ".join(f'"{i}"' for i in INTENTS)
 
-BLOCK_A: str = resources.files("hermesvoice_agent").joinpath("block_a.txt").read_text(encoding="utf-8")
+
+def grammar_for(labels: list[str]) -> str:
+    """GBNF restricting the intent pass to the adapter's label set."""
+    return "root ::= " + " | ".join(f'"{i}"' for i in labels)
 
 
 @dataclass
 class Scene:
-    where: str = "somewhere in the colony"
-    when: str = "daytime"                # time of day and weather, never a tick count
+    where: str = "somewhere nearby"
+    when: str = "daytime"                # time of day and weather, never a game count
     present: list[str] = field(default_factory=list)   # "Name (job)"
     state: str = ""
     job: str = "idle"
     thoughts: list[str] = field(default_factory=list)  # "text (+/-n)"
     trigger: str = ""
-
-
-def scene_from_bridge(pawn: dict, scene: dict, trigger: str, names: dict[int, str],
-                      known: set[int] | None = None) -> Scene:
-    """Build block E data from GET /pawn + GET /scene. ``known`` limits who is named."""
-    room = scene.get("room") or {}
-    where = room.get("role", "") or "outdoors"
-    extras = [f"{k} {room[k]}" for k in ("clean", "temp") if k in room]
-    if extras:
-        where += " (" + ", ".join(str(x) for x in extras) + ")"
-    when = ", ".join(str(x) for x in (scene.get("time_of_day"), scene.get("weather")) if x)
-    present = []
-    for q in scene.get("present", []):
-        pid = q.get("pawn")
-        if pid is None or (known is not None and pid not in known):
-            continue
-        n = names.get(pid)
-        if n:
-            present.append(f"{n} ({q.get('job') or 'idle'})")
-    mood = (pawn.get("mood") or {})
-    needs = pawn.get("needs") or {}
-    h = pawn.get("health") or {}
-    st = []
-    if needs.get("mood") is not None:
-        st.append(f"mood {round(float(needs['mood']) * 100) if float(needs['mood']) <= 1 else needs['mood']}%")
-    if h.get("downed"):
-        st.append("downed")
-    if h.get("pain", 0) and h["pain"] > 0.3:
-        st.append("in pain")
-    trends = scene.get("trends") or {}
-    for k, v in trends.items():
-        if isinstance(v, list) and len(v) >= 2:
-            st.append(f"{k.replace('_', ' ')} {v[0]} -> {v[-1]}")
-    ths = [f"{t.get('label')} ({round(t.get('offset', 0)):+d})" for t in mood.get("thoughts", [])[:4]]
-    return Scene(where=where, when=when or "daytime", present=present, state=", ".join(st) or "ordinary",
-                 job=pawn.get("job") or "idle", thoughts=ths, trigger=trigger)
 
 
 def block_b(mind: Mind) -> str:
@@ -114,9 +77,9 @@ def block_e(sc: Scene) -> str:
             f"What just happened: {sc.trigger}\n")
 
 
-def build_prefix(mind: Mind, memories: list[Memory], ledger_lines: list[str], sc: Scene) -> str:
+def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines: list[str], sc: Scene) -> str:
     """A-E as one string. Freeze it at lease start; never rebuild mid-lease."""
-    return "\n".join([BLOCK_A, block_b(mind), block_c(mind), block_d(memories, ledger_lines), block_e(sc)])
+    return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines), block_e(sc)])
 
 
 def block_f(turns: list[tuple[str, str]]) -> str:
@@ -148,7 +111,3 @@ def intent_request(listener_name: str | None) -> str:
 def intent_messages(line_msgs: list[tuple[str, str]], line: str, listener_name: str | None):
     """Same system+user prefix as the line pass (cache hit), then the line, then the label request."""
     return line_msgs + [("assistant", line), ("user", intent_request(listener_name))]
-
-
-def short(p: dict) -> str:
-    return short_name(p)

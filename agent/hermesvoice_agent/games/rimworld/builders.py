@@ -9,8 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-from .minds import FixedBio, Mind, VoiceCard
-from .llm import LLMClient
+from ...core.minds import FixedBio, VoiceCard
 
 
 def _s(x) -> str:
@@ -215,36 +214,3 @@ VOICE_PROMPT = (
     "Write exactly 3 short lines (6 to 20 words each) of speech that this RimWorld colonist might "
     "say, one per line, no numbering, no quotes. Plain words, dry, no flowery language.\n"
     "Colonist:\n{bio}\nRegister: {register}\nHabits: {tics}\nLines:")
-
-
-async def llm_example_lines(llm: LLMClient, mind: Mind, slot: int | None = 0) -> list[str] | None:
-    """Optional pass: 3 example lines, written once and saved in the mind."""
-    prompt = VOICE_PROMPT.format(bio=mind.fixed.text, register=mind.voice.register_line,
-                                 tics="; ".join(mind.voice.tics))
-    try:
-        c = await llm.complete([("user", prompt)], slot=slot, kind="voice_card",
-                               max_tokens=120, stop=[], pawn=mind.pawn_id)
-    except Exception:
-        return None
-    lines = [l.strip().strip('"').lstrip("-* ").strip() for l in c.text.splitlines() if l.strip()]
-    lines = [l for l in lines if 2 <= len(l.split()) <= 30][:3]
-    return lines if len(lines) == 3 else None
-
-
-async def ensure_mind_built(mind: Mind, p: dict, names: dict[int, str], llm: LLMClient | None = None,
-                            use_llm: bool = False) -> bool:
-    """Create or refresh the fixed bio and voice card. Returns True if anything changed."""
-    changed = False
-    mind.name = short_name(p) or mind.name
-    h = facts_hash(p)
-    if not mind.fixed.text or mind.fixed.facts_hash != h:
-        mind.fixed = build_fixed_bio(p, names)
-        changed = True
-    if not mind.voice.examples and not mind.voice.edited_by_player:
-        mind.voice = build_voice_card(p)
-        if use_llm and llm is not None:
-            ex = await llm_example_lines(llm, mind)
-            if ex:
-                mind.voice.examples, mind.voice.llm_examples = ex, True
-        changed = True
-    return changed

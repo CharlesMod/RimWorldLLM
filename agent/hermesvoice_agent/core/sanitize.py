@@ -1,7 +1,7 @@
-"""Line sanitizer (SPEC §7, §12.7): a failed line is dropped, never shown.
+"""Line sanitizer: a failed line is dropped, never shown.
 
 Strips empty thought blocks, quotes, stage directions and a name prefix. Drops refusals and
-disclaimers, names of pawns that do not exist or are not known to the speaker, and over-long lines.
+disclaimers, names of actors that do not exist or are not known to the speaker, and over-long lines.
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ _COMMON = {
     "did", "it's", "that's", "there", "here", "we", "you", "they", "he", "she", "my", "your", "our", "his",
     "her", "if", "then", "as", "at", "in", "on", "for", "with", "to", "of", "one", "two", "three", "let's",
     "let", "tell", "see", "hold", "keep", "pass", "move", "nobody", "nothing", "something", "someone",
-    "cold", "hot", "dead", "alive", "sorry", "thanks", "thank", "god", "gods", "hell", "rimworld", "mr", "mrs",
+    "cold", "hot", "dead", "alive", "sorry", "thanks", "thank", "god", "gods", "hell", "mr", "mrs",
     "doctor", "sir", "ma'am", "negative", "affirmative", "ha", "huh", "ugh", "ow", "um", "uh", "yeah", "nope",
     "of", "is", "are", "was", "were", "be", "can", "could", "would", "should", "will", "have", "has", "had",
 }
@@ -53,11 +53,11 @@ def name_tokens(full_name: str) -> set[str]:
 
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
-                  max_words: int = MAX_WORDS) -> Sanitized:
+                  max_words: int = MAX_WORDS, common_words: set[str] | None = None) -> Sanitized:
     """
     speaker_names: the speaker's own name tokens.
-    known_names:   name tokens of pawns the speaker knows (present, relations, memories).
-    all_names:     name tokens of every pawn that exists in the colony.
+    known_names:   name tokens of actors the speaker knows (present, relations, memories).
+    all_names:     name tokens of every actor that exists in the world.
     prompt_words:  capitalised words from the speaker's prompt (grounded vocabulary: places, factions).
     truncated:     the generation hit the token cap (a cut-off line is trimmed to its last sentence).
     """
@@ -87,13 +87,15 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
         return Sanitized(None, "refusal")
     if len(t.split()) > max_words:
         return Sanitized(None, "too_long")
-    bad = _bad_name(t, speaker_names, known_names, all_names, prompt_words or set())
+    bad = _bad_name(t, speaker_names, known_names, all_names, prompt_words or set(),
+                    {w.lower() for w in (common_words or set())})
     if bad:
         return Sanitized(None, f"unknown_name:{bad}")
     return Sanitized(t)
 
 
-def _bad_name(t: str, me: set[str], known: set[str], all_names: set[str], prompt_words: set[str]) -> str | None:
+def _bad_name(t: str, me: set[str], known: set[str], all_names: set[str], prompt_words: set[str],
+              extra_common: set[str]) -> str | None:
     lower_all = {n.lower() for n in all_names}
     lower_ok = {n.lower() for n in (known | me)}
     prompt_l = {w.lower() for w in prompt_words}
@@ -103,8 +105,8 @@ def _bad_name(t: str, me: set[str], known: set[str], all_names: set[str], prompt
         if wl in lower_ok:
             continue
         if wl in lower_all:
-            return w            # a real pawn the speaker does not know
-        if wl in _COMMON or wl in prompt_l:
+            return w            # a real actor the speaker does not know
+        if wl in _COMMON or wl in extra_common or wl in prompt_l:
             continue
         before = t[: m.start()].rstrip()
         sentence_start = not before or before[-1] in ".!?…"

@@ -13,22 +13,6 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 
-def default_bridge_json() -> Path:
-    env = os.environ.get("HERMESVOICE_BRIDGE_JSON")
-    if env:
-        return Path(env)
-    home = Path.home()
-    cands = [
-        home / ".config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/HermesVoice/bridge.json",
-        home / "AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/HermesVoice/bridge.json",
-        home / "Library/Application Support/RimWorld/HermesVoice/bridge.json",
-    ]
-    for c in cands:
-        if c.exists():
-            return c
-    return cands[0]
-
-
 def default_data_dir() -> Path:
     env = os.environ.get("HERMESVOICE_DATA_DIR")
     if env:
@@ -52,15 +36,15 @@ class LLMConfig(BaseModel):
 
 
 class QuotaConfig(BaseModel):
-    pawn_per_day: int = 12          # lines per pawn per game day
+    actor_per_day: int = 12          # lines per actor per game day
     pair_per_day: int = 4           # conversations/lines per ordered pair per game day
-    ticks_per_day: int = 60000
-    min_gap_ticks_ambient: int = 1500   # per pawn, ambient class
+    units_per_day: int = 60000
+    min_gap_game_ambient: int = 1500   # per actor, ambient class
     min_gap_real_s_ambient: float = 20.0
 
 
 class Config(BaseModel):
-    bridge_json: Path = Field(default_factory=default_bridge_json)
+    bridge_json: Path | None = None   # None: the adapter's default location
     bridge_url: str | None = None      # override: skips bridge.json
     bridge_token: str | None = None
     data_dir: Path = Field(default_factory=default_data_dir)
@@ -68,7 +52,7 @@ class Config(BaseModel):
     quotas: QuotaConfig = Field(default_factory=QuotaConfig)
 
     narrator_slot: int = 0
-    pawn_windows: int = 2              # slots 1..pawn_windows
+    windows: int = 2              # slots 1..windows
     pause_ambient_at_speed: int = 3    # overridden by the bridge's /config
     poll_interval_s: float = 1.0
     event_min_severity: float = 0.15   # below this never reaches the model
@@ -79,8 +63,8 @@ class Config(BaseModel):
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
 
     @property
-    def pawn_slots(self) -> list[int]:
-        return list(range(1, self.pawn_windows + 1))
+    def actor_slots(self) -> list[int]:
+        return list(range(1, self.windows + 1))
 
 
 _ENV = {
@@ -90,7 +74,7 @@ _ENV = {
     "HERMESVOICE_LLM_MODE": ("llm", "mode"),
     "HERMESVOICE_BRIDGE_URL": ("bridge_url",),
     "HERMESVOICE_BRIDGE_TOKEN": ("bridge_token",),
-    "HERMESVOICE_PAWN_WINDOWS": ("pawn_windows",),
+    "HERMESVOICE_PAWN_WINDOWS": ("windows",),
 }
 
 
@@ -113,5 +97,5 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
 
 
 def read_bridge_json(path: Path) -> dict:
-    """bridge.json: {"port", "bind", "token", "pid", "version", "save_epoch"}."""
+    """bridge.json: {"port", "bind", "token", "pid", "version", "epoch"}."""
     return json.loads(Path(path).read_text())

@@ -51,7 +51,7 @@ async def _replay(cfg: Config, path: str, use_llm: bool) -> int:
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "replay-calls.jsonl")) if use_llm else None
     for item in await replay(path, cfg, llm):
         if "dropped" in item:
-            print(f"  (pawn {item['pawn']} dropped: {item['dropped']})")
+            print(f"  (actor {item['actor']} dropped: {item['dropped']})")
         else:
             tag = f" -> {item['intent']}" if item["intent"] != "none" else ""
             print(f"{item['name']}: {item['text']}{tag}")

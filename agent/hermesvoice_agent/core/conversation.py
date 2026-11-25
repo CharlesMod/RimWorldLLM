@@ -1,8 +1,8 @@
 """Conversations (SPEC §7; milestone 4 groundwork, kept simple).
 
 Two windows, append-only turns, an opener obliges a reply only when it calls for one, and the
-end is by rule: turn cap, decaying continue chance, repetition check, pawns apart, either pawn's
-job changing, preemption. At the end each pawn gets one memory and one relation update.
+end is by rule: turn cap, decaying continue chance, repetition check, actors apart, either actor's
+job changing, preemption. At the end each actor gets one memory and one relation update.
 """
 from __future__ import annotations
 

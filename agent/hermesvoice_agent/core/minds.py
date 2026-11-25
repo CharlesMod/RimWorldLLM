@@ -1,4 +1,4 @@
-"""The pawn mind (SPEC §5) and its serialisation to the /mind blob.
+"""The actor mind (SPEC §5) and its serialisation to the /mind blob.
 
 The blob is opaque to the mod, saved in the save file, limit 32 KiB. ``Mind.to_blob`` trims
 decayed memories first (then history, then the least important pinned ones) to stay under
@@ -11,7 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-TICKS_PER_DAY = 60000
+DEFAULT_DAY_UNITS = 60000   # fallback only; the adapter supplies units_per_day
 HALF_LIFE_DAYS = 4.0
 BLOB_LIMIT = 32 * 1024
 BLOB_TARGET = 30 * 1024     # leave headroom for the envelope and later growth
@@ -33,14 +33,14 @@ class VoiceCard(BaseModel):
 
 
 class BioDiff(BaseModel):
-    tick: int
+    game: int
     before: str
     after: str
 
 
 class Memory(BaseModel):
     id: str
-    tick: int
+    game: int
     text: str                                    # first person, 1-2 sentences
     source: Literal["saw", "heard", "told"] = "saw"
     told_by: str | None = None                   # name, for source == "told"
@@ -50,7 +50,7 @@ class Memory(BaseModel):
     told_to: list[str] = Field(default_factory=list)
     importance: float = 0.3                      # 0..1, from game numbers
     pinned: bool = False
-    people: list[int] = Field(default_factory=list)   # pawn ids involved
+    people: list[int] = Field(default_factory=list)   # actor ids involved
     etype: str = ""
     event_seq: int | None = None
     summary_of: int = 0                          # >0: merged summary of N older memories
@@ -60,13 +60,13 @@ class Relation(BaseModel):
     name: str = ""
     feeling: str = ""
     history: str = ""
-    opinion: int | None = None                   # RimWorld's own number, last seen
-    updated_tick: int = 0
+    opinion: int | None = None                   # the game's own number, last seen
+    updated_time: int = 0
 
 
 class Mind(BaseModel):
     schema_v: int = SCHEMA
-    pawn_id: int
+    actor_id: int
     name: str = ""
     fixed: FixedBio = Field(default_factory=FixedBio)
     voice: VoiceCard = Field(default_factory=VoiceCard)
@@ -74,29 +74,29 @@ class Mind(BaseModel):
     bio_history: list[BioDiff] = Field(default_factory=list)
     wants: list[str] = Field(default_factory=list)
     memories: list[Memory] = Field(default_factory=list)
-    relations: dict[str, Relation] = Field(default_factory=dict)   # key: str(pawn id)
+    relations: dict[str, Relation] = Field(default_factory=dict)   # key: str(actor id)
     notes: str = ""                              # director's notes, from the player
     firsts: list[str] = Field(default_factory=list)   # event types seen for the first time
     unreflected_importance: float = 0.0
-    last_reflect_tick: int = 0
+    last_reflect_time: int = 0
     mem_counter: int = 0
-    last_line_tick: int = 0
+    last_line_time: int = 0
 
     # ---- memories -------------------------------------------------------
     def next_mem_id(self) -> str:
         self.mem_counter += 1
         return f"m{self.mem_counter}"
 
-    def memory_weight(self, m: Memory, now_tick: int) -> float:
+    def memory_weight(self, m: Memory, now_time: int, day: int = DEFAULT_DAY_UNITS) -> float:
         """Importance decayed by age with a 4-day half-life; pinned memories do not decay."""
         if m.pinned:
             return max(m.importance, 0.5) + 1.0
-        age_days = max(0, now_tick - m.tick) / TICKS_PER_DAY
+        age_days = max(0, now_time - m.game) / day
         return m.importance * m.confidence * 0.5 ** (age_days / HALF_LIFE_DAYS)
 
-    def add_bio_diff(self, tick: int, new_text: str) -> None:
+    def add_bio_diff(self, game: int, new_text: str) -> None:
         if new_text != self.evolving_bio:
-            self.bio_history.append(BioDiff(tick=tick, before=self.evolving_bio, after=new_text))
+            self.bio_history.append(BioDiff(game=game, before=self.evolving_bio, after=new_text))
             self.bio_history = self.bio_history[-8:]
             self.evolving_bio = new_text
 
@@ -107,7 +107,7 @@ class Mind(BaseModel):
         return True
 
     # ---- serialisation --------------------------------------------------
-    def to_blob(self, now_tick: int = 0, limit: int = BLOB_TARGET) -> dict:
+    def to_blob(self, now_time: int = 0, day: int = DEFAULT_DAY_UNITS, limit: int = BLOB_TARGET) -> dict:
         """Dict ready for PUT /mind. Trims *this object* to fit: decayed memories first."""
         def size() -> int:
             return len(json.dumps(self.model_dump(), ensure_ascii=False, separators=(",", ":")).encode())
@@ -115,7 +115,7 @@ class Mind(BaseModel):
         if size() > limit:
             # 1. ordinary memories, lowest decayed weight first
             ordinary = sorted((m for m in self.memories if not m.pinned),
-                              key=lambda m: (self.memory_weight(m, now_tick), m.tick))
+                              key=lambda m: (self.memory_weight(m, now_time, day), m.game))
             for m in ordinary:
                 if size() <= limit:
                     break
@@ -126,22 +126,22 @@ class Mind(BaseModel):
             self.bio_history = []
         if size() > limit:
             # 2. pinned memories, least important and oldest first
-            for m in sorted(self.memories, key=lambda m: (m.importance, m.tick)):
+            for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):
                 if size() <= limit:
                     break
                 self.memories.remove(m)
         if size() > limit:
             self.relations = dict(sorted(self.relations.items(),
-                                         key=lambda kv: -kv[1].updated_tick)[:20])
+                                         key=lambda kv: -kv[1].updated_time)[:20])
         return self.model_dump()
 
     @classmethod
-    def from_blob(cls, blob: dict | None, pawn_id: int, name: str = "") -> "Mind":
+    def from_blob(cls, blob: dict | None, actor_id: int, name: str = "") -> "Mind":
         if not blob:
-            return cls(pawn_id=pawn_id, name=name)
+            return cls(actor_id=actor_id, name=name)
         try:
             m = cls.model_validate(blob)
         except Exception:
-            return cls(pawn_id=pawn_id, name=name)   # unreadable blob: start a fresh mind
-        m.pawn_id = pawn_id
+            return cls(actor_id=actor_id, name=name)   # unreadable blob: start a fresh mind
+        m.actor_id = actor_id
         return m

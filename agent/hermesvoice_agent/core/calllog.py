@@ -12,7 +12,7 @@ from pathlib import Path
 class CallStats:
     kind: str = ""              # line | intent | reflect | voice_card | narrator | probe ...
     slot: int | None = None
-    pawn: int | None = None
+    actor: int | None = None
     prompt_n: int = 0
     cache_n: int = 0
     prompt_ms: float = 0.0
