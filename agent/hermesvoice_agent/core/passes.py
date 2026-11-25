@@ -18,6 +18,7 @@ class SanitizeCtx:
     prompt_words: set[str]
     common_words: set[str] = field(default_factory=set)
     secrets: list[str] = field(default_factory=list)   # private memory texts the listener must not hear quoted
+    third_person: bool = False                         # the speaker's voice card speaks of itself by name
 
 
 @dataclass
@@ -42,6 +43,7 @@ async def line_pass(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix:
         return Sanitized(None, f"llm_error:{e.cause}"), msgs
     s = sanitize_line(c.text, speaker_names=ctx.speaker_names, known_names=ctx.known_names,
                       all_names=ctx.all_names, prompt_words=ctx.prompt_words, common_words=ctx.common_words, secrets=ctx.secrets,
+                      narration_guard=not ctx.third_person,
                       truncated=c.stats.predicted_n >= max_tokens)
     return s, msgs
 

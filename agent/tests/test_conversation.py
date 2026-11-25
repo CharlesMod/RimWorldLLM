@@ -75,7 +75,7 @@ def test_end_templates():
 def test_director_conversation_end_writes_memory_and_relation(world):
     async def go():
         w = await world.go()
-        w.llm.script["line"] = ["Where did you put the medicine?", "Bram put it in the freezer.",
+        w.llm.script["line"] = ["Where did you put the medicine?", "I put it in the freezer.",
                                 "That is a stupid place for it.", "Then move it yourself.",
                                 "I will. Later.", "Do it today.", "Fine."]
         w.fb.add_event("social", [(1, "speaker"), (2, "listener")], "Ana spoke with Bram.", [1, 2], 0.7)

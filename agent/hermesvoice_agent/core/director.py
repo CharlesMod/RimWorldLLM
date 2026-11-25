@@ -337,7 +337,8 @@ class Director:
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
-                          prompt_cap_words(prefix), set(self.adapter.common_words))
+                          prompt_cap_words(prefix), set(self.adapter.common_words),
+                          third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())))
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
 
