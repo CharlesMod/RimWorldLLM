@@ -1,2 +1,0 @@
-[console_scripts]
-hermesvoice-agent = hermesvoice_agent.cli:main
