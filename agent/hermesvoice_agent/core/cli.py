@@ -5,10 +5,12 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import time
+from pathlib import Path
 
 from .bridge import BridgeClient
 from .calllog import CallLog
-from .config import Config, load_config
+from .config import Config, load_config, read_bridge_json
 from .adapter import GameAdapter
 from .director import Director
 from .endpoint_test import test_endpoint
@@ -26,8 +28,39 @@ def _cfg(args) -> Config:
     return cfg
 
 
-async def _run(cfg: Config, adapter: GameAdapter) -> int:
+log = logging.getLogger("hermesvoice.cli")
+BRIDGE_POLL_S = 2.0
+
+
+async def wait_for_bridge_json(path: Path, timeout: float = 0.0, *, poll: float = BRIDGE_POLL_S,
+                               sleep=asyncio.sleep, clock=time.monotonic) -> bool:
+    """Wait until bridge.json exists and parses (the game writes it when it starts). Polls quietly, logs once.
+    timeout 0 waits forever. Returns False if the timeout passes first."""
+    start = clock()
+    announced = False
+    while True:
+        try:
+            read_bridge_json(path)
+            if announced:
+                log.info("bridge.json appeared, starting")
+            return True
+        except (OSError, ValueError):
+            pass
+        if timeout and clock() - start >= timeout:
+            return False
+        if not announced:
+            log.info("waiting for %s (the game has not started the bridge yet)", path)
+            announced = True
+        await sleep(poll)
+
+
+async def _run(cfg: Config, adapter: GameAdapter, bridge_timeout: float = 0.0) -> int:
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
+    if not cfg.bridge_url:
+        path = Path(cfg.bridge_json or adapter.default_bridge_json())
+        if not await wait_for_bridge_json(path, bridge_timeout):
+            log.error("bridge.json did not appear at %s within %g s", path, bridge_timeout)
+            return 1
     bridge = BridgeClient.from_config(cfg, adapter.protocol, adapter.default_bridge_json())
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "calls.jsonl"))
     d = Director(cfg, bridge, llm, adapter)
@@ -73,6 +106,8 @@ def main(adapter: GameAdapter, argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run", help="run the agent against the bridge")
     r.add_argument("--bridge-json"); r.add_argument("--llm-url"); r.add_argument("--llm-mode", choices=["openai", "native"])
+    r.add_argument("--bridge-timeout", type=float, default=0.0,
+                   help="seconds to wait for bridge.json before giving up with exit 1 (default 0: wait forever)")
     t = sub.add_parser("test-endpoint", help="check the LLM endpoint (the Test button)")
     t.add_argument("--llm-url")
     p = sub.add_parser("replay", help="replay recorded events against a fake bridge")
@@ -83,7 +118,7 @@ def main(adapter: GameAdapter, argv: list[str] | None = None) -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     cfg = _cfg(args)
     if args.cmd == "run":
-        return asyncio.run(_run(cfg, adapter))
+        return asyncio.run(_run(cfg, adapter, args.bridge_timeout))
     if args.cmd == "test-endpoint":
         return asyncio.run(_test(cfg))
     return asyncio.run(_replay(cfg, adapter, args.events, args.llm))

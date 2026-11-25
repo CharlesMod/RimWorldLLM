@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from .common_words import COMMON_SENTENCE_START
 from .llm import strip_thought
 
 MAX_WORDS = 35
@@ -19,9 +20,12 @@ _REFUSAL = re.compile(
     r"|\bnot appropriate (?:for me )?to\b|\bdisclaimer\b|\bfictional (?:scenario|setting)\b|\bin this roleplay\b",
     re.I)
 _STAGE = re.compile(r"\*[^*]*\*|\([^)]*\)|\[[^\]]*\]|<[^>]*>")
-_NAME_TOKEN = re.compile(r"[A-Z][a-z]+(?:'[a-z]+)?")
+_NAME_TOKEN = re.compile(r"[A-Z][a-z]+(?:['\u2019][a-z]+)?")
+_TAIL = re.compile(r"['\u2019][a-z]+$")      # 's  'll  'd  contraction tail of a name token
+_BULLET = re.compile(r"^(?:[-\u2013\u2014>*\u2022]+\s+|[-\u2013\u2014>]+(?=\S))")
 # capitalised words that start sentences or are ordinary vocabulary, never treated as names
-_SUBJECT_VERB = re.compile(r"^(?:'s|\s+(?:is|was|has|had|will|did|does|doesn't|didn't|won't|can't|says|said|said|went|died|took|saw|knows)\b)")
+_SUBJECT_VERB = re.compile(r"^(?:'s|\s+(?:is|are|was|were|has|had|will|would|did|does|doesn't|didn't|won't|can't|must|should|could|"
+                           r"says|said|went|died|took|saw|knows|needs|wants|looks|feels|goes|comes|gets|got|ran|stays|thinks)\b)")
 _COMMON = {
     "i", "i'm", "i'll", "i've", "i'd", "okay", "ok", "yes", "no", "look", "well", "hm", "hmm", "right", "sure",
     "fine", "hey", "listen", "easy", "please", "damn", "oh", "ah", "so", "and", "but", "the", "a", "an", "this",
@@ -76,13 +80,16 @@ def leaks_secret(text: str, secrets: list[str]) -> bool:
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
                   max_words: int = MAX_WORDS, common_words: set[str] | None = None,
-                  secrets: list[str] | None = None) -> Sanitized:
+                  secrets: list[str] | None = None, narration_guard: bool = False) -> Sanitized:
     """
     speaker_names: the speaker's own name tokens.
     known_names:   name tokens of actors the speaker knows (present, relations, memories).
     all_names:     name tokens of every actor that exists in the world.
     prompt_words:  capitalised words from the speaker's prompt (grounded vocabulary: places, factions).
     truncated:     the generation hit the token cap (a cut-off line is trimmed to its last sentence).
+    narration_guard: drop a line that begins with the speaker's own name and a verb ("Tuk feels the bandage."), which is
+                   third-person narration, not speech. Callers turn it off for a speaker whose voice card speaks of itself
+                   in the third person, and never turn it on for prose (diaries and bios are third person by nature).
     """
     t = strip_thought(raw).strip()
     if not t:
@@ -90,6 +97,7 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
     t = t.split("\n")[0].strip()
     if _REFUSAL.search(t):
         return Sanitized(None, "refusal")
+    t = _BULLET.sub("", t)
     t = _STAGE.sub(" ", t)
     t = re.sub(r"\s+", " ", t).strip()
     # name prefix "Rook: ..." or "Nate 'Rook' Hollis: ..."
@@ -110,6 +118,8 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
         return Sanitized(None, "refusal")
     if len(t.split()) > max_words:
         return Sanitized(None, "too_long")
+    if narration_guard and is_self_narration(t, speaker_names):
+        return Sanitized(None, "self_narration")
     if secrets and leaks_secret(t, secrets):
         return Sanitized(None, "leaks_secret")
     bad = _bad_name(t, speaker_names, known_names, all_names, prompt_words or set(),
@@ -119,34 +129,63 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
     return Sanitized(t)
 
 
+_NOT_VERB = {"and", "or", "but", "so", "then", "the", "a", "an", "i", "me", "my", "you", "he", "she", "we", "they", "it",
+             "of", "to", "in", "on", "at", "for", "with", "from", "as", "if", "who", "that", "which"}
+
+
+def is_self_narration(t: str, speaker_names: set[str]) -> bool:
+    """True when the line starts with one of the speaker's own name tokens followed by a verb-like word:
+    "Tuk feels the bandage." A vocative ("Tuk, ...") or a possessive ("Tuk's bow") is not narration."""
+    m = re.match(r"^([A-Z][a-z]+)\s+([a-z][a-z']*)", t)
+    if not m or m.group(1).lower() not in {n.lower() for n in speaker_names}:
+        return False
+    return m.group(2) not in _NOT_VERB
+
+
+def _name_forms(w: str) -> list[str]:
+    """Lower-case forms to compare: "Moth's" -> moth's, moth; "Moths'" (cut to 'Moths') -> moths, moth."""
+    wl = w.lower()
+    base = _TAIL.sub("", wl)
+    out = [wl, base]
+    if base.endswith("s") and len(base) > 3:
+        out.append(base[:-1])
+    return out
+
+
 def _bad_name(t: str, me: set[str], known: set[str], all_names: set[str], prompt_words: set[str],
               extra_common: set[str]) -> str | None:
     lower_all = {n.lower() for n in all_names}
     lower_ok = {n.lower() for n in (known | me)}
-    prompt_l = {w.lower() for w in prompt_words}
+    prompt_l = {f for w in prompt_words for f in _name_forms(w)}
     for m in _NAME_TOKEN.finditer(t):
         w = m.group(0)
-        wl = w.lower()
-        if wl in lower_ok:
+        forms = _name_forms(w)
+        shown = _TAIL.sub("", w)
+        if any(f in lower_ok for f in forms):
             continue
-        if wl in lower_all:
-            return w            # a real actor the speaker does not know
-        if wl in _COMMON or wl in extra_common or wl in prompt_l:
+        if any(f in lower_all for f in forms):
+            return shown            # a real actor the speaker does not know
+        if any(f in _COMMON or f in extra_common or f in prompt_l for f in forms):
             continue
-        before = t[: m.start()].rstrip()
-        sentence_start = not before or before[-1] in ".!?…"
-        if sentence_start:
+        if any(f in COMMON_SENTENCE_START for f in forms[:2]) and _sentence_start(t, m.start()):
+            continue            # an ordinary word with a capital: "It is good meat", "Stance is wrong"
+        if _sentence_start(t, m.start()):
             # only a vocative at the start ("Zed, get back") counts as a name
             rest = t[m.end():]
-            if rest[:1] == "," or _SUBJECT_VERB.match(rest):
-                return w
+            if rest[:1] == "," or _SUBJECT_VERB.match(rest) or _TAIL.search(w):
+                return shown
             continue
-        return w                # capitalised mid-sentence, not in the prompt: an invented name
+        return shown            # capitalised mid-sentence, not in the prompt: an invented name
     return None
 
 
+def _sentence_start(t: str, pos: int) -> bool:
+    before = t[:pos].rstrip()
+    return not before or before[-1] in ".!?…"
+
+
 def prompt_cap_words(prefix: str) -> set[str]:
-    return set(_NAME_TOKEN.findall(prefix))
+    return {_TAIL.sub("", w) for w in _NAME_TOKEN.findall(prefix)}   # "Biscuit's" counts as "Biscuit"
 
 
 def sanitize_prose(raw: str, *, known_names: set[str], all_names: set[str], prompt_words: set[str],

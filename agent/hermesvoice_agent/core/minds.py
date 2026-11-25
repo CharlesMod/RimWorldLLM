@@ -30,6 +30,15 @@ class VoiceCard(BaseModel):
     examples: list[str] = Field(default_factory=list)   # exactly 3 once built
     edited_by_player: bool = False
     llm_examples: bool = False                          # examples written by the optional LLM pass
+    third_person: bool | None = None                    # speaks of itself by name ("Tuk hunts."); None = infer from examples
+
+    def speaks_third_person(self, names: set[str]) -> bool:
+        """True if this voice refers to itself by name: the flag if set, else when at least one of the examples
+        start with the speaker's own name followed by a verb."""
+        if self.third_person is not None:
+            return self.third_person
+        from .sanitize import is_self_narration
+        return sum(1 for e in self.examples if is_self_narration(e.strip(), names)) >= 1
 
 
 BIO_HISTORY_KEEP = 10
