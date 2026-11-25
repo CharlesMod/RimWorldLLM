@@ -53,6 +53,7 @@ namespace HermesVoice
                 // Born while paused: skip the pop so it does not sit frozen at 85%.
                 AnimT = Find.TickManager.Paused ? BubbleMetrics.PopSeconds : 0f
             });
+            DirectorCamera.OnSpeech(pawn, look, intent);
         }
 
         public static void Clear() { Active.Clear(); Pacing.Clear(); }
@@ -100,6 +101,7 @@ namespace HermesVoice
                 Kind = BubbleKind.Thought, Ambient = true,
                 AnimT = Find.TickManager.Paused ? BubbleMetrics.PopSeconds : 0f
             });
+            DirectorCamera.OnThought(pawn);
         }
 
         // Release waiting thoughts whose pawn has stopped speaking (called once per frame by the comic draw path).

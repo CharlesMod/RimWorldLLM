@@ -38,6 +38,13 @@ namespace HermesVoice
         {
             base.GameComponentUpdate();
             CheckFallbackNotice();
+            DirectorCamera.Update();
+        }
+
+        public override void GameComponentOnGUI()
+        {
+            base.GameComponentOnGUI();
+            DirectorCamera.OnGUIKey();
         }
 
         // One per game session: the engine may still be starting when the save loads, so a loaded game arms the notice and
@@ -65,6 +72,7 @@ namespace HermesVoice
             HermesBridge.Chronicle.Clear();
             HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
+            DirectorCamera.Reset();
             _fallbackNotice.Disarm();
             if (Instance != null) Instance.RecapGate.Disarm();
             Instance = null;
@@ -77,6 +85,7 @@ namespace HermesVoice
             SpeechBubbles.Clear();
             _fallbackNotice.Arm(Environment.TickCount64);
             RecapGate.Arm(SaveEpoch, true, Environment.TickCount64);
+            DirectorCamera.OnGameStart();
         }
 
         public override void StartedNewGame()
@@ -89,6 +98,7 @@ namespace HermesVoice
             HermesBridge.Chronicle.Clear();
             HermesBridge.Art.Clear();
             SpeechBubbles.Clear();
+            DirectorCamera.OnGameStart();
         }
 
         public override void ExposeData()

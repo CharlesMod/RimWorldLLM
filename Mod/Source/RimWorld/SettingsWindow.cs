@@ -322,6 +322,14 @@ namespace HermesVoice
                     l.TextFieldNumeric(ref s.thoughtGlobalSec, ref _thoughtGlobalBuf, 1, 600);
                 }
             }
+            l.GapLine();
+            l.CheckboxLabeled(UiUtil.T("HV_Camera_Allowed"), ref s.directorCameraAllowed, UiUtil.T("HV_Camera_AllowedTip"));
+            if (s.directorCameraAllowed)
+            {
+                l.CheckboxLabeled(UiUtil.T("HV_Camera_OnAtStart"), ref s.directorCameraOnAtStart, UiUtil.T("HV_Camera_OnAtStartTip"));
+                l.Label(UiUtil.T("HV_Camera_PanSpeed", s.directorPanSpeed.ToString("0.0")));
+                s.directorPanSpeed = l.Slider(s.directorPanSpeed, 0.5f, 6f);
+            }
         }
 
         static void Advanced(Listing_Standard l, HermesVoiceSettings s)

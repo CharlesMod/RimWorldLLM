@@ -98,6 +98,7 @@ namespace HermesVoice
         {
             var ev = Build(spec);
             HermesBridge.Events.Add(ev);
+            DirectorCamera.OnEvent(spec);
             if (push) AgentDialOut.Push(ev);
             return ev;
         }

@@ -22,6 +22,12 @@ namespace HermesVoice
             Text.Font = GameFont.Medium;
             Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "HV_LogTitle" : "HV_ChronTitle"));
             Text.Font = GameFont.Small;
+            if (DirectorCamera.Allowed)
+            {
+                var camBtn = new Rect(inRect.xMax - 210f, inRect.y + 2f, 210f, 30f);
+                if (Widgets.ButtonText(camBtn, UiUtil.T(DirectorCamera.Enabled ? "HV_Camera_ButtonOn" : "HV_Camera_ButtonOff"))) DirectorCamera.Toggle();
+                TooltipHandler.TipRegion(camBtn, UiUtil.T("HV_Camera_Tip"));
+            }
 
             var body = new Rect(inRect.x, inRect.y + 74f, inRect.width, inRect.height - 74f);
             var tabs = new List<TabRecord>
