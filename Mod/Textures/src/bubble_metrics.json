@@ -1,0 +1,16 @@
+{
+  "_comment": "Shared by make_bubbles.py, preview.py and (checked by BubbleMetricsTests) Mod/Source/RimWorld/BubbleLayout.cs. Source pixels unless noted; 'unit' converts source px to UI px.",
+  "unit": 0.5,
+  "border": 40,
+  "ink": 5,
+  "rim": 3,
+  "shapes": {
+    "balloon": { "mid": 16,  "tiled": false, "margin": 6,  "radius": 34 },
+    "caption": { "mid": 16,  "tiled": false, "margin": 6,  "radius": 2 },
+    "burst":   { "mid": 40,  "tiled": true,  "margin": 20, "spike": 12 },
+    "cloud":   { "mid": 56,  "tiled": true,  "margin": 7 },
+    "dashed":  { "mid": 27,  "tiled": true,  "margin": 6,  "radius": 34, "dash": 16 }
+  },
+  "tail": { "width": 64, "height": 96, "stub": 10 },
+  "dot": { "size": 64 }
+}

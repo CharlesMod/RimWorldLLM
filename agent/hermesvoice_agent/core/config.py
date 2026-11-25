@@ -34,6 +34,12 @@ class LLMConfig(BaseModel):
     top_p: float = 0.95
     min_p: float = 0.05
     line_max_tokens: int = 48
+    # DRY repetition control for the line pass (llama.cpp): off by default, see docs/MODEL-BENCH.md F6.
+    line_dry: bool = False
+    dry_multiplier: float = 0.8
+    dry_base: float = 1.75
+    dry_allowed_length: int = 2
+    dry_penalty_last_n: int = 512
     timeout_s: float = 30.0
 
 
@@ -82,6 +88,11 @@ class Config(BaseModel):
     chronicle_max_tokens: int = 220
     narrator_context_tokens: int = 6000
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
+    shout_gap_real_s: float = 45.0     # one speaker shouts at most this often (a calm scene cannot burst every line)
+    thought_enabled: bool = True       # short map thoughts (POST /thought kind "thought" + surface), idle work only
+    thought_every_real_s: float = 420.0   # per actor, at most one thought each this many real seconds
+    thought_memory_window_days: float = 1.0   # a thought draws on public memories this recent
+    thought_max_chars: int = 90
     idle_retry_real_s: float = 60.0    # backoff after a failed idle job
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
 

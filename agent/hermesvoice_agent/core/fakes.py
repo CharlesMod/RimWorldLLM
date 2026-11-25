@@ -19,6 +19,7 @@ _DEFAULTS = {
     "reflect": '{"bio": "The recent days have left a mark on me, and I am changing slowly.", '
                '"wants": ["Get through the week"], "relations": [], "merge": []}',
     "diary": "Another day behind me. I kept my head down and got through it.",
+    "thought": "That stew had better be hot.",
     "chronicle": "The community got through another day with what it had, and little more than that.",
     "chronicle_summary": "Earlier days: the community endured and kept working.",
 }

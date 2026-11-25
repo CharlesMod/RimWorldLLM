@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HermesVoice.Bridge;
 using UnityEngine;
 using Verse;
@@ -13,7 +14,7 @@ namespace HermesVoice
         static Vector2 _scroll;
         static float _viewHeight = 600f;
         static bool _revealToken, _revealKey, _confirmRegen;
-        static string _portBuf, _speedBuf, _durBuf;
+        static string _portBuf, _speedBuf, _durBuf, _thoughtPawnBuf, _thoughtGlobalBuf;
 
         static readonly Color Green = new Color(0.4f, 0.85f, 0.4f), Amber = new Color(0.95f, 0.75f, 0.25f), Red = new Color(0.9f, 0.3f, 0.3f);
 
@@ -280,9 +281,37 @@ namespace HermesVoice
             Title(l, "HV_Bubbles_Title");
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Show"), ref s.showBubbles);
             l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Colors"), ref s.colorBubbles);
+            bool comic = s.bubbleStyle != "classic";
+            l.Label(UiUtil.T("HV_Bubbles_Style"));
+            if (l.ButtonText(UiUtil.T(comic ? "HV_Bubbles_StyleComic" : "HV_Bubbles_StyleClassic")))
+            {
+                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
+                {
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleComic"), () => s.bubbleStyle = "comic"),
+                    new FloatMenuOption(UiUtil.T("HV_Bubbles_StyleClassic"), () => s.bubbleStyle = "classic")
+                }));
+            }
+            l.Label(UiUtil.T("HV_Bubbles_Opacity", Mathf.RoundToInt(s.bubbleOpacity * 100f)));
+            s.bubbleOpacity = l.Slider(s.bubbleOpacity, 0.3f, 1f);
+            if (comic) l.CheckboxLabeled(UiUtil.T("HV_Bubbles_Lettering"), ref s.comicLettering);
             l.Label(UiUtil.T("HV_Bubbles_Duration"));
             if (_durBuf == null) _durBuf = s.bubbleDurationSec.ToString();
             l.TextFieldNumeric(ref s.bubbleDurationSec, ref _durBuf, 1, 120);
+            if (comic)
+            {
+                l.CheckboxLabeled(UiUtil.T("HV_Thoughts_Show"), ref s.showThoughts, UiUtil.T("HV_Thoughts_ShowTip"));
+                if (s.showThoughts)
+                {
+                    l.Label(UiUtil.T("HV_Thoughts_Opacity", Mathf.RoundToInt(s.thoughtOpacity * 100f)));
+                    s.thoughtOpacity = l.Slider(s.thoughtOpacity, 0.2f, 1f);
+                    l.Label(UiUtil.T("HV_Thoughts_PerPawn"));
+                    if (_thoughtPawnBuf == null) _thoughtPawnBuf = s.thoughtPerPawnSec.ToString();
+                    l.TextFieldNumeric(ref s.thoughtPerPawnSec, ref _thoughtPawnBuf, 5, 3600);
+                    l.Label(UiUtil.T("HV_Thoughts_Global"));
+                    if (_thoughtGlobalBuf == null) _thoughtGlobalBuf = s.thoughtGlobalSec.ToString();
+                    l.TextFieldNumeric(ref s.thoughtGlobalSec, ref _thoughtGlobalBuf, 1, 600);
+                }
+            }
         }
 
         static void Advanced(Listing_Standard l, HermesVoiceSettings s)

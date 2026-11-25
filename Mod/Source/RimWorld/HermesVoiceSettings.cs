@@ -39,6 +39,13 @@ namespace HermesVoice
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
         public bool colorBubbles = true;
+        public string bubbleStyle = "comic";   // comic | classic
+        public float bubbleOpacity = 1f;
+        public bool comicLettering = false;     // ALL-CAPS comic lettering
+        public bool showThoughts = true;        // pawn thoughts as cloud balloons on the map (comic style)
+        public float thoughtOpacity = 0.6f;     // share of the bubble opacity a thought cloud uses
+        public int thoughtPerPawnSec = 120;     // one thought cloud per pawn at most this often
+        public int thoughtGlobalSec = 20;       // and one anywhere at most this often
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -92,6 +99,13 @@ namespace HermesVoice
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);
+            Scribe_Values.Look(ref bubbleStyle, "bubbleStyle", "comic");
+            Scribe_Values.Look(ref bubbleOpacity, "bubbleOpacity", 1f);
+            Scribe_Values.Look(ref comicLettering, "comicLettering", false);
+            Scribe_Values.Look(ref showThoughts, "showThoughts", true);
+            Scribe_Values.Look(ref thoughtOpacity, "thoughtOpacity", 0.6f);
+            Scribe_Values.Look(ref thoughtPerPawnSec, "thoughtPerPawnSec", 120);
+            Scribe_Values.Look(ref thoughtGlobalSec, "thoughtGlobalSec", 20);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);

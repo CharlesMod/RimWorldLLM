@@ -81,10 +81,14 @@ class HttpLLM:
     def _headers(self) -> dict:
         return {"Authorization": f"Bearer {self.cfg.api_key}"} if self.cfg.api_key else {}
 
-    def _sampler(self, temperature: float | None) -> dict:
+    def _sampler(self, temperature: float | None, kind: str = "line") -> dict:
         c = self.cfg
-        return {"temperature": c.temperature if temperature is None else temperature,
-                "top_k": c.top_k, "top_p": c.top_p, "min_p": c.min_p}
+        s = {"temperature": c.temperature if temperature is None else temperature,
+             "top_k": c.top_k, "top_p": c.top_p, "min_p": c.min_p}
+        if c.line_dry and kind == "line":
+            s.update(dry_multiplier=c.dry_multiplier, dry_base=c.dry_base, dry_allowed_length=c.dry_allowed_length,
+                     dry_penalty_last_n=c.dry_penalty_last_n)
+        return s
 
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
@@ -96,7 +100,7 @@ class HttpLLM:
         try:
             if self.cfg.mode == "native":
                 body = {"prompt": gemma_prompt(messages), "n_predict": max_tokens, "stop": stop,
-                        "cache_prompt": True, **self._sampler(temperature)}
+                        "cache_prompt": True, **self._sampler(temperature, kind)}
                 if slot is not None:
                     body["id_slot"] = slot
                 if grammar:
@@ -113,7 +117,7 @@ class HttpLLM:
                                      for ro, c in messages],
                         "max_tokens": max_tokens, "cache_prompt": True,
                         "chat_template_kwargs": {"enable_thinking": False},
-                        **self._sampler(temperature)}
+                        **self._sampler(temperature, kind)}
                 if stop:
                     body["stop"] = stop
                 if self.cfg.model:
