@@ -88,6 +88,15 @@ Rules that follow from the split:
   pawn's mind as an opaque blob in the save. Reloading an old save rolls memories back with
   it, and a save shared to another machine keeps its colonists' minds.
 
+**Engine and game, kept apart.** We are always building two things: a reusable engine and
+the RimWorld part. A future game reuses the engine without RimWorld code.
+
+| Engine (game-agnostic) | RimWorld part |
+|---|---|
+| LLM engine and installer (hive-mind based), ctx balancer, model builds | — |
+| Agent core: LLM client, leases, prompt-block framework, minds, memory, ledger, conversations, sanitizer, intent pass, bridge protocol client | Agent adapter (`games/rimworld`): bio and voice-card templates, vocabulary, event mapping, block A rules, intent labels |
+| Bridge protocol (envelope, auth, op ids, event stream, mind blobs, say/thought/talk) and its C# implementation with no game references | Mod: snapshots, witnesses, Harmony hooks, play log, effects, settings UI |
+
 ## 4. Slots and prompt layout
 
 Three slots, each an independent context stream:

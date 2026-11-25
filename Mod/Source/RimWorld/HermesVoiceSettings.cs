@@ -10,8 +10,8 @@ namespace HermesVoice
         public bool enabled = true;
 
         // In-mod HTTP bridge: the Hermes agent reads colony state and issues /say commands here.
-        public int bridgePort = 8765;
-        public string bindAddress = "0.0.0.0";
+        public int bridgePort = 9765;
+        public string bindAddress = "127.0.0.1";
 
         // Dial-out: when a colony event fires, the mod POSTs to this URL (your agent endpoint).
         public string agentUrl = "";
@@ -32,13 +32,26 @@ namespace HermesVoice
         public bool evTend = true;
         public bool evSocial = true;
         public bool evRaid = true;
+        public bool evQuest = true;
+        public bool evLodger = true;
+        public bool evPrisoner = true;
+        public bool evFuneral = true;
+        public bool evWeather = true;
+        public bool evThought = true;
+
+        // What the agent must honour (GET /config).
+        public string effects = "normal";          // off | light | normal
+        public float talkFrequency = 1f;
+        public int pauseAmbientAtSpeed = 3;
+        public string language = "en";
 
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Values.Look(ref enabled, "enabled", true);
-            Scribe_Values.Look(ref bridgePort, "bridgePort", 8765);
-            Scribe_Values.Look(ref bindAddress, "bindAddress", "0.0.0.0");
+            Scribe_Values.Look(ref bridgePort, "bridgePort", 9765);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit) bridgePort = Bridge.SettingsMigration.Port(bridgePort);
+            Scribe_Values.Look(ref bindAddress, "bindAddress", "127.0.0.1");
             Scribe_Values.Look(ref agentUrl, "agentUrl", "");
             Scribe_Values.Look(ref sharedToken, "sharedToken", "");
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
@@ -51,6 +64,16 @@ namespace HermesVoice
             Scribe_Values.Look(ref evTend, "evTend", true);
             Scribe_Values.Look(ref evSocial, "evSocial", true);
             Scribe_Values.Look(ref evRaid, "evRaid", true);
+            Scribe_Values.Look(ref evQuest, "evQuest", true);
+            Scribe_Values.Look(ref evLodger, "evLodger", true);
+            Scribe_Values.Look(ref evPrisoner, "evPrisoner", true);
+            Scribe_Values.Look(ref evFuneral, "evFuneral", true);
+            Scribe_Values.Look(ref evWeather, "evWeather", true);
+            Scribe_Values.Look(ref evThought, "evThought", true);
+            Scribe_Values.Look(ref effects, "effects", "normal");
+            Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
+            Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 3);
+            Scribe_Values.Look(ref language, "language", "en");
         }
     }
 }
