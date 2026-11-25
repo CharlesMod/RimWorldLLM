@@ -251,6 +251,23 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public async Task StalledGameThreadAnswersBusyAtOnce()
+        {
+            using (var h = new Harness())
+            {
+                Assert.True(h.StartServer("secret", Net.FreeBase()));
+                h.Server.Pump(2);                       // the game thread has run once...
+                await Task.Delay(1300);                 // ...then stopped running frames for longer than StalledAfter (1 s)
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var (st, j) = await Get(h.Server.Port, "/ping", "secret");
+                Assert.Equal(503, st); Assert.Equal("busy", (string)j["error"]);
+                Assert.True(sw.Elapsed < TimeSpan.FromSeconds(5));   // not the 20 s game-thread timeout
+                var (st2, _) = await WithPump(h.Server, Get(h.Server.Port, "/ping", "secret")); // frames again: served
+                Assert.Equal(200, st2);
+            }
+        }
+
+        [Fact]
         public async Task AuthIsMandatory()
         {
             using (var h = new Harness())
