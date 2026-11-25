@@ -191,7 +191,7 @@ class FakeLLM:
         if q:
             text = q.pop(0)
         elif kind == "intent":
-            last_line = messages[-3][1] if len(messages) >= 3 else ""
+            last_line = messages[-2][1] if len(messages) >= 2 else ""
             text = ("kind" if re.search(r"\b(thanks|friend|sit|eat)\b", last_line, re.I) else
                     "insult" if re.search(r"\b(idiot|useless|fool)\b", last_line, re.I) else "none")
         elif kind == "line":
