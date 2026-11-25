@@ -7,7 +7,7 @@ It talks to the game over a bridge (HTTP, `docs/BRIDGE-API.md`) and to a llama.c
 ## Run
 
 ```
-python -m venv .venv && .venv/bin/pip install -e '.[test]'
+python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 hermesvoice-agent test-endpoint --llm-url http://127.0.0.1:8080     # the Test button
 hermesvoice-agent run                                               # needs the game running
 hermesvoice-agent replay events.jsonl                               # offline, fake bridge + fake LLM
