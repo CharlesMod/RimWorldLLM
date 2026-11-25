@@ -77,6 +77,9 @@ namespace HermesVoice
         {
             var s = HermesVoiceMod.Settings;
             if (s == null) return null;
+            // Local engine: the agent talks to the engine's OpenAI proxy; the engine holds the model, there is no key.
+            if (s.llmSource != "own")
+                return new Newtonsoft.Json.Linq.JObject { ["base_url"] = EngineManager.OpenAiBase, ["model"] = EngineManager.CurrentModel, ["api_key"] = "" };
             return new Newtonsoft.Json.Linq.JObject
             {
                 ["base_url"] = (s.llmBaseUrl ?? "").Trim(),
@@ -120,6 +123,7 @@ namespace HermesVoice
         {
             Runtime.FrameUpdate();
             AgentDialOut.FlushLogs();
+            EngineManager.Tick();
         }
     }
 
@@ -131,6 +135,8 @@ namespace HermesVoice
         {
             try { HermesBridge.Start(); }
             catch (Exception e) { Log.Error("[HermesVoice] Bridge startup failed: " + e); }
+            try { EngineManager.StartAtStartup(); }   // after the bridge: the engine's profile points at bridge.json
+            catch (Exception e) { Log.Error("[HermesVoice] Engine startup failed: " + e); }
         }
     }
 

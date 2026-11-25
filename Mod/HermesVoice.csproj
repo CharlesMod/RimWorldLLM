@@ -39,6 +39,9 @@
             <DeployDefs Include="$(ProjectDir)Defs/**/*" />
             <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
             <DeployTextures Include="$(ProjectDir)Textures/**/*" />
+            <!-- Engine binaries (engine/build.sh -> engine/dist/<os>-<arch>/) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
+            <DeployEngine Include="$(ProjectDir)../engine/dist/*/*" />
+            <DeployWheel Include="$(ProjectDir)../agent/dist/*.whl" />
             <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
         </ItemGroup>
         <RemoveDir Directories="$(DeployPath)" />
@@ -47,6 +50,8 @@
         <Copy SourceFiles="@(DeployLanguages)" DestinationFiles="@(DeployLanguages->'$(DeployPath)Languages/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployLanguages)' != '' " />
         <Copy SourceFiles="@(DeployTextures)" DestinationFiles="@(DeployTextures->'$(DeployPath)Textures/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployTextures)' != '' " />
         <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(DeployEngine)" DestinationFiles="@(DeployEngine->'$(DeployPath)Engine/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployEngine)' != '' " />
+        <Copy SourceFiles="@(DeployWheel)" DestinationFiles="@(DeployWheel->'$(DeployPath)Engine/agent/%(Filename)%(Extension)')" Condition=" '@(DeployWheel)' != '' " />
         <Message Text="--- HermesVoice deployed to $(DeployPath) ---" Importance="high" />
     </Target>
 

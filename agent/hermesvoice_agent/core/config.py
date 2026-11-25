@@ -1,7 +1,9 @@
 """Agent configuration.
 
 Sources, lowest to highest priority: defaults, a TOML or JSON file (``--config`` or
-``$HERMESVOICE_CONFIG``), environment variables (``HERMESVOICE_*``).
+``$HERMESVOICE_CONFIG``), environment variables (``HERMESVOICE_*``). When no LLM URL came from the file or the environment, the ``llm`` block of
+``bridge.json`` (``base_url``, ``model``, ``api_key``) is used if ``bridge_json`` is known, so the order for the
+LLM endpoint is env > file > bridge.json > default.
 """
 from __future__ import annotations
 
@@ -105,7 +107,25 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
             d[keys[-1]] = os.environ[env]
     if "HERMESVOICE_BRIDGE_JSON" in os.environ:
         data["bridge_json"] = os.environ["HERMESVOICE_BRIDGE_JSON"]
+    _llm_from_bridge_json(data)
     return Config(**data)
+
+
+def _llm_from_bridge_json(data: dict) -> None:
+    """Fill llm.* from bridge.json's "llm" block when no LLM URL was set by the file or the environment."""
+    if data.get("llm", {}).get("base_url") or not data.get("bridge_json"):
+        return
+    try:
+        block = read_bridge_json(Path(data["bridge_json"])).get("llm") or {}
+    except (OSError, ValueError):
+        return
+    if not isinstance(block, dict) or not str(block.get("base_url", "")).strip():
+        return
+    llm = data.setdefault("llm", {})
+    for key in ("base_url", "model", "api_key"):
+        val = str(block.get(key, "") or "").strip()
+        if val and not llm.get(key):
+            llm[key] = val
 
 
 def read_bridge_json(path: Path) -> dict:

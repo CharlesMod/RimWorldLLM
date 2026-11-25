@@ -25,6 +25,13 @@ namespace HermesVoice
         public string llmModel = "";
         public string llmApiKey = "";
 
+        // Where the agent's LLM comes from: "local" (the HermesVoice engine, default) or "own" (the fields above).
+        public string llmSource = "local";
+        // Launch or attach the local engine when the game starts.
+        public bool engineAutoStart = true;
+        // The player answered the first-run "set up a local model" prompt with Set up or My own endpoint.
+        public bool engineSetupDismissed = false;
+
         // Dialogue display.
         public bool showBubbles = true;
         public int bubbleDurationSec = 8;
@@ -64,6 +71,12 @@ namespace HermesVoice
             Scribe_Values.Look(ref llmBaseUrl, "llmBaseUrl", "");
             Scribe_Values.Look(ref llmModel, "llmModel", "");
             Scribe_Values.Look(ref llmApiKey, "llmApiKey", "");
+            // Saved files from before the engine have no llmSource: keep a configured own endpoint, else default to local.
+            Scribe_Values.Look(ref llmSource, "llmSource", "");
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && string.IsNullOrEmpty(llmSource))
+                llmSource = string.IsNullOrWhiteSpace(llmBaseUrl) ? "local" : "own";
+            Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
+            Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);

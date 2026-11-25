@@ -105,22 +105,63 @@ namespace HermesVoice
 
             if (l.ButtonText(UiUtil.T("HV_Conn_Restart"))) HermesBridge.Start();
 
-            // Agent endpoint.
+            // LLM source: the local engine (default) or the player's own endpoint.
             l.GapLine();
             Title(l, "HV_Conn_EndpointTitle");
-            Note(l, UiUtil.T("HV_Conn_EndpointHelp"));
-            l.Label(UiUtil.T("HV_Conn_LlmUrl"));
-            s.llmBaseUrl = Widgets.TextField(l.GetRect(24f), s.llmBaseUrl ?? "");
-            l.Label(UiUtil.T("HV_Conn_LlmModel"));
-            s.llmModel = Widgets.TextField(l.GetRect(24f), s.llmModel ?? "");
-            l.Label(UiUtil.T("HV_Conn_LlmKey"));
-            var krow = l.GetRect(26f);
-            if (_revealKey) s.llmApiKey = Widgets.TextField(new Rect(krow.x, krow.y, krow.width - 110f, 24f), s.llmApiKey ?? "");
-            else Widgets.Label(new Rect(krow.x, krow.y + 2f, krow.width - 110f, 24f), string.IsNullOrEmpty(s.llmApiKey) ? UiUtil.T("HV_Conn_KeyNone") : Mask(s.llmApiKey));
-            if (Widgets.ButtonText(new Rect(krow.xMax - 100f, krow.y, 100f, 26f), UiUtil.T(_revealKey ? "HV_Conn_Hide" : "HV_Conn_Edit"))) _revealKey = !_revealKey;
-            Note(l, UiUtil.T("HV_Conn_KeyNote"));
+            l.CheckboxLabeled(UiUtil.T("HV_Eng_AutoStart"), ref s.engineAutoStart, UiUtil.T("HV_Eng_AutoStartTip"));
+            l.Label(UiUtil.T("HV_Eng_SourceLabel"));
+            bool local = s.llmSource != "own";
+            if (l.RadioButton(UiUtil.T("HV_Eng_SourceLocal"), local, 0f, UiUtil.T("HV_Eng_SourceLocalTip")) && !local) { s.llmSource = "local"; EngineManager.SettingsChanged(); }
+            if (l.RadioButton(UiUtil.T("HV_Eng_SourceOwn"), !local, 0f, UiUtil.T("HV_Eng_SourceOwnTip")) && local) { s.llmSource = "own"; EngineManager.SettingsChanged(); }
+            l.Gap(4f);
 
-            TestRow(l, s);
+            if (s.llmSource != "own") LocalEngine(l);
+            else
+            {
+                Note(l, UiUtil.T("HV_Conn_EndpointHelp"));
+                l.Label(UiUtil.T("HV_Conn_LlmUrl"));
+                s.llmBaseUrl = Widgets.TextField(l.GetRect(24f), s.llmBaseUrl ?? "");
+                l.Label(UiUtil.T("HV_Conn_LlmModel"));
+                s.llmModel = Widgets.TextField(l.GetRect(24f), s.llmModel ?? "");
+                l.Label(UiUtil.T("HV_Conn_LlmKey"));
+                var krow = l.GetRect(26f);
+                if (_revealKey) s.llmApiKey = Widgets.TextField(new Rect(krow.x, krow.y, krow.width - 110f, 24f), s.llmApiKey ?? "");
+                else Widgets.Label(new Rect(krow.x, krow.y + 2f, krow.width - 110f, 24f), string.IsNullOrEmpty(s.llmApiKey) ? UiUtil.T("HV_Conn_KeyNone") : Mask(s.llmApiKey));
+                if (Widgets.ButtonText(new Rect(krow.xMax - 100f, krow.y, 100f, 26f), UiUtil.T(_revealKey ? "HV_Conn_Hide" : "HV_Conn_Edit"))) _revealKey = !_revealKey;
+                Note(l, UiUtil.T("HV_Conn_KeyNote"));
+
+                TestRow(l, s);
+            }
+        }
+
+        static void LocalEngine(Listing_Standard l)
+        {
+            EngineManager.Touch();
+            var row = l.GetRect(28f);
+            Color c = EngineManager.ColorOf(EngineManager.CurrentLight());
+            Widgets.DrawBoxSolid(new Rect(row.x, row.y + 6f, 16f, 16f), c);
+            GUI.color = c;
+            Widgets.Label(new Rect(row.x + 24f, row.y + 3f, row.width - 24f, 26f), EngineManager.StatusLine());
+            GUI.color = Color.white;
+            if (l.ButtonText(UiUtil.T("HV_Eng_SetUpButton"))) Find.WindowStack.Add(new Window_EngineSetup());
+
+            var trow = l.GetRect(30f);
+            bool running = EngineManager.TestRunning;
+            if (Widgets.ButtonText(new Rect(trow.x, trow.y, 120f, 28f), UiUtil.T("HV_Test_Button"), true, true, !running && EngineManager.Client != null))
+                EngineManager.RunTest();
+            var t = EngineManager.LastTest;
+            Color tc = Color.gray;
+            string tmsg = running ? UiUtil.T("HV_Test_Running") : UiUtil.T("HV_Test_NotRun");
+            if (!running && t != null)
+            {
+                tc = t.Light == "green" ? Green : (t.Light == "amber" ? Amber : Red);
+                tmsg = (t.Message ?? "") + (t.LatencyMs > 0 ? " " + UiUtil.T("HV_Probe_Ms", t.LatencyMs) : "");
+            }
+            Widgets.DrawBoxSolid(new Rect(trow.x + 130f, trow.y + 6f, 16f, 16f), tc);
+            GUI.color = tc;
+            Widgets.Label(new Rect(trow.x + 154f, trow.y + 3f, trow.width - 154f, 26f), tmsg);
+            GUI.color = Color.white;
+            Note(l, UiUtil.T("HV_Eng_LocalNote"));
         }
 
         static void AgentLine(Listing_Standard l)
@@ -149,7 +190,7 @@ namespace HermesVoice
             var row = l.GetRect(30f);
             bool running = LlmProbe.IsRunning;
             if (Widgets.ButtonText(new Rect(row.x, row.y, 120f, 28f), UiUtil.T("HV_Test_Button"), true, true, !running))
-                LlmProbe.RunAsync(s.llmBaseUrl, s.llmModel, s.llmApiKey);
+            { EngineManager.SettingsChanged(); LlmProbe.RunAsync(s.llmBaseUrl, s.llmModel, s.llmApiKey); }
 
             var r = LlmProbe.Last;
             Color c = Color.gray;
