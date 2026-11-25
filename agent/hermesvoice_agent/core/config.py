@@ -34,6 +34,12 @@ class LLMConfig(BaseModel):
     top_p: float = 0.95
     min_p: float = 0.05
     line_max_tokens: int = 48
+    # DRY repetition control for the line pass (llama.cpp): off by default, see docs/MODEL-BENCH.md F6.
+    line_dry: bool = False
+    dry_multiplier: float = 0.8
+    dry_base: float = 1.75
+    dry_allowed_length: int = 2
+    dry_penalty_last_n: int = 512
     timeout_s: float = 30.0
 
 
