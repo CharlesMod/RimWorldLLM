@@ -71,6 +71,7 @@ class Config(BaseModel):
 
     narrator_slot: int = 0
     windows: int = 2              # slots 1..windows
+    config_refresh_real_s: float = 10.0   # re-read the bridge /config (mod settings) this often, real seconds
     pause_ambient_at_speed: int = 4    # ambient and social talk stop at this speed (4 = dev speed); the bridge's /config overrides
     poll_interval_s: float = 1.0       # at 1x; shortened as the game speeds up (director.poll_delay)
     voice_lines_per_min: float = 5.0   # the ceiling on spoken lines per real minute at every speed (urgent bypasses the gate)

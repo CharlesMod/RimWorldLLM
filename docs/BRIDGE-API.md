@@ -26,8 +26,9 @@ It is implemented by `Mod/Source/RimWorld/`.
   `"llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key": "..."}`. This is the only
   place the API key is written; **the key never travels through the bridge API** (`GET /config` says
   only `api_key_set`). The mod writes the file owner-only (mode 600 on Linux and macOS) and rewrites
-  it when the player edits these fields. The agent re-reads `bridge.json` when `GET /config` changes
-  or a request fails with `unauthorized` (the player can regenerate the token).
+  it when the player edits these fields. The agent reads `bridge.json` at start-up (not yet again on an
+  `unauthorized` reply: a regenerated token needs an agent restart). It re-reads `GET /config` every
+  `config_refresh_real_s` (10 s), so mod settings apply within seconds.
 - **Auth:** every request carries `Authorization: Bearer <token>`. A token is mandatory: the
   bridge refuses to start without one. `?token=` is accepted only on GET.
 - The v1 `/state` endpoint is gone; `GET /colony` replaces it. Default bind is 127.0.0.1; a remote agent needs a different bind address and a fixed token.

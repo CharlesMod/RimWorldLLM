@@ -1,4 +1,5 @@
 """Delivery (POST /say kind) decided inside the intent pass, bounded; short map thoughts (POST /thought surface)."""
+import pytest
 from conftest import run
 from hermesvoice_agent.core.minds import Memory
 from hermesvoice_agent.core.passes import parse_delivery, parse_intent
@@ -160,3 +161,20 @@ def test_thoughts_off_by_setting(world):
         return w
     w = run(go())
     assert not [c for c in w.llm.calls if c["kind"] == "thought"]
+
+
+@pytest.mark.parametrize("age,shown", [(12, False), (30, True)])
+def test_a_romantic_thought_about_a_minor_never_reaches_the_map(world, age, shown):
+    async def go():
+        w = await world.go()
+        w.d.cfg.thought_enabled = True
+        w.d.ages.update({1: 30, 2: age})
+        inject(w, 1, "I saw Bram by the fire.", 1000, people=[2])
+        w.llm.script["thought"] = ["I want to kiss Bram tonight."]
+        await step(w)
+        return w
+    w = run(go())
+    got = [t for t in w.fb.thought_log if t["kind"] == "thought"]
+    assert bool(got) is shown
+    if not shown:
+        assert (1, "thought:minor_safety") in w.d.dropped

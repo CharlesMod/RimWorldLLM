@@ -80,3 +80,18 @@ def test_missing_key_means_off(world):
     adult.set_enabled(True)
     run(world.d.refresh_config())
     assert adult.off()
+
+
+def test_settings_refresh_on_their_own_without_a_reload(world):
+    """The agent re-reads /config every config_refresh_real_s, so a settings change applies within seconds."""
+    async def go():
+        w = await world.go()
+        before = not adult.off()
+        w.fb.config["adult_content"] = True
+        await w.d.step()
+        unchanged = not adult.off()                  # too soon: not re-read yet
+        w.real += w.d.cfg.config_refresh_real_s + 1
+        await w.d.step()
+        return before, unchanged, not adult.off()
+    before, unchanged, after = run(go())
+    assert before is False and unchanged is False and after is True

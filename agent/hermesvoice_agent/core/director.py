@@ -193,6 +193,7 @@ class Director:
         self._started = True
 
     async def refresh_config(self) -> None:
+        self._cfg_at = self.clock()
         self.bridge_cfg = await self.bridge.config()
         self.leases.pause_ambient_at_speed = int(
             self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed))
@@ -276,6 +277,11 @@ class Director:
             return
         if self.events.last_gap:
             await self.roster_ids()      # events were lost: resync the ledger from the roster
+        if self.clock() - getattr(self, "_cfg_at", float("-inf")) >= self.cfg.config_refresh_real_s:
+            try:
+                await self.refresh_config()       # mod settings (adult content, wants, dreams...) apply within seconds
+            except BridgeError as e:
+                log.warning("config refresh failed: %s", e)
         await self.ingest(events)
         await self.take_talk()
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
