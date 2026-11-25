@@ -7,8 +7,10 @@ from hermesvoice_agent.core.minds import Relation
 DAY = 60000
 
 
-async def step(w, ticks=0):
+async def step(w, ticks=0, real=None):
+    """Advance game ticks; real (play) seconds follow at 1x unless given, as at a faster speed."""
     w.fb.tick += ticks
+    w.real += ticks / 60 if real is None else real
     await w.d.step()
     await w.d.drain()
 
@@ -280,3 +282,38 @@ def test_finished_grudges_are_dropped_after_a_day(world):
         await step(w, int(1.5 * DAY))
         return w
     assert run(go()).d.minds[2].grudges == []
+
+
+def test_real_time_floor_holds_phases_at_high_speed(world):
+    """At 4x a game day passes in about a real minute: the phases still wait for their play-time floors."""
+    async def go():
+        w = await world.go()
+        insult(w, 1, 2)
+        await step(w)
+        await step(w, int(0.3 * DAY), real=20)       # the avoid game time has passed, the real floor (120 s) has not
+        ph_fast = grudge(w, 2).phase
+        await step(w, 0, real=110)
+        ph_avoid_done = grudge(w, 2).phase
+        await step(w, int(0.6 * DAY), real=30)       # the cooldown game time has passed; 160 s of the 300 s floor
+        seeks_early = len(actions(w, "seek_out"))
+        await step(w, 0, real=150)
+        return ph_fast, ph_avoid_done, seeks_early, len(actions(w, "seek_out"))
+    ph_fast, ph_avoid_done, seeks_early, seeks = run(go())
+    assert ph_fast == "avoid" and ph_avoid_done == "cooldown"
+    assert seeks_early == 0 and seeks == 1
+
+
+def test_real_time_floor_does_not_count_a_pause(world):
+    async def go():
+        w = await world.go()
+        insult(w, 1, 2)
+        await step(w)
+        w.fb.paused = True
+        await step(w, int(0.3 * DAY), real=500)      # wall time while paused is not play time
+        paused = grudge(w, 2).phase
+        w.fb.paused = False
+        await step(w, 0, real=1)
+        await step(w, 0, real=125)
+        return paused, grudge(w, 2).phase
+    paused, after = run(go())
+    assert paused == "avoid" and after == "cooldown"

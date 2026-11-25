@@ -1,5 +1,5 @@
 """Grudge and make-up loop. An insult (a spoken one the game applied, or a vanilla Insult/Slight or social fight)
-gives the victim a grudge against the offender. Phases run on game time:
+gives the victim a grudge against the offender. Phases run on game time, with a real-time floor (play clock) on each so 3x and 4x do not rush them:
 
   avoid     the victim keeps clear of the offender (a direct /social_action avoid, no model call)
   cooldown  nothing happens for ``grudge_cooldown_days``
@@ -77,6 +77,10 @@ class GrudgeEngine:
         self.faded = 0
         self.seeks = 0
         self.trace: list[dict] = []
+        # Play-clock marks per (holder, grudge id): not saved. A grudge loaded from a save has none and is held by game
+        # time only; every phase that starts in this session also waits for its real-time floor.
+        self.real_born: dict[tuple[int, str], float] = {}
+        self.real_try: dict[tuple[int, str], float] = {}
 
     # ---- gates ----------------------------------------------------------
     @property
@@ -94,6 +98,19 @@ class GrudgeEngine:
 
     def _units(self, days: float) -> int:
         return int(days * self.d.day)
+
+    def _real(self) -> float:
+        return self.d.now().real
+
+    def _mark(self, holder: int, g: Grudge, born: bool, floor_s: float) -> None:
+        r = self._real()
+        if born:
+            self.real_born[(holder, g.id)] = r
+        self.real_try[(holder, g.id)] = r + floor_s
+
+    def _real_ok(self, mark: dict, holder: int, g: Grudge, plus: float = 0.0) -> bool:
+        m = mark.get((holder, g.id))
+        return m is None or self._real() >= m + plus
 
     # ---- offences -------------------------------------------------------
     def on_event(self, e: dict) -> None:
@@ -130,6 +147,7 @@ class GrudgeEngine:
                    next_try=game + self._units(d.cfg.grudge_cooldown_days))
         mind.grudges.append(g)
         mind.grudges = mind.grudges[-6:]
+        self._mark(victim, g, True, d.cfg.grudge_cooldown_floor_real_s)
         self.started += 1
         d.dirty.add(victim)
         self._note(kind="grudge", holder=victim, against=offender, game=game)
@@ -175,17 +193,21 @@ class GrudgeEngine:
             for g in mind.grudges:
                 if g.phase == "done":
                     continue
-                if g.phase == "avoid" and game >= g.born + self._units(d.cfg.grudge_avoid_days):
+                if g.phase == "avoid" and game >= g.born + self._units(d.cfg.grudge_avoid_days) \
+                        and self._real_ok(self.real_born, aid, g, d.cfg.grudge_avoid_floor_real_s):
                     g.phase = "cooldown"
                     d.dirty.add(aid)
-                if g.phase == "cooldown" and game >= g.next_try and (aid, g.id) not in self.busy:
+                if g.phase == "cooldown" and game >= g.next_try and (aid, g.id) not in self.busy \
+                        and self._real_ok(self.real_try, aid, g):
                     g.phase = "resolve"
-                if g.phase == "resolve" and game >= g.next_try and (aid, g.id) not in self.busy:
+                if g.phase == "resolve" and game >= g.next_try and (aid, g.id) not in self.busy \
+                        and self._real_ok(self.real_try, aid, g):
                     if g.attempts >= d.cfg.grudge_max_attempts:
                         self._end(aid, g, "faded", game)
                         continue
                     g.attempts += 1
                     g.next_try = game + self._units(d.cfg.grudge_retry_days)
+                    self._mark(aid, g, False, d.cfg.grudge_retry_floor_real_s)
                     d.dirty.add(aid)
                     self.busy.add((aid, g.id))
                     self._spawn(self._resolve(aid, g))
@@ -267,6 +289,7 @@ class GrudgeEngine:
                 g.renewals += 1
                 g.phase, g.born, g.attempts = "avoid", game, 0
                 g.next_try = game + self._units(self.d.cfg.grudge_cooldown_days)
+                self._mark(holder, g, True, self.d.cfg.grudge_cooldown_floor_real_s)
                 self.d.dirty.add(holder)
                 self._spawn(self._begin(holder, g))
             else:

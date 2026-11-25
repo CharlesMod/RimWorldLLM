@@ -145,6 +145,9 @@ class Config(BaseModel):
     grudge_cooldown_days: float = 0.75 # from the offence to the first seek-out
     grudge_retry_days: float = 0.25    # between seek-out attempts the mod refused or that came to nothing
     grudge_max_attempts: int = 3       # then the grudge fades
+    grudge_avoid_floor_real_s: float = 120.0     # real-time floors (play clock, stops while paused): at 3x and 4x a
+    grudge_cooldown_floor_real_s: float = 300.0  # grudge would otherwise cycle in a few real minutes. Each phase waits
+    grudge_retry_floor_real_s: float = 120.0     # for both its game-time length and this much play time
     grudge_recover_opinion: int = 10   # opinion of the other at or above this counts as recovered (make up, not confront)
     gatherings: bool = True            # group scenes and ceremonies (core/group.py; also the mod's gatherings event toggle)
     meal_talk: bool = True             # meals (3+ eating in one room) may become a group scene
