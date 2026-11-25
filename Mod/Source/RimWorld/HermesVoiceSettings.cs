@@ -47,6 +47,11 @@ namespace HermesVoice
         public int thoughtPerPawnSec = 120;     // one thought cloud per pawn at most this often
         public int thoughtGlobalSec = 20;       // and one anywhere at most this often
 
+        // Director camera (alive/camera): follows the most interesting pawn; any manual camera input pauses it.
+        public bool directorCameraAllowed = true;    // the toggle (key, log button) exists
+        public bool directorCameraOnAtStart = false;  // following is intrusive: off until the player turns it on
+        public float directorPanSpeed = 2.5f;         // how quickly the camera closes in on its subject (1/seconds)
+
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
         public bool evInjury = true;
@@ -109,6 +114,9 @@ namespace HermesVoice
             Scribe_Values.Look(ref thoughtOpacity, "thoughtOpacity", 0.6f);
             Scribe_Values.Look(ref thoughtPerPawnSec, "thoughtPerPawnSec", 120);
             Scribe_Values.Look(ref thoughtGlobalSec, "thoughtGlobalSec", 20);
+            Scribe_Values.Look(ref directorCameraAllowed, "directorCameraAllowed", true);
+            Scribe_Values.Look(ref directorCameraOnAtStart, "directorCameraOnAtStart", false);
+            Scribe_Values.Look(ref directorPanSpeed, "directorPanSpeed", 2.5f);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);

@@ -81,6 +81,7 @@ namespace HermesVoice
 
             // Show.
             SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
+            DirectorCamera.OnConversation(speaker, listener);
             bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
             if (talkId != null) HermesBridge.Talk.Remove(talkId);
 

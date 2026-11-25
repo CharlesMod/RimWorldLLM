@@ -271,4 +271,15 @@ Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Fallback_StatusLine>Warning: the smallest (fallback) model is in use. {0}</HV_Fallback_StatusLine>
   <HV_Fallback_MessageText>HermesVoice is using its smallest model. Speech will be simpler and may repeat. To change it, open Options, Mod settings, HermesVoice, then "Set up / Change model...".</HV_Fallback_MessageText>
   <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
+  <!-- Director camera -->
+  <HV_Camera_ButtonOn>Director camera: on</HV_Camera_ButtonOn>
+  <HV_Camera_ButtonOff>Director camera: off</HV_Camera_ButtonOff>
+  <HV_Camera_Tip>The camera follows the most interesting colonist on this map, like a TV director. Moving the camera yourself pauses it for ten seconds. You can also bind a key under Options, Keyboard, HermesVoice.</HV_Camera_Tip>
+  <HV_Camera_MsgOn>Director camera on.</HV_Camera_MsgOn>
+  <HV_Camera_MsgOff>Director camera off.</HV_Camera_MsgOff>
+  <HV_Camera_Allowed>Offer the director camera</HV_Camera_Allowed>
+  <HV_Camera_AllowedTip>Shows the director camera button in the Voices window and enables its key binding.</HV_Camera_AllowedTip>
+  <HV_Camera_OnAtStart>Start each game with the director camera on</HV_Camera_OnAtStart>
+  <HV_Camera_OnAtStartTip>Off by default: a following camera is intrusive. Any camera control you use pauses it for ten seconds.</HV_Camera_OnAtStartTip>
+  <HV_Camera_PanSpeed>Director camera pan speed: {0}</HV_Camera_PanSpeed>
 </LanguageData>

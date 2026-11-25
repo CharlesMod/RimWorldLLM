@@ -805,6 +805,7 @@ namespace HermesVoice
                         ["points"] = EventPayload.Round(parms.points), ["raider_count"] = count >= 0 ? (JToken)count : JValue.CreateNull()
                     }
                 });
+                DirectorCamera.OnRaid(map, raiders);
             });
         }
     }
