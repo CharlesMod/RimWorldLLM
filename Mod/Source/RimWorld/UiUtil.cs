@@ -30,6 +30,19 @@ namespace HermesVoice
             catch (Exception) { return "tick " + gameTick; }
         }
 
+        /// <summary>A game day index (day N starts at tick N x 60000) as a game date without the hour.</summary>
+        public static string DateOfDay(int day)
+        {
+            try
+            {
+                Vector2 loc = Vector2.zero;
+                var map = Find.CurrentMap;
+                if (map != null && Find.WorldGrid != null) loc = Find.WorldGrid.LongLatOf(map.Tile);
+                return GenDate.DateFullStringAt(GenDate.TickGameToAbs((int)Math.Min((long)day * GenDate.TicksPerDay, int.MaxValue)), loc);
+            }
+            catch (Exception) { return "day " + (day + 1); }
+        }
+
         public static void Jump(int pawnId, string name)
         {
             var p = Routes.FindPawn(pawnId);

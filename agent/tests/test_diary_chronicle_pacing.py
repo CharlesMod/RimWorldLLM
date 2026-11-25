@@ -2,7 +2,10 @@
 import asyncio
 import json
 
+import pytest
+
 from conftest import run
+from hermesvoice_agent.core.bridge import BridgeError
 from hermesvoice_agent.core.chronicle import Chronicle, est_tokens, messages_tokens
 from hermesvoice_agent.core.fakes import FakeLLM
 from hermesvoice_agent.core.lease import Cls, Now
@@ -122,8 +125,8 @@ def test_chronicle_on_death_at_once_and_never_proposes_events(world):
         assert len(ch) == 1 and ch[0]["entry_kind"] == "major"
         sys_prompt = [c for c in w.llm.calls if c["kind"] == "chronicle"][0]["messages"][0][1]
         assert "never" in sys_prompt and "propose" in sys_prompt
-        paths = {p for _, p in w.fb.requests}
-        assert paths.isdisjoint({"/chronicle"}) and not [b for b in w.fb.say_log if b.get("pawn") == 0]
+        assert w.fb.chronicle_log and w.fb.chronicle_log[0]["kind"] == "major"   # stored through the bridge, not as speech
+        assert not [b for b in w.fb.say_log if b.get("pawn") == 0]
         return w
     run(go())
 
@@ -174,12 +177,14 @@ def test_chronicle_survives_restart_and_follows_a_rolled_back_save(tmp_path):
 def test_chronicle_entry_can_go_to_the_bridge_when_enabled(world):
     async def go():
         w = await world.go()
-        w.d.cfg.chronicle_bridge = True
-        w.fb.chronicle_supported = True
+        assert w.d.cfg.chronicle_bridge                                  # on by default
         w.llm.script["chronicle"] = ["Bram died of his wounds in the evening, and the others buried him without speeches."]
         w.fb.add_event("death", [(2, "victim")], "Bram died.", [1], 1.0)
         await step(w); await step(w)
         assert w.fb.chronicle_log and w.fb.chronicle_log[0]["day"] == 0 and w.fb.chronicle_log[0]["kind"] == "major"
+        got = await w.d.bridge.get_chronicle(0)                          # GET /chronicle?since_day
+        assert [(e["day"], e["kind"]) for e in got] == [(0, "major")] and "Bram" in got[0]["text"]
+        assert await w.d.bridge.get_chronicle(1) == []
     run(go())
 
 
@@ -293,4 +298,28 @@ def test_chronicle_job_yields_to_a_player_talk_request(world):
         await w.d.drain()
         assert w.d.chronicle.state.pending                              # the notes wait for the next idle window
         assert any(b.get("talk_id") == "t1" for b in w.fb.say_log)
+    run(go())
+
+
+def test_chronicle_bridge_off_or_old_mod_is_harmless(world):
+    async def go():
+        w = await world.go()
+        w.fb.chronicle_supported = False                                # an older mod: 404 on /chronicle
+        w.llm.script["chronicle"] = ["Bram died of his wounds in the evening, and the others buried him without speeches."]
+        w.fb.add_event("death", [(2, "victim")], "Bram died.", [1], 1.0)
+        await step(w); await step(w)
+        assert [x for x in w.d.idle.log if x["kind"] == "chronicle"] and not w.fb.chronicle_log
+    run(go())
+
+
+def test_chronicle_client_matches_the_contract_caps_and_errors(world):
+    async def go():
+        w = await world.go()
+        r = await w.d.bridge.chronicle(3, "x" * 3000, "day")
+        assert r["stored"] is True and r["count"] == 1 and len(w.fb.chronicle[0]["text"]) == 2000
+        for i in range(130):
+            await w.d.bridge.chronicle(4 + i, "t", "day")
+        assert len(w.fb.chronicle) == 120
+        with pytest.raises(BridgeError):
+            await w.d.bridge.chronicle(-1, "t", "day")
     run(go())

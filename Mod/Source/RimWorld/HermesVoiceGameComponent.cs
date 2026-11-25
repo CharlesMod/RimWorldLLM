@@ -44,6 +44,7 @@ namespace HermesVoice
             HermesBridge.OpIds.Clear();
             SayEffects.Reset();
             HermesBridge.Minds.Clear();
+            HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();
             Instance = null;
         }
@@ -60,6 +61,7 @@ namespace HermesVoice
             base.StartedNewGame();
             SaveEpoch = _sessionEpoch = _sessionEpoch + 1;
             Minds.Clear();
+            HermesBridge.Chronicle.Clear();
             SpeechBubbles.Clear();
         }
 
@@ -68,6 +70,7 @@ namespace HermesVoice
             base.ExposeData();
             Scribe_Values.Look(ref SaveEpoch, "saveEpoch", 0);
             ExposeMinds();
+            ExposeChronicle();
             Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.PostLoadInit && ConversationLog.Entries == null)
                 ConversationLog.Entries = new List<ConversationEntry>();
@@ -86,6 +89,23 @@ namespace HermesVoice
             }
         }
 
+        void ExposeChronicle()
+        {
+            var book = HermesBridge.Chronicle;
+            List<ChronicleSave> list = null;
+            if (Scribe.mode == LoadSaveMode.Saving)
+                list = book.Entries.Select(e => new ChronicleSave { Day = e.Day, Kind = e.Kind, Text = e.Text, Tick = e.Tick }).ToList();
+            Scribe_Collections.Look(ref list, "hermesChronicle", LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                // A save without the list (older saves) loads an empty chronicle, not the one from the game just left.
+                book.Clear();
+                if (list != null)
+                    foreach (var e in list)
+                        if (e != null && !string.IsNullOrEmpty(e.Text)) book.Add(e.Day, Bridge.ChronicleBook.KnownKind(e.Kind) ? e.Kind : Bridge.ChronicleBook.KindDay, e.Text, e.Tick);
+            }
+        }
+
         public void RestartBridge() { HermesBridge.Start(); }
     }
 
@@ -96,6 +116,8 @@ namespace HermesVoice
         public Bridge.MindRecord Rec = new Bridge.MindRecord();
         List<int> _ticks;
         List<string> _texts;
+        List<int> _diaryTicks;
+        List<string> _diaryTexts;
 
         public void ExposeData()
         {
@@ -106,15 +128,40 @@ namespace HermesVoice
             {
                 _ticks = Rec.Thoughts.Select(t => t.Key).ToList();
                 _texts = Rec.Thoughts.Select(t => t.Value).ToList();
+                _diaryTicks = Rec.Diaries.Select(t => t.Key).ToList();
+                _diaryTexts = Rec.Diaries.Select(t => t.Value).ToList();
             }
             Scribe_Collections.Look(ref _ticks, "thoughtTicks", LookMode.Value);
             Scribe_Collections.Look(ref _texts, "thoughtTexts", LookMode.Value);
+            Scribe_Collections.Look(ref _diaryTicks, "diaryTicks", LookMode.Value);
+            Scribe_Collections.Look(ref _diaryTexts, "diaryTexts", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && _diaryTicks != null && _diaryTexts != null)
+            {
+                Rec.Diaries.Clear();
+                for (int i = 0; i < Math.Min(_diaryTicks.Count, _diaryTexts.Count); i++)
+                    Rec.Diaries.Add(new KeyValuePair<int, string>(_diaryTicks[i], _diaryTexts[i]));
+            }
             if (Scribe.mode == LoadSaveMode.PostLoadInit && _ticks != null && _texts != null)
             {
                 Rec.Thoughts.Clear();
                 for (int i = 0; i < Math.Min(_ticks.Count, _texts.Count); i++)
                     Rec.Thoughts.Add(new KeyValuePair<int, string>(_ticks[i], _texts[i]));
             }
+        }
+    }
+
+    /// <summary>Save wrapper for one chronicle entry.</summary>
+    public class ChronicleSave : IExposable
+    {
+        public int Day, Tick;
+        public string Kind = "day", Text = "";
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref Day, "day", 0);
+            Scribe_Values.Look(ref Tick, "tick", 0);
+            Scribe_Values.Look(ref Kind, "kind", "day");
+            Scribe_Values.Look(ref Text, "text", "");
         }
     }
 }

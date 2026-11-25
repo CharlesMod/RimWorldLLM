@@ -16,6 +16,8 @@ namespace HermesVoice
         {
             r.Add("POST", "/say", true, Say);
             r.Add("POST", "/thought", true, Thought);
+            r.Add("POST", "/chronicle", true, ChroniclePost);
+            r.Add("GET", "/chronicle", true, ChronicleGet);
             r.Add("GET", "/mind/{id}", true, MindGet);
             r.Add("PUT", "/mind/{id}", true, MindPut);
             r.Add("GET", "/talk", true, Talk);
@@ -133,8 +135,44 @@ namespace HermesVoice
             if (err != null) return err;
             string text = ((string)c.Body["text"] ?? "").Trim();
             if (text.Length == 0) return ApiResult.Fail("bad_request", "text is empty");
-            HermesBridge.Minds.AddThought(p.thingIDNumber, Find.TickManager.TicksGame, text);
+            string kind = MindBook.KindThought;
+            JToken kt = c.Body["kind"];
+            if (kt != null && kt.Type != JTokenType.Null)
+            {
+                kind = kt.Type == JTokenType.String ? (string)kt : "";
+                if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\" or \"diary\"");
+            }
+            int tick = Find.TickManager.TicksGame;
+            if (kind == MindBook.KindDiary) HermesBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
+            else HermesBridge.Minds.AddThought(p.thingIDNumber, tick, text);
             return ApiResult.Success(new JObject { ["stored"] = true });
+        }
+
+        // --------------------------------------------------------- chronicle
+        static ApiResult ChroniclePost(RouteContext c)
+        {
+            var b = c.Body;
+            if (b["day"] == null || b["day"].Type != JTokenType.Integer || b.Value<long>("day") < 0 || b.Value<long>("day") > int.MaxValue)
+                return ApiResult.Fail("bad_request", "day (a non-negative integer) is required");
+            string text = ((string)b["text"] ?? "").Trim();
+            if (text.Length == 0) return ApiResult.Fail("bad_request", "text is empty");
+            string kind = ChronicleBook.KindDay;
+            JToken kt = b["kind"];
+            if (kt != null && kt.Type != JTokenType.Null)
+            {
+                kind = kt.Type == JTokenType.String ? (string)kt : "";
+                if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\" or \"major\"");
+            }
+            int count = HermesBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
+            return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
+        }
+
+        static ApiResult ChronicleGet(RouteContext c)
+        {
+            int since = 0;
+            string q = c.Q("since_day");
+            if (!string.IsNullOrEmpty(q) && !int.TryParse(q, out since)) return ApiResult.Fail("bad_request", "since_day must be an integer");
+            return ApiResult.Success(new JObject { ["entries"] = HermesBridge.Chronicle.Since(since) });
         }
 
         // -------------------------------------------------------------- mind

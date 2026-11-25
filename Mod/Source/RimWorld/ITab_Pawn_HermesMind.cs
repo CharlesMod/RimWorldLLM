@@ -93,6 +93,19 @@ namespace HermesVoice
             }
             else Dim(l, UiUtil.T("HV_MindNoThought"));
 
+            Header(l, "HV_MindDiary");
+            if (rec != null && rec.Diaries.Count > 0)
+            {
+                for (int i = rec.Diaries.Count - 1; i >= 0; i--)
+                {
+                    var d = rec.Diaries[i];
+                    Dim(l, UiUtil.DateOf(d.Key));
+                    l.Label(d.Value);
+                    l.Gap(4f);
+                }
+            }
+            else Dim(l, UiUtil.T("HV_MindNoDiary"));
+
             if (rec == null || rec.MindJson == null)
             {
                 l.Gap(8f);

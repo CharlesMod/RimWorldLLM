@@ -67,7 +67,7 @@ class Config(BaseModel):
     diary_day_fraction: float = 0.6    # write a day's entry once this much of the day has passed
     diary_max_tokens: int = 160
     chronicle_enabled: bool = True
-    chronicle_bridge: bool = False     # also POST /chronicle (not in the contract yet; proposal)
+    chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
     chronicle_max_tokens: int = 220
     narrator_context_tokens: int = 6000
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
