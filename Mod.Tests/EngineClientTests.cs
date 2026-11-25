@@ -81,16 +81,16 @@ namespace HermesVoice.Tests
 
     public class EngineClientTests
     {
-        const string StatusReady = "{\"version\":\"0.1.0\",\"port\":47480,\"mode\":\"local\",\"phase\":\"ready\",\"message\":\"\",\"progress\":null,\"model\":\"gemma4-rp\",\"backend\":\"cuda\",\"shape\":{\"slots\":3,\"ctx_per_slot\":32768,\"n_cpu_moe\":4,\"kv_type\":\"q4_0\",\"vram_mib\":13000},\"server_url\":\"http://127.0.0.1:47480\",\"agent\":{\"running\":true},\"parents\":[1],\"errors\":[]}";
+        const string StatusReady = "{\"version\":\"0.1.0\",\"port\":47480,\"mode\":\"local\",\"phase\":\"ready\",\"message\":\"\",\"progress\":null,\"model\":\"gemma4-rp\",\"backend\":\"cuda\",\"shape\":{\"slots\":3,\"ctx_per_slot\":32768,\"n_cpu_moe\":4,\"kv_type\":\"q4_0\",\"vram_mib\":13000},\"server_url\":\"http://127.0.0.1:47480\",\"tok_s\":41.5,\"agent\":{\"phase\":\"running\",\"pid\":9,\"restarts\":1,\"message\":\"\"},\"parents\":[{\"pid\":1,\"alive\":true}],\"errors\":[]}";
         const string StatusDownloading = "{\"phase\":\"downloading\",\"progress\":{\"done_bytes\":500,\"total_bytes\":1000,\"rate_bps\":250.5,\"eta_s\":2,\"step\":\"model\"},\"errors\":[]}";
-        const string Plan = "{\"recommended\":\"gemma4-e4b-q4km\",\"backend\":\"cuda-linux-x64\",\"models\":[{\"id\":\"gemma4-e4b-q4km\",\"name\":\"Gemma 4 E4B\",\"size\":3000000000,\"fits\":\"yes\",\"why\":\"fits\",\"shape\":{\"slots\":3,\"ctx_per_slot\":65536,\"n_cpu_moe\":0,\"kv_type\":\"q4_0\",\"vram_mib\":6000},\"est_vram_mib\":6000,\"est_ram_mib\":500,\"installed\":false},{\"id\":\"big\",\"name\":\"Big\",\"size\":9,\"fits\":\"no\",\"why\":\"too big\",\"installed\":true}]}";
+        const string Plan = "{\"recommended\":\"gemma4-e4b-q4km\",\"backend\":\"cuda-linux-x64\",\"models\":[{\"id\":\"gemma4-e4b-q4km\",\"name\":\"Gemma 4 E4B\",\"size\":3000000000,\"fits\":\"yes\",\"why\":\"fits\",\"shape\":{\"slots\":3,\"ctx_per_slot\":65536,\"n_cpu_moe\":0,\"kv_type\":\"q4_0\",\"vram_mib\":6000},\"est_vram_mib\":6000,\"est_ram_mib\":500,\"installed\":false},{\"id\":\"big\",\"name\":\"Big\",\"size\":9,\"fits\":\"no\",\"why\":\"too big\",\"installed\":true,\"import_only\":true}]}";
 
         static (int, string) Route(string m, string pq)
         {
             if (m == "GET" && pq == "/engine/v1/status") return (200, StatusReady);
             if (m == "GET" && pq == "/engine/v1/plan") return (200, Plan);
             if (m == "GET" && pq.StartsWith("/engine/v1/hardware"))
-                return (200, "{\"OS\":\"linux\",\"Arch\":\"amd64\",\"CPUName\":\"X\",\"Cores\":8,\"AVX2\":true,\"RAMTotalMiB\":32000,\"RAMAvailMiB\":20000,\"DiskFreeMiB\":100000,\"GPUs\":[{\"Index\":0,\"Vendor\":\"nvidia\",\"Name\":\"RTX 5080\",\"VRAMTotalMiB\":16303,\"VRAMUsedMiB\":1000}]}");
+                return (200, "{\"os\":\"linux\",\"arch\":\"amd64\",\"cpu_name\":\"X\",\"cores\":8,\"avx2\":true,\"ram_total_mib\":32000,\"ram_avail_mib\":20000,\"disk_free_mib\":100000,\"gpus\":[{\"index\":0,\"vendor\":\"nvidia\",\"name\":\"RTX 5080\",\"vram_total_mib\":16303,\"vram_used_mib\":1000}]}");
             if (m == "POST" && pq == "/engine/v1/install") return (200, "{\"ok\":true}");
             if (m == "POST" && pq == "/engine/v1/cancel") return (200, "{\"ok\":true}");
             if (m == "POST" && pq == "/engine/v1/test") return (200, "{\"light\":\"green\",\"message\":\"ok\",\"latency_ms\":120,\"model\":\"m\"}");
@@ -113,6 +113,10 @@ namespace HermesVoice.Tests
                 Assert.Equal(32768, r.Value.Shape.CtxPerSlot);
                 Assert.Equal("gemma4-rp", r.Value.Model);
                 Assert.Null(r.Value.Progress);
+                Assert.Equal(41.5, r.Value.TokS);
+                Assert.Equal("running", r.Value.Agent.Phase);
+                Assert.Equal(1, r.Value.Agent.Restarts);
+                Assert.True(r.Value.Parents[0].Alive);
                 Assert.Empty(r.Value.Errors);
             }
         }
@@ -157,6 +161,8 @@ namespace HermesVoice.Tests
                 Assert.Equal(65536, r.Value.Models[0].Shape.CtxPerSlot);
                 Assert.Equal("no", r.Value.Models[1].Fits);
                 Assert.True(r.Value.Models[1].Installed);
+                Assert.True(r.Value.Models[1].ImportOnly);
+                Assert.False(r.Value.Models[0].ImportOnly);
             }
         }
 
@@ -320,7 +326,7 @@ namespace HermesVoice.Tests
             try
             {
                 string f = Path.Combine(dir, "engine.lock");
-                File.WriteAllText(f, "{\"pid\":12,\"port\":47482}");
+                File.WriteAllText(f, "{\"pid\":12,\"port\":47482,\"children\":[1,2],\"started\":\"2026-11-25T10:00:00Z\"}");
                 Assert.Equal(47482, EngineClient.ReadLockPort(f));
                 File.WriteAllText(f, "pid=12\nport=47483\n");
                 Assert.Equal(47483, EngineClient.ReadLockPort(f));

@@ -31,6 +31,20 @@ namespace HermesVoice.Bridge
         [JsonProperty("vram_mib")] public int VramMib;
     }
 
+    public sealed class EngineAgent
+    {
+        [JsonProperty("phase")] public string Phase;
+        [JsonProperty("pid")] public int Pid;
+        [JsonProperty("restarts")] public int Restarts;
+        [JsonProperty("message")] public string Message;
+    }
+
+    public sealed class EngineParent
+    {
+        [JsonProperty("pid")] public int Pid;
+        [JsonProperty("alive")] public bool Alive;
+    }
+
     public sealed class EngineStatus
     {
         [JsonProperty("version")] public string Version;
@@ -43,33 +57,34 @@ namespace HermesVoice.Bridge
         [JsonProperty("backend")] public string Backend;
         [JsonProperty("shape")] public EngineShape Shape;
         [JsonProperty("server_url")] public string ServerUrl;
-        [JsonProperty("agent")] public JToken Agent;
-        [JsonProperty("parents")] public JToken Parents;
+        [JsonProperty("tok_s")] public double? TokS;
+        [JsonProperty("agent")] public EngineAgent Agent;
+        [JsonProperty("parents")] public List<EngineParent> Parents;
         [JsonProperty("errors")] public List<string> Errors;
     }
 
     public sealed class EngineGpu
     {
-        [JsonProperty("Index")] public int Index;
-        [JsonProperty("Vendor")] public string Vendor;
-        [JsonProperty("Name")] public string Name;
-        [JsonProperty("VRAMTotalMiB")] public int VramTotalMiB;
-        [JsonProperty("VRAMUsedMiB")] public int VramUsedMiB;
-        [JsonProperty("UnifiedMemory")] public bool UnifiedMemory;
-        [JsonProperty("Source")] public string Source;
+        [JsonProperty("index")] public int Index;
+        [JsonProperty("vendor")] public string Vendor;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("vram_total_mib")] public int VramTotalMiB;
+        [JsonProperty("vram_used_mib")] public int VramUsedMiB;
+        [JsonProperty("unified_memory")] public bool UnifiedMemory;
+        [JsonProperty("source")] public string Source;
     }
 
     public sealed class EngineHardware
     {
-        [JsonProperty("OS")] public string OS;
-        [JsonProperty("Arch")] public string Arch;
-        [JsonProperty("CPUName")] public string CpuName;
-        [JsonProperty("Cores")] public int Cores;
-        [JsonProperty("AVX2")] public bool Avx2;
-        [JsonProperty("RAMTotalMiB")] public int RamTotalMiB;
-        [JsonProperty("RAMAvailMiB")] public int RamAvailMiB;
-        [JsonProperty("DiskFreeMiB")] public int DiskFreeMiB;
-        [JsonProperty("GPUs")] public List<EngineGpu> Gpus;
+        [JsonProperty("os")] public string OS;
+        [JsonProperty("arch")] public string Arch;
+        [JsonProperty("cpu_name")] public string CpuName;
+        [JsonProperty("cores")] public int Cores;
+        [JsonProperty("avx2")] public bool Avx2;
+        [JsonProperty("ram_total_mib")] public int RamTotalMiB;
+        [JsonProperty("ram_avail_mib")] public int RamAvailMiB;
+        [JsonProperty("disk_free_mib")] public int DiskFreeMiB;
+        [JsonProperty("gpus")] public List<EngineGpu> Gpus;
     }
 
     public sealed class EnginePlanModel
@@ -83,7 +98,7 @@ namespace HermesVoice.Bridge
         [JsonProperty("est_vram_mib")] public int EstVramMib;
         [JsonProperty("est_ram_mib")] public int EstRamMib;
         [JsonProperty("installed")] public bool Installed;
-        /// <summary>True when the catalog has no download URL (import-only). Not in the contract; read when the engine sends it.</summary>
+        /// <summary>True when the catalog has no download URL (import-only).</summary>
         [JsonProperty("import_only")] public bool ImportOnly;
     }
 

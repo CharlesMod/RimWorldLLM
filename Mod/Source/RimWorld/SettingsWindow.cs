@@ -144,6 +144,23 @@ namespace HermesVoice
             Widgets.Label(new Rect(row.x + 24f, row.y + 3f, row.width - 24f, 26f), EngineManager.StatusLine());
             GUI.color = Color.white;
             if (l.ButtonText(UiUtil.T("HV_Eng_SetUpButton"))) Find.WindowStack.Add(new Window_EngineSetup());
+
+            var trow = l.GetRect(30f);
+            bool running = EngineManager.TestRunning;
+            if (Widgets.ButtonText(new Rect(trow.x, trow.y, 120f, 28f), UiUtil.T("HV_Test_Button"), true, true, !running && EngineManager.Client != null))
+                EngineManager.RunTest();
+            var t = EngineManager.LastTest;
+            Color tc = Color.gray;
+            string tmsg = running ? UiUtil.T("HV_Test_Running") : UiUtil.T("HV_Test_NotRun");
+            if (!running && t != null)
+            {
+                tc = t.Light == "green" ? Green : (t.Light == "amber" ? Amber : Red);
+                tmsg = (t.Message ?? "") + (t.LatencyMs > 0 ? " " + UiUtil.T("HV_Probe_Ms", t.LatencyMs) : "");
+            }
+            Widgets.DrawBoxSolid(new Rect(trow.x + 130f, trow.y + 6f, 16f, 16f), tc);
+            GUI.color = tc;
+            Widgets.Label(new Rect(trow.x + 154f, trow.y + 3f, trow.width - 154f, 26f), tmsg);
+            GUI.color = Color.white;
             Note(l, UiUtil.T("HV_Eng_LocalNote"));
         }
 

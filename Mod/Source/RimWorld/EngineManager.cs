@@ -223,6 +223,29 @@ namespace HermesVoice
             });
         }
 
+        static volatile EngineTestResult _test;
+        static volatile bool _testRunning;
+        public static EngineTestResult LastTest { get { return _test; } }
+        public static bool TestRunning { get { return _testRunning; } }
+
+        /// <summary>POST /engine/v1/test: tests the current endpoint and keeps the light for the settings page.</summary>
+        public static void RunTest()
+        {
+            var c = _client;
+            if (c == null || _testRunning) return;
+            _testRunning = true;
+            _test = null;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var r = await c.TestAsync().ConfigureAwait(false);
+                    _test = r.Ok && r.Value != null ? r.Value : new EngineTestResult { Light = "red", Message = r.Error ?? ("HTTP " + r.HttpStatus) };
+                }
+                finally { _testRunning = false; }
+            });
+        }
+
         public static void Install(string modelId) { Act(c => c.InstallAsync(modelId)); }
         public static void Cancel() { Act(c => c.CancelAsync()); }
         public static void Import(string path) { Act(c => c.ImportAsync(path)); _planStale = true; }
@@ -283,6 +306,7 @@ namespace HermesVoice
                 line += " " + UiUtil.T("HV_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
             if (!string.IsNullOrEmpty(st.Model)) line = UiUtil.T("HV_Eng_ModelPrefix", st.Model) + " | " + line;
             if (st.Shape != null && st.Shape.Slots > 0) line += " | " + UiUtil.T("HV_Eng_Shape", st.Shape.Slots, Ctx(st.Shape.CtxPerSlot));
+            if (st.TokS.HasValue && st.TokS.Value > 0) line += " | " + UiUtil.T("HV_Eng_TokS", Mathf.RoundToInt((float)st.TokS.Value));
             if (st.Phase == EnginePhase.Error && st.Errors != null && st.Errors.Count > 0) line += " | " + st.Errors[st.Errors.Count - 1];
             return line;
         }

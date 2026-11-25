@@ -231,4 +231,6 @@
   <HV_Setup_ImportButton>Import</HV_Setup_ImportButton>
   <HV_Setup_Shape>Running now: {0} lines at once, {1} memory each, {2} expert layers on the processor, {3} cache, about {4} of graphics memory.</HV_Setup_Shape>
   <HV_Setup_OpenPage>Open setup page in browser</HV_Setup_OpenPage>
+  <HV_Eng_TokS>{0} tok/s</HV_Eng_TokS>
+  <HV_Setup_Agent>Agent: {0} (restarts: {1})</HV_Setup_Agent>
 </LanguageData>

@@ -74,6 +74,11 @@ namespace HermesVoice
             GUI.color = Color.white;
 
             var st = EngineManager.Status;
+            if (st != null && st.Agent != null && !string.IsNullOrEmpty(st.Agent.Phase))
+            {
+                string am = string.IsNullOrEmpty(st.Agent.Message) ? "" : " - " + st.Agent.Message;
+                Dim(l, UiUtil.T("HV_Setup_Agent", st.Agent.Phase, st.Agent.Restarts) + am);
+            }
             string err = EngineManager.ActionError;
             if (!string.IsNullOrEmpty(err)) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Red); l.Label(UiUtil.T("HV_Setup_ActionError", err)); GUI.color = Color.white; }
 
