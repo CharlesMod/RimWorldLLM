@@ -69,12 +69,12 @@ namespace HermesVoice.Bridge
         }
 
         /// <summary>The vanilla sentence as a lead-in, then the quote: "Bram insulted Hana's cooking: "line"".</summary>
-        public static string LeadIn(string vanillaSentence, string quote, string template)
+        public static string LeadIn(string vanillaSentence, string quote, Func<string, string, string> format)
         {
             string lead = (vanillaSentence ?? "").Trim();
             while (lead.EndsWith(".") || lead.EndsWith(":")) lead = lead.Substring(0, lead.Length - 1).TrimEnd();
             if (string.IsNullOrEmpty(quote)) return vanillaSentence ?? "";
-            return template.Replace("{0}", lead).Replace("{1}", quote);
+            return format(lead, quote);
         }
     }
 

@@ -64,8 +64,8 @@ namespace HermesVoice.Tests
         [Fact]
         public void LeadInKeepsVanillaSentenceThenQuote()
         {
-            Assert.Equal("Bram insulted Hana's cooking: \"Awful.\"", Quotes.LeadIn("Bram insulted Hana's cooking.", "Awful.", "{0}: \"{1}\""));
-            Assert.Equal("Bram insulted Hana.", Quotes.LeadIn("Bram insulted Hana.", "", "{0}: \"{1}\""));
+            Assert.Equal("Bram insulted Hana's cooking: \"Awful.\"", Quotes.LeadIn("Bram insulted Hana's cooking.", "Awful.", (l, q) => l + ": \"" + q + "\""));
+            Assert.Equal("Bram insulted Hana.", Quotes.LeadIn("Bram insulted Hana.", "", (l, q) => l + ": \"" + q + "\""));
         }
 
         [Fact]
