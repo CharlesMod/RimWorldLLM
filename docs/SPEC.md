@@ -239,10 +239,16 @@ rules can't decide.
 - **Chattiness.** Each pawn has a talk weight from its traits. It scales how often ambient
   events lease a window for that pawn.
 - **Quotas.** Per pair per day, and per pawn per day, so no two pawns monopolise the windows.
-- **Dual clock.** Every gate counts game ticks and real seconds. At 3x and 4x speed, ambient
-  talk stops; urgent classes still run.
-- **Expiry by class.** Player talk: never. Urgent (death, break, raid): 5 s. Social and
-  ambient: 20 s. Event reactions: 5,000 ticks. An expired line is dropped silently.
+- **Dual clock.** Every window is `max(game units, real floor x units per second now)` with a hard real cap on a
+  play clock that stands still while the game is paused. A voice budget (about 5 lines a real minute, halved at
+  4x) decides how much is said; game-time expiry decides what is too stale. At 4x social and ambient talk stop;
+  urgent, reactive and player talk still run. See `docs/SPEED.md`.
+- **Expiry by class.** Player talk: never. Urgent (death, break, raid): 600 units, floor 3 s, cap 5 s. Event
+  reactions: 3,000 units, floor 6 s, cap 60 s. Social and ambient: 1,200 units, floor 4 s, cap 20 s. A line for the
+  game's own interaction attaches within its window (10 game minutes) or 5 real seconds, whichever is longer. An
+  expired line is dropped silently; the memory of the event is already written.
+- **Queue.** Bounded at 16. The most important (class, severity, age) takes the next voice token; duplicates
+  (same actor, kind, listener) merge. Ambient needs a reserve of tokens so it never starves consequential talk.
 - **Liveness check.** Before a line shows or an effect applies, the mod checks the speaker is
   alive, awake, on the map and still within range of the listener.
 
@@ -251,7 +257,7 @@ rules can't decide.
 - Start only between pawns who are near each other and stay near. If they part, it ends.
 - Each turn, the other pawn's line is appended to block F as heard speech.
 - Only an opener that calls for an answer (question, insult, request, confession) obliges a reply.
-- End by rule: a turn cap (start at 6), a chance of continuing that falls each turn, a
+- End by rule: a turn cap (6, then 4, 3, 2 at speeds 2, 3, 4; a minimum gap between turns of 0.8 s or 150 units), a chance of continuing that falls each turn, a
   repetition check, either pawn's job changing, or preemption.
 - When it ends, each pawn's window writes one memory of it and one relation update. Then both
   leases end.
