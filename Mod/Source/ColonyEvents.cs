@@ -48,12 +48,15 @@ namespace HermesVoice
             InjuryEvents.Clear();
             EventBus.Reset();
             Pollers.Reset();
+            Routes.TrendBook.Clear();
+            TalkQueue.Clear();
         }
 
         public override void GameComponentTick()
         {
             int now = Find.TickManager.TicksGame;
             if (now % 60 == 0) EventPayload.Safe("injury-flush", InjuryEvents.Flush);
+            if (now % 500 == 0) EventPayload.Safe("trends", Routes.SampleTrends);
             if (now % 120 == 0)
             {
                 bool quiet = !_primed;
