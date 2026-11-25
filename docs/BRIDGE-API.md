@@ -104,8 +104,30 @@ reply has `"gap": true`. Each event:
   listener has no negative mood thought), `no_about`.
 
 ### `POST /thought`
-`{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed."}`. The inner monologue,
-shown in the Mind tab. No bubble, no effect.
+`{"op_id": "...", "pawn": 1, "text": "Should have stayed in bed.", "kind": "thought"}`. `kind` is
+optional: `"thought"` (the default) is the inner monologue, `"diary"` is the pawn's daily diary
+entry. Both are shown in the Mind tab; neither makes a bubble or an effect. The mod keeps them in
+separate lists per pawn, so diaries do not push inner thoughts out: the last 20 thoughts and the
+last 7 diary entries (older ones are dropped). Text is trimmed and cut at 500 characters for a
+thought and 1,500 for a diary entry. An unknown `kind` is `bad_request`. Reply `{"stored": true}`.
+
+### `POST /chronicle`
+`{"op_id": "...", "day": 12, "text": "The colony buried Bram without speeches.", "kind": "day"}`.
+One entry of the colony chronicle (the narrator's running history). `day` is an integer day index
+on the game clock (0 is the first day; the same count the agent uses for diaries). `kind` is `"day"`
+(the usual summary of a day) or `"major"` (written at once after a major event); it defaults to
+`"day"`. The mod trims the text and cuts it at 2,000 characters, appends the entry, and keeps the
+newest 120 (older ones are dropped). `text` empty, `day` not an integer or below 0, or an unknown
+`kind` is `bad_request`. Reply `{"stored": true, "count": 37}` (the entries now held). The
+chronicle belongs to the game: it is saved with it, so a reload brings back the chronicle as it
+was at that save (the agent sees the `save_epoch` change).
+
+### `GET /chronicle?since_day=<N>`
+`{"entries": [{"day": 12, "kind": "day", "text": "...", "tick": 734000}, ...]}` (plus the envelope):
+the entries whose `day` is at least `N` (default 0), oldest first, in the order stored. `tick` is
+the game tick at which the mod received the entry. `since_day` that is not an integer is
+`bad_request`. After a `save_epoch` change the agent can read this to see what the loaded save
+holds.
 
 ### `GET /mind/{id}` and `PUT /mind/{id}`
 The pawn's mind blob, opaque to the mod, saved in the save file.
@@ -188,6 +210,17 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   The 20 per real minute cap applies only to the push to the agent URL, not to `/events`.
 - After a game load, lodgers, prisoners and quests already present are learned silently (no
   arrive events); raids in progress are saved with the game and still end with `raid_end`.
+
+## Diaries and the chronicle in the RimWorld mod
+
+- Diary entries (`POST /thought` with `kind: "diary"`) and inner thoughts are saved per pawn with
+  the game, as part of the pawn's mind record, and are shown in the pawn's Mind tab: the Diary
+  section lists the last 7 entries, newest first, each with the game date of its arrival.
+- The chronicle is saved with the game in the mod's game component (`hermesChronicle`), so loading
+  an earlier save rolls it back with everything else; a new game starts it empty. It is shown as
+  the second tab of the Voices window (the main-bar button), newest first, each entry with the
+  game date of its `day`; `major` entries are highlighted.
+- An entry's date is the real calendar date of the `day` index (day N starts at tick N x 60000).
 
 ## Intent effects (`POST /say`)
 
