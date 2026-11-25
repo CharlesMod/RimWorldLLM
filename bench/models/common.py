@@ -90,8 +90,8 @@ async def _hook(resp: httpx.Response):
         lst.append({"_nonjson": resp.text[:500]})
 
 
-def make_llm(temperature=None, timeout=120.0):
-    cfg = LLMConfig(base_url=ENGINE, mode="openai", timeout_s=timeout)
+def make_llm(temperature=None, timeout=120.0, **cfg_extra):
+    cfg = LLMConfig(base_url=ENGINE, mode="openai", timeout_s=timeout, **cfg_extra)
     client = httpx.AsyncClient(timeout=timeout, event_hooks={"response": [_hook]})
     return HttpLLM(cfg, client=client)
 
