@@ -60,6 +60,12 @@ class RimWorldAdapter:
     diary_request = (
         "Write today's diary entry: 2 to 4 sentences, under 70 words, one paragraph, only about what is listed "
         "under what happened today. Do not name anyone who is not mentioned there.")
+    thought_system = (
+        "You are the passing mind of one RimWorld colonist: the single small thought that crosses their head "
+        "while they work. First person, plain, dry, the colonist's own register. Never narrate, never advise.")
+    thought_request = (
+        "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
+        "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
     chronicle_system = (
         "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
         "words, a little gallows humour at most. You describe only what the notes say happened. You never "

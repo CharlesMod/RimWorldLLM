@@ -17,6 +17,7 @@ namespace HermesVoice
         public BubbleKind Kind;
         public string Clean;          // text without kind markers
         public float AnimT;           // seconds of pop-in played (frozen while the game is paused)
+        public bool Ambient;          // a pawn thought from /thought (fainter, yields to speech), not a spoken line
 
         // Layout cache: rebuilt only when the text, kind, lettering, font or UI scale changes.
         internal bool CacheValid;
@@ -54,7 +55,66 @@ namespace HermesVoice
             });
         }
 
-        public static void Clear() { Active.Clear(); }
+        public static void Clear() { Active.Clear(); Pacing.Clear(); }
+
+        internal static readonly ThoughtPacing Pacing = new ThoughtPacing();
+        static readonly List<System.Collections.Generic.KeyValuePair<int, string>> _ready = new List<System.Collections.Generic.KeyValuePair<int, string>>();
+
+        static bool SpeechVisible(Pawn pawn, int now, int durationTicks)
+        {
+            for (int i = 0; i < Active.Count; i++)
+                if (Active[i].Pawn == pawn && !Active[i].Ambient && now - Active[i].StartTick <= durationTicks) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// A pawn thought as a cloud over the pawn (kind "thought" only; diaries never come here). Subject to
+        /// <see cref="ThoughtPacing"/>: one per pawn, per-pawn and global gaps, and never over a visible speech balloon.
+        /// </summary>
+        public static void AddThought(Pawn pawn, string surface, string text)
+        {
+            var s = HermesVoiceMod.Settings;
+            if (pawn == null || s == null || !s.showBubbles || !s.showThoughts || s.bubbleStyle == "classic") return;
+            string line = ThoughtPacing.Surface(surface, text);
+            if (line == null) return;
+            int now = Find.TickManager.TicksGame, dur = Mathf.Max(1, s.bubbleDurationSec) * 60;
+            bool thoughtActive = false;
+            for (int i = 0; i < Active.Count; i++)
+                if (Active[i].Pawn == pawn && Active[i].Ambient && now - Active[i].StartTick <= dur) thoughtActive = true;
+            var v = Pacing.Offer(pawn.thingIDNumber, line, now, thoughtActive, SpeechVisible(pawn, now, dur),
+                                 Mathf.Max(0, s.thoughtPerPawnSec) * 60, Mathf.Max(0, s.thoughtGlobalSec) * 60);
+            if (v == ThoughtPacing.Verdict.Show) ShowThought(pawn, line);
+        }
+
+        static void ShowThought(Pawn pawn, string line)
+        {
+            for (int i = Active.Count - 1; i >= 0; i--)
+                if (Active[i].Pawn == pawn) Active.RemoveAt(i);
+            if (Active.Count >= MaxBubbles) Active.RemoveAt(0);
+            Active.Add(new Bubble
+            {
+                Pawn = pawn, Text = line, Clean = line, StartTick = Find.TickManager.TicksGame, Active = true,
+                Kind = BubbleKind.Thought, Ambient = true,
+                AnimT = Find.TickManager.Paused ? BubbleMetrics.PopSeconds : 0f
+            });
+        }
+
+        // Release waiting thoughts whose pawn has stopped speaking (called once per frame by the comic draw path).
+        static void PromoteThoughts(Map map, HermesVoiceSettings s, int now, int durationTicks)
+        {
+            if (Pacing.PendingCount == 0) return;
+            _ready.Clear();
+            var pawns = map.mapPawns.AllPawnsSpawned;
+            Pacing.Promote(now, id =>
+            {
+                for (int i = 0; i < pawns.Count; i++)
+                    if (pawns[i].thingIDNumber == id) return SpeechVisible(pawns[i], now, durationTicks);
+                return false;
+            }, Mathf.Max(0, s.thoughtGlobalSec) * 60, _ready);
+            for (int k = 0; k < _ready.Count; k++)
+                for (int i = 0; i < pawns.Count; i++)
+                    if (pawns[i].thingIDNumber == _ready[k].Key) { ShowThought(pawns[i], _ready[k].Value); break; }
+        }
 
         /// <summary>Fill, border and text colours for a pawn: one stable hue, dark fill, mid border, pale text.</summary>
         public static void PawnColors(int pawnId, out Color bg, out Color border, out Color text)

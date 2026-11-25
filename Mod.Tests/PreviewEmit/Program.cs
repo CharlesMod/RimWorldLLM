@@ -32,12 +32,14 @@ static class Program
             kinds.Add(kind); lineSets.Add(lines); targets.Add(new[] { tx, ty }); sizes.Add(new[] { w, h });
             rects.Add(BubbleLayout.DefaultRect(w, h, tx, ty, new BRect(4, 4, sw - 8, sh - 8 - 40)));
         }
-        BubbleLayout.Separate(rects, new BRect(4, 4, sw - 8, sh - 8 - 40), 3f);
+        var tailArr = new TailInfo[rects.Count];
+        BubbleLayout.Arrange(rects, targets.ConvertAll(t => t[0]), targets.ConvertAll(t => t[1]), kinds,
+                             new BRect(4, 4, sw - 8, sh - 8 - 40), 3f, tailArr);
         var outArr = new JArray();
         for (int i = 0; i < rects.Count; i++)
         {
             var kind = kinds[i]; var r = rects[i];
-            var tail = BubbleLayout.ChooseTail(kind, r, targets[i][0], targets[i][1]);
+            var tail = tailArr[i];
             var o = new JObject
             {
                 ["kind"] = kind.ToString(),
