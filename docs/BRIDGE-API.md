@@ -4,6 +4,15 @@ The contract between the mod (C#, in game) and the agent (Python, its own progra
 build against this file. A change to it goes in its own commit, and both sides update together.
 Background: `docs/SPEC.md` §3, §6, §8, §10.
 
+The file has two parts. **Part 1, the protocol,** is game-agnostic: connection, auth, envelope,
+writes, the event ring and ledger shape, and the say/thought/mind/talk semantics. It is
+implemented by `Mod/Source/Bridge/` (no game references) and could serve another game.
+**Part 2, the RimWorld schema,** holds what only RimWorld defines: the `config`, `colony`,
+`pawn` and `scene` fields, the event types and how they are computed, and the intent effects.
+It is implemented by `Mod/Source/RimWorld/`.
+
+# Part 1: Protocol (game-agnostic)
+
 ## Connection
 
 - **Default port 9765**, falling back through 9766–9774 when a port is taken. (8765 is used by
@@ -55,30 +64,6 @@ Every POST and PUT body carries:
 The envelope plus `{"mod": "HermesVoice", "version": "2.0.0", "game_loaded": true}`.
 Unauthenticated, so the Test button and the agent can identify the bridge before auth.
 
-### `GET /config`
-Settings the agent must honour:
-`{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...]}`.
-
-### `GET /colony`
-The colony at a glance: maps, colonists and their ids, active event ledger entries
-(see Events), season, weather, food and medicine trend numbers.
-
-### `GET /pawn/{id}`
-The full snapshot for the fixed bio and the scene (SPEC §6):
-`id, name {first, nick, last}, age, gender, body_type, xenotype, genes[], backstory {child, adult},
-traits[{def, label, degree}], ideo_role, title, skills[{skill, level, passion}],
-health {conditions[], missing_parts[], pain, consciousness, downed}, needs {mood, food, rest, joy, ...},
-mood {value, thoughts[{label, offset, cause_pawn}]}, job, gear {worn[], held},
-relations[{pawn, kind, opinion}], status ("colonist"|"prisoner"|"slave"|"guest"|"lodger"),
-faction, map, pos, room, alive, spawned`.
-DLC fields appear only when that DLC is active.
-
-### `GET /scene/{id}`
-What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
-`present[{pawn, job, distance, can_hear}]`, `time_of_day`, `weather`, `danger`,
-`trends {food_days: [9,7,5], ...}`.
-
 ### `GET /events?since=<seq>`
 Events with a sequence number greater than `seq`, oldest first, at most 200 per call, plus
 `next_seq`. The mod keeps the last 2,000 events in RAM. When `since` is older than that, the
@@ -91,23 +76,6 @@ reply has `"gap": true`. Each event:
  "severity": 0.42, "witnesses": [1, 3, 9], "ledger_id": null, "data": {...}}
 ```
 
-- `witnesses` are the pawn ids who saw or heard it. They are computed in C# from room, line
-  of sight and hearing range × Hearing capacity.
-- `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
-- Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
-  quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
-  `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
-  `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
-  `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
-  (`weather_extreme`..`weather_extreme_end`).
-- `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
-  The mod's own `HV_` thoughts never produce one.
-- Per-event toggles in settings apply to the ring as well as to the push. Events are throttled
-  by per-pawn cooldowns (injury 30 s, social 60 s, tend 20 s, mental break and thought 10 s).
-  The 20 per real minute cap applies only to the push to the agent URL, not to `/events`.
-- After a game load, lodgers, prisoners and quests already present are learned silently (no
-  arrive events); raids in progress are saved with the game and still end with `raid_end`.
 - Long-running facts carry a `ledger_id`. A matching `*_end` event closes the entry.
   `GET /colony` lists the open entries.
 - The existing push to the agent URL stays, sending the same event objects.
@@ -145,3 +113,63 @@ All game state is read and written on the game thread, drained each frame in a
 `Root.Update`-style hook under a per-frame time budget (2 ms), so it also works while paused.
 The HTTP threads only parse, authenticate and wait. Timed-out requests are abandoned and
 never applied later.
+
+# Part 2: RimWorld schema
+
+What the game-specific side fills in. Every field is optional for a consumer to read; DLC fields
+appear only when that DLC is active.
+
+## Snapshot endpoints
+
+### `GET /config`
+Settings the agent must honour:
+`{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
+"talk_frequency": 1.0, "pause_ambient_at_speed": 3, "dlc": ["Ideology", "Biotech", ...]}`.
+
+### `GET /colony`
+The colony at a glance: maps, colonists and their ids, active event ledger entries
+(see Events), season, weather, food and medicine trend numbers.
+
+### `GET /pawn/{id}`
+The full snapshot for the fixed bio and the scene (SPEC §6):
+`id, name {first, nick, last}, age, gender, body_type, xenotype, genes[], backstory {child, adult},
+traits[{def, label, degree}], ideo_role, title, skills[{skill, level, passion}],
+health {conditions[], missing_parts[], pain, consciousness, downed}, needs {mood, food, rest, joy, ...},
+mood {value, thoughts[{label, offset, cause_pawn}]}, job, gear {worn[], held},
+relations[{pawn, kind, opinion}], status ("colonist"|"prisoner"|"slave"|"guest"|"lodger"),
+faction, map, pos, room, alive, spawned`.
+DLC fields appear only when that DLC is active.
+
+### `GET /scene/{id}`
+What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
+`present[{pawn, job, distance, can_hear}]`, `time_of_day`, `weather`, `danger`,
+`trends {food_days: [9,7,5], ...}`.
+
+## Events: types, witnesses, severity
+
+- `witnesses` are the pawn ids who saw or heard it. They are computed in C# from room, line
+  of sight and hearing range × Hearing capacity.
+- `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
+- Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
+  quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
+  thought, player_talk`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
+  `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
+  `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
+  (`weather_extreme`..`weather_extreme_end`).
+- `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
+  The mod's own `HV_` thoughts never produce one.
+- Per-event toggles in settings apply to the ring as well as to the push. Events are throttled
+  by per-pawn cooldowns (injury 30 s, social 60 s, tend 20 s, mental break and thought 10 s).
+  The 20 per real minute cap applies only to the push to the agent URL, not to `/events`.
+- After a game load, lodgers, prisoners and quests already present are learned silently (no
+  arrive events); raids in progress are saved with the game and still end with `raid_end`.
+
+## Intent effects (`POST /say`)
+
+The `intent` field of `POST /say` is one of the intents in SPEC §8. The mod checks the listener
+and applies the effect as XML ThoughtDefs under its caps (the `effects` setting, the per-pair
+daily cap, stack limits). The `POST /say` checks of Part 1 map to RimWorld as: speaker alive,
+awake, spawned and humanlike; listener alive, spawned, on the same map and within hearing range
+(room or line of sight, distance against hearing range x Hearing capacity). `refused.effect`
+carries the reason (`pair_cap`, `effects_off`, `not_negative`, ...) while the bubble still shows.
