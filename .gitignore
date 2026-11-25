@@ -12,3 +12,7 @@ __pycache__/
 .DS_Store
 Mod.Tests/bin/
 Mod.Tests/obj/
+agent/.venv/
+*.egg-info/
+__pycache__/
+.pytest_cache/
