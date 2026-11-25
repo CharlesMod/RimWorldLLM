@@ -51,6 +51,9 @@ namespace HermesVoice.Bridge
         public string ConfigDir;            // bridge.json goes to <ConfigDir>/HermesVoice/bridge.json; null = not written
         public string Version = Const.Version;
         public TimeSpan GameThreadTimeout = TimeSpan.FromSeconds(20);
+        /// <summary>If the game thread has not pumped for this long, answer `busy` at once instead of waiting
+        /// (the game window is in the background, loading, or frozen).</summary>
+        public TimeSpan StalledAfter = TimeSpan.FromSeconds(1);
     }
 
     /// <summary>
@@ -65,6 +68,18 @@ namespace HermesVoice.Bridge
         volatile HttpListener _listener;
         volatile GameState _state = GameState.Menu;
         string _token = "";
+        long _lastPump; // Stopwatch timestamp of the last Pump call; 0 = never
+
+        /// <summary>True when the game thread has not pumped within StalledAfter.</summary>
+        public bool GameThreadStalled
+        {
+            get
+            {
+                long last = Interlocked.Read(ref _lastPump);
+                if (last == 0) return false;
+                return Stopwatch.GetTimestamp() - last > (long)(_opt.StalledAfter.TotalSeconds * Stopwatch.Frequency);
+            }
+        }
 
         public Action<string> LogInfo = delegate { };
         public Action<string> LogError = delegate { };
@@ -167,6 +182,7 @@ namespace HermesVoice.Bridge
         /// </summary>
         public int Pump(double budgetMs = Const.FrameBudgetMs)
         {
+            Interlocked.Exchange(ref _lastPump, Stopwatch.GetTimestamp());
             if (_pending.IsEmpty) return 0;
             var sw = Stopwatch.StartNew();
             int handled = 0;
@@ -276,6 +292,11 @@ namespace HermesVoice.Bridge
                 if (!IsRunning)
                 {
                     Write(ctx, 503, Envelope.Json(_state, ApiResult.Fail("no_game", "bridge stopped")));
+                    return;
+                }
+                if (GameThreadStalled)
+                {
+                    Write(ctx, 503, Envelope.Json(_state, ApiResult.Fail("busy", "the game is not running frames (window in the background, loading or frozen); retry shortly")));
                     return;
                 }
                 _pending.Enqueue(req);

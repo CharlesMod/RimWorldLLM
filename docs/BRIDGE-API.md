@@ -47,7 +47,7 @@ Every reply is a JSON object containing at least:
 - Errors: `{"ok": false, "error": "<code>", "detail": "...", ...envelope}` with an HTTP status.
   Codes: `unauthorized` 401, `not_found` 404, `bad_request` 400, `too_large` 413,
   `conflict` 409 (dead, despawned or wrong-map pawn), `expired` 410, `duplicate` 409,
-  `no_game` 503, `busy` 503, `timeout` 504, `internal` 500 (a bug in the mod; the detail says what).
+  `no_game` 503, `busy` 503 (also returned at once when the game thread has run no frame for over 1 s, e.g. the window is in the background or loading; retry shortly), `timeout` 504, `internal` 500 (a bug in the mod; the detail says what).
 
 ## Writes: operation id and expiry
 

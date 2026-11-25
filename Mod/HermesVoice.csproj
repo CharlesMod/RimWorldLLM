@@ -26,10 +26,11 @@
     <!-- Newtonsoft.Json is not part of RimWorld; it is copied next to HermesVoice.dll in $(GameVersion)/Assemblies by the build and deployed with it. -->
 
     <!-- Deploy to the RimWorld Mods folder when RIMWORLD_DIR / RimWorldDir is set.
-         Layouts: <dir>/Mods (Linux/Windows), <dir>/RimWorldMac.app/Mods (macOS), or <dir> itself being a Mods folder. -->
+         Layouts: <dir>/Mods (Linux, Windows, and macOS from 1.7 on), <dir>/RimWorldMac.app/Mods (macOS before 1.7), or <dir> itself being a Mods folder. -->
     <Target Name="DeployToModsFolder" AfterTargets="Build" Condition=" '$(BuildingWithScript)' != 'true' AND '$(RimWorldDir)' != '' ">
         <PropertyGroup>
-            <ModsDir Condition=" Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
+            <ModsDir Condition=" Exists('$(RimWorldDir)/Mods') ">$(RimWorldDir)/Mods</ModsDir>
+            <ModsDir Condition=" '$(ModsDir)' == '' And Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
             <ModsDir Condition=" '$(ModsDir)' == '' ">$(RimWorldDir)/Mods</ModsDir>
             <DeployPath>$(ModsDir)/HermesVoice/</DeployPath>
         </PropertyGroup>

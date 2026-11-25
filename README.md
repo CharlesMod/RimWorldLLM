@@ -64,7 +64,7 @@ dotnet build Mod/HermesVoice.csproj
 
 The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) and outputs `HermesVoice.dll` to `Mod/1.7/Assemblies/`. `Newtonsoft.Json.dll` is copied next to it (RimWorld does not ship it); Harmony is not (it comes from the Harmony mod).
 
-Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install directory to deploy to `<dir>/Mods/HermesVoice` on every build (`<dir>/RimWorldMac.app/Mods/HermesVoice` on macOS). `About/`, the `1.7/` assemblies and, if present, `Defs/` and `Textures/` are copied; `.pdb` files are skipped.
+Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install directory to deploy to `<dir>/Mods/HermesVoice` on every build (macOS from 1.7 uses the same `<dir>/Mods`; older macOS builds used `<dir>/RimWorldMac.app/Mods`). `About/`, the `1.7/` assemblies and, if present, `Defs/` and `Textures/` are copied; `.pdb` files are skipped.
 
 ## Repository layout
 

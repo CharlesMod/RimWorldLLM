@@ -2,7 +2,9 @@
 <ModMetaData>
 	<name>HermesVoice</name>
 	<author>charless</author>
-	<targetVersion>1.7</targetVersion>
+	<supportedVersions>
+		<li>1.7</li>
+	</supportedVersions>
 	<description>Live LLM-driven pawn dialogue, powered by an external agent bridge.
 
 HermesVoice watches your colony - injuries, deaths, mental breaks, skill level-ups, medical tending, social interactions, raids - sends those moments to the agent (each kind can be toggled in settings), and shows the agent's replies as in-character speech bubbles spoken by the pawns themselves.
@@ -17,14 +19,16 @@ Setup:
 3. Mod settings: set the Agent dial-out URL. The agent finds the bridge port and token in HermesVoice/bridge.json in the RimWorld config folder; set a fixed shared token in settings only if the agent runs on another machine.</description>
 	<packageId>charless.HermesVoice</packageId>
 	<modVersion>2.0.0</modVersion>
-	<loadedScenarios>
-		<li>Any</li>
-	</loadedScenarios>
-	<supportURL>https://github.com/CharlesMod/rimworld-hermes</supportURL>
-	<dependencies>
+	<url>https://github.com/CharlesMod/rimworld-hermes</url>
+	<modDependencies>
 		<li>
-			<packageId>brrainz.Harmony</packageId>
+			<packageId>brrainz.harmony</packageId>
 			<displayName>Harmony</displayName>
+			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
-	</dependencies>
+	</modDependencies>
+	<loadAfter>
+		<li>brrainz.harmony</li>
+	</loadAfter>
 </ModMetaData>
