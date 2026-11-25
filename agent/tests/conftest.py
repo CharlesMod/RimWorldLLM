@@ -18,7 +18,7 @@ def run(coro):
 
 class World:
     def __init__(self, tmp_path):
-        self.cfg = Config(data_dir=tmp_path, bridge_url="http://fake", bridge_token="tok")
+        self.cfg = Config(data_dir=tmp_path, bridge_url="http://fake", bridge_token="tok", turn_gap_ticks=0, turn_gap_floor_real_s=0.0)
         self.fb = FakeBridge("tok")
         self.fb.add_pawn(1, "Ana", traits=[{"def": "Kind", "label": "kind", "degree": 0}])
         self.fb.add_pawn(2, "Bram", traits=[{"def": "Abrasive", "label": "abrasive", "degree": 0}])

@@ -46,17 +46,51 @@ def test_expiry_by_class_dual_clock():
     urgent = m.make_item(1, "death", n); social = m.make_item(2, "social", n)
     inj = m.make_item(3, "injury", n); player = m.make_item(4, "player_talk", n)
     assert REQUEST_EXPIRY[Cls.URGENT].real_s == 5.0 and REQUEST_EXPIRY[Cls.SOCIAL].real_s == 20.0
-    assert inj.expires_at == 1000 + 5000
+    assert inj.expires_at == 1000 + 3000
     assert player.expires_at is None and player.expires_real is None
     assert not urgent.expired(Now(1100, 14.9)) and urgent.expired(Now(1100, 15.1))      # real clock
     assert urgent.expired(Now(1700, 11.0))                                              # tick clock (paused wall)
     assert not social.expired(Now(1100, 29.9)) and social.expired(Now(1100, 30.1))
-    assert inj.expired(Now(6000, 11.0)) and not inj.expired(Now(5999, 11.0))
+    assert inj.expired(Now(4000, 11.0)) and not inj.expired(Now(3999, 11.0))
     assert not player.expired(Now(10**9, 10**6))
     m.queue += [urgent, social, player]
     dead = m.expire(Now(1100, 16.0))
     assert [d.kind for d in dead] == ["death"] and len(m.queue) == 2
     assert m.acquire(urgent, Now(1100, 16.0)) is None                  # expired items never lease
+
+
+def test_expiry_floor_scales_the_game_window_with_speed():
+    """At 4x (900 units/s) an urgent request keeps three real seconds, not 600 units (0.67 s); at 1x nothing changes."""
+    m = mgr()
+    slow, fast = Now(1000, 0.0, 60.0), Now(1000, 0.0, 900.0)
+    u1, u4 = m.make_item(1, "death", slow), m.make_item(1, "death", fast)
+    assert u1.expires_at == 1600 and u4.expires_at == 1000 + 2700
+    assert not u4.expired(Now(3600, 2.9, 900.0)) and u4.expired(Now(3700, 2.9, 900.0))
+    assert u4.expired(Now(1100, 5.1, 900.0))                                  # the real cap still ends it
+    # speed rises after the request was made: the floor is re-read at the new rate
+    s = m.make_item(2, "social", Now(1000, 0.0, 60.0))
+    assert s.expired(Now(2300, 1.0, 60.0)) and not s.expired(Now(2300, 1.0, 900.0))
+
+
+def test_queue_is_bounded_and_the_most_important_wins():
+    m = mgr(); n = Now(1000, 0.0)
+    for i in range(m.MAX_QUEUE):
+        assert m.submit(m.make_item(100 + i, "thought", n, severity=0.3 + i / 100), n) == "queued"
+    assert m.submit(m.make_item(1, "thought", n, severity=0.1), n) == "drop:queue_full"
+    assert m.submit(m.make_item(2, "death", n, severity=1.0), n) == "queued"
+    assert len(m.queue) == m.MAX_QUEUE and all(q.actor_id != 100 for q in m.queue)    # the weakest made room
+
+
+def test_voice_budget_gates_chatter_but_never_urgent():
+    from hermesvoice_agent.core.lease import VoiceBudget
+    m = LeaseManager([1, 2], 0, QuotaTracker(), priority=class_of, budget=VoiceBudget(per_min=6, burst=2))
+    n = Now(1000, 0.0)
+    m.budget.spend(n, 2)                                       # the colony has just spoken twice
+    m.submit(m.make_item(1, "social", n), n); m.submit(m.make_item(2, "death", n), n)
+    started = m.pop_runnable(n)
+    assert [i.kind for i, _ in started] == ["death"]            # urgent bypasses the gate, the social line waits
+    later = Now(1000, 10.0)                                     # 10 s at 6 a minute is one token
+    assert [i.kind for i, _ in m.pop_runnable(later)] == ["social"]
 
 
 def test_lease_idle_expiry_by_class():

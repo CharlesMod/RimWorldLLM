@@ -23,7 +23,7 @@ from .config import Config
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
 from .ledger import Ledger
-from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, WorkItem
+from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, VoiceBudget, WorkItem
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
@@ -73,8 +73,9 @@ class Director:
         q = cfg.quotas
         self.leases = LeaseManager(cfg.actor_slots, cfg.narrator_slot,
                                    QuotaTracker(q.actor_per_day, q.pair_per_day, self.day,
-                                                q.min_gap_game_ambient, q.min_gap_real_s_ambient),
-                                   cfg.pause_ambient_at_speed, adapter.priority)
+                                                q.min_gap_game_ambient, q.min_gap_real_s_ambient, q.ambient_share),
+                                   cfg.pause_ambient_at_speed, adapter.priority,
+                                   VoiceBudget(cfg.voice_lines_per_min, cfg.voice_burst, cfg.voice_fast_scale))
         self.tasks: set[asyncio.Task] = set()
         self.bridge_cfg: dict = {}
         self.narrator_lines: list[str] = []      # coverage lines
@@ -87,10 +88,34 @@ class Director:
         self.idle = IdleRunner(self)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
+        self._raw_last: float | None = None
+        self._play = 0.0                          # play clock: real seconds with the game's pauses taken out
+        self._speed_seen = 1
 
     # ---- clock ----------------------------------------------------------
     def now(self) -> Now:
-        return Now(self.bridge.env.game, self.clock())
+        """Both clocks. ``real`` is the play clock (it stands still while the game is paused, so nothing expires
+        in a pause), ``rate`` the game units per real second at the speed the game last reported."""
+        raw = self.clock()
+        env = self.bridge.env
+        if self._raw_last is not None and raw > self._raw_last and not env.paused:
+            self._play += raw - self._raw_last
+        self._raw_last = raw if self._raw_last is None else max(self._raw_last, raw)
+        if env.speed >= 1:
+            self._speed_seen = env.speed
+        return Now(env.game, self._play, float(self.adapter.units_per_second(self._speed_seen)))
+
+    def poll_delay(self) -> float:
+        """Real seconds between polls: shorter as the game speeds up, so a poll never spans more game time than at 1x
+        (much) and the event ring is drained often."""
+        return self.cfg.poll_interval_s / max(1.0, (self.now().rate / 60.0) ** 0.5)
+
+    def wire_expiry(self, item: WorkItem) -> int | None:
+        """expires_tick for the mod: the item's deadline at the current speed, plus half a second of slack for the
+        request itself, so the mod only refuses what is truly late."""
+        now = self.now()
+        dl = item.deadline(now.rate)
+        return None if dl is None else dl + int(0.5 * now.rate)
 
     # ---- loading --------------------------------------------------------
     async def start(self) -> None:
@@ -186,7 +211,7 @@ class Director:
                 await self.step()
             except BridgeError as e:
                 log.warning("bridge: %s", e)
-            await asyncio.sleep(self.cfg.poll_interval_s)
+            await asyncio.sleep(self.poll_delay())
 
     async def drain(self) -> None:
         while self.tasks:
@@ -221,22 +246,28 @@ class Director:
             return                                   # salience first: low scores never reach the model
         now = self.now()
         ex = REQUEST_EXPIRY[cls]
-        if ex.units is not None and now.game - e.get("game", now.game) > ex.units:
+        vanilla = getattr(self.adapter, "vanilla_social", lambda ev: None)(e)
+        units, floor = (ex.units, ex.floor_real_s)
+        if vanilla:                                  # the line must attach to the game's own entry in time
+            units, floor = min(units, vanilla["window_ticks"]), max(floor, self.cfg.vanilla_attach_floor_s)
+        age = max(0, now.game - int(e.get("game", now.game)))
+        if units is not None and age > max(units, int(floor * now.rate)):
             return                                   # a backlog event, too old to speak about
+        # the moment's clock starts when it happened, not when we heard of it
+        born = Now(now.game - age, now.real - age / max(now.rate, 1.0), now.rate)
         roles = [(int(a["id"]), a.get("role", "")) for a in e.get("actors", [])]
         ids = [i for i, _ in roles]
         witnesses = [int(w) for w in e.get("witnesses", ids)]
-        vanilla = getattr(self.adapter, "vanilla_social", lambda ev: None)(e)
         if vanilla and vanilla["initiator"] in self.minds and vanilla["recipient"] in self.minds:
             # The game's own interaction: one line for it, in its priority tier (chitchat only when idle).
             vcls = Cls.SOCIAL if vanilla["tier"] == "high" else Cls.AMBIENT
-            item = self.leases.make_item(vanilla["initiator"], "vanilla_social", now, e, listener=vanilla["recipient"],
-                                         cls=vcls, payload={"vanilla": vanilla})
+            item = self.leases.make_item(vanilla["initiator"], "vanilla_social", born, e, listener=vanilla["recipient"],
+                                         cls=vcls, payload={"vanilla": vanilla}, units=units, floor_real_s=floor)
             self.leases.submit(item, now, self.bridge.env.speed)
             return
         pair = self.adapter.conversation_pair(e)
         if pair and pair[0] in self.minds and pair[1] in self.minds:
-            item = self.leases.make_item(pair[0], etype, now, e, listener=pair[1], cls=Cls.SOCIAL,
+            item = self.leases.make_item(pair[0], etype, born, e, listener=pair[1], cls=Cls.SOCIAL,
                                          payload={"conversation": True})
             self.leases.submit(item, now, self.bridge.env.speed)
             return
@@ -252,7 +283,7 @@ class Director:
                 roll = int(hashlib.sha1(f"{e.get('seq')}:{aid}".encode()).hexdigest(), 16) % 1000 / 1000
                 if roll >= w:
                     continue
-            item = self.leases.make_item(aid, etype, now, e)
+            item = self.leases.make_item(aid, etype, born, e)
             if self.leases.submit(item, now, self.bridge.env.speed) == "queued":
                 picked += 1
 
@@ -405,12 +436,12 @@ class Director:
             if item.expired(now):
                 self.dropped.append((aid, "expired"))     # an expired line is dropped silently
                 return
-            ok = await self._say(aid, res, listener=listener, expires=item.expires_at,
+            ok = await self._say(aid, res, listener=listener, expires=self.wire_expiry(item),
                                  talk_id=item.payload.get("talk_id"),
                                  combat=bool(item.event and self.adapter.is_urgent_visual(item.event)) and not vanilla,
                                  event=item.event, vanilla_ref=vanilla["ref"] if vanilla else None)
             if ok:
-                self.leases.quotas.record(aid, listener, now)
+                self.leases.quotas.record(aid, listener, now, pair=not vanilla)
                 self.leases.mark_spoke(aid, sig)
                 mind.last_line_time = now.game
                 self.line_count[aid] = self.line_count.get(aid, 0) + 1
@@ -454,6 +485,7 @@ class Director:
             self.dropped.append((aid, f"say:{e.code}"))
             return False
         applied = r.get("applied")
+        self.leases.budget.spend(self.now())
         self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
         told = self.adapter.told_intents()
@@ -484,7 +516,14 @@ class Director:
                               (b, f"{summary} {self.names[a]} is talking to you.")):
                 ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid]))[0]
             start_jobs = {aid: self.adapter.snapshot_job(leases[aid].data["snap"]) for aid in (a, b)}
+            last_turn_real = self.now().real
             while not conv.ended:
+                if conv.turns:
+                    await self._pace(last_turn_real, (lease_a, lease_b))
+                    if lease_a.preempted or lease_b.preempted:
+                        conv.ended = "preempted"
+                        break
+                conv.turn_cap = min(conv.turn_cap, self._turn_cap(self.now().rate))
                 sp_id = conv.next_speaker()
                 li = leases[sp_id]
                 lis = conv.listener_of(sp_id)
@@ -506,13 +545,14 @@ class Director:
                 if item.expired(self.now()) and not conv.turns:
                     conv.ended = "expired"
                     break
-                ok = await self._say(sp_id, res, listener=lis, expires=item.expires_at if not conv.turns else None,
+                ok = await self._say(sp_id, res, listener=lis, expires=self.wire_expiry(item) if not conv.turns else None,
                                      conv=conv.id, event=item.event)
                 if not ok:
                     conv.ended = "apart"       # the game's liveness check refused: gone or out of range
                     break
                 conv.add(sp_id, res.text, res.intent)
-                self.leases.quotas.record(sp_id, lis, self.now())
+                last_turn_real = self.now().real
+                self.leases.quotas.record(sp_id, lis, self.now(), pair=len(conv.turns) == 1)
                 self.line_count[sp_id] = self.line_count.get(sp_id, 0) + 1
                 for l in (lease_a, lease_b):
                     self.leases.touch(l, self.now())
@@ -542,19 +582,42 @@ class Director:
                     if not l.ended:
                         self.leases.release(l, "conversation_end")
 
+    @staticmethod
+    def _turn_cap(rate: float) -> int:
+        """Fewer turns as the game speeds up (6 at 1x, 4 at 2x, 3 at 3x, 2 at dev speed)."""
+        return 6 if rate <= 60 else 4 if rate <= 180 else 3 if rate <= 360 else 2
+
+    async def _pace(self, last_real: float, leases) -> None:
+        """Give the last line time to be read before the next turn: ``turn_gap_ticks`` of game time, but at least
+        ``turn_gap_floor_real_s`` of play time. Ends at once if a window was taken for something more important."""
+        now = self.now()
+        wait = max(self.cfg.turn_gap_floor_real_s, self.cfg.turn_gap_ticks / max(now.rate, 1.0)) - (now.real - last_real)
+        while wait > 0 and not any(l.preempted for l in leases):
+            step = min(wait, 0.25)
+            await asyncio.sleep(step)
+            if not self.bridge.env.paused:           # a pause is not waiting time: the line is still on screen
+                wait -= step
+            for l in leases:
+                self.leases.touch(l, self.now())
+
     async def finish_conversation(self, conv: Conversation, leases: dict[int, Lease]) -> None:
-        """One memory and one relation update per actor, written by that actor's window (template fallback)."""
+        """One memory and one relation update per actor, written by that actor's window (template fallback).
+        From 3x the templates are used at once: the windows are freed instead of waiting on four more model calls,
+        and the memory is written either way."""
         now = self.bridge.env.game
+        fast = self.now().rate >= self.cfg.fast_summary_rate
         for me in (conv.a, conv.b):
             other = conv.b if me == conv.a else conv.a
             mind = self.minds[me]
             li = leases[me]
             base = [("system", li.data["prefix"]),
                     ("user", "=== TURNS SO FAR ===\n" + "\n".join(f"{n}: {t}" for n, t in conv.turns_for_prompt()))]
-            mem_text = await self._ask_line(base, "=== REQUEST ===\nIn one first-person sentence, what do you remember of this talk?",
-                                            li.slot, me, "memory")
-            feel = await self._ask_line(base, f"=== REQUEST ===\nIn one short line, how do you feel about {self.names[other]} now?",
-                                        li.slot, me, "relation")
+            mem_text = feel = None
+            if not fast:
+                mem_text = await self._ask_line(base, "=== REQUEST ===\nIn one first-person sentence, what do you remember of this talk?",
+                                                li.slot, me, "memory")
+                feel = await self._ask_line(base, f"=== REQUEST ===\nIn one short line, how do you feel about {self.names[other]} now?",
+                                            li.slot, me, "relation")
             t_feel, t_hist = template_relation(conv, me)
             mind.memories.append(memory.Memory(
                 id=mind.next_mem_id(), game=now, text=mem_text or template_memory(conv, me), source="saw",

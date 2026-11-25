@@ -38,6 +38,11 @@ class RimWorldAdapter:
                              actor_field="pawn", time_field="tick", epoch_field="save_epoch",
                              expiry_field="expires_tick")
     units_per_day = 60000                      # ticks
+    # game ticks per real second at each game speed: 1 = 60, 2 = 180, 3 = 360, dev speed 4 = 900 (speed 0 is a pause)
+    _TICKS_PER_S = {0: 60.0, 1: 60.0, 2: 180.0, 3: 360.0, 4: 900.0}
+
+    def units_per_second(self, speed: int) -> float:
+        return self._TICKS_PER_S.get(int(speed), 60.0 if speed < 1 else 900.0)
     intent_labels = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
     common_words = {"colony", "colonist", "colonists", "rimworld", "pirates", "tribals", "mechanoids"}
     narrator_prompt = ("You are a dry narrator of a RimWorld colony. Write one short third-person line "
@@ -145,6 +150,7 @@ class RimWorldAdapter:
         key = str(data.get("interaction", ""))
         return {"ref": str(data["ref"]), "initiator": pair[0], "recipient": pair[1],
                 "tier": "high" if data.get("tier") == "high" else "idle",
+                "window_ticks": max(1, int(data.get("window_ticks") or 417)),
                 "sentence": str(data.get("vanilla_text") or event.get("summary", "")).strip(),
                 "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}
 

@@ -43,6 +43,7 @@ class QuotaConfig(BaseModel):
     units_per_day: int = 60000
     min_gap_game_ambient: int = 1500   # per actor, ambient class
     min_gap_real_s_ambient: float = 20.0
+    ambient_share: float = 0.75         # ambient chatter may use this share of an actor's daily lines
 
 
 class Config(BaseModel):
@@ -55,8 +56,16 @@ class Config(BaseModel):
 
     narrator_slot: int = 0
     windows: int = 2              # slots 1..windows
-    pause_ambient_at_speed: int = 3    # overridden by the bridge's /config
-    poll_interval_s: float = 1.0
+    pause_ambient_at_speed: int = 4    # ambient and social talk stop at this speed (4 = dev speed); the bridge's /config overrides
+    poll_interval_s: float = 1.0       # at 1x; shortened as the game speeds up (director.poll_delay)
+    voice_lines_per_min: float = 5.0   # the ceiling on spoken lines per real minute at every speed (urgent bypasses the gate)
+    voice_burst: float = 5.0
+    voice_fast_scale: float = 0.5      # the ceiling is scaled by this at dev speed (4)
+    turn_gap_ticks: int = 150          # least game time between a conversation's turns (bubbles need reading time)
+    turn_gap_floor_real_s: float = 0.8 # ... and the least real time
+    fast_summary_rate: float = 360.0   # from this game rate (3x) a finished conversation is remembered from a template
+    vanilla_attach_floor_s: float = 5.0   # a line for the game's own interaction keeps this many real seconds to attach
+    idle_starving_fraction: float = 0.25  # idle work due for this share of a game day runs even beside ambient chatter
     event_min_severity: float = 0.15   # below this never reaches the model
     ambient_min_severity: float = 0.25
     narrator_min_gap_real_s: float = 120.0

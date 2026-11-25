@@ -35,15 +35,36 @@ class IdleRunner:
         self.lease: Lease | None = None
         self.kind = ""
         self.fail_until: dict[tuple[str, int], float] = {}
+        self.due_since: int | None = None
         self.log: list[dict] = []            # what idle work produced (reflections, diaries, chronicle entries)
 
     # ---- state ------------------------------------------------------------
     def active(self) -> bool:
         return self.task is not None and not self.task.done()
 
-    def actors_want_windows(self) -> bool:
+    def actors_want_windows(self, starving: bool = False) -> bool:
+        """Real work is queued or leased. Starving idle work only yields to reactive and urgent work (SPEC §7)."""
         ls = self.d.leases
-        return bool(ls.queue) or any(l.cls > Cls.IDLE for l in ls.leases.values())
+        floor = Cls.REACTIVE if starving else Cls.AMBIENT
+        return any(q.cls >= floor for q in ls.queue) or any(l.cls > Cls.IDLE and l.cls >= floor for l in ls.leases.values())
+
+    def anything_due(self) -> bool:
+        d = self.d
+        return bool(self.due_reflection() or self.due_diary() or
+                    (d.cfg.chronicle_enabled and d.chronicle.due(d.bridge.env.game // d.day) is not None
+                     and self._ok("chronicle", -1)))
+
+    def starving(self) -> bool:
+        """Idle work has been due for a share of a game day without running: it may now run beside ambient chatter.
+        A floor per game day, whatever the speed: at 3x a busy game would otherwise never be idle."""
+        d = self.d
+        if not self.anything_due():
+            self.due_since = None
+            return False
+        game = d.bridge.env.game
+        if self.due_since is None or game < self.due_since:
+            self.due_since = game
+        return game - self.due_since >= d.cfg.idle_starving_fraction * d.day
 
     def preempt(self, reason: str = "window_wanted") -> bool:
         """Cancel the running idle job at once. Nothing it was producing is applied."""
@@ -61,15 +82,15 @@ class IdleRunner:
         return True
 
     def preempt_if_wanted(self) -> None:
-        if self.actors_want_windows():
+        if self.actors_want_windows(self.starving()):
             self.preempt()
 
     # ---- picking ----------------------------------------------------------
     def _ok(self, kind: str, aid: int) -> bool:
-        return self.fail_until.get((kind, aid), -1.0) <= self.d.clock()
+        return self.fail_until.get((kind, aid), -1.0) <= self.d.now().real
 
     def _fail(self, kind: str, aid: int) -> None:
-        self.fail_until[(kind, aid)] = self.d.clock() + self.d.cfg.idle_retry_real_s
+        self.fail_until[(kind, aid)] = self.d.now().real + self.d.cfg.idle_retry_real_s
 
     def due_reflection(self) -> list[int]:
         d, now = self.d, self.d.bridge.env.game
@@ -100,10 +121,11 @@ class IdleRunner:
     def run_once(self) -> None:
         """Called every step after actor work was launched."""
         d = self.d
-        if self.actors_want_windows():
+        starving = self.starving()
+        if self.actors_want_windows(starving):
             self.preempt()
             return
-        if self.active() or not d.leases.narrator_may_do_idle_work():
+        if self.active() or not d.leases.narrator_may_do_idle_work(starving):
             return
         for aid in self.due_reflection():
             if self._start_actor("reflect", aid, self._reflect(aid)):

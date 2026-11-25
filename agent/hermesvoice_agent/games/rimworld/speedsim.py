@@ -259,6 +259,7 @@ class Metrics:
     drop_reasons: dict = field(default_factory=dict)
     say_refused: int = 0
     queue_expired: int = 0
+    shed: int = 0
     lease_log: dict = field(default_factory=dict)
     said_by_kind: dict = field(default_factory=dict)
     crashed: str = ""
@@ -328,7 +329,7 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
                     stop.set()
                     return
                 queue_samples.append(len(d.leases.queue))
-                await asyncio.sleep(cfg.poll_interval_s)
+                await asyncio.sleep(d.poll_delay())
 
         m = Metrics(label, 0.0, 0)
         task = asyncio.ensure_future(agent())
@@ -342,7 +343,6 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
                 e = pending.pop(0)
                 ev = fb.add_event(e.type, e.actors, e.summary, e.witnesses, e.severity, None, dict(e.data))
                 ev["tick"] = e.tick
-                del fb.events[:-fb.max_kept]
                 ev_real[ev["seq"]] = loop.time()
                 produced.append(ev)
                 if e.data.get("vanilla"):
@@ -377,7 +377,8 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
         k = "vanilla" if s_["body"].get("vanilla_ref") else ("conv" if s_["body"].get("conversation_id") else "line")
         m.said_by_kind[k] = m.said_by_kind.get(k, 0) + 1
     m.queue_expired = q_expired
-    m.dropped_late = len(late) + q_expired
+    m.dropped_late = len(late)                 # generated, then too late to show
+    m.shed = q_expired                         # never generated: expired in the queue behind more important lines
     m.late_share = m.dropped_late / max(1, m.dropped_late + m.lines)
     m.delay_game_median, m.delay_game_p90, m.delay_game_max = _pct(delays_game, .5), _pct(delays_game, .9), max(delays_game, default=0)
     m.delay_real_p90 = _pct(delays_real, .9)
@@ -423,7 +424,7 @@ def simulate(speed: int | Schedule = 1, *, events: list[SimEvent] | None = None,
                                  label=label or (f"x{speed}" if isinstance(speed, int) else "sched")))
 
 
-COLUMNS = [("lines", "lines"), ("lines_per_game_hour", "ln/ghr"), ("lines_per_real_min", "ln/min"), ("late_share", "late%"),
+COLUMNS = [("lines", "lines"), ("lines_per_game_hour", "ln/ghr"), ("lines_per_real_min", "ln/min"), ("late_share", "late%"), ("shed", "shed"),
            ("delay_game_median", "dly50"), ("delay_game_p90", "dly90"), ("convs_done", "conv ok"), ("convs_cut", "cut"),
            ("events_lost", "lost"), ("ring_gaps", "gaps"), ("queue_max", "qmax"), ("slot_util", "util"),
            ("memories_missed", "memmiss"), ("attach_share", "attach"), ("effects_for_dropped", "fx-drop")]
