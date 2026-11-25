@@ -116,12 +116,14 @@ class Chronicle:
 
     # ---- writing ----------------------------------------------------------
     def build_messages(self, adapter, kind: str, day: int, notes: list[Note], ledger_lines: list[str],
-                       budget: int) -> Messages:
+                       budget: int, lore_lines: list[str] | None = None) -> Messages:
         """System + summary + recent entries + open matters + the events, trimmed to fit ``budget`` tokens."""
         notes = sorted(notes, key=lambda n: n.game)
         recent = list(self.state.recent)
         summary = self.state.summary
         ledger = list(ledger_lines)[:12]
+
+        names = "\n".join(f"- {gd.clean(t, 'line', max_len=100)}" for t in (lore_lines or [])[-12:])
 
         def build() -> Messages:
             ev = "\n".join(f"- {gd.clean(n.text, 'event')}" for n in notes) or "- (nothing noted)"
@@ -131,6 +133,8 @@ class Chronicle:
                     f"=== RECENT ENTRIES ===\n{rec}\n"
                     f"=== ONGOING MATTERS ===\n{gd.data_section('ongoing', led)}"
                     f"=== WHAT HAPPENED (day {day + 1}) ===\n{gd.data_section('events', ev)}"
+                    + (f"=== SHARED NAMES (use these exact names when you refer to them) ===\n{gd.data_section('names', names)}"
+                       if names else "") +
                     f"=== REQUEST ===\n{adapter.chronicle_request}")
             return [("system", adapter.chronicle_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
@@ -152,12 +156,13 @@ class Chronicle:
 
     async def write(self, llm: LLMClient, adapter, *, slot: int, today: int, ledger_lines: list[str],
                     name_tokens: dict[int, set[str]], budget: int = 6000, max_tokens: int = 220,
-                    common_words: set[str] | None = None, minor_names: set[str] | None = None) -> Entry | None:
+                    common_words: set[str] | None = None, minor_names: set[str] | None = None,
+                    lore_lines: list[str] | None = None) -> Entry | None:
         d = self.due(today)
         if d is None:
             return None
         kind, day, notes = d
-        msgs = self.build_messages(adapter, kind, day, notes, ledger_lines, budget)
+        msgs = self.build_messages(adapter, kind, day, notes, ledger_lines, budget, lore_lines)
         try:
             c = await llm.complete(msgs, slot=slot, kind="chronicle", max_tokens=max_tokens, stop=[],
                                    temperature=0.7)

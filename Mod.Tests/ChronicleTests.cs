@@ -57,6 +57,25 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public void LoreEntriesAreAKnownKindCappedAndHiddenFromHistory()
+        {
+            Assert.True(ChronicleBook.KnownKind("lore")); Assert.False(ChronicleBook.KnownKind("Lore"));
+            var c = new ChronicleBook();
+            c.Add(0, "day", "a day", 0);
+            for (int i = 0; i < ChronicleBook.MaxLore + 3; i++) c.Add(1 + i, "lore", "Name " + i + ": thing", i);
+            c.Add(20, "major", "a major", 0);
+            int lore = 0;
+            foreach (var e in c.Entries) if (e.Kind == "lore") lore++;
+            Assert.Equal(ChronicleBook.MaxLore, lore);
+            Assert.Equal("Name 3: thing", c.Entries[1].Text);       // the three oldest lore entries faded; history stays
+            Assert.Equal("a day", c.Entries[0].Text);
+            var h = c.History();
+            Assert.Equal(2, h.Count);
+            Assert.All(h, e => Assert.NotEqual("lore", e.Kind));
+            Assert.Equal(ChronicleBook.MaxLore + 2, c.Since(0).Count);   // GET still returns lore, readers skip it
+        }
+
+        [Fact]
         public void ChronicleRebuiltFromASaveReplacesTheLiveOne()
         {
             // The game component clears the book and re-adds the saved entries on load: nothing from the later timeline survives.

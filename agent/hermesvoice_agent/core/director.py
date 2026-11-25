@@ -15,7 +15,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, memory, recap
+from . import agegate, gossip, lore, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -102,6 +102,8 @@ class Director:
         self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
+        self.lore = lore.LoreBook(cfg.lore_max)     # shared lore cache (core/lore.py); the mod holds the save's copy
+        self.reputations: dict[int, str] = {}       # what the group says about each actor (core/gossip.py)
         self.art = ArtQueue()                    # core/art.py
         self.dream_book = DreamBook()
         self.idle = IdleRunner(self)
@@ -176,6 +178,8 @@ class Director:
         await self.bridge.health()
         await self.refresh_config()
         await self.load_world()
+        if self.cfg.lore:
+            await lore.load(self)
         self._started = True
 
     async def refresh_config(self) -> None:
@@ -241,6 +245,8 @@ class Director:
         await self.load_world()
         self.art.rollback(self.bridge.env.game)
         self.chronicle.rollback(self.bridge.env.game)      # the chronicle follows the save back in time
+        if self.cfg.lore:
+            await lore.load(self)                          # the loaded save's own lore
         if self.cfg.recap_enabled and self.bridge_cfg.get("recap") is not False:
             self._spawn(recap.run(self, self.bridge.env.epoch))     # once per epoch; a one-off, no voice budget
 
@@ -414,6 +420,11 @@ class Director:
                               self.cfg.memory_merge_similarity)
             if r["merged"] or r["dropped"]:
                 self.dirty.add(aid)
+        self.refresh_reputations()
+
+    def refresh_reputations(self) -> None:
+        """Rebuild what the group says about each actor (rules only, no model). Block C takes it at reflection."""
+        self.reputations = gossip.reputations(self.minds, self.minor_ids()) if self.cfg.reputation else {}
 
     @staticmethod
     def _report(t: asyncio.Task) -> None:
@@ -421,7 +432,7 @@ class Director:
             log.error("task failed: %r", t.exception())
 
     # ---- building an actor's lease prefix -------------------------------
-    async def _prepare(self, aid: int, trigger: str, event: dict | None, lease: Lease):
+    async def _prepare(self, aid: int, trigger: str, event: dict | None, lease: Lease, conv_with: int | None = None):
         mind = self.minds[aid]
         snap = await self.bridge.actor(aid)
         scene = await self.bridge.scene(aid)
@@ -443,7 +454,8 @@ class Director:
             known |= {p for p in m.people if p in self.names}
         led = self.ledger.known_to(aid)
         thoughts = ([t.text for t in inner.recent_inner(mind, 3)] if self.cfg.inner_monologue else None)
-        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts)
+        talk = self._common_talk(aid, trigger, sc, present_ids, conv_with)
+        prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts, talk or None)
         lease.data.update(prefix=prefix, turns=[], snap=snap)
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
@@ -453,6 +465,21 @@ class Director:
                           minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens())
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
+
+    def _common_talk(self, aid: int, trigger: str, sc, present_ids: set[int], conv_with: int | None) -> list[str]:
+        """Block D's shared-talk lines: the lore names that match the scene, and (in a conversation only) what the speaker
+        could pass on to this listener. Empty when both switches are off or nothing applies."""
+        out: list[str] = []
+        if self.cfg.lore:
+            line = self.lore.names_line(" ".join([trigger, sc.where, *sc.present]), label=self.adapter.lore_label)
+            if line:
+                out.append(line)
+        if self.cfg.gossip_chain and conv_with is not None and conv_with in self.minds:
+            hint = gossip.pass_on_hint(self.minds[aid], self.minds[conv_with], conv_with,
+                                       present_ids | {aid, conv_with}, self.minor_ids())
+            if hint:
+                out.append(hint)
+        return out
 
     def _listener(self, scene: dict, aid: int, prefer: int | None) -> int | None:
         if prefer is not None:
@@ -623,7 +650,8 @@ class Director:
         # the agent records only what the game applied
         if applied and listener in self.minds and sp.intent in told:
             if memory.record_told_line(self.minds, aid, listener, self.names, sp.text, self.bridge.env.game,
-                                       told[sp.intent], about):
+                                       told[sp.intent], about, chain=self.cfg.gossip_chain,
+                                       hop_decay=self.cfg.gossip_hop_decay, minor_ids=self.minor_ids()):
                 self.dirty.update((aid, listener))
         return True
 
@@ -645,7 +673,7 @@ class Director:
             ctxs = {}
             for aid, trig in ((a, f"{summary} You start talking to {self.names[b]}."),
                               (b, f"{summary} {self.names[a]} is talking to you.")):
-                ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid]))[0]
+                ctxs[aid] = (await self._prepare(aid, trig, item.event, leases[aid], conv_with=b if aid == a else a))[0]
             pair_minor = self.is_minor(a) or self.is_minor(b)
             for c in ctxs.values():
                 c.minor_involved = c.minor_involved or pair_minor

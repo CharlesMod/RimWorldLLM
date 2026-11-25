@@ -94,7 +94,7 @@ async def run(d: "Director", epoch: int) -> bool:
     except (BridgeError, AttributeError) as ex:
         log.info("recap skipped, no chronicle: %s", ex)
         return False
-    entries = [e for e in entries if str(e.get("text", "")).strip()]
+    entries = [e for e in entries if str(e.get("text", "")).strip() and e.get("kind") != "lore"]   # lore is not history
     if len(entries) < MIN_ENTRIES:
         return False
     lines = await build(d, entries)

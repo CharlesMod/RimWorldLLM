@@ -189,7 +189,7 @@ namespace HermesVoice
             if (kt != null && kt.Type != JTokenType.Null)
             {
                 kind = kt.Type == JTokenType.String ? (string)kt : "";
-                if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\" or \"major\"");
+                if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\", \"major\" or \"lore\"");
             }
             int count = HermesBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });

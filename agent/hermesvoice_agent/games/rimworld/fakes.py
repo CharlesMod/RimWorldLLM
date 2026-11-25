@@ -209,7 +209,7 @@ class FakeBridge:
                 since = int(req.url.params.get("since_day", 0))
                 return self._ok(entries=[e for e in self.chronicle if e["day"] >= since])
             day, text, kind = body.get("day"), str(body.get("text", "")).strip(), body.get("kind", "day")
-            if not isinstance(day, int) or isinstance(day, bool) or day < 0 or not text or kind not in ("day", "major"):
+            if not isinstance(day, int) or isinstance(day, bool) or day < 0 or not text or kind not in ("day", "major", "lore"):
                 return self._err(400, "bad_request", "day, text and kind are required")
             self.chronicle_log.append(body)
             self.chronicle.append({"day": day, "kind": kind, "text": text[:2000], "tick": self.tick})

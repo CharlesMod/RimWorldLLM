@@ -95,6 +95,15 @@ class RimWorldAdapter:
     recap_request = (
         "Write exactly 3 lines, one short sentence each, under 20 words, most recent last, the last line ending on "
         "what is still unresolved. No title, no numbering, no quotes.")
+    lore_system = (
+        "You coin the colony's shared nicknames for the places and events its people talk about, like 'the Long Winter' "
+        "or 'the east barracks'. Use only what the chronicle entry says; never invent people, places or numbers. "
+        "Nothing romantic or sexual, ever.")
+    lore_label = "Colony names"
+    lore_request = (
+        "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
+        "a 2 to 5 word name, a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
+        "months the colony ran short of food). Do not reuse a name already in use. Otherwise answer: none.")
     art_system = (
         "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
         "third person, past tense. State only what the data says: who made it and what it shows or recalls from the "

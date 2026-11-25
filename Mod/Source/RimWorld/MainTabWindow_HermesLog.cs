@@ -41,7 +41,7 @@ namespace HermesVoice
 
         void DrawChronicle(Rect inRect)
         {
-            var entries = HermesBridge.Chronicle.Entries;
+            var entries = HermesBridge.Chronicle.History();
             Text.Anchor = TextAnchor.MiddleRight;
             Widgets.Label(new Rect(inRect.x, inRect.y + 6f, inRect.width, 28f), UiUtil.T("HV_ChronCount", entries.Count, Bridge.ChronicleBook.MaxEntries));
             Text.Anchor = TextAnchor.UpperLeft;

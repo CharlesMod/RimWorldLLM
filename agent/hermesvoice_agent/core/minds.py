@@ -68,6 +68,9 @@ class Memory(BaseModel):
     etype: str = ""
     event_seq: int | None = None
     summary_of: int = 0                          # >0: merged summary of N older memories
+    chain: list[str] = Field(default_factory=list)    # gossip: who passed it on, oldest first (core/gossip.py)
+    hops: int = 0                                # 0 = seen first hand; +1 per retelling
+    sources: int = 1                             # how many people told this (same event) to this mind
 
 
 class Relation(BaseModel):
@@ -84,6 +87,7 @@ class CRel(BaseModel):
     opinion: int | None = None
     feeling: str = ""
     history: str = ""
+    reputation: str = ""         # "people say: ..." frozen with the digest at reflection (core/gossip.py)
 
 
 class DiaryEntry(BaseModel):
@@ -151,11 +155,15 @@ class Mind(BaseModel):
         self.evolving_bio = self.bio_history.pop().before
         return True
 
-    def freeze_relations(self, limit: int = 6) -> None:
-        """Refresh block C's relations digest from the live relations. Reflection only."""
+    def freeze_relations(self, limit: int = 6, reputations: dict[str, str] | None = None, rep_limit: int = 3) -> None:
+        """Refresh block C's relations digest from the live relations. Reflection only.
+        ``reputations`` maps a subject's actor id (as text) to the group's line about them."""
         rels = sorted(self.relations.items(), key=lambda kv: (-abs(kv[1].opinion or 0), kv[0]))[:limit]
-        self.c_relations = [CRel(name=r.name, opinion=r.opinion, feeling=r.feeling, history=r.history)
-                            for _, r in rels]
+        reps = reputations or {}
+        keep = [k for k, _ in rels if reps.get(k)][:max(0, rep_limit)]      # at most rep_limit lines carry one
+        self.c_relations = [CRel(name=r.name, opinion=r.opinion, feeling=r.feeling, history=r.history,
+                                 reputation=reps.get(k, "") if k in keep else "")
+                            for k, r in rels]
 
     def add_diary(self, day: int, game: int, text: str) -> None:
         self.diary.append(DiaryEntry(day=day, game=game, text=text))
@@ -184,6 +192,9 @@ class Mind(BaseModel):
             self.bio_history = []
         if size() > limit:
             self.inner = self.inner[-3:]
+        if size() > limit:
+            for r in self.c_relations:
+                r.reputation = ""
         if size() > limit:
             # 2. pinned memories, least important and oldest first
             for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):

@@ -122,6 +122,12 @@ class Config(BaseModel):
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock
     inner_aim_fresh_days: float = 0.25     # an aim guides the next line for this many game days
+    gossip_chain: bool = True          # retold gossip carries a source chain, decays per hop, merges duplicates; pass-on hint (core/gossip.py)
+    gossip_hop_decay: float = 0.8      # confidence factor per retelling beyond the first
+    reputation: bool = True            # "people say: ..." per actor in block C, rebuilt by rules (core/gossip.py)
+    reputation_show: int = 3           # at most this many relation lines carry a reputation
+    lore: bool = True                  # shared lore: shared names coined after a major chronicle entry (core/lore.py)
+    lore_max: int = 12                 # lore entries kept; the oldest fade
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
 
     @property

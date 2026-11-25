@@ -63,6 +63,9 @@ class GameAdapter(Protocol):
     chronicle_request: str
     recap_system: str                   # the load-time "previously on" recap (3 lines)
     recap_request: str
+    lore_system: str                    # coining a shared name for a place or event (kind "lore")
+    lore_request: str
+    lore_label: str                     # block D label for the matching shared names (e.g. "Local names")
     chronicle_summary_system: str       # folding an old entry into the running summary
 
     def default_bridge_json(self) -> Path: ...
