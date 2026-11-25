@@ -25,6 +25,7 @@ namespace HermesVoice
         public static ApiRouter Router { get { return Runtime.Router; } }
         public static EventRing Events { get { return Runtime.Events; } }
         public static TalkQueue Talk { get { return Runtime.Talk; } }
+        public static ChronicleBook Chronicle { get { return Runtime.Chronicle; } }
         public static MindBook Minds { get { return Runtime.Minds; } }
         static string _sessionToken;
 

@@ -12,19 +12,72 @@ namespace HermesVoice
         Vector2 scroll;
         int filterPawn;               // 0 = everyone
         string filterName = "";
+        int tab;                      // 0 = conversation log, 1 = chronicle
+        Vector2 chronScroll;
 
         public override Vector2 InitialSize { get { return new Vector2(Mathf.Min(UI.screenWidth - 40f, 820f), Mathf.Min(UI.screenHeight - 200f, 640f)); } }
 
         public override void DoWindowContents(Rect inRect)
         {
+            Text.Font = GameFont.Medium;
+            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "HV_LogTitle" : "HV_ChronTitle"));
+            Text.Font = GameFont.Small;
+
+            var body = new Rect(inRect.x, inRect.y + 74f, inRect.width, inRect.height - 74f);
+            var tabs = new List<TabRecord>
+            {
+                new TabRecord(UiUtil.T("HV_TabConversation"), () => tab = 0, tab == 0),
+                new TabRecord(UiUtil.T("HV_TabChronicle"), () => tab = 1, tab == 1)
+            };
+            TabDrawer.DrawTabs(body, tabs);
+            if (tab == 0) DrawLog(body); else DrawChronicle(body);
+        }
+
+        void DrawChronicle(Rect inRect)
+        {
+            var entries = HermesBridge.Chronicle.Entries;
+            Text.Anchor = TextAnchor.MiddleRight;
+            Widgets.Label(new Rect(inRect.x, inRect.y + 6f, inRect.width, 28f), UiUtil.T("HV_ChronCount", entries.Count, Bridge.ChronicleBook.MaxEntries));
+            Text.Anchor = TextAnchor.UpperLeft;
+            var outRect = new Rect(inRect.x, inRect.y + 38f, inRect.width, inRect.height - 40f);
+            if (entries.Count == 0) { Widgets.Label(outRect, UiUtil.T("HV_ChronEmpty")); return; }
+
+            float w = outRect.width - 18f;
+            var heights = new float[entries.Count];
+            float total = 0f;
+            for (int i = 0; i < entries.Count; i++)           // i = 0 is the newest
+            {
+                heights[i] = Text.LineHeight + Text.CalcHeight(entries[entries.Count - 1 - i].Text, w - 8f) + 12f;
+                total += heights[i];
+            }
+            Widgets.BeginScrollView(outRect, ref chronScroll, new Rect(0f, 0f, w, total));
+            float cy = 0f;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (cy + heights[i] >= chronScroll.y && cy <= chronScroll.y + outRect.height)
+                {
+                    var e = entries[entries.Count - 1 - i];
+                    var r = new Rect(0f, cy, w, heights[i]);
+                    bool major = e.Kind == Bridge.ChronicleBook.KindMajor;
+                    if (major) { GUI.color = new Color(0.9f, 0.55f, 0.35f, 0.25f); GUI.DrawTexture(r, BaseContent.WhiteTex); GUI.color = Color.white; }
+                    else if (i % 2 == 0) Widgets.DrawLightHighlight(r);
+                    string head = UiUtil.DateOfDay(e.Day) + (major ? "  |  " + UiUtil.T("HV_ChronMajor") : "");
+                    GUI.color = major ? new Color(1f, 0.8f, 0.55f) : Color.gray;
+                    Widgets.Label(new Rect(r.x + 4f, r.y + 2f, r.width - 8f, Text.LineHeight), head);
+                    GUI.color = Color.white;
+                    Widgets.Label(new Rect(r.x + 4f, r.y + 2f + Text.LineHeight, r.width - 8f, r.height - Text.LineHeight - 4f), e.Text);
+                }
+                cy += heights[i];
+            }
+            Widgets.EndScrollView();
+        }
+
+        void DrawLog(Rect inRect)
+        {
             var comp = HermesVoiceGameComponent.Instance;
             var entries = comp != null ? comp.ConversationLog.Entries : new List<ConversationEntry>();
 
-            Text.Font = GameFont.Medium;
-            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T("HV_LogTitle"));
-            Text.Font = GameFont.Small;
-
-            float y = inRect.y + 36f;
+            float y = inRect.y + 6f;
             Widgets.Label(new Rect(inRect.x, y + 3f, 60f, 26f), UiUtil.T("HV_LogFilterLabel"));
             string current = filterPawn == 0 ? UiUtil.T("HV_LogFilterAll") : filterName;
             if (Widgets.ButtonText(new Rect(inRect.x + 64f, y, 220f, 28f), current))
@@ -43,7 +96,7 @@ namespace HermesVoice
             Widgets.Label(new Rect(inRect.x + 290f, y, inRect.width - 290f, 28f), UiUtil.T("HV_LogCount", shown.Count, entries.Count, ConversationLog.MaxEntries));
             Text.Anchor = TextAnchor.UpperLeft;
 
-            var outRect = new Rect(inRect.x, y + 34f, inRect.width, inRect.height - 70f);
+            var outRect = new Rect(inRect.x, y + 34f, inRect.width, inRect.height - 40f);
             if (shown.Count == 0)
             {
                 Widgets.Label(outRect, UiUtil.T("HV_LogEmpty"));

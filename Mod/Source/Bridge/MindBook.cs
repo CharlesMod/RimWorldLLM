@@ -9,6 +9,7 @@ namespace HermesVoice.Bridge
         public string MindJson;   // opaque to the mod; null when none
         public int Rev;
         public List<KeyValuePair<int, string>> Thoughts = new List<KeyValuePair<int, string>>(); // tick, text
+        public List<KeyValuePair<int, string>> Diaries = new List<KeyValuePair<int, string>>();  // tick, text
     }
 
     /// <summary>Per-pawn mind blobs (opaque JSON, rev-guarded, size-limited) and recent inner thoughts. Game thread.</summary>
@@ -17,6 +18,11 @@ namespace HermesVoice.Bridge
         public const int MaxMindBytes = 32 * 1024;
         public const int MaxThoughts = 20;
         public const int MaxThoughtChars = 500;
+        public const int MaxDiaries = 7;
+        public const int MaxDiaryChars = 1500;
+        public const string KindThought = "thought", KindDiary = "diary";
+
+        public static bool KnownKind(string kind) { return kind == KindThought || kind == KindDiary; }
 
         public readonly Dictionary<int, MindRecord> Records = new Dictionary<int, MindRecord>();
 
@@ -58,6 +64,15 @@ namespace HermesVoice.Bridge
             if (text.Length > MaxThoughtChars) text = text.Substring(0, MaxThoughtChars);
             r.Thoughts.Add(new KeyValuePair<int, string>(tick, text));
             while (r.Thoughts.Count > MaxThoughts) r.Thoughts.RemoveAt(0);
+        }
+
+        /// <summary>A daily diary entry, kept apart from inner thoughts; the last 7 are kept.</summary>
+        public void AddDiary(int id, int tick, string text)
+        {
+            var r = Rec(id);
+            if (text.Length > MaxDiaryChars) text = text.Substring(0, MaxDiaryChars);
+            r.Diaries.Add(new KeyValuePair<int, string>(tick, text));
+            while (r.Diaries.Count > MaxDiaries) r.Diaries.RemoveAt(0);
         }
 
         public void Clear() { Records.Clear(); }
