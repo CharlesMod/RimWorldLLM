@@ -8,6 +8,8 @@ from typing import Any, Protocol
 
 import httpx
 
+from ..llm import GEMMA4_OFFICIAL, detect_engine, is_known_gemma4
+
 
 class BackendError(Exception):
     """The server was unreachable, slow, or answered with something unusable. Never a model fault."""
@@ -36,18 +38,35 @@ class OpenAIBackend:
     """
 
     def __init__(self, base_url: str, *, model: str = "", api_key: str = "", client: httpx.AsyncClient | None = None,
-                 extra: dict | None = None):
+                 extra: dict | None = None, engine: bool | None = None, sampler: dict | None = None,
+                 honor_temperature: bool = False):
         u = base_url.strip().rstrip("/")
         self.base = u if u.endswith("/v1") else u + "/v1"
         self.model, self.api_key = model, api_key
         self.http = client or httpx.AsyncClient()
         self.extra = {"cache_prompt": True, "chat_template_kwargs": {"enable_thinking": False}, **(extra or {})}
+        # Sampling: tool-loop steps are the engine's "structured" profile (X-Hermes-Sampler). The
+        # per-call ``temperature`` is sent only with honor_temperature=True (benches); otherwise the
+        # engine decides. ``sampler`` forces fields. Against a non-engine endpoint the official
+        # Gemma 4 values go out only when ``model`` is a known Gemma 4 build, else nothing.
+        self._engine, self.sampler, self.honor_temperature = engine, dict(sampler or {}), honor_temperature
 
     async def aclose(self):
         await self.http.aclose()
 
     async def chat(self, messages, *, grammar=None, tools=None, tool_choice=None, max_tokens=160, temperature=0.2, timeout=30.0) -> Reply:
-        body: dict[str, Any] = {"messages": messages, "max_tokens": max_tokens, "temperature": temperature, **self.extra}
+        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+        if self._engine is None:
+            self._engine = await detect_engine(self.http, self.base, headers)
+        samp = dict(self.sampler)
+        if self.honor_temperature:
+            samp.setdefault("temperature", temperature)
+        if not self._engine and is_known_gemma4(self.model):
+            for k, v in GEMMA4_OFFICIAL.items():
+                samp.setdefault(k, v)
+        body: dict[str, Any] = {"messages": messages, "max_tokens": max_tokens, **samp, **self.extra}
+        if self._engine:
+            headers["X-Hermes-Sampler"] = "structured"
         if self.model:
             body["model"] = self.model
         if grammar:
@@ -55,7 +74,6 @@ class OpenAIBackend:
         if tools:
             body["tools"] = tools
             body["tool_choice"] = tool_choice or "auto"
-        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         t0 = time.perf_counter()
         try:
             r = await self.http.post(self.base + "/chat/completions", json=body, headers=headers, timeout=timeout)
