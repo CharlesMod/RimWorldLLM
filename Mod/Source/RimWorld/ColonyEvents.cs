@@ -45,6 +45,7 @@ namespace HermesVoice
         {
             Instance = this;
             EventGate.Reset();
+            QuotedInteractions.Reset();
             InjuryEvents.Clear();
             EventBus.Reset();
             Pollers.Reset();
@@ -572,13 +573,82 @@ namespace HermesVoice
     }
 
     // ------------------------------------------------------------------ social
+    /// <summary>Which of the game's own interactions between two voiced colonists the mod writes words for.</summary>
+    public static class VanillaVoice
+    {
+        static string _hi, _id;
+        static HashSet<string> _high = new HashSet<string>(), _idle = new HashSet<string>();
+
+        public static InteractionPolicy.Tier Tier(string defName)
+        {
+            var s = HermesVoiceMod.Settings;
+            if (s == null) return InteractionPolicy.Tier.Skip;
+            if (!ReferenceEquals(_hi, s.interactionHigh) && _hi != s.interactionHigh) { _hi = s.interactionHigh; _high = InteractionPolicy.ParseList(_hi); }
+            if (!ReferenceEquals(_id, s.interactionIdle) && _id != s.interactionIdle) { _id = s.interactionIdle; _idle = InteractionPolicy.ParseList(_id); }
+            return InteractionPolicy.Classify(defName, _high, _idle);
+        }
+
+        public static bool Decide(Pawn a, Pawn b, InteractionDef def, out InteractionPolicy.Tier tier)
+        {
+            tier = InteractionPolicy.Tier.Skip;
+            var s = HermesVoiceMod.Settings;
+            if (s == null || !s.voiceVanillaSocial || a == null || b == null || def == null) return false;
+            tier = Tier(def.defName);
+            if (tier == InteractionPolicy.Tier.Skip) return false;
+            bool humans = a.RaceProps != null && b.RaceProps != null && a.RaceProps.Humanlike && b.RaceProps.Humanlike;
+            bool voiced = EventGate.IsColonyPawn(a, false) && EventGate.IsColonyPawn(b, false);
+            float aa = a.ageTracker != null ? a.ageTracker.AgeBiologicalYearsFloat : 0f;
+            float ba = b.ageTracker != null ? b.ageTracker.AgeBiologicalYearsFloat : 0f;
+            return InteractionPolicy.Voice(true, def.defName, tier, voiced, humans, aa, ba);
+        }
+    }
+
+    // ------------------------------------------------------------------ social
+    /// <summary>
+    /// Watches the game's own interactions. For the ones the mod voices it notes the memories the interaction gave, finds
+    /// the vanilla log entry, and puts both in the pending table under a reference carried by the event; the line the agent
+    /// writes for it attaches later (see QuotedInteractions). The game's own effects are never touched here.
+    /// </summary>
     [HarmonyPatch(typeof(Pawn_InteractionsTracker), nameof(Pawn_InteractionsTracker.TryInteractWith))]
     public static class Patch_Social
     {
         static AccessTools.FieldRef<Pawn_InteractionsTracker, Pawn> _pawn;
 
+        sealed class Snap
+        {
+            public Pawn Initiator;
+            public InteractionPolicy.Tier Tier;
+            public HashSet<Thought_Memory> Before = new HashSet<Thought_Memory>();
+        }
+
+        static void Collect(Pawn p, HashSet<Thought_Memory> into)
+        {
+            var m = p?.needs?.mood?.thoughts?.memories?.Memories;
+            if (m != null) foreach (var t in m) into.Add(t);
+        }
+
+        [HarmonyPrefix]
+        public static void Prefix(Pawn_InteractionsTracker __instance, Pawn recipient, InteractionDef intDef, out object __state)
+        {
+            __state = null;
+            try
+            {
+                if (_pawn == null) _pawn = AccessTools.FieldRefAccess<Pawn_InteractionsTracker, Pawn>("pawn");
+                var initiator = _pawn(__instance);
+                InteractionPolicy.Tier tier;
+                if (!FastCheck() || !VanillaVoice.Decide(initiator, recipient, intDef, out tier)) return;
+                var snap = new Snap { Initiator = initiator, Tier = tier };
+                Collect(initiator, snap.Before);
+                Collect(recipient, snap.Before);
+                __state = snap;
+            }
+            catch (Exception e) { Log.Warning("[HermesVoice] social prefix: " + e.Message); }
+        }
+
+        static bool FastCheck() { return EventGate.GameLive() && EventGate.KindEnabled(EventKind.Social); }
+
         [HarmonyPostfix]
-        public static void Postfix(Pawn_InteractionsTracker __instance, bool __result, Pawn recipient, InteractionDef intDef)
+        public static void Postfix(Pawn_InteractionsTracker __instance, bool __result, Pawn recipient, InteractionDef intDef, object __state)
         {
             EventPayload.Safe("social", () =>
             {
@@ -586,6 +656,7 @@ namespace HermesVoice
                 if (_pawn == null) _pawn = AccessTools.FieldRefAccess<Pawn_InteractionsTracker, Pawn>("pawn");
                 var initiator = _pawn(__instance);
                 if (!EventGate.Wanted(EventKind.Social, initiator)) return;
+                var snap = __state as Snap;
                 var spec = new EventSpec
                 {
                     Type = "social", Map = initiator.MapHeld, At = initiator.PositionHeld, Severity = 0.1f,
@@ -593,7 +664,44 @@ namespace HermesVoice
                     Data = new JObject { ["interaction"] = intDef.defName, ["interaction_label"] = intDef.label }
                 };
                 spec.Involve(initiator, "initiator").Involve(recipient, "recipient");
-                EventGate.Emit(EventKind.Social, initiator, spec);
+                if (snap == null)
+                {
+                    EventGate.Emit(EventKind.Social, initiator, spec);
+                    return;
+                }
+
+                // A voiced vanilla interaction: the line must be about what the game wrote.
+                var pending = new VanillaPending { Initiator = initiator, Recipient = recipient };
+                var entries = Find.PlayLog.AllEntries;
+                for (int i = 0; i < entries.Count && i < 6; i++)
+                {
+                    var e = entries[i] as PlayLogEntry_Interaction;
+                    if (e == null || e.GetType() != typeof(PlayLogEntry_Interaction)) continue;
+                    if (Reflect.Get<InteractionDef>(e, "intDef") == intDef && Reflect.Get<Pawn>(e, "initiator") == initiator && Reflect.Get<Pawn>(e, "recipient") == recipient) { pending.Entry = e; break; }
+                }
+                string sentence = pending.Entry != null ? pending.Entry.ToGameStringFromPOV(initiator, false) : null;
+                var fresh = new HashSet<Thought_Memory>();
+                Collect(initiator, fresh);
+                Collect(recipient, fresh);
+                foreach (var t in fresh)
+                    if (!snap.Before.Contains(t) && (t.otherPawn == initiator || t.otherPawn == recipient)) pending.Thoughts.Add(t);
+                if (pending.Entry == null && pending.Thoughts.Count == 0) { EventGate.Emit(EventKind.Social, initiator, spec); return; }
+
+                int now = Find.TickManager.TicksGame;
+                QuotedInteractions.Pending.Sweep(now, QuotedInteractions.WindowTicks);
+                string vref = QuotedInteractions.NewRef();
+                QuotedInteractions.Pending.Register(vref, initiator.thingIDNumber, recipient.thingIDNumber, now, pending);
+                bool high = snap.Tier == InteractionPolicy.Tier.High;
+                spec.Severity = high ? 0.5f : 0.26f;
+                var d = spec.Data;
+                d["vanilla"] = true;
+                d["ref"] = vref;
+                d["tier"] = high ? "high" : "idle";
+                d["vanilla_text"] = sentence ?? "";
+                d["window_ticks"] = QuotedInteractions.WindowTicks;
+                // Consequential interactions skip the per-initiator social cooldown; chitchat keeps it.
+                if (high) EventBus.Publish(spec);
+                else if (!EventGate.Emit(EventKind.Social, initiator, spec)) QuotedInteractions.Pending.TryAttach(vref, -9, -9, now, 0, out pending);
             });
         }
     }

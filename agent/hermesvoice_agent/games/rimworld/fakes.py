@@ -139,6 +139,9 @@ class FakeBridge:
             if lis is not None and lis not in self.pawns:
                 return self._err(409, "conflict", "listener not available")
             refusal = None
+            vref = body.get("vanilla_ref")
+            if vref:                      # the real mod attaches the line to the vanilla entry and applies no effect
+                intent = "none"
             if intent == "gossip" and (about is None or about in (lis, pid) or lis is None):
                 refusal = "no_about"
             elif intent != "none" and self.config.get("effects") == "off":
@@ -151,7 +154,9 @@ class FakeBridge:
                 self.pair_effects[k] = self.pair_effects.get(k, 0) + 1
                 if self.pair_effects[k] > self.pair_cap:
                     refusal = "pair_cap"
-            if refusal:            # the bubble still shows; only the effect is refused
+            if vref:
+                res = {"applied": {"bubble": True, "log": True, "effect": None, "thoughts": [], "attached": "attached"}}
+            elif refusal:            # the bubble still shows; only the effect is refused
                 res = {"refused": {"effect": refusal}}
             else:
                 res = {"applied": {"bubble": True, "log": True, "effect": intent, "thoughts": []}}

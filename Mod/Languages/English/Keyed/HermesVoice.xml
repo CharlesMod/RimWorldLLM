@@ -3,6 +3,21 @@
   <!-- Conversation log -->
   <HV_LogLine>{0}: "{1}"</HV_LogLine>
   <HV_LogLineTo>{0} to {1}: "{2}"</HV_LogLineTo>
+  <HV_LogEffect_kind>{0} said something kind to {1}: "{2}"</HV_LogEffect_kind>
+  <HV_LogEffect_comfort>{0} comforted {1}: "{2}"</HV_LogEffect_comfort>
+  <HV_LogEffect_slight>{0} slighted {1}: "{2}"</HV_LogEffect_slight>
+  <HV_LogEffect_insult>{0} insulted {1}: "{2}"</HV_LogEffect_insult>
+  <HV_LogEffect_confide>{0} confided in {1}: "{2}"</HV_LogEffect_confide>
+  <HV_LogEffect_gossip>{0} gossiped to {1}: "{2}"</HV_LogEffect_gossip>
+  <HV_LogEffect_boast>{0} boasted to {1}: "{2}"</HV_LogEffect_boast>
+  <HV_LogEffect_complain>{0} complained to {1}: "{2}"</HV_LogEffect_complain>
+  <HV_LogLeadIn>{0}: "{1}"</HV_LogLeadIn>
+  <HV_QuoteThought>{0} by {1}: "{2}"</HV_QuoteThought>
+  <HV_QuoteNoSpeaker>{0}: "{1}"</HV_QuoteNoSpeaker>
+  <HV_Quotes_Show>Show quotes in thoughts and log</HV_Quotes_Show>
+  <HV_Quotes_ShowTip>Thoughts and log entries made by a spoken line show the line itself.</HV_Quotes_ShowTip>
+  <HV_Quotes_Vanilla>Voice the game's own social interactions</HV_Quotes_Vanilla>
+  <HV_Quotes_VanillaTip>When two voiced colonists have a vanilla insult, slight, kind words, chat and so on, the mod writes the words for it. The game's own effects stay as they are.</HV_Quotes_VanillaTip>
   <HV_LogTitle>Conversation log</HV_LogTitle>
   <HV_LogFilterAll>All pawns</HV_LogFilterAll>
   <HV_LogFilterLabel>Pawn:</HV_LogFilterLabel>
@@ -23,6 +38,7 @@
   <HV_Refused_not_negative>listener had nothing to be comforted about</HV_Refused_not_negative>
   <HV_Refused_no_about>no valid subject for gossip</HV_Refused_no_about>
   <HV_Refused_pair_cap>daily limit for this pair</HV_Refused_pair_cap>
+  <HV_Refused_vanilla_interaction>the game already applied its own effect</HV_Refused_vanilla_interaction>
   <HV_Refused_stack_full>the listener already has this thought</HV_Refused_stack_full>
   <!-- Chronicle tab of the Voices window -->
   <HV_TabConversation>Conversation</HV_TabConversation>
