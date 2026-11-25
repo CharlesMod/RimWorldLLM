@@ -188,11 +188,18 @@ class SimTransport(httpx.AsyncBaseTransport):
     def __init__(self, fb: FakeBridge, rng: random.Random, attach: "AttachModel", loop_time):
         self.fb, self.rng, self.attach, self.now = fb, rng, attach, loop_time
         self.says: list[dict] = []
+        self.thoughts: list[dict] = []      # every /thought: real time, game tick, ticks per real second then
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         await asyncio.sleep(self.rng.uniform(0.008, 0.03))
         is_say = request.method == "POST" and request.url.path == "/say"
         resp = self.fb.transport.handle_request(request)
+        if request.method == "POST" and request.url.path == "/thought" and resp.status_code == 200:
+            import json
+            body = json.loads(request.content)
+            if body.get("kind", "thought") == "thought":
+                self.thoughts.append({"real": self.now(), "tick": self.fb.tick, "pawn": body.get("pawn"),
+                                      "tps": float(TICKS_PER_S[self.fb.speed])})
         if is_say:
             import json
             body = json.loads(request.content)
@@ -202,6 +209,23 @@ class SimTransport(httpx.AsyncBaseTransport):
                 rec["attach"] = self.attach.try_attach(body["vanilla_ref"], self.fb.tick, self.now())
             self.says.append(rec)
         return resp
+
+
+def clouds_shown(thoughts: list[dict], *, real_gaps: bool, per_pawn_s: int = 120, global_s: int = 20) -> int:
+    """The mod's ThoughtPacing as a model (no speech balloons in the way): a cloud shows when this pawn's and the
+    global gap have passed. ``real_gaps`` False = the old rule (gaps in game ticks, so they shrink as speed rises);
+    True = the gaps are real seconds at the current speed (ThoughtPacing.GapTicks)."""
+    last: dict = {}
+    last_g = -10**12
+    n = 0
+    for t in thoughts:
+        scale = max(60.0, t["tps"]) if real_gaps else 60.0
+        pp, gg = per_pawn_s * scale, global_s * scale
+        if t["pawn"] in last and t["tick"] - last[t["pawn"]] < pp or t["tick"] - last_g < gg:
+            continue
+        last[t["pawn"]] = last_g = t["tick"]
+        n += 1
+    return n
 
 
 @dataclass
@@ -262,6 +286,10 @@ class Metrics:
     shed: int = 0
     lease_log: dict = field(default_factory=dict)
     said_by_kind: dict = field(default_factory=dict)
+    thoughts: int = 0                  # thought jobs that reached the bridge
+    clouds_old: int = 0                # clouds shown under tick-count gaps (before)
+    clouds: int = 0                    # clouds shown under real-second gaps (now)
+    clouds_per_real_min: float = 0.0
     crashed: str = ""
 
 
@@ -296,6 +324,7 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
         queue_samples: list[int] = []
         convs: list[tuple[str, int]] = []
         ingested: set[int] = set()
+        mem_check = [0, 0]                         # witnessed (expected, missing) right after ingest
         orig_say, orig_fin, orig_ingest = d._say, d.finish_conversation, d.ingest
 
         async def spy_say(aid, sp, **kw):
@@ -312,7 +341,14 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
         async def spy_ingest(events_):
             for e in events_:
                 ingested.add(int(e["seq"]))
-            return await orig_ingest(events_)
+            r = await orig_ingest(events_)
+            for e in events_:                      # right after ingest: later upkeep may forget by design
+                for w in e.get("witnesses", []):
+                    if int(w) in d.minds:
+                        mem_check[0] += 1
+                        if not any(mm.event_seq == e["seq"] for mm in d.minds[int(w)].memories):
+                            mem_check[1] += 1
+            return r
         d._say, d.finish_conversation, d.ingest = spy_say, spy_fin, spy_ingest      # type: ignore[method-assign]
         await d.start()
         produced: list[dict] = []
@@ -377,6 +413,10 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
         k = "vanilla" if s_["body"].get("vanilla_ref") else ("conv" if s_["body"].get("conversation_id") else "line")
         m.said_by_kind[k] = m.said_by_kind.get(k, 0) + 1
     m.queue_expired = q_expired
+    m.thoughts = len(tr.thoughts)
+    m.clouds_old = clouds_shown(tr.thoughts, real_gaps=False)
+    m.clouds = clouds_shown(tr.thoughts, real_gaps=True)
+    m.clouds_per_real_min = m.clouds / max(1e-9, real / 60)
     m.dropped_late = len(late)                 # generated, then too late to show
     m.shed = q_expired                         # never generated: expired in the queue behind more important lines
     m.late_share = m.dropped_late / max(1, m.dropped_late + m.lines)
@@ -395,14 +435,7 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
     m.idle_days = {k: sorted(v) for k, v in m.idle_days.items()}
     said_texts = {(s["actor"], s["text"]) for s in d.said}
     m.effects_for_dropped = sum(1 for s in ok_says if s["body"].get("intent", "none") != "none" and (s["body"]["pawn"], s["body"]["text"]) not in said_texts)
-    exp = 0
-    miss = 0
-    for e in produced:
-        for w in e["witnesses"]:
-            if w in d.minds:
-                exp += 1
-                if not any(mm.event_seq == e["seq"] for mm in d.minds[w].memories):
-                    miss += 1
+    exp, miss = mem_check
     m.memories_expected, m.memories_missed = exp, miss
     hi = [e for e in events if e.data.get("vanilla") and e.data.get("tier") == "high"]
     m.vanilla_high = len(hi)
@@ -427,7 +460,8 @@ def simulate(speed: int | Schedule = 1, *, events: list[SimEvent] | None = None,
 COLUMNS = [("lines", "lines"), ("lines_per_game_hour", "ln/ghr"), ("lines_per_real_min", "ln/min"), ("late_share", "late%"), ("shed", "shed"),
            ("delay_game_median", "dly50"), ("delay_game_p90", "dly90"), ("convs_done", "conv ok"), ("convs_cut", "cut"),
            ("events_lost", "lost"), ("ring_gaps", "gaps"), ("queue_max", "qmax"), ("slot_util", "util"),
-           ("memories_missed", "memmiss"), ("attach_share", "attach"), ("effects_for_dropped", "fx-drop")]
+           ("memories_missed", "memmiss"), ("attach_share", "attach"), ("effects_for_dropped", "fx-drop"),
+           ("clouds_old", "cl-old"), ("clouds", "clouds"), ("clouds_per_real_min", "cl/min")]
 
 
 def table(ms: list[Metrics]) -> str:
