@@ -168,6 +168,9 @@
   <HV_Bubbles_Opacity>Bubble opacity: {0}%</HV_Bubbles_Opacity>
   <HV_Bubbles_Lettering>Comic lettering (ALL CAPS)</HV_Bubbles_Lettering>
   <HV_Bubbles_Duration>Bubble duration (seconds)</HV_Bubbles_Duration>
+  <HV_Wants_Enable>Pawns act on their wants</HV_Wants_Enable>
+  <HV_Wants_EnableTip>In quiet moments a pawn may decide to seek someone out for a chat or to keep clear of someone for a while. Only ever small social moves; anything more important interrupts them.</HV_Wants_EnableTip>
+  <HV_Wants_AvoidHours>How long a pawn avoids someone: {0} game hours</HV_Wants_AvoidHours>
   <HV_Thoughts_Show>Show pawn thoughts on the map</HV_Thoughts_Show>
   <HV_Thoughts_ShowTip>Short thoughts appear as faint cloud balloons over a pawn who is not speaking. The full text stays in the Mind tab. Diary entries never appear on the map.</HV_Thoughts_ShowTip>
   <HV_Thoughts_Opacity>Thought cloud opacity: {0}% of bubble opacity</HV_Thoughts_Opacity>

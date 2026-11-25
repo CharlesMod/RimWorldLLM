@@ -15,6 +15,7 @@ from .adapter import GameAdapter
 from .director import Director
 from .endpoint_test import test_endpoint
 from .llm import HttpLLM
+from .toolloop import OpenAIBackend
 
 
 def _cfg(args) -> Config:
@@ -54,6 +55,17 @@ async def wait_for_bridge_json(path: Path, timeout: float = 0.0, *, poll: float 
         await sleep(poll)
 
 
+def make_tool_backend(cfg: Config) -> OpenAIBackend | None:
+    """The wants tool-loop backend: the same engine endpoint as the line calls, or None when ``wants`` is off.
+    Sampler fields are forced only where the config forces them (None = the engine decides)."""
+    if not cfg.wants:
+        return None
+    forced = {k: getattr(cfg.llm, k) for k in ("temperature", "top_k", "top_p", "min_p", "repeat_penalty")
+              if getattr(cfg.llm, k) is not None}
+    return OpenAIBackend(cfg.llm.base_url, model=cfg.llm.model, api_key=cfg.llm.api_key,
+                         engine=cfg.llm.engine, sampler=forced)
+
+
 async def _run(cfg: Config, adapter: GameAdapter, bridge_timeout: float = 0.0) -> int:
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
     if not cfg.bridge_url:
@@ -64,9 +76,13 @@ async def _run(cfg: Config, adapter: GameAdapter, bridge_timeout: float = 0.0) -
     bridge = BridgeClient.from_config(cfg, adapter.protocol, adapter.default_bridge_json())
     llm = HttpLLM(cfg.llm, CallLog(cfg.data_dir / "calls.jsonl"))
     d = Director(cfg, bridge, llm, adapter)
+    tools = make_tool_backend(cfg)
+    d.tool_backend, d.tool_mode = tools, "auto"
     try:
         await d.run()
     finally:
+        if tools is not None:
+            await tools.aclose()
         await bridge.aclose()
         await llm.aclose()
     return 0

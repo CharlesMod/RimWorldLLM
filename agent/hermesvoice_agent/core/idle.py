@@ -176,7 +176,7 @@ class IdleRunner:
         is set, off while ambient talk is paused (speed), at least the ambient per-actor game gap between decisions,
         and thinned by the player's talk-frequency setting."""
         d = self.d
-        if d.tool_backend is None or d.leases.ambient_paused(d.bridge.env.speed):
+        if d.tool_backend is None or d.bridge_cfg.get("wants_enabled") is False or d.leases.ambient_paused(d.bridge.env.speed):
             return []
         freq = float(d.bridge_cfg.get("talk_frequency", 1.0))
         if freq <= 0 or d.bridge_cfg.get("effects") == "off":
