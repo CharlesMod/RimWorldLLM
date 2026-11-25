@@ -34,7 +34,8 @@ def remember_event(minds: dict[int, Mind], event: dict, adapter, now_time: int |
         imp = max(0.0, min(1.0, adapter.importance(event, int(pid))))
         mem = Memory(
             id=mind.next_mem_id(), game=game, text=adapter.first_person(event, int(pid)),
-            source="saw", confidence=1.0, visibility="public", importance=imp,
+            source="saw", confidence=1.0, importance=imp,
+            visibility="private" if adapter.is_private(event, int(pid)) else "public",
             pinned=adapter.is_pinned(event, int(pid), mind.firsts), people=people,
             etype=event.get("type", ""), event_seq=event.get("seq"))
         mind.memories.append(mem)
@@ -77,25 +78,127 @@ def select_memories(mind: Mind, now_time: int, scene_people: set[int], scene_tex
     return sorted(chosen, key=lambda m: (m.game, m.id))   # stable order for the prompt
 
 
+def weight_sorted(mind: Mind, now_time: int, day: int = DEFAULT_DAY_UNITS) -> list[Memory]:
+    """Memories, heaviest (decayed importance, pinned first) first."""
+    return sorted(mind.memories, key=lambda m: (-mind.memory_weight(m, now_time, day), -m.game, m.id))
+
+
+# ---- upkeep: merge, decay, pin ------------------------------------------------------------
+def similarity(a: Memory, b: Memory) -> float:
+    """Cheap: shared actors (Jaccard) weighted 0.4 plus word overlap (Jaccard) weighted 0.6."""
+    pa, pb = set(a.people), set(b.people)
+    pj = len(pa & pb) / len(pa | pb) if pa | pb else 0.0
+    wa, wb = keywords(a.text), keywords(b.text)
+    wj = len(wa & wb) / len(wa | wb) if wa | wb else 0.0
+    return 0.4 * pj + 0.6 * wj
+
+
 def merge_old_memories(mind: Mind, now_time: int, older_than_days: float = 8.0,
-                       day: int = DEFAULT_DAY_UNITS) -> int:
-    """Merge similar old ordinary memories (same event type) into one summary line, then drop them."""
+                       day: int = DEFAULT_DAY_UNITS, threshold: float = 0.5, min_group: int = 3) -> int:
+    """Merge clusters of similar old ordinary memories into one summary line, then drop the originals.
+    Pinned memories and anything private or told-to-some are left alone. Returns how many were folded."""
     cutoff = now_time - older_than_days * day
-    groups: dict[str, list[Memory]] = {}
-    for m in mind.memories:
-        if not m.pinned and m.game < cutoff and not m.summary_of and m.etype:
-            groups.setdefault(m.etype, []).append(m)
+    pool = [m for m in mind.memories
+            if not m.pinned and m.game < cutoff and not m.summary_of and m.visibility == "public"]
+    pool.sort(key=lambda m: (m.game, m.id))
+    clusters: list[list[Memory]] = []
+    for m in pool:
+        best = max(clusters, key=lambda c: min(similarity(m, x) for x in c), default=None)
+        if best is not None and min(similarity(m, x) for x in best) >= threshold:
+            best.append(m)
+        else:
+            clusters.append([m])
     merged = 0
-    for et, ms in groups.items():
-        if len(ms) < 3:
+    for ms in clusters:
+        if len(ms) < min_group:
             continue
         for m in ms:
             mind.memories.remove(m)
         top = max(ms, key=lambda m: m.importance)
+        et = next((m.etype for m in ms if m.etype), "")
+        what = et.replace("_", " ") if et and all(m.etype == et for m in ms) else "similar"
         mind.memories.append(Memory(
             id=mind.next_mem_id(), game=max(m.game for m in ms),
-            text=f"Over those days there were {len(ms)} {et.replace('_', ' ')} moments; the worst: {top.text}",
+            text=f"Over those days there were {len(ms)} {what} moments; the worst: {top.text}",
             importance=top.importance * 0.8, people=sorted({p for m in ms for p in m.people}),
-            etype=et, summary_of=len(ms)))
+            etype=et if what != "similar" else "summary", summary_of=len(ms)))
         merged += len(ms)
     return merged
+
+
+def drop_decayed(mind: Mind, now_time: int, floor: float = 0.03, day: int = DEFAULT_DAY_UNITS) -> int:
+    """Drop unpinned memories whose decayed weight fell under the floor."""
+    dead = [m for m in mind.memories if not m.pinned and mind.memory_weight(m, now_time, day) < floor]
+    for m in dead:
+        mind.memories.remove(m)
+    return len(dead)
+
+
+def upkeep(mind: Mind, now_time: int, day: int = DEFAULT_DAY_UNITS, floor: float = 0.03,
+           threshold: float = 0.5) -> dict:
+    """Merge similar old memories, then drop the decayed ones. Deterministic, no model call."""
+    merged = merge_old_memories(mind, now_time, day=day, threshold=threshold)
+    dropped = drop_decayed(mind, now_time, floor, day)
+    return {"merged": merged, "dropped": dropped}
+
+
+# ---- gossip, confiding and secrets --------------------------------------------------------
+GOSSIP_CONFIDENCE = 0.5
+CONFIDE_CONFIDENCE = 0.7
+
+
+def _source_memory(speaker: Mind, line: str, about: int | None, private: bool) -> Memory | None:
+    """The speaker's own memory a told line most likely draws on."""
+    words = keywords(line)
+    best, score = None, (-1.0, -1.0)
+    for m in speaker.memories:
+        if m.source == "told" and not private:
+            continue
+        if private and m.visibility != "private":
+            continue
+        if about is not None and not private and about not in m.people:
+            continue
+        sc = (len(words & keywords(m.text)) / max(1, len(words)), m.importance)
+        if sc > score:
+            best, score = m, sc
+    return best
+
+
+def record_told_line(minds: dict[int, Mind], speaker: int, listener: int, names: dict[int, str], line: str,
+                     game: int, visibility: str, about: int | None = None) -> Memory | None:
+    """A gossip (``public``) or confide (``private``) line the game applied.
+
+    The listener gets a ``told by speaker`` memory at reduced confidence. The speaker's source memory
+    gets visibility bookkeeping: told_to grows; a confided private memory becomes ``told to [listener]``."""
+    lm = minds.get(listener)
+    if lm is None:
+        return None
+    sname, lname = names.get(speaker, "someone"), names.get(listener, "someone")
+    private = visibility == "private"
+    sm = minds.get(speaker)
+    src = _source_memory(sm, line, about, private) if sm is not None else None
+    conf = (CONFIDE_CONFIDENCE if private else GOSSIP_CONFIDENCE) * (src.confidence if src else 1.0)
+    people = [speaker] + ([about] if about is not None else [])
+    mem = remember_told(lm, speaker, sname, f"{sname} told me: {line}",
+                        game, importance=max(0.3, 0.6 * src.importance) if src else 0.3, people=people)
+    mem.confidence, mem.visibility = round(conf, 3), visibility
+    if src is not None:
+        if lname not in src.told_to:
+            src.told_to.append(lname)
+        if private and src.visibility == "private":
+            src.visibility = "told"
+    return mem
+
+
+def can_state(m: Memory, listener_name: str | None) -> bool:
+    """May this memory be said outright to this listener?"""
+    if m.visibility == "public":
+        return True
+    if m.visibility == "told":
+        return listener_name is not None and listener_name in m.told_to
+    return False                              # private: hint, never state
+
+
+def secret_texts(mind: Mind, listener_name: str | None) -> list[str]:
+    """Memory texts that must not be quoted to this listener (hinting is fine, quoting is not)."""
+    return [m.text for m in mind.memories if not can_state(m, listener_name)]

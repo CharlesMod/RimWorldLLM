@@ -15,6 +15,15 @@ _CANNED = {
 }
 
 
+_DEFAULTS = {
+    "reflect": '{"bio": "The recent days have left a mark on me, and I am changing slowly.", '
+               '"wants": ["Get through the week"], "relations": [], "merge": []}',
+    "diary": "Another day behind me. I kept my head down and got through it.",
+    "chronicle": "The community got through another day with what it had, and little more than that.",
+    "chronicle_summary": "Earlier days: the community endured and kept working.",
+}
+
+
 @dataclass
 class FakeLLM:
     """Deterministic: a line is picked by hashing (actor, turn count, last user text).
@@ -26,12 +35,13 @@ class FakeLLM:
 
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None, grammar: str | None = None,
-                       temperature: float | None = None, actor: int | None = None) -> Completion:
+                       temperature: float | None = None, actor: int | None = None, json_schema: dict | None = None) -> Completion:
         from .llm import LLMError
         if self.fail:
             raise LLMError("fake failure")
         flat = "\n".join(t for _, t in messages)
-        self.calls.append({"kind": kind, "slot": slot, "messages": messages, "grammar": grammar, "actor": actor})
+        self.calls.append({"kind": kind, "slot": slot, "messages": messages, "grammar": grammar, "actor": actor,
+                           "json_schema": json_schema})
         q = self.script.get(kind)
         if q:
             text = q.pop(0)
@@ -39,6 +49,8 @@ class FakeLLM:
             last_line = messages[-2][1] if len(messages) >= 2 else ""
             text = ("kind" if re.search(r"\b(thanks|friend|sit|eat)\b", last_line, re.I) else
                     "insult" if re.search(r"\b(idiot|useless|fool)\b", last_line, re.I) else "none")
+        elif kind in _DEFAULTS:
+            text = _DEFAULTS[kind]
         elif kind == "line":
             h = int(hashlib.sha1((str(actor) + flat[-200:]).encode()).hexdigest(), 16)
             text = _CANNED["line"][h % len(_CANNED["line"])]

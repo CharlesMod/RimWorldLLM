@@ -51,9 +51,32 @@ def name_tokens(full_name: str) -> set[str]:
     return {t for t in re.findall(r"[A-Za-z][A-Za-z']*", full_name.replace("'", " ")) if len(t) > 1}
 
 
+SECRET_RUN = 5     # consecutive words shared with a private memory that count as quoting it
+
+
+def _norm_words(t: str) -> list[str]:
+    return re.findall(r"[a-z0-9']+", t.lower())
+
+
+def leaks_secret(text: str, secrets: list[str]) -> bool:
+    """True if the line quotes a secret verbatim: a run of SECRET_RUN words in a row (or the whole of a
+    shorter secret). Hinting (different words) passes."""
+    words = _norm_words(text)
+    for sec in secrets:
+        sw = _norm_words(sec)
+        if not sw:
+            continue
+        n = min(SECRET_RUN, len(sw))
+        grams = {tuple(sw[i:i + n]) for i in range(len(sw) - n + 1)}
+        if any(tuple(words[i:i + n]) in grams for i in range(len(words) - n + 1)):
+            return True
+    return False
+
+
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
-                  max_words: int = MAX_WORDS, common_words: set[str] | None = None) -> Sanitized:
+                  max_words: int = MAX_WORDS, common_words: set[str] | None = None,
+                  secrets: list[str] | None = None) -> Sanitized:
     """
     speaker_names: the speaker's own name tokens.
     known_names:   name tokens of actors the speaker knows (present, relations, memories).
@@ -87,6 +110,8 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
         return Sanitized(None, "refusal")
     if len(t.split()) > max_words:
         return Sanitized(None, "too_long")
+    if secrets and leaks_secret(t, secrets):
+        return Sanitized(None, "leaks_secret")
     bad = _bad_name(t, speaker_names, known_names, all_names, prompt_words or set(),
                     {w.lower() for w in (common_words or set())})
     if bad:
@@ -122,3 +147,15 @@ def _bad_name(t: str, me: set[str], known: set[str], all_names: set[str], prompt
 
 def prompt_cap_words(prefix: str) -> set[str]:
     return set(_NAME_TOKEN.findall(prefix))
+
+
+def sanitize_prose(raw: str, *, known_names: set[str], all_names: set[str], prompt_words: set[str],
+                   common_words: set[str] | None = None, speaker_names: set[str] | None = None,
+                   min_words: int = 6, max_words: int = 140) -> Sanitized:
+    """A paragraph (diary entry, chronicle, bio): one block, refusals and invented names dropped."""
+    flat = " ".join(strip_thought(raw).split())
+    s = sanitize_line(flat, speaker_names=speaker_names or set(), known_names=known_names, all_names=all_names,
+                      prompt_words=prompt_words, max_words=max_words, common_words=common_words)
+    if s.ok and len(s.text.split()) < min_words:
+        return Sanitized(None, "too_short")
+    return s

@@ -32,7 +32,12 @@ class VoiceCard(BaseModel):
     llm_examples: bool = False                          # examples written by the optional LLM pass
 
 
+BIO_HISTORY_KEEP = 10
+DIARY_KEEP = 7
+
+
 class BioDiff(BaseModel):
+    rev: int = 0
     game: int
     before: str
     after: str
@@ -64,6 +69,20 @@ class Relation(BaseModel):
     updated_time: int = 0
 
 
+class CRel(BaseModel):
+    """One line of block C's relations digest, frozen at the last reflection."""
+    name: str = ""
+    opinion: int | None = None
+    feeling: str = ""
+    history: str = ""
+
+
+class DiaryEntry(BaseModel):
+    day: int
+    game: int
+    text: str
+
+
 class Mind(BaseModel):
     schema_v: int = SCHEMA
     actor_id: int
@@ -72,6 +91,10 @@ class Mind(BaseModel):
     voice: VoiceCard = Field(default_factory=VoiceCard)
     evolving_bio: str = ""
     bio_history: list[BioDiff] = Field(default_factory=list)
+    bio_rev: int = 0
+    c_relations: list[CRel] = Field(default_factory=list)   # block C digest; written only at reflection
+    diary: list[DiaryEntry] = Field(default_factory=list)   # last DIARY_KEEP entries
+    last_diary_day: int = -1
     wants: list[str] = Field(default_factory=list)
     memories: list[Memory] = Field(default_factory=list)
     relations: dict[str, Relation] = Field(default_factory=dict)   # key: str(actor id)
@@ -96,8 +119,9 @@ class Mind(BaseModel):
 
     def add_bio_diff(self, game: int, new_text: str) -> None:
         if new_text != self.evolving_bio:
-            self.bio_history.append(BioDiff(game=game, before=self.evolving_bio, after=new_text))
-            self.bio_history = self.bio_history[-8:]
+            self.bio_rev += 1
+            self.bio_history.append(BioDiff(rev=self.bio_rev, game=game, before=self.evolving_bio, after=new_text))
+            self.bio_history = self.bio_history[-BIO_HISTORY_KEEP:]
             self.evolving_bio = new_text
 
     def undo_bio(self) -> bool:
@@ -105,6 +129,17 @@ class Mind(BaseModel):
             return False
         self.evolving_bio = self.bio_history.pop().before
         return True
+
+    def freeze_relations(self, limit: int = 6) -> None:
+        """Refresh block C's relations digest from the live relations. Reflection only."""
+        rels = sorted(self.relations.items(), key=lambda kv: (-abs(kv[1].opinion or 0), kv[0]))[:limit]
+        self.c_relations = [CRel(name=r.name, opinion=r.opinion, feeling=r.feeling, history=r.history)
+                            for _, r in rels]
+
+    def add_diary(self, day: int, game: int, text: str) -> None:
+        self.diary.append(DiaryEntry(day=day, game=game, text=text))
+        self.diary = self.diary[-DIARY_KEEP:]
+        self.last_diary_day = day
 
     # ---- serialisation --------------------------------------------------
     def to_blob(self, now_time: int = 0, day: int = DEFAULT_DAY_UNITS, limit: int = BLOB_TARGET) -> dict:
@@ -121,6 +156,8 @@ class Mind(BaseModel):
                     break
                 self.memories.remove(m)
         if size() > limit:
+            self.diary = self.diary[-3:]
+        if size() > limit:
             self.bio_history = self.bio_history[-2:]
         if size() > limit:
             self.bio_history = []
@@ -130,6 +167,8 @@ class Mind(BaseModel):
                 if size() <= limit:
                     break
                 self.memories.remove(m)
+        if size() > limit:
+            self.diary = []
         if size() > limit:
             self.relations = dict(sorted(self.relations.items(),
                                          key=lambda kv: -kv[1].updated_time)[:20])

@@ -36,6 +36,34 @@ class RimWorldAdapter:
     narrator_prompt = ("You are a dry narrator of a RimWorld colony. Write one short third-person line "
                        "about what just happened. No speech, no invention.")
 
+    reflection_system = (
+        "You are the quiet part of one RimWorld colonist that looks back over recent days and decides who they "
+        "are becoming. Write in the first person, plain and dry, the way the colonist thinks, never the way a "
+        "writer would. Stay with what the memories say. Never invent a person, place or event, and name nobody "
+        "who is not in the lists below.")
+    reflection_request = (
+        "Reply with JSON only. bio: who you are becoming, 2 to 4 short first-person sentences (under 70 words), "
+        "changed only by what the memories show. wants: 1 to 3 short aims you hold now (for example resent X, win "
+        "Y's respect, get off kitchen duty). relations: for people who mattered, who (first name as listed), "
+        "feeling (one short line) and history (one short line). merge: groups of memory ids (two or more) that "
+        "say nearly the same thing, with one first-person summary line each; never include a [pinned] memory.")
+    diary_system = (
+        "You are one RimWorld colonist writing a short private diary entry at the end of the day. First person, "
+        "plain, dry, blunt; the colonist's own register. No moralising, no flowery language.")
+    diary_request = (
+        "Write today's diary entry: 2 to 4 sentences, under 70 words, one paragraph, only about what is listed "
+        "under what happened today. Do not name anyone who is not mentioned there.")
+    chronicle_system = (
+        "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
+        "words, a little gallows humour at most. You describe only what the notes say happened. You never "
+        "propose, predict or cause events, never invent people, places or numbers, and never address the player.")
+    chronicle_request = (
+        "Write the chronicle paragraph for this day: 3 to 5 sentences, under 110 words, one paragraph. Use the "
+        "story so far for continuity only; do not repeat it.")
+    chronicle_summary_system = (
+        "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
+        "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")
+
     def __init__(self) -> None:
         self.block_a = (_HERE / "block_a.txt").read_text()
 
@@ -103,6 +131,28 @@ class RimWorldAdapter:
 
     def is_ledger_end(self, event: dict) -> bool:
         return event.get("type", "").endswith("_end")
+
+    def is_private(self, event: dict, actor_id: int) -> bool:
+        data = event.get("data") or {}
+        if data.get("secret"):
+            return True
+        if data.get("betrayal"):
+            return any(int(a["id"]) == actor_id and a.get("role") in ("perpetrator", "attacker", "speaker")
+                       for a in event.get("actors", []))
+        return False
+
+    def is_major_threat(self, event: dict) -> bool:
+        return event.get("type") in ("death", "raid_start", "mental_break") or float(event.get("severity", 0)) >= 0.9
+
+    def chronicle_worthy(self, event: dict) -> bool:
+        t = event.get("type")
+        if t in ("death", "raid_start", "raid_end", "mental_break", "quest", "funeral", "lodger_arrive",
+                 "prisoner", "wedding"):
+            return True
+        return float(event.get("severity", 0)) >= 0.5 and t not in ("tend", "thought", "player_talk")
+
+    def chronicle_trigger(self, event: dict) -> bool:
+        return event.get("type") in ("death", "raid_end")
 
     def about_intents(self) -> set[str]:
         return {"gossip"}

@@ -60,6 +60,18 @@ class Config(BaseModel):
     narrator_min_gap_real_s: float = 120.0
     reflection_every_days: float = 3.0
     reflection_importance: float = 3.0
+    memory_floor: float = 0.03         # unpinned memories decayed below this weight are dropped
+    memory_merge_similarity: float = 0.5
+    reflection_max_tokens: int = 500
+    diary_enabled: bool = True
+    diary_day_fraction: float = 0.6    # write a day's entry once this much of the day has passed
+    diary_max_tokens: int = 160
+    chronicle_enabled: bool = True
+    chronicle_bridge: bool = False     # also POST /chronicle (not in the contract yet; proposal)
+    chronicle_max_tokens: int = 220
+    narrator_context_tokens: int = 6000
+    narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
+    idle_retry_real_s: float = 60.0    # backoff after a failed idle job
     use_llm_voice_cards: bool = False  # optional pass for the 3 example lines
 
     @property
