@@ -91,6 +91,14 @@ namespace HermesVoice
             return true;
         }
 
+        /// <summary>Like <see cref="CooldownOk"/> but never consumes: true when the cooldown has passed.</summary>
+        public static bool CooldownPassed(EventKind kind, int pawnId, int cooldownTicks)
+        {
+            if (cooldownTicks <= 0) return true;
+            int now = Find.TickManager.TicksGame, last;
+            return !(LastTick.TryGetValue((kind, pawnId), out last) && now - last >= 0 && now - last < cooldownTicks);
+        }
+
         public static int CooldownFor(EventKind kind)
         {
             switch (kind)

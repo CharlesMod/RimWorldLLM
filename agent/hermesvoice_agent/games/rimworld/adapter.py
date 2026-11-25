@@ -156,7 +156,7 @@ class RimWorldAdapter:
         key = str(data.get("interaction", ""))
         return {"ref": str(data["ref"]), "initiator": pair[0], "recipient": pair[1],
                 "tier": "high" if data.get("tier") == "high" else "idle",
-                "window_ticks": max(1, int(data.get("window_ticks") or 417)),
+                "window_ticks": max(1, int(data.get("window_ticks") or 417)), "window_real_s": float(data.get("window_real_s") or 0.0),
                 "sentence": str(data.get("vanilla_text") or event.get("summary", "")).strip(),
                 "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}
 

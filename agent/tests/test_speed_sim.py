@@ -106,3 +106,15 @@ def test_cloud_gaps_are_real_seconds():
     new = ss.clouds_shown(th, real_gaps=True)
     real_min = 400 * 0.5 / 60
     assert old / real_min > 20 and new / real_min <= 3.2          # 20 s global gap = at most 3 a real minute
+
+
+def test_social_fight_chain_cannot_flood_the_queue():
+    """The high tier skips the 60 s social cooldown: a chain of 60 insults between two pawns in 20 s of 3x play."""
+    chain = [ss.SimEvent(3000 + i * 30, "social", [((1, 2)[i % 2], "initiator"), ((2, 1)[i % 2], "recipient")], [1, 2, 3], 0.5,
+                         f"fight #{i}", {"vanilla": True, "ref": f"f{i}", "tier": "high", "interaction": "Insult",
+                                         "vanilla_text": "A sentence the game wrote.", "window_ticks": 417})
+             for i in range(60)]
+    m = ss.simulate(3, events=chain, days=0.2, pawns=3)
+    assert not m.crashed and m.queue_max <= 16
+    assert m.lines <= 8                                     # voiced a few times, not sixty
+    assert m.memories_missed == 0 and m.events_lost == 0

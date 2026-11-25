@@ -250,7 +250,7 @@ class Director:
         vanilla = getattr(self.adapter, "vanilla_social", lambda ev: None)(e)
         units, floor = (ex.units, ex.floor_real_s)
         if vanilla:                                  # the line must attach to the game's own entry in time
-            units, floor = min(units, vanilla["window_ticks"]), max(floor, self.cfg.vanilla_attach_floor_s)
+            units, floor = min(units, vanilla["window_ticks"]), max(floor, self.cfg.vanilla_attach_floor_s, float(vanilla.get("window_real_s", 0.0)))
         age = max(0, now.game - int(e.get("game", now.game)))
         if units is not None and age > max(units, int(floor * now.rate)):
             return                                   # a backlog event, too old to speak about

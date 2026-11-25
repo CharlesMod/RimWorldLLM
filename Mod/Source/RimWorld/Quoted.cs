@@ -233,6 +233,12 @@ namespace HermesVoice
             }
         }
 
+        /// <summary>The real-time floor in seconds: a line attaches within the game window OR this long, whichever is longer.</summary>
+        public static double RealFloorSec
+        { get { return Math.Max(0, HermesVoiceMod.Settings?.attachRealFloorSec ?? 5); } }
+
+        public static double RealNow { get { return UnityEngine.Time.realtimeSinceStartup; } }
+
         public static void Reset() { Pending.Sweep(int.MaxValue, 0); }
 
         /// <summary>Attach the line to the vanilla entry and thoughts of that interaction. False leaves everything vanilla.</summary>
@@ -240,7 +246,7 @@ namespace HermesVoice
         {
             int now = Find.TickManager.TicksGame;
             VanillaPending p;
-            var r = Pending.TryAttach(vref, speaker.thingIDNumber, listener != null ? listener.thingIDNumber : -1, now, WindowTicks, out p);
+            var r = Pending.TryAttach(vref, speaker.thingIDNumber, listener != null ? listener.thingIDNumber : -1, now, WindowTicks, out p, RealNow, RealFloorSec);
             if (r != PendingTable<VanillaPending>.Result.Attached) return r;
             string quote = Quotes.Trim(line, HermesVoiceMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars);
             if (quote.Length == 0) return PendingTable<VanillaPending>.Result.Unknown;
