@@ -7,7 +7,7 @@ namespace HermesVoice
     public class HermesVoiceMod : Mod
     {
         public static HermesVoiceMod Instance { get; private set; }
-        const string FallbackVersion = "1.0.0";
+        const string FallbackVersion = "2.0.0";
         /// <summary>Mod version, read from About.xml (modVersion) when available.</summary>
         public static string Version
         {
@@ -63,9 +63,9 @@ namespace HermesVoice
             list.Label("Agent dial-out URL (mod POSTs colony events here)");
             s.agentUrl = Widgets.TextField(list.GetRect(22f), s.agentUrl ?? "");
 
-            list.Label("Shared token (auth)");
+            list.Label("Fixed shared token (blank = random per run, read from bridge.json)");
             s.sharedToken = Widgets.TextField(list.GetRect(22f), s.sharedToken ?? "");
-            if (HermesBridge.IsExposedWithoutToken(s.bindAddress, s.sharedToken))
+            if (!HermesBridge.IsLoopback(s.bindAddress) && string.IsNullOrWhiteSpace(s.sharedToken))
             {
                 GUI.color = Color.red;
                 list.Label(HermesBridge.OpenWarning + ".");
@@ -107,7 +107,7 @@ namespace HermesVoice
             }
             if (list.ButtonText("Restart bridge"))
             {
-                HermesVoiceGameComponent.Instance?.RestartBridge();
+                HermesBridge.Start();
             }
 
             list.End();

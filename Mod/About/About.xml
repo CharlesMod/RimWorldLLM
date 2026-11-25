@@ -16,7 +16,7 @@ Setup:
 2. Run the Hermes bridge on your agent machine (see the README at https://github.com/CharlesMod/rimworld-hermes).
 3. Mod settings: set the Agent dial-out URL + shared token (both directions use the shared token).</description>
 	<packageId>charless.HermesVoice</packageId>
-	<modVersion>1.0.0</modVersion>
+	<modVersion>2.0.0</modVersion>
 	<loadedScenarios>
 		<li>Any</li>
 	</loadedScenarios>
