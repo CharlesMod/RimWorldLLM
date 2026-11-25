@@ -24,6 +24,7 @@ from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
 from .ledger import Ledger
 from .agegate import GateStats
+from .wants import WantsStats
 from .loopguard import LoopStats, find_repeat, retry_request
 from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, WorkItem
 from .llm import LLMClient, LLMError
@@ -86,6 +87,10 @@ class Director:
         self._conv_n = 0
         self.loop = LoopStats()                  # repeat guard counters and trace (core/loopguard.py)
         self.ages: dict[int, float | None] = {}      # biological age per actor; missing or None counts as a minor
+        self.tool_backend = None                 # a toolloop Backend; wants with follow-through is off while None
+        self.tool_mode = "auto"                  # toolloop protocol: auto | grammar | json | native
+        self.wants = WantsStats()                # core/wants.py
+        self.wants_last: dict[int, int] = {}     # game time of each actor's last wants decision
         self.gate = GateStats()                  # age gate counters and trace (core/agegate.py)
         self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False

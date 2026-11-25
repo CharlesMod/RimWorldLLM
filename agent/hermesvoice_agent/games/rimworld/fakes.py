@@ -41,6 +41,8 @@ class FakeBridge:
         self.max_kept = 2000
         self.say_log: list[dict] = []
         self.thought_log: list[dict] = []
+        self.social_log: list[dict] = []
+        self.social_supported = True            # the PROPOSED /social_action op; False models a mod without it
         self.chronicle_log: list[dict] = []
         self.chronicle_supported = True        # POST/GET /chronicle are in the contract; a test can turn it off (an older mod: 404)
         self.chronicle: list[dict] = []        # what the mod holds (cap 120)
@@ -165,6 +167,13 @@ class FakeBridge:
             if body.get("talk_id"):
                 self.talk_queue = [t for t in self.talk_queue if t["id"] != body["talk_id"]]
             return self._ok(**res)
+        if path == "/social_action" and req.method == "POST" and self.social_supported:
+            if body.get("action") not in ("seek_out", "avoid") or body.get("target") not in self.pawns \
+                    or body.get("pawn") not in self.pawns:
+                return self._err(400, "bad_request", "action, pawn and target are required")
+            self.social_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(applied=True)
         if path == "/thought" and req.method == "POST":
             if body.get("kind", "thought") not in ("thought", "diary"):
                 return self._err(400, "bad_request", "kind must be thought or diary")

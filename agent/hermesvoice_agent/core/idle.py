@@ -5,11 +5,12 @@ Rules (SPEC §5, §7):
   slots share one machine's tokens per second, so idle work never runs beside a live conversation.
 - Lowest priority. The moment actor work is queued or leased, the running idle job is cancelled (its LLM call
   is dropped, nothing is applied) and its window is released.
-- Order: reflection, then the chronicle, then diaries.
+- Order: reflection, then the chronicle, then diaries, then wants with follow-through (core/wants.py).
 """
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -18,6 +19,7 @@ from . import memory
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
+from .wants import run_wants
 from .reflection import apply_reflection, reflection_due, run_reflection
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -118,6 +120,39 @@ class IdleRunner:
         for aid, target in self.due_diary():
             if self._start_actor("diary", aid, self._diary(aid, target)):
                 return
+        for aid in self.due_wants():
+            if self._start_actor("wants", aid, self._wants(aid)):
+                return
+
+    def due_wants(self) -> list[int]:
+        """Wants with follow-through (core/wants.py), paced by the existing ambient pacing: off while no tool backend
+        is set, off while ambient talk is paused (speed), at least the ambient per-actor game gap between decisions,
+        and thinned by the player's talk-frequency setting."""
+        d = self.d
+        if d.tool_backend is None or d.leases.ambient_paused(d.bridge.env.speed):
+            return []
+        freq = float(d.bridge_cfg.get("talk_frequency", 1.0))
+        if freq <= 0 or d.bridge_cfg.get("effects") == "off":
+            return []
+        now, gap = d.bridge.env.game, d.cfg.quotas.min_gap_game_ambient
+        out = []
+        for aid in sorted(d.minds):
+            if now - d.wants_last.get(aid, -10**12) < gap or not self._ok("wants", aid):
+                continue
+            roll = int(hashlib.sha1(f"wants:{aid}:{now // max(gap, 1)}".encode()).hexdigest(), 16) % 1000 / 1000
+            if roll < min(1.0, d.weights.get(aid, 1.0) * freq * 0.5):
+                out.append(aid)
+        return out
+
+    async def _wants(self, aid: int) -> None:
+        d = self.d
+        d.wants_last[aid] = d.bridge.env.game
+        self.lease.generating = True
+        try:
+            await run_wants(d, aid, d.tool_backend, d.tool_mode)
+        except Exception:
+            log.exception("wants failed")
+            self._fail("wants", aid)
 
     def _start_actor(self, kind: str, aid: int, coro) -> bool:
         d = self.d

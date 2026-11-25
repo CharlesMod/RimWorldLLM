@@ -51,6 +51,7 @@ class Bridge(Protocol):
                   about: int | None = None, vanilla_ref: str | None = None) -> dict: ...
     async def thought(self, actor: int, text: str, op_id: str | None = None, kind: str | None = None) -> dict: ...
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict: ...
+    async def social_action(self, actor: int, action: str, target: int, topic: str = "", op_id: str | None = None) -> dict: ...
     async def aclose(self) -> None: ...
 
 
@@ -180,6 +181,14 @@ class BridgeClient:
         if kind:
             body["kind"] = kind
         return await self._req("POST", "/thought", json_body=self._write_body(body, None, op_id))
+
+    async def social_action(self, actor: int, action: str, target: int, topic: str = "", op_id: str | None = None) -> dict:
+        """PROPOSED op (docs/BRIDGE-API.md): POST /social_action {op_id, <actor field>, action: "seek_out"|"avoid", target, topic}.
+        The mod answers 404 until it implements it; the caller treats that as 'not supported'."""
+        body: dict[str, Any] = {self.protocol.actor_field: actor, "action": action, "target": target}
+        if topic:
+            body["topic"] = topic
+        return await self._req("POST", "/social_action", json_body=self._write_body(body, None, op_id))
 
     async def chronicle(self, day: int, text: str, kind: str = "day", op_id: str | None = None) -> dict:
         """Contract: POST /chronicle {op_id, day, text, kind: "day"|"major"}; the mod saves it with the game."""
