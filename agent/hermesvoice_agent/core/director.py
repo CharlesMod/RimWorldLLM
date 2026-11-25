@@ -15,7 +15,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, memory, recap
+from . import agegate, bystanders, firsts, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -110,6 +110,8 @@ class Director:
         self._speed_seen = 1
         self.inner_rng = random.Random(11)         # its own stream, so the chance roll never shifts the others
         self.cloud_gate = inner.CloudGate()        # contrast clouds: per-actor rate limit on the play clock
+        self.first_cap = firsts.DayCap()           # first-time lines per actor per day (core/firsts.py)
+        self.bystand = bystanders.Bystanders()     # bystander reactions: rate limit and counters (core/bystanders.py)
 
     # ---- clock ----------------------------------------------------------
     def now(self) -> Now:
@@ -282,14 +284,29 @@ class Director:
             for aid in e.get("witnesses", []):
                 if aid not in self.minds and not self.adapter.is_controlled(aid):
                     await self.load_actor(aid)
+            fm = self._first_marks(e)
+            if e.get("type") == "first_cue" and not fm:
+                continue                                 # a signal only: nobody here meets it for the first time
             written = memory.remember_event(self.minds, e, self.adapter)
             self.dirty.update(aid for aid, _ in written)
+            if fm:
+                self.dirty.update(firsts.record(self.minds, e, self.adapter, fm))
             if self.adapter.chronicle_worthy(e):
                 self.chronicle.note(e.get("game", self.bridge.env.game), e.get("summary", ""),
                                     float(e.get("severity", 0.3)), self.adapter.chronicle_trigger(e))
             if e.get("type") == "art_created" and art_enabled(self):
                 self.art.note(e, self.bridge.env.game)
             self.react(e)
+            self.bystand_react(e)
+
+    def _first_marks(self, e: dict) -> dict[int, str]:
+        """Witnesses meeting this kind of thing for the first time (item 8); stored on the event for react(). {} when off."""
+        if not self.cfg.firsts or self.bridge_cfg.get("events", {}).get(e.get("type", "")) is False:
+            return {}
+        fm = firsts.marks(self.minds, e, self.adapter)
+        if fm:
+            e["_first"] = fm
+        return fm
 
     def react(self, e: dict) -> None:
         etype = e.get("type", "")
@@ -336,18 +353,28 @@ class Director:
         cands = [i for i in ids if i in self.minds and i in witnesses]
         cands += [w for w in witnesses if w in self.minds and w not in cands]
         n = 2 if sev >= 0.7 else 1
+        fm = e.get("_first") or {}
+        if etype == "first_cue":
+            # a signal event: only actors meeting it for the first time speak, a couple at most, each within their daily cap
+            cands = [a for a in firsts.pick_speakers(fm, e.get("seq")) if a in self.minds]
+            n = len(cands)
         picked = 0
         for aid in cands:
             if picked >= n:
                 break
+            first = fm.get(aid) if fm and self.first_cap.allow(aid, now.game // self.day, self.cfg.firsts_per_day) else None
+            if etype == "first_cue" and first is None:
+                continue
             if cls <= Cls.SOCIAL:
                 w = min(1.0, self.weights.get(aid, 1.0) * float(self.bridge_cfg.get("talk_frequency", 1.0)) * 0.7)
                 roll = int(hashlib.sha1(f"{e.get('seq')}:{aid}".encode()).hexdigest(), 16) % 1000 / 1000
                 if roll >= w:
                     continue
-            item = self.leases.make_item(aid, etype, born, e)
+            item = self.leases.make_item(aid, etype, born, e, payload={"first": first} if first else None)
             if self.leases.submit(item, now, self.bridge.env.speed) == "queued":
                 picked += 1
+                if first:
+                    self.first_cap.spend(aid, now.game // self.day)
 
     async def take_talk(self) -> None:
         field = self.adapter.protocol.actor_field
@@ -373,6 +400,7 @@ class Director:
         now = self.now()
         for item, lease in self.leases.pop_runnable(now):
             self._spawn(self.run_conversation(item, lease) if item.payload.get("conversation")
+                        else self.run_bystander(item, lease) if item.payload.get("bystander")
                         else self.serve(item, lease))
         for item in list(self.leases.queue):
             if self.leases.narrator_should_cover(item, now) and self._cover_allowed(item, now):
@@ -467,6 +495,8 @@ class Director:
                 lease.data["talk_id"] = item.payload["talk_id"]
             elif vanilla:
                 trigger = vanilla["sentence"] or (item.event or {}).get("summary", item.kind)
+            elif item.payload.get("first"):
+                trigger = self.adapter.first_trigger(item.payload["first"], (item.event or {}).get("summary", item.kind))
             else:
                 trigger = (item.event or {}).get("summary", item.kind)
             try:
@@ -612,6 +642,9 @@ class Director:
         self.leases.budget.spend(self.now())
         self.said.append({"actor": aid, "name": self.names.get(aid), "text": sp.text, "intent": sp.intent, "delivery": kind,
                           "conv": conv, "applied": applied, "refused": r.get("refused")})
+        if applied and self.cfg.bystanders and sp.intent in getattr(self.adapter, "argument_intents", ()) \
+                and listener is not None:
+            self._spawn(self._say_bystanders(aid, listener))
         if applied:
             await self._inner_after_say(aid, sp, minor or self.is_minor(aid) or self.is_minor(listener))
         told = self.adapter.told_intents()
@@ -621,6 +654,93 @@ class Director:
                                        told[sp.intent], about):
                 self.dirty.update((aid, listener))
         return True
+
+    # ---- bystander reactions (item 9, core/bystanders.py) ----------------------
+    def bystand_react(self, e: dict) -> None:
+        """A vanilla insult or slight between two actors: its witnesses (the mod's own list) are the audience."""
+        if not self.cfg.bystanders or self.bridge_cfg.get("events", {}).get(e.get("type", "")) is False:
+            return
+        fn = getattr(self.adapter, "argument_parties", None)
+        parties = fn(e) if fn else None
+        if parties:
+            now = self.now()
+            if now.game - int(e.get("game", now.game)) <= REQUEST_EXPIRY[Cls.AMBIENT].units:     # not a backlog event
+                self.bystand_start(parties, [int(w) for w in e.get("witnesses", [])], e.get("summary", ""), e.get("seq"))
+
+    async def _say_bystanders(self, aid: int, listener: int) -> None:
+        """An applied insult or slight /say: the mod does not report who heard a /say, so the audience is the scene's
+        present list (can_hear, the speaker's view), minus the two of them."""
+        try:
+            hearers = [i for i, ch in self.adapter.scene_present(await self.bridge.scene(aid)) if ch]
+        except BridgeError:
+            return
+        self.bystand_start([aid, listener], hearers, "", f"say:{aid}:{self.bridge.env.game}")
+
+    def bystand_start(self, parties: list[int], witnesses: list[int], summary: str, key: object) -> None:
+        bs, now = self.bystand, self.now()
+        if self.leases.ambient_paused(self.bridge.env.speed):
+            bs.skipped += 1
+            return
+        who = bystanders.pick(witnesses, parties, self.minds, bs, now.real, self.cfg.bystander_gap_real_s)
+        if who is None:
+            return
+        bs.mark(who, now.real)                                  # one reaction per argument and per actor gap
+        bs.asked += 1
+        info = {"parties": parties, "summary": summary, "key": str(key)}
+        if not self.leases.free_slots():                         # every window is busy: a template, no model call
+            self._spawn(self._show_reaction(who, bystanders.template(self.adapter.bystander_templates, who, key), "template"))
+            return
+        item = self.leases.make_item(who, "bystander", now, None, cls=Cls.AMBIENT, payload={"bystander": info})
+        self.leases.submit(item, now, self.bridge.env.speed)
+
+    async def run_bystander(self, item: WorkItem, lease: Lease) -> None:
+        aid, info = item.actor_id, item.payload["bystander"]
+        try:
+            mind, parties = self.minds[aid], info["parties"]
+            minor = self.is_minor(aid) or any(self.is_minor(p) for p in parties)
+            msgs = bystanders.messages(self.adapter, mind, self.names, parties, info["summary"], minor)
+            lease.generating = True
+            try:
+                c = await self.llm.complete(msgs, slot=lease.slot, kind="reaction", max_tokens=bystanders.REACTION_MAX_TOKENS,
+                                            stop=["\n"], temperature=0.9, actor=aid)
+            except LLMError:
+                self.bystand.dropped += 1
+                return
+            finally:
+                lease.generating = False
+            if lease.preempted or item.expired(self.now()):
+                self.bystand.dropped += 1
+                return
+            text = bystanders.clean_reaction(c.text, prompt=msgs[1][1], aid=aid, name_tokens=self.name_tokens,
+                                             common_words=set(self.adapter.common_words), minor=minor,
+                                             minor_names=self.minor_tokens(), max_chars=self.cfg.thought_max_chars)
+            if text is None:
+                self.bystand.dropped += 1
+                self.dropped.append((aid, "reaction"))
+                return
+            await self._show_reaction(aid, text, "llm")
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("bystander failed")
+        finally:
+            lease.generating = False
+            if not lease.ended:
+                self.leases.release(lease, "done")
+
+    async def _show_reaction(self, aid: int, text: str, how: str) -> None:
+        mind = self.minds.get(aid)
+        if mind is None:
+            return
+        inner.add_inner(mind, text, "reaction", self.bridge.env.game, self.cfg.inner_stream_keep)
+        self.dirty.add(aid)
+        self.bystand.shown += 1
+        self.bystand.templated += how == "template"
+        self.bystand.log.append({"actor": aid, "text": text, "how": how, "game": self.bridge.env.game})
+        try:
+            await self.bridge.thought(aid, text, surface=text)
+        except BridgeError as e:
+            log.warning("reaction cloud refused for %s: %s", aid, e)
 
     # ---- conversations --------------------------------------------------
     async def run_conversation(self, item: WorkItem, lease_a: Lease) -> None:

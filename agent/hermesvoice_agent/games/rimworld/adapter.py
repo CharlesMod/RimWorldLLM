@@ -21,7 +21,15 @@ _EVENT_CLASS = {
     "injury": Cls.REACTIVE, "tend": Cls.REACTIVE,
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
+    "first_cue": Cls.REACTIVE,
 }
+# First-time reactions (core/firsts.py): what a pawn may react to once, and the words for "the first time you have ever ...".
+_FIRST_CUES = {
+    "snow": "seen snow fall", "eclipse": "seen an eclipse", "aurora": "seen an aurora", "solar_flare": "seen a solar flare",
+    "corpse": "seen a dead body", "beautiful_room": "stood in a room this beautiful", "no_table": "had to eat with no table",
+}
+# vanilla interactions that are an argument a bystander may react to (core/bystanders.py)
+ARGUMENT_INTERACTIONS = frozenset({"Insult", "Slight"})
 # What the game's own interactions are, in words the line prompt can use, so the line fits (an insult reads as an insult).
 _INTERACTION_KIND = {
     "Insult": "an insult", "Slight": "a cutting remark that slights them", "KindWords": "kind words",
@@ -79,6 +87,13 @@ class RimWorldAdapter:
     thought_request = (
         "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
         "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
+    reaction_system = (
+        "You are one RimWorld colonist watching two people argue. You do not take part. Give the tiny reaction that "
+        "shows on your face or under your breath: first person, in your own register, never a speech, never advice.")
+    reaction_request = (
+        "Write your reaction: 2 to 6 words, plain, no quotes, naming nobody (for example: Not again. / Ha. About time.).")
+    bystander_templates = ("Not again.", "Here we go.", "Oh, come on.", "Ha. About time.", "Keep me out of it.", "Ugh. Those two.")
+    argument_intents = frozenset({"insult", "slight"})
     chronicle_system = (
         "You are the dry narrator of a RimWorld colony, keeping its chronicle. Third person, past tense, plain "
         "words, a little gallows humour at most. You describe only what the notes say happened. You never "
@@ -150,6 +165,8 @@ class RimWorldAdapter:
             return True
         if float(event.get("severity", 0)) >= 0.9:
             return True
+        if event.get("type") == "first_cue":
+            return True                       # written only for a pawn's first: never folded away
         return event.get("type", "") not in firsts and event.get("type") in _FIRSTS
 
     def first_person(self, event: dict, actor_id: int) -> str:
@@ -160,6 +177,29 @@ class RimWorldAdapter:
         if actor_id in roles:
             return f"I was part of it: {summary}"
         return f"I saw it: {summary}"
+
+    def first_of(self, event: dict) -> tuple[str, str] | None:
+        """(key, phrase) when this event is a first-time cue: the mod's first_cue events, a first raid, a first colonist death."""
+        t, data = event.get("type"), event.get("data") or {}
+        if t == "first_cue":
+            c = str(data.get("cue", ""))
+            return (c, _FIRST_CUES[c]) if c in _FIRST_CUES else None
+        if t == "raid_start":
+            return "raid", "seen a raid"
+        if t == "death" and not data.get("animal"):
+            return "colonist_death", "seen a colonist die"
+        return None
+
+    def first_trigger(self, phrase: str, summary: str) -> str:
+        return f"The first time you have ever {phrase}: {summary}".strip()
+
+    def argument_parties(self, event: dict) -> list[int] | None:
+        """The two actors of a vanilla insult or slight, else None (core/bystanders.py)."""
+        data = event.get("data") or {}
+        if event.get("type") != "social" or str(data.get("interaction", "")) not in ARGUMENT_INTERACTIONS:
+            return None
+        pair = self.conversation_pair(event)
+        return list(pair) if pair else None
 
     def conversation_pair(self, event: dict) -> tuple[int, int] | None:
         if event.get("type") != "social":
