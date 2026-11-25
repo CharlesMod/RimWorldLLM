@@ -120,3 +120,19 @@ namespace HermesVoice.Tests
         }
     }
 }
+
+namespace HermesVoice.Tests
+{
+    public class EventTailTests
+    {
+        [Fact]
+        public void TailIsNewestFirst()
+        {
+            var r = new EventRing(5);
+            for (int i = 0; i < 8; i++) r.Add(new JObject { ["type"] = "t" + i });
+            var t = r.Tail(3);
+            Assert.Equal(new[] { 8L, 7L, 6L }, new[] { (long)t[0]["seq"], (long)t[1]["seq"], (long)t[2]["seq"] });
+            Assert.Equal(5, r.Tail(100).Count);
+        }
+    }
+}
