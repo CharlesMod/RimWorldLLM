@@ -16,3 +16,6 @@ agent/.venv/
 *.egg-info/
 __pycache__/
 .pytest_cache/
+agent/dist/
+engine/dist/
+agent/build/

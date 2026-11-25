@@ -44,7 +44,7 @@ namespace HermesVoice
         public override void WriteSettings()
         {
             base.WriteSettings();
-            HermesBridge.RefreshLlm();   // bridge.json carries the LLM endpoint
+            EngineManager.SettingsChanged();   // pushes the source to the engine, then rewrites bridge.json (it carries the LLM endpoint)
         }
     }
 }
