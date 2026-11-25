@@ -112,6 +112,7 @@ def test_off_switch_is_todays_call_and_ungrounded_or_bad_habits_are_blanked(worl
     async def go(habits, text):
         w = world
         w.cfg.habits = habits
+        w.cfg.concerns = False          # isolate the habit switch (concerns add their own schema fields)
         await w.go()
         w.llm.script["reflect"] = [reply(text)]
         w.d.minds[1].unreflected_importance = 9.0

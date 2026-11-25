@@ -67,8 +67,10 @@ async def run_wants(d, aid: int, backend, mode: str = "auto") -> dict:
     wanted = list(TOOL_NAMES) if others else ["remember", "do_nothing"]
     allowed = d.tools_allowed(wanted, minor_in_scene)
     mems = sorted(mind.memories, key=lambda m: -m.game)[:5]
+    worry_text = d.concerns.wants_lines(mind)
     user = ("=== YOUR WANTS ===\n" + gd.data_section("wants", "\n".join(f"- {gd.clean(w, 'label')}" for w in mind.wants) or "- none") +
             "=== WHO IS HERE ===\n" + gd.data_section("present", "\n".join(f"- {gd.name(n)}" for n in others.values()) or "- nobody") +
+            (("=== YOUR WORRIES ===\n" + gd.data_section("worries", worry_text)) if worry_text else "") +
             "=== RECENT MEMORIES ===\n" + gd.data_section("memories", "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems) or "- nothing") +
             "Pick at most one action.")
     done = {"social": 0, "remember": 0}

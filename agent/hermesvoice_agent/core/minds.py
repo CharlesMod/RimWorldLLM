@@ -113,6 +113,34 @@ class HabitChange(BaseModel):
     game: int = 0
     added: str = ""
     removed: str = ""            # the oldest tic it replaced, "" when it was only appended
+class Concern(BaseModel):
+    """An ongoing worry (core/concerns.py): lasts until resolved or faded; kept resolved for a day for the diary."""
+    id: str
+    text: str = ""                   # first person, about ten words
+    about: list[int] = Field(default_factory=list)   # actor ids it concerns
+    kind: str = ""                   # the rule that made it ("hurt", "grief", "guilt", "reflection", ...)
+    born: int = 0
+    status: Literal["open", "resolved", "faded"] = "open"
+    resolve_hint: str = ""           # the key an event must carry to resolve it ("healed:7", "ledger:...", ...)
+    importance: float = 0.5          # from the game; decides which one yields when the cap is full
+    closed: int = 0                  # game time it was resolved or faded
+    outcome: str = ""                # what happened (resolved)
+
+
+class Grudge(BaseModel):
+    """A grudge held by this mind (core/grudges.py): phases on game time, deterministic."""
+    id: str
+    against: int
+    cause: str = ""
+    born: int = 0                    # start of the current round
+    phase: Literal["avoid", "cooldown", "resolve", "done"] = "avoid"
+    renewals: int = 0
+    attempts: int = 0                # seek-outs tried in this round
+    next_try: int = 0                # game time of the next seek-out attempt
+    approach: str = ""               # "apologise" | "make up" | "confront": what the pending seek-out is for
+    mover: int = 0                   # who walks (this mind's id or the other's)
+    ended: str = ""                  # "made_up" | "faded" once phase is done
+    closed: int = 0
 
 
 class Mind(BaseModel):
@@ -141,6 +169,9 @@ class Mind(BaseModel):
     inner: list[InnerThought] = Field(default_factory=list)   # the private stream (core/inner.py)
     habit_history: list[HabitChange] = Field(default_factory=list)   # evolving tics, newest last (core/habits.py)
     last_habit_game: int = -1                    # game time of the last habit change; -1 = never
+    concerns: list[Concern] = Field(default_factory=list)     # ongoing worries (core/concerns.py)
+    concern_counter: int = 0
+    grudges: list[Grudge] = Field(default_factory=list)       # grudges this mind holds (core/grudges.py)
 
     # ---- memories -------------------------------------------------------
     def next_mem_id(self) -> str:
@@ -208,6 +239,8 @@ class Mind(BaseModel):
             for r in self.c_relations:
                 r.reputation = ""
             self.habit_history = self.habit_history[-2:]
+            self.concerns = [c for c in self.concerns if c.status == "open"][-2:]
+            self.grudges = [g for g in self.grudges if g.phase != "done"][-2:]
         if size() > limit:
             # 2. pinned memories, least important and oldest first
             for m in sorted(self.memories, key=lambda m: (m.importance, m.game)):

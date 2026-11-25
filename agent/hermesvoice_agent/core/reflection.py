@@ -11,6 +11,7 @@ import re
 
 from pydantic import BaseModel, Field, ValidationError
 
+from .concerns import REFLECT_CONCERN_REQUEST, reflect_schema, sanitize_concern, worries_block
 from .inner import thoughts_text
 from .llm import LLMClient, LLMError, Messages, strip_thought
 from .memory import weight_sorted
@@ -68,6 +69,8 @@ class ReflectResult(BaseModel):
     relations: list[ReflectRelation] = Field(default_factory=list)
     merge: list[ReflectMerge] = Field(default_factory=list)
     habit: str = ""
+    concern: str = ""                                    # optional: one new lasting worry (core/concerns.py)
+    resolved: list[str] = Field(default_factory=list)    # optional: ids of worries now over
 
 
 def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days: float) -> bool:
@@ -80,7 +83,7 @@ def reflection_due(mind: Mind, now: int, day: int, importance: float, every_days
 
 
 def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, day: int, inner: bool = False,
-                        habits: bool = False) -> Messages:
+                        habits: bool = False, concerns: bool = False) -> Messages:
     mems = weight_sorted(mind, now, day)[:MAX_PROMPT_MEMORIES]
     mems.sort(key=lambda m: (m.game, m.id))
     mem_lines = "\n".join(f"{m.id}{' [pinned]' if m.pinned else ''}: {gd.clean(m.text, 'event')}" for m in mems) or "(none)"
@@ -91,15 +94,18 @@ def reflection_messages(adapter, mind: Mind, names: dict[int, str], now: int, da
     bio = gd.clean(mind.fixed.text, "line", max_len=600, multiline=True)
     becoming = gd.clean(mind.evolving_bio or "(nothing yet)", "desc")
     wants = "; ".join(gd.clean(w, "label") for w in mind.wants) or "none"
+    worries = worries_block(mind) if concerns else ""
     user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', bio)}"
             f"=== WHO YOU ARE BECOMING NOW ===\n{gd.data_section('character', f'Becoming: {becoming}' + chr(10) + f'Wants: {wants}')}"
             f"=== WHAT YOU REMEMBER (id: text) ===\n{gd.data_section('memories', mem_lines)}"
             f"=== THE PEOPLE YOU KNOW ===\n{gd.data_section('people', rel_lines)}"
             + (f"=== WHAT YOU HAVE BEEN THINKING ===\n{gd.data_section('thoughts', thoughts_text(mind.inner))}"
-               if inner and mind.inner else "") +
-            (f"=== YOUR VERBAL HABITS NOW ===\n{gd.data_section('habits', habits_line(mind))}" if habits else "") +
-            f"=== REQUEST ===\n{adapter.reflection_request}"
-            + (f" {getattr(adapter, 'reflection_habit_request', '')}" if habits else ""))
+               if inner and mind.inner else "")
+            + (f"=== YOUR VERBAL HABITS NOW ===\n{gd.data_section('habits', habits_line(mind))}" if habits else "")
+            + (f"=== YOUR WORRIES (id: text) ===\n{gd.data_section('worries', worries)}" if worries else "")
+            + f"=== REQUEST ===\n{adapter.reflection_request}"
+            + (f" {getattr(adapter, 'reflection_habit_request', '')}" if habits else "")
+            + (REFLECT_CONCERN_REQUEST if concerns else ""))
     return [("system", adapter.reflection_system + "\n\n" + gd.DATA_RULE), ("user", user)]
 
 
@@ -118,13 +124,15 @@ async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, s
                          day: int, max_tokens: int = 500, name_tokens: dict[int, set[str]] | None = None,
                          common_words: set[str] | None = None, involves_minor: bool = False,
                          minor_names: set[str] | None = None, inner: bool = False,
-                         habits: bool = False) -> ReflectResult | None:
+                         habits: bool = False, concerns: bool = False) -> ReflectResult | None:
     """The one call. None if the model failed, was malformed or wrote an ungrounded bio. ``habits``: this reflection may
-    carry a new verbal habit (the caller checked core/habits.habit_allowed); a bad one is blanked, never fatal."""
-    msgs = reflection_messages(adapter, mind, names, now, day, inner, habits)
+    carry a new verbal habit (the caller checked core/habits.habit_allowed); a bad one is blanked, never fatal.
+    ``concerns``: it may add one worry and resolve others (core/concerns.py)."""
+    msgs = reflection_messages(adapter, mind, names, now, day, inner, habits, concerns)
     try:
         c = await llm.complete(msgs, slot=slot, kind="reflect", max_tokens=max_tokens, stop=[],
-                               temperature=0.7, actor=mind.actor_id, json_schema=schema_for(habits))
+                               temperature=0.7, actor=mind.actor_id,
+                               json_schema=reflect_schema(schema_for(habits), concerns))
     except LLMError:
         return None
     res = parse_result(c.text)
@@ -142,6 +150,13 @@ async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, s
     res.habit = clean_habit(res.habit, prompt=msgs[1][1], name_tokens=toks, actor_id=mind.actor_id,
                             common_words=common_words, involves_minor=involves_minor,
                             minor_names=minor_names) if habits else ""
+    if concerns:                  # a bad new worry or a stray id is dropped; the reflection stands
+        res.concern = sanitize_concern(res.concern, {
+            "known": all_names, "all": all_names, "prompt_words": prompt_cap_words(msgs[1][1]), "common_words": common_words,
+            "speaker": toks.get(mind.actor_id, set()), "minor": involves_minor, "minor_names": minor_names})
+        res.resolved = [str(r) for r in res.resolved][:4]
+    else:
+        res.concern, res.resolved = "", []
     return res
 
 

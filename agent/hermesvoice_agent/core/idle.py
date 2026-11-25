@@ -241,7 +241,7 @@ class IdleRunner:
                                    max_tokens=d.cfg.reflection_max_tokens, name_tokens=d.name_tokens,
                                    common_words=set(d.adapter.common_words),
                                    involves_minor=d.is_minor(aid), minor_names=d.minor_tokens(),
-                                   inner=d.cfg.inner_monologue, habits=ask_habit)
+                                   inner=d.cfg.inner_monologue, habits=ask_habit, concerns=d.cfg.concerns)
         lease.generating = False
         if lease.preempted:
             return
@@ -255,6 +255,7 @@ class IdleRunner:
                                reputations={str(k): v for k, v in d.reputations.items()} if d.cfg.reputation else None,
                                rep_limit=d.cfg.reputation_show,
                                habit_every_days=d.cfg.habit_every_days if ask_habit else None, day=d.day)
+        d.concerns.apply_reflection(aid, res, now)
         out.update(memory.upkeep(mind, now, d.day, d.cfg.memory_floor, d.cfg.memory_merge_similarity))
         d.dirty.add(aid)
         self.log.append({"kind": "reflection", "actor": aid, "name": d.names.get(aid), "game": now, **out})
