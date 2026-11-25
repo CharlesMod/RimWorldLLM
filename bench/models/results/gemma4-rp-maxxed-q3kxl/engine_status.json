@@ -1,0 +1,11 @@
+{
+ "shape": {
+  "slots": 3,
+  "ctx_per_slot": 65536,
+  "n_cpu_moe": 0,
+  "kv_type": "q4_0",
+  "vram_mib": 12072
+ },
+ "vram_mib": 12680,
+ "backend": "cuda-linux-x64"
+}

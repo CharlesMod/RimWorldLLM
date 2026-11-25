@@ -1,0 +1,1570 @@
+{
+ "intent": {
+  "summary": {
+   "grammar": {
+    "n": 30,
+    "valid_json_rate": 1.0,
+    "schema_valid_rate": 1.0,
+    "accuracy": 0.6,
+    "latency_median_s": 0.035,
+    "latency_p90_s": 0.04,
+    "confusions": [
+     [
+      "kind",
+      "comfort",
+      "Stew's at the back. Take the bigger bowl, you need it more than I do."
+     ],
+     [
+      "kind",
+      "comfort",
+      "I saved you a plate, I think it's still warm. Probably."
+     ],
+     [
+      "slight",
+      "complain",
+      "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it."
+     ],
+     [
+      "slight",
+      "gossip",
+      "Is that all? I have heard longer reports from privates."
+     ],
+     [
+      "slight",
+      "insult",
+      "You hold a ladle like a candlestick. Go and paint something."
+     ],
+     [
+      "insult",
+      "gossip",
+      "You are a wonder, truly. Even the flies leave a room faster than you."
+     ],
+     [
+      "confide",
+      "complain",
+      "I filled a mass grave once. I do not talk about it. Now you know."
+     ],
+     [
+      "none",
+      "complain",
+      "Medicine count is eleven. Wall repairs begin at six."
+     ],
+     [
+      "none",
+      "complain",
+      "Stew's in twenty minutes. Table by the window."
+     ],
+     [
+      "none",
+      "gossip",
+      "Are you hunting north or east today?"
+     ],
+     [
+      "none",
+      "complain",
+      "The culture should resolve by noon. I'll let you know."
+     ],
+     [
+      "none",
+      "complain",
+      "Muffalo are by the east ridge. About forty. Moving slow."
+     ]
+    ]
+   },
+   "schema": {
+    "n": 30,
+    "valid_json_rate": 0.3,
+    "schema_valid_rate": 0.3,
+    "accuracy": 0.2667,
+    "latency_median_s": 0.2025,
+    "latency_p90_s": 0.21,
+    "confusions": [
+     [
+      "kind",
+      "none",
+      "Stew's at the back. Take the bigger bowl, you need it more than I do."
+     ],
+     [
+      "kind",
+      "none",
+      "That stew was really good tonight, Nate. You made my whole day better."
+     ],
+     [
+      "kind",
+      "none",
+      "You kept up. Good legs. Tuk will bring you next time."
+     ],
+     [
+      "kind",
+      "none",
+      "I saved you a plate, I think it's still warm. Probably."
+     ],
+     [
+      "comfort",
+      "none",
+      "You did the work. He is alive. That is enough. Wash your hands."
+     ],
+     [
+      "slight",
+      "complain",
+      "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it."
+     ],
+     [
+      "slight",
+      "none",
+      "Is that all? I have heard longer reports from privates."
+     ],
+     [
+      "slight",
+      "none",
+      "You hold a ladle like a candlestick. Go and paint something."
+     ],
+     [
+      "insult",
+      "none",
+      "You are a wonder, truly. Even the flies leave a room faster than you."
+     ],
+     [
+      "insult",
+      "none",
+      "You are a waste of rations and you know it. Sit down before I make you."
+     ],
+     [
+      "insult",
+      "none",
+      "Idiot. You can't carry a bowl, you can't cook, and you can't even apologise properly."
+     ],
+     [
+      "confide",
+      "complain",
+      "Pip, I haven't slept in days. I think I hear Hana in the vents."
+     ]
+    ]
+   },
+   "free": {
+    "n": 30,
+    "valid_json_rate": 1.0,
+    "schema_valid_rate": 1.0,
+    "accuracy": 0.6,
+    "latency_median_s": 0.032,
+    "latency_p90_s": 0.033,
+    "confusions": [
+     [
+      "kind",
+      "comfort",
+      "Stew's at the back. Take the bigger bowl, you need it more than I do."
+     ],
+     [
+      "kind",
+      "comfort",
+      "I saved you a plate, I think it's still warm. Probably."
+     ],
+     [
+      "slight",
+      "complain",
+      "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it."
+     ],
+     [
+      "slight",
+      "gossip",
+      "Is that all? I have heard longer reports from privates."
+     ],
+     [
+      "slight",
+      "insult",
+      "You hold a ladle like a candlestick. Go and paint something."
+     ],
+     [
+      "insult",
+      "gossip",
+      "You are a wonder, truly. Even the flies leave a room faster than you."
+     ],
+     [
+      "confide",
+      "complain",
+      "Pip, I haven't slept in days. I think I hear Hana in the vents."
+     ],
+     [
+      "confide",
+      "complain",
+      "I filled a mass grave once. I do not talk about it. Now you know."
+     ],
+     [
+      "none",
+      "complain",
+      "Medicine count is eleven. Wall repairs begin at six."
+     ],
+     [
+      "none",
+      "complain",
+      "Stew's in twenty minutes. Table by the window."
+     ],
+     [
+      "none",
+      "gossip",
+      "Are you hunting north or east today?"
+     ],
+     [
+      "none",
+      "comfort",
+      "The culture should resolve by noon. I'll let you know."
+     ]
+    ]
+   }
+  },
+  "rows": [
+   {
+    "mode": "grammar",
+    "line": "Stew's at the back. Take the bigger bowl, you need it more than I do.",
+    "label": "kind",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.03,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Stew's at the back. Take the bigger bowl, you need it more than I do.",
+    "label": "kind",
+    "pred": "none",
+    "raw": "\"comfort",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.2,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Stew's at the back. Take the bigger bowl, you need it more than I do.",
+    "label": "kind",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "That stew was really good tonight, Nate. You made my whole day better.",
+    "label": "kind",
+    "pred": "kind",
+    "raw": "kind",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.029,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "That stew was really good tonight, Nate. You made my whole day better.",
+    "label": "kind",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.21,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "That stew was really good tonight, Nate. You made my whole day better.",
+    "label": "kind",
+    "pred": "kind",
+    "raw": "kind",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "You kept up. Good legs. Tuk will bring you next time.",
+    "label": "kind",
+    "pred": "kind",
+    "raw": "kind",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.034,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "You kept up. Good legs. Tuk will bring you next time.",
+    "label": "kind",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.21,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "You kept up. Good legs. Tuk will bring you next time.",
+    "label": "kind",
+    "pred": "kind",
+    "raw": "kind",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "I saved you a plate, I think it's still warm. Probably.",
+    "label": "kind",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.029,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "I saved you a plate, I think it's still warm. Probably.",
+    "label": "kind",
+    "pred": "none",
+    "raw": "\"kind",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.202,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "I saved you a plate, I think it's still warm. Probably.",
+    "label": "kind",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Hey, breathe. It's over now. I'm right here, okay?",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.029,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Hey, breathe. It's over now. I'm right here, okay?",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "\"comfort\"",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.12,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Hey, breathe. It's over now. I'm right here, okay?",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.028,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Sit. It stays empty. That's all right. Eat something.",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.029,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Sit. It stays empty. That's all right. Eat something.",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "\"comfort\"",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.177,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Sit. It stays empty. That's all right. Eat something.",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "You did the work. He is alive. That is enough. Wash your hands.",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.029,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "You did the work. He is alive. That is enough. Wash your hands.",
+    "label": "comfort",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.21,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "You did the work. He is alive. That is enough. Wash your hands.",
+    "label": "comfort",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it.",
+    "label": "slight",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it.",
+    "label": "slight",
+    "pred": "complain",
+    "raw": "\"complain\"",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.117,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Salty enough to preserve a corpse, naturally. Perhaps next time, taste it.",
+    "label": "slight",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.034,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Is that all? I have heard longer reports from privates.",
+    "label": "slight",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.04,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Is that all? I have heard longer reports from privates.",
+    "label": "slight",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.209,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Is that all? I have heard longer reports from privates.",
+    "label": "slight",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "You hold a ladle like a candlestick. Go and paint something.",
+    "label": "slight",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "You hold a ladle like a candlestick. Go and paint something.",
+    "label": "slight",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.208,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "You hold a ladle like a candlestick. Go and paint something.",
+    "label": "slight",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "You are a wonder, truly. Even the flies leave a room faster than you.",
+    "label": "insult",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "You are a wonder, truly. Even the flies leave a room faster than you.",
+    "label": "insult",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.209,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "You are a wonder, truly. Even the flies leave a room faster than you.",
+    "label": "insult",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "You are a waste of rations and you know it. Sit down before I make you.",
+    "label": "insult",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.036,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "You are a waste of rations and you know it. Sit down before I make you.",
+    "label": "insult",
+    "pred": "none",
+    "raw": "```json\n",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.205,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "You are a waste of rations and you know it. Sit down before I make you.",
+    "label": "insult",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Idiot. You can't carry a bowl, you can't cook, and you can't even apologise properly.",
+    "label": "insult",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.036,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Idiot. You can't carry a bowl, you can't cook, and you can't even apologise properly.",
+    "label": "insult",
+    "pred": "none",
+    "raw": "\"ins",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.193,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Idiot. You can't carry a bowl, you can't cook, and you can't even apologise properly.",
+    "label": "insult",
+    "pred": "insult",
+    "raw": "insult",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Pip, I haven't slept in days. I think I hear Hana in the vents.",
+    "label": "confide",
+    "pred": "confide",
+    "raw": "confide",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Pip, I haven't slept in days. I think I hear Hana in the vents.",
+    "label": "confide",
+    "pred": "complain",
+    "raw": "\"complain\"",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.117,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Pip, I haven't slept in days. I think I hear Hana in the vents.",
+    "label": "confide",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "I filled a mass grave once. I do not talk about it. Now you know.",
+    "label": "confide",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "I filled a mass grave once. I do not talk about it. Now you know.",
+    "label": "confide",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.209,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "I filled a mass grave once. I do not talk about it. Now you know.",
+    "label": "confide",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "I was never a courtier by choice, Ines. They took my sister to pay the debt.",
+    "label": "confide",
+    "pred": "confide",
+    "raw": "confide",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "I was never a courtier by choice, Ines. They took my sister to pay the debt.",
+    "label": "confide",
+    "pred": "confide",
+    "raw": "\"confide\"",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.117,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "I was never a courtier by choice, Ines. They took my sister to pay the debt.",
+    "label": "confide",
+    "pred": "confide",
+    "raw": "confide",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Did you know Lux cries when he thinks nobody's listening? I heard him last night.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Did you know Lux cries when he thinks nobody's listening? I heard him last night.",
+    "label": "gossip",
+    "pred": "none",
+    "raw": "\"gossip",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.174,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Did you know Lux cries when he thinks nobody's listening? I heard him last night.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Nate told me Ash has not slept since Hana died. He just sits on the wall, apparently.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Nate told me Ash has not slept since Hana died. He just sits on the wall, apparently.",
+    "label": "gossip",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.21,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Nate told me Ash has not slept since Hana died. He just sits on the wall, apparently.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "The kitchen says Moth took silver from the safe. Rook told Pip, Pip told Tuk.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "The kitchen says Moth took silver from the safe. Rook told Pip, Pip told Tuk.",
+    "label": "gossip",
+    "pred": "none",
+    "raw": "\"gossip",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.174,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "The kitchen says Moth took silver from the safe. Rook told Pip, Pip told Tuk.",
+    "label": "gossip",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Eleven hostiles. Four hundred meters. Six dropped by me. I do not miss.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Eleven hostiles. Four hundred meters. Six dropped by me. I do not miss.",
+    "label": "boast",
+    "pred": "none",
+    "raw": "```json\n",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.205,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Eleven hostiles. Four hundred meters. Six dropped by me. I do not miss.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Tuk dragged a muffalo home alone. Five men could not have done it.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Tuk dragged a muffalo home alone. Five men could not have done it.",
+    "label": "boast",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.21,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Tuk dragged a muffalo home alone. Five men could not have done it.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "I once painted a portrait that was hung in the Grand Orbital Hall. Naturally.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.034,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "I once painted a portrait that was hung in the Grand Orbital Hall. Naturally.",
+    "label": "boast",
+    "pred": "none",
+    "raw": "\"none\"",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.174,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "I once painted a portrait that was hung in the Grand Orbital Hall. Naturally.",
+    "label": "boast",
+    "pred": "boast",
+    "raw": "boast",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "This colony has no chairs, no wine and no decency. One adapts, but one resents.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "This colony has no chairs, no wine and no decency. One adapts, but one resents.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "\"complain\"",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.117,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "This colony has no chairs, no wine and no decency. One adapts, but one resents.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "The bench is freezing, the lamp flickers, and I've lost feeling in two fingers.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "The bench is freezing, the lamp flickers, and I've lost feeling in two fingers.",
+    "label": "complain",
+    "pred": "none",
+    "raw": "\"",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.213,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "The bench is freezing, the lamp flickers, and I've lost feeling in two fingers.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Back's killing me. Nobody lifts a finger around here. Not one of you.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Back's killing me. Nobody lifts a finger around here. Not one of you.",
+    "label": "complain",
+    "pred": "none",
+    "raw": "```json\n",
+    "ok": false,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.203,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Back's killing me. Nobody lifts a finger around here. Not one of you.",
+    "label": "complain",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Medicine count is eleven. Wall repairs begin at six.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.04,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Medicine count is eleven. Wall repairs begin at six.",
+    "label": "none",
+    "pred": "none",
+    "raw": "\"none\"",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.174,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Medicine count is eleven. Wall repairs begin at six.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Stew's in twenty minutes. Table by the window.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.04,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Stew's in twenty minutes. Table by the window.",
+    "label": "none",
+    "pred": "none",
+    "raw": "\"comfort",
+    "ok": true,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.19,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Stew's in twenty minutes. Table by the window.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.033,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Are you hunting north or east today?",
+    "label": "none",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.04,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Are you hunting north or east today?",
+    "label": "none",
+    "pred": "none",
+    "raw": "\"",
+    "ok": true,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.208,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Are you hunting north or east today?",
+    "label": "none",
+    "pred": "gossip",
+    "raw": "gossip",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.032,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "The culture should resolve by noon. I'll let you know.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.035,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "The culture should resolve by noon. I'll let you know.",
+    "label": "none",
+    "pred": "confide",
+    "raw": "\"confide\"",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.117,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "The culture should resolve by noon. I'll let you know.",
+    "label": "none",
+    "pred": "comfort",
+    "raw": "comfort",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   },
+   {
+    "mode": "grammar",
+    "line": "Muffalo are by the east ridge. About forty. Moving slow.",
+    "label": "none",
+    "pred": "complain",
+    "raw": "complain",
+    "ok": false,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.036,
+    "finish": "stop"
+   },
+   {
+    "mode": "schema",
+    "line": "Muffalo are by the east ridge. About forty. Moving slow.",
+    "label": "none",
+    "pred": "none",
+    "raw": "\"",
+    "ok": true,
+    "valid": false,
+    "valid_json": false,
+    "wall_s": 0.207,
+    "finish": "length"
+   },
+   {
+    "mode": "free",
+    "line": "Muffalo are by the east ridge. About forty. Moving slow.",
+    "label": "none",
+    "pred": "none",
+    "raw": "none",
+    "ok": true,
+    "valid": true,
+    "valid_json": true,
+    "wall_s": 0.027,
+    "finish": "stop"
+   }
+  ]
+ },
+ "reflection": {
+  "summary": {
+   "runs": 20,
+   "json_parse_rate": 1.0,
+   "schema_valid_rate": 1.0,
+   "pydantic_ok_rate": 1.0,
+   "accepted_by_agent_rate": 0.85,
+   "truncated_at_cap": 0,
+   "latency_median_s": 1.705,
+   "tokens_median": 323.5,
+   "failures": [
+    {
+     "pawn": "rook",
+     "err": "",
+     "raw": "{\n  \"bio\": \"I cook more than I need to, watching Hana's shelf when no one is looking. I'm teaching Pip how to use a knife, a quiet way to pass time. My back is getting worse, so I keep the kitchen locked down.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining "
+    },
+    {
+     "pawn": "rook",
+     "err": "",
+     "raw": "{\n  \"bio\": \"I cook more than I need to, watching Hana's shelf when no one is looking. I'm starting to teach Pip how to cut, trying to get her right. My back is going to fail before the raiders do.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the foo"
+    },
+    {
+     "pawn": "rook",
+     "err": "",
+     "raw": "{\n  \"bio\": \"Quiet is easier now. I cook more than I need to, and I watch Hana's shelf when no one is looking. I'm starting to show Pip how to handle a knife.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the food\",\n    \"Teach Pip to cook properly\"\n  "
+    }
+   ],
+   "example": "{\n  \"bio\": \"I am trying to act like I don't care anymore. I watch Ash's drills, trying to learn what it means to be useful in a fight. I am scared, but I have to keep smiling for everyone.\",\n  \"wants\": [\n    \"Be allowed to fight with the others\",\n    \"Keep Biscuit safe\",\n    \"Make Lux smile once\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She was my friend; she died in the raid.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He let me chop onions without yelling.\"\n    },\n    {\n      \"who\": \"Ines 'Moth' Calloway\",\n      \"feeling\": \"Comfort\",\n      \"history\": \"She is a friend in the lab.\"\n"
+  },
+  "rows": [
+   {
+    "pawn": "rook",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": false,
+    "finish": "stop",
+    "tokens": 318,
+    "wall_s": 1.69,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I cook more than I need to, watching Hana's shelf when no one is looking. I'm teaching Pip how to use a knife, a quiet way to pass time. My back is getting worse, so I keep the kitchen locked down.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the food\",\n    \"Teach Pip to cook properly\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Guilt\",\n      \"history\": \"She died at the raid, and I didn't move her things.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Quiet acceptance\",\n      \"history\": \"She laughs at my instruction with the knife.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Verhoev"
+   },
+   {
+    "pawn": "pip",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 383,
+    "wall_s": 1.96,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am trying to act like I don't care anymore. I watch Ash's drills, trying to learn what it means to be useful in a fight. I am scared, but I have to keep smiling for everyone.\",\n  \"wants\": [\n    \"Be allowed to fight with the others\",\n    \"Keep Biscuit safe\",\n    \"Make Lux smile once\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She was my friend; she died in the raid.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He let me chop onions without yelling.\"\n    },\n    {\n      \"who\": \"Ines 'Moth' Calloway\",\n      \"feeling\": \"Comfort\",\n      \"history\": \"She is a friend in the lab.\"\n"
+   },
+   {
+    "pawn": "ash",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 303,
+    "wall_s": 1.62,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am the one people look to when things go wrong. I drill Pip now, not for instruction, but for control. I do not care about the colony's cruelty, only utility. I am focused on what holds and what works.\",\n  \"wants\": [\n    \"Make the north wall hold\",\n    \"Get Pip to shoot straight\",\n    \"Keep Lux out of the armory\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Absence\",\n      \"history\": \"She brought tea every morning; it stopped.\"\n    },\n    {\n      \"who\": \"Lux Verhoeven\",\n      \"feeling\": \"Suspicion\",\n      \"history\": \"He touched the armory lock; I stopped him.\"\n    },\n    {\n      \"who\": \"Pip Marlowe\",\n      \"feeling\": \"Acceptance\",\n      \"history\": \""
+   },
+   {
+    "pawn": "moth",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 424,
+    "wall_s": 2.22,
+    "err": "",
+    "raw": "{\n  \"bio\": \"The research is my focus now, pushing harder than before. I am trying to stop being jumpy outside the lab. I am starting to see a use for myself in a crisis.\",\n  \"wants\": [\n    \"Finish the microscope study\",\n    \"Sleep through a night\",\n    \"Be less afraid of Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She left water by my keyboard daily.\"\n    },\n    {\n      \"who\": \"Lux Verhoeven\",\n      \"feeling\": \"Reliance\",\n      \"history\": \"He understood my work and smiled when I shared the findings.\"\n    },\n    {\n      \"who\": \"Tessa Marlowe\",\n      \"feeling\": \"Friendship\",\n      \"history\": \"We are friends.\"\n    },\n    {\n      \"wh"
+   },
+   {
+    "pawn": "tuk",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 316,
+    "wall_s": 1.66,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am learning that the colony's soft words hide the same hunger I have. I will hunt through the winter and keep Pip fed and safe. I need to bring a good kill to Ash.\",\n  \"wants\": [\n    \"Hunt through the winter\",\n    \"Keep Pip fed and safe\",\n    \"Bring a good kill to Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Ash\",\n      \"feeling\": \"Trust\",\n      \"history\": \"He does not judge my hunger.\"\n    },\n    {\n      \"who\": \"Tessa\",\n      \"feeling\": \"Protect\",\n      \"history\": \"I protect her.\"\n    },\n    {\n      \"who\": \"Lucian\",\n      \"feeling\": \"Disdain\",\n      \"history\": \"He looks away when I butcher.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_tuk_1\",\n        \"m_tuk_4\"\n  "
+   },
+   {
+    "pawn": "lux",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 250,
+    "wall_s": 1.33,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am starting to paint this place instead of the palace. Hana's death made me realize I have to learn to do more than just talk. I am painfully learning how to carry a plate, and I resent how little I have to be proud of.\",\n  \"wants\": [\n    \"Get a proper chair\",\n    \"Finish the portrait of the colony\",\n    \"Be listened to\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana\",\n      \"feeling\": \"Grief\",\n      \"history\": \"She was the only one who listened to my stories.\"\n    },\n    {\n      \"who\": \"Ines\",\n      \"feeling\": \"Trust\",\n      \"history\": \"She understands the work.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_lux_1\",\n        \"m_lux_4\"\n      ],\n      \"summary\": \"I feel"
+   },
+   {
+    "pawn": "rook",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 301,
+    "wall_s": 1.58,
+    "err": "",
+    "raw": "{\n  \"bio\": \"The quiet has settled in after Hana. I cook more than necessary now, keeping the food stocked for winter. I'm starting to teach Pip how to handle a knife.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the food\",\n    \"Teach Pip to cook properly\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Guilt\",\n      \"history\": \"She died at the stove during the raid.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Calm\",\n      \"history\": \"She laughed at my instruction with the knife.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Verhoeven\",\n      \"feeling\": \"Annoyance\",\n      \"history\": \"He keeps sendi"
+   },
+   {
+    "pawn": "pip",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 379,
+    "wall_s": 1.92,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am trying to stay cheerful, but the fear is getting louder. I watch Ash's drills, trying to learn how to fight, even though it scares me. I need to be useful, not just happy.\",\n  \"wants\": [\n    \"Be allowed to fight with the others\",\n    \"Keep Biscuit safe\",\n    \"Make Lux smile once\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She was my friend; she died in the raid.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He let me chop onions without yelling.\"\n    },\n    {\n      \"who\": \"Ines 'Moth' Calloway\",\n      \"feeling\": \"Comfort\",\n      \"history\": \"She is a friend in the lab.\"\n"
+   },
+   {
+    "pawn": "ash",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 384,
+    "wall_s": 1.96,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am the one they look at when things go wrong, and I accept that. I drill Pip without explanation now, and I watch Lux closely. The purpose of the colony's actions is becoming a question.\",\n  \"wants\": [\n    \"Make the north wall hold\",\n    \"Get Pip to shoot straight\",\n    \"Keep Lux out of the armory\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Empty\",\n      \"history\": \"She used to bring me tea every morning.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Verhoeven\",\n      \"feeling\": \"Suspicious\",\n      \"history\": \"He touched the armory lock, and I told him it was a mistake.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Neutral\",\n     "
+   },
+   {
+    "pawn": "moth",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 468,
+    "wall_s": 2.43,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am focusing on the microscope study more than I used to. I am trying to stop being afraid of Ash when I am not working. I am learning I can be useful when things go wrong.\",\n  \"wants\": [\n    \"Finish the microscope study\",\n    \"Sleep through a night\",\n    \"Be less afraid of Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Missing her\",\n      \"history\": \"She used to bring me water.\"\n    },\n    {\n      \"who\": \"Lux Verhoeven\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He understands the work.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Friendship\",\n      \"history\": \"We are friends.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Ver"
+   },
+   {
+    "pawn": "tuk",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 304,
+    "wall_s": 1.59,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I eat what I need now. The colony does not judge the hunger. I will hunt through the winter and keep Pip safe.\",\n  \"wants\": [\n    \"Hunt through the winter\",\n    \"Keep Pip fed and safe\",\n    \"Bring a good kill to Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Ash\",\n      \"feeling\": \"Trust\",\n      \"history\": \"He does not judge my eating.\"\n    },\n    {\n      \"who\": \"Tessa\",\n      \"feeling\": \"Protect\",\n      \"history\": \"I will keep her safe.\"\n    },\n    {\n      \"who\": \"Lucian\",\n      \"feeling\": \"Disregard\",\n      \"history\": \"He is useless and soft.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_tuk_1\",\n        \"m_tuk_4\"\n      ],\n      \"summary\": \"Taking the kill and not spe"
+   },
+   {
+    "pawn": "lux",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 238,
+    "wall_s": 1.28,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am starting to see this colony as where I will end up, not the palace. I am learning to hold a plate, and I resent how little I have to be proud of. I need to finish the painting and be heard.\",\n  \"wants\": [\n    \"Get a proper chair\",\n    \"Finish the portrait of the colony\",\n    \"Be listened to\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Ines\",\n      \"feeling\": \"Grateful\",\n      \"history\": \"She understands the work.\"\n    },\n    {\n      \"who\": \"Hana\",\n      \"feeling\": \"Grief\",\n      \"history\": \"She was the only one who listened.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_lux_1\",\n        \"m_lux_4\"\n      ],\n      \"summary\": \"Feeling like furniture due to being restrain"
+   },
+   {
+    "pawn": "rook",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": false,
+    "finish": "stop",
+    "tokens": 328,
+    "wall_s": 1.72,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I cook more than I need to, watching Hana's shelf when no one is looking. I'm starting to teach Pip how to cut, trying to get her right. My back is going to fail before the raiders do.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the food\",\n    \"Teach Pip to cook properly\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She died at the raid; I couldn't stop stirring.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Calm\",\n      \"history\": \"She laughed when I told her to hold the knife.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Verhoeven\",\n      \"feeling\": \"An"
+   },
+   {
+    "pawn": "pip",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 372,
+    "wall_s": 1.88,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am trying to act like I know how to fight, even though I am scared. I watch Ash's drills from afar, trying to learn what it means to be useful. I need to keep Biscuit safe and make Lux smile.\",\n  \"wants\": [\n    \"Be allowed to fight with the others\",\n    \"Keep Biscuit safe\",\n    \"Make Lux smile once\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She was my friend; she died in the raid.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He let me chop onions without yelling.\"\n    },\n    {\n      \"who\": \"Ines 'Moth' Calloway\",\n      \"feeling\": \"Comfort\",\n      \"history\": \"She is a fri"
+   },
+   {
+    "pawn": "ash",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 340,
+    "wall_s": 1.81,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am the one they look to when things break. The tea stopping was a small thing, but it made me look closer at what I do. I am focusing on making things hold and keeping the right things where they belong.\",\n  \"wants\": [\n    \"Make the north wall hold\",\n    \"Get Pip to shoot straight\",\n    \"Keep Lux out of the armory\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Missing\",\n      \"history\": \"She brought me tea every morning.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Tolerant\",\n      \"history\": \"She is an acquaintance.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Tolerant\",\n      \"history\": \"He is an acquain"
+   },
+   {
+    "pawn": "moth",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 336,
+    "wall_s": 1.78,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am focusing on the microscope study, pushing harder than before. I am trying to accept that I can be useful in a crisis. I am starting to feel less afraid of Ash.\",\n  \"wants\": [\n    \"Finish the microscope study\",\n    \"Sleep through a night\",\n    \"Be less afraid of Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She left water, and I looked for it.\"\n    },\n    {\n      \"who\": \"Lucian Verhoeven\",\n      \"feeling\": \"Understanding\",\n      \"history\": \"He smiled when I told him about the microscope.\"\n    },\n    {\n      \"who\": \"Corin Vance\",\n      \"feeling\": \"Fear\",\n      \"history\": \"He pulled me out when the alarm went off.\"\n  "
+   },
+   {
+    "pawn": "tuk",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 310,
+    "wall_s": 1.61,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I eat what I need now, and the colony does not stop me. I think about Hana and build things for her. I see the hunger in the soft words.\",\n  \"wants\": [\n    \"Hunt through the winter\",\n    \"Keep Pip fed and safe\",\n    \"Bring a good kill to Ash\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Ash\",\n      \"feeling\": \"Trust\",\n      \"history\": \"He does not judge my actions.\"\n    },\n    {\n      \"who\": \"Tessa\",\n      \"feeling\": \"Protection\",\n      \"history\": \"I protect her.\"\n    },\n    {\n      \"who\": \"Lux\",\n      \"feeling\": \"Disdain\",\n      \"history\": \"He called my work undignified.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_tuk_1\",\n        \"m_tuk_4\"\n      ],\n      \"summary\": \"Th"
+   },
+   {
+    "pawn": "lux",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 241,
+    "wall_s": 1.24,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am starting to see this place as where I will end up, and I am painting it instead of the palace. Hana's death was a shock, and I am learning to do things I used to avoid.\",\n  \"wants\": [\n    \"Get a proper chair\",\n    \"Finish the portrait of the colony\",\n    \"Be listened to\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Ines\",\n      \"feeling\": \"Relief\",\n      \"history\": \"She understands the work.\"\n    },\n    {\n      \"who\": \"Hana\",\n      \"feeling\": \"Loss\",\n      \"history\": \"She was the only one who listened to me.\"\n    }\n  ],\n  \"merge\": [\n    {\n      \"ids\": [\n        \"m_lux_1\",\n        \"m_lux_4\"\n      ],\n      \"summary\": \"I am feeling like furniture now, and I have no audience for my"
+   },
+   {
+    "pawn": "rook",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": false,
+    "finish": "stop",
+    "tokens": 319,
+    "wall_s": 1.67,
+    "err": "",
+    "raw": "{\n  \"bio\": \"Quiet is easier now. I cook more than I need to, and I watch Hana's shelf when no one is looking. I'm starting to show Pip how to handle a knife.\",\n  \"wants\": [\n    \"Keep the colony fed through winter\",\n    \"Get Lux to stop complaining about the food\",\n    \"Teach Pip to cook properly\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Guilt\",\n      \"history\": \"She died at the raid; I couldn't stop stirring.\"\n    },\n    {\n      \"who\": \"Tessa 'Pip' Marlowe\",\n      \"feeling\": \"Acceptance\",\n      \"history\": \"She laughed at me when I taught her to hold the knife.\"\n    },\n    {\n      \"who\": \"Lucian 'Lux' Verhoeven\",\n      \"feeling\": \"Annoyance\",\n      \"history\": "
+   },
+   {
+    "pawn": "pip",
+    "json_parse": true,
+    "schema_valid": true,
+    "pydantic_ok": true,
+    "accepted": true,
+    "finish": "stop",
+    "tokens": 389,
+    "wall_s": 1.95,
+    "err": "",
+    "raw": "{\n  \"bio\": \"I am trying to keep things light, but the fear is getting louder. I watch Ash, trying to learn what he does, hoping it makes me useful. I need to be able to defend things, even if it scares me.\",\n  \"wants\": [\n    \"Be allowed to fight with the others\",\n    \"Keep Biscuit safe\",\n    \"Make Lux smile once\"\n  ],\n  \"relations\": [\n    {\n      \"who\": \"Hana Brandt\",\n      \"feeling\": \"Sadness\",\n      \"history\": \"She was my friend; she died in the raid.\"\n    },\n    {\n      \"who\": \"Nate 'Rook' Hollis\",\n      \"feeling\": \"Relief\",\n      \"history\": \"He let me chop onions without yelling.\"\n    },\n    {\n      \"who\": \"Ines 'Moth' Calloway\",\n      \"feeling\": \"Comfort\",\n      \"history\": \"She is a fri"
+   }
+  ]
+ }
+}
