@@ -146,6 +146,16 @@ The agent's inner monologue (agent switch `inner_monologue`) uses this route onl
 `text` and `surface` the same short line, after the line's balloon (the mod's ThoughtPacing already
 waits for it). It is rate-limited by the agent (one per pawn per 90 s of play clock, 35% chance, never at
 the ambient-pause speed). No new field, route or mod change.
+### `POST /art`
+`{"op_id": "...", "thing": 4711, "text": "Hana carved this after the winter raid..."}`. Sets the description
+shown for one artwork on its info card (replacing the game's generated tale text; the title stays).
+`thing` is the artwork's `thingIDNumber` (from an `art_created` event's `data.thing_id`). The mod
+trims the text, cuts it at 600 characters, and keeps the newest 200 descriptions in the save
+(older ones are dropped; a save without them loads none). `thing` missing or not an integer, `text`
+empty, or the thing is not an artwork is `bad_request`; a thing that is destroyed or not on a map
+(or inside a minified piece) is `conflict`. When the setting "Show written art descriptions" is
+off, the text is still stored but the card shows the game's own text; `GET /config` shows it as
+`art_descriptions`. An older mod without this route answers 404.
 
 ### `POST /chronicle`
 `{"op_id": "...", "day": 12, "text": "The colony buried Bram without speeches.", "kind": "day"}`.
@@ -243,7 +253,7 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).
@@ -278,11 +288,16 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
   (`weather_extreme`..`weather_extreme_end`).
+- `art_created` fires when a colonist or slave finishes a piece of art (not spawned, traded or
+  reinstalled art). `data`: `thing_id` (use with `POST /art`), `def_label`, `quality`, `title`,
+  `description` (the game's own tale text, game text, at most 400 characters). The maker has role
+  `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
+  one game hour per maker.
 - `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
   The mod's own `HV_` thoughts never produce one.
 - Per-event toggles in settings apply to the ring as well as to the push. Events are throttled

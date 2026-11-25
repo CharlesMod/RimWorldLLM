@@ -14,6 +14,7 @@ import hashlib
 import logging
 from typing import TYPE_CHECKING
 
+from . import art
 from . import gamedata as gd
 from . import inner, memory
 from .bridge import BridgeError
@@ -160,6 +161,8 @@ class IdleRunner:
             self.kind = "chronicle"
             d.leases.narrator_busy = True
             self.task = d._spawn(self._chronicle())
+            return
+        if self._start_art():
             return
         for aid, target in self.due_diary():
             if self._start_actor("diary", aid, self._diary(aid, target)):
@@ -339,6 +342,45 @@ class IdleRunner:
             await d.bridge.thought(aid, text, kind="thought", surface=text)
         except BridgeError as e:
             log.warning("thought refused for %s: %s", aid, e)
+
+    def _start_art(self) -> bool:
+        """An art description (core/art.py), on the narrator slot like the chronicle. The job leaves the queue only now."""
+        d = self.d
+        if not art.enabled(d) or not self._ok("art", -1):
+            return False
+        job = d.art.take(d.bridge.env.game, d.day)
+        if job is None:
+            return False
+        self.kind = "art"
+        d.leases.narrator_busy = True
+        self.task = d._spawn(self._art(job))
+        return True
+
+    async def _art(self, job) -> None:
+        d = self.d
+        try:
+            text, why = await art.write_art(d, job, d.cfg.narrator_slot)
+            if text is None:
+                self._fail("art", -1)
+                d.dropped.append((job.maker, f"art:{why}"))
+                return
+            self.log.append({"kind": "art", "actor": job.maker, "name": d.names.get(job.maker), "thing": job.thing,
+                             "game": d.bridge.env.game, "text": text})
+            try:
+                await d.bridge.art(job.thing, text)
+            except BridgeError as ex:
+                log.warning("art description for %s refused: %s", job.thing, ex)
+                if ex.status == 404:
+                    d.art.unsupported = True                    # an older mod without POST /art: stop asking
+        except LLMError:
+            self._fail("art", -1)
+        except asyncio.CancelledError:
+            d.art.put_back(job)                                   # preempted: nothing applied, try again later
+            raise
+        finally:
+            d.leases.narrator_busy = False
+            if self.lease is None:
+                self.task = None
 
     async def _chronicle(self) -> None:
         d = self.d

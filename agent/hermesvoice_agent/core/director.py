@@ -20,6 +20,7 @@ from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
 from .chronicle import Chronicle
+from .art import ArtQueue, enabled as art_enabled
 from .config import Config
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
@@ -100,6 +101,7 @@ class Director:
         self.recent_own: dict[int, list[str]] = {}   # each speaker's last lines, across conversations
         self._started = False
         self.chronicle = Chronicle(cfg.data_dir, self.day)
+        self.art = ArtQueue()                    # core/art.py
         self.idle = IdleRunner(self)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
@@ -235,6 +237,7 @@ class Director:
             return                      # no world loaded: nothing to read
         await self.refresh_config()
         await self.load_world()
+        self.art.rollback(self.bridge.env.game)
         self.chronicle.rollback(self.bridge.env.game)      # the chronicle follows the save back in time
         if self.cfg.recap_enabled and self.bridge_cfg.get("recap") is not False:
             self._spawn(recap.run(self, self.bridge.env.epoch))     # once per epoch; a one-off, no voice budget
@@ -284,6 +287,8 @@ class Director:
             if self.adapter.chronicle_worthy(e):
                 self.chronicle.note(e.get("game", self.bridge.env.game), e.get("summary", ""),
                                     float(e.get("severity", 0.3)), self.adapter.chronicle_trigger(e))
+            if e.get("type") == "art_created" and art_enabled(self):
+                self.art.note(e, self.bridge.env.game)
             self.react(e)
 
     def react(self, e: dict) -> None:

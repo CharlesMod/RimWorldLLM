@@ -20,6 +20,7 @@ namespace HermesVoice.Bridge
         public readonly EventRing Events = new EventRing();
         public readonly MindBook Minds = new MindBook();
         public readonly ChronicleBook Chronicle = new ChronicleBook();
+        public readonly ArtBook Art = new ArtBook();
         public readonly TalkQueue Talk = new TalkQueue();
         public readonly IGameAdapter Game;
         public BridgeServer Server { get; private set; }

@@ -48,6 +48,9 @@ class FakeBridge:
         self.chronicle: list[dict] = []        # what the mod holds (cap 120)
         self.recap_log: list[dict] = []        # POST /recap bodies accepted
         self.recap_refuse: str | None = None   # a test sets "expired"/"conflict" to model the mod refusing
+        self.art_supported = True              # POST /art is in the contract; a test can turn it off (an older mod: 404)
+        self.art_log: list[dict] = []          # POST /art bodies accepted
+        self.art_things: set[int] = {500}      # artworks that exist (a destroyed one answers conflict)
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -192,6 +195,15 @@ class FakeBridge:
             self.recap_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok(shown=True)
+        if path == "/art" and req.method == "POST" and self.art_supported:
+            thing, text = body.get("thing"), str(body.get("text", "")).strip()
+            if not isinstance(thing, int) or isinstance(thing, bool) or not text:
+                return self._err(400, "bad_request", "thing and text are required")
+            if thing not in self.art_things:
+                return self._err(409, "conflict", f"no artwork {thing}")
+            self.art_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(stored=True, count=len(self.art_log))
         if path == "/chronicle" and self.chronicle_supported:
             if req.method == "GET":
                 since = int(req.url.params.get("since_day", 0))

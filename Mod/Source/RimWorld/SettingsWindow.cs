@@ -240,6 +240,7 @@ namespace HermesVoice
             Note(l, UiUtil.T("HV_Talk_PauseHelp"));
             l.GapLine();
             l.CheckboxLabeled(UiUtil.T("HV_Recap_Enable"), ref s.recapOnLoad, UiUtil.T("HV_Recap_EnableTip"));
+            l.CheckboxLabeled(UiUtil.T("HV_Art_Enable"), ref s.artDescriptions, UiUtil.T("HV_Art_EnableTip"));
             l.CheckboxLabeled(UiUtil.T("HV_Wants_Enable"), ref s.wantsEnabled, UiUtil.T("HV_Wants_EnableTip"));
             if (s.wantsEnabled)
             {
@@ -282,6 +283,7 @@ namespace HermesVoice
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Funeral"), ref s.evFuneral);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Weather"), ref s.evWeather);
             l.CheckboxLabeled(UiUtil.T("HV_Ev_Thought"), ref s.evThought);
+            l.CheckboxLabeled(UiUtil.T("HV_Ev_Art"), ref s.evArt);
         }
 
         static void Bubbles(Listing_Standard l, HermesVoiceSettings s)

@@ -62,12 +62,14 @@ namespace HermesVoice
         public bool evFuneral = true;
         public bool evWeather = true;
         public bool evThought = true;
+        public bool evArt = true;
 
         // What the agent must honour (GET /config).
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
         public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
         public string language = "en";
+        public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
         public float wantsAvoidHours = 1f;             // how long an "avoid" want lasts, in game hours
@@ -124,6 +126,8 @@ namespace HermesVoice
             Scribe_Values.Look(ref evFuneral, "evFuneral", true);
             Scribe_Values.Look(ref evWeather, "evWeather", true);
             Scribe_Values.Look(ref evThought, "evThought", true);
+            Scribe_Values.Look(ref evArt, "evArt", true);
+            Scribe_Values.Look(ref artDescriptions, "artDescriptions", true);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
