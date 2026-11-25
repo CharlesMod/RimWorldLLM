@@ -77,7 +77,7 @@ def test_call_log_has_cache_stats_and_effective_prefill(tmp_path):
                                          "timings": {"prompt_n": 154, "cache_n": 1721, "prompt_ms": 260.0,
                                                      "predicted_n": 3, "predicted_ms": 40.0}})
     log = CallLog(tmp_path / "calls.jsonl")
-    llm = HttpLLM(LLMConfig(base_url="http://h"), log, client(h))
+    llm = HttpLLM(LLMConfig(base_url="http://h", engine=False), log, client(h))
     c = run(llm.complete([("system", "s"), ("user", "u")], slot=1, kind="line", actor=5))
     assert c.text == "Eat."
     row = json.loads((tmp_path / "calls.jsonl").read_text().splitlines()[0])
@@ -92,7 +92,7 @@ def test_native_mode_payload():
     def h(req):
         seen["url"] = str(req.url); seen["body"] = json.loads(req.content)
         return httpx.Response(200, json={"content": "Eat.", "timings": {"prompt_n": 5, "cache_n": 100, "prompt_ms": 50}})
-    llm = HttpLLM(LLMConfig(base_url="http://h:1", mode="native"), client=client(h))
+    llm = HttpLLM(LLMConfig(base_url="http://h:1", mode="native", engine=False), client=client(h))
     run(llm.complete([("system", "S"), ("user", "U"), ("assistant", "line"), ("user", "label")],
                      slot=2, kind="intent", max_tokens=4, stop=[], grammar='root ::= "none"'))
     assert seen["url"] == "http://h:1/completion"

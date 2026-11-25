@@ -67,6 +67,64 @@ def strip_thought(t: str) -> str:
     return THINK_RE.sub("", THOUGHT_RE.sub("", t))
 
 
+# Google's generation_config.json, identical for every Gemma 4 build we ship
+# (gemma-4-26B-A4B-it, -E4B-it, -E2B-it and the QAT repos). The engine's catalog holds the
+# same values (easyEngine docs/SAMPLERS.md); the agent uses these only for a non-engine endpoint.
+GEMMA4_OFFICIAL = {"temperature": 1.0, "top_k": 64, "top_p": 0.95}
+
+_GEMMA4_SIZES = ("e2b", "e4b", "26b", "a4b", "rpmaxxed")
+
+# Calls whose output is machine-read JSON or a tool step use the engine's "structured" profile;
+# every other call is spoken or written text ("rp").
+STRUCTURED_KINDS = frozenset({"intent", "reflect", "reflection", "tool", "toolloop"})
+
+
+def is_known_gemma4(model: str) -> bool:
+    """True when a model name is one of the Gemma 4 builds whose official sampling we know."""
+    n = re.sub(r"[^a-z0-9]+", "", (model or "").lower())
+    return "gemma4" in n and any(z in n for z in _GEMMA4_SIZES)
+
+
+def sampler_profile(kind: str, *, grammar: str | None = None, json_schema: dict | None = None) -> str:
+    return "structured" if (kind in STRUCTURED_KINDS or grammar or json_schema) else "rp"
+
+
+def engine_status_url(base: str) -> str:
+    return base.removesuffix("/v1") + "/engine/v1/status"
+
+
+async def detect_engine(http: httpx.AsyncClient, base: str, headers: dict | None = None) -> bool | None:
+    """Is ``base`` the hermes engine? True/False when answered; None when the server could not be
+    reached (do not cache that)."""
+    try:
+        r = await http.get(engine_status_url(base), headers=headers or {}, timeout=3.0)
+    except httpx.HTTPError:
+        return None
+    if r.status_code != 200:
+        return False
+    try:
+        d = r.json()
+    except ValueError:
+        return False
+    return isinstance(d, dict) and "phase" in d and "sampler" in d
+
+
+def sampler_fields(cfg: LLMConfig, *, engine: bool, kind: str = "line") -> dict:
+    """Request fields for sampling. Engine: only what the config forces (None = engine decides).
+    Other servers: the config's values, plus the official Gemma 4 values for any of
+    temperature/top_k/top_p the config leaves unset when the model name is a known Gemma 4 build;
+    for any other model, nothing."""
+    s = {k: getattr(cfg, k) for k in ("temperature", "top_k", "top_p", "min_p", "repeat_penalty")
+         if getattr(cfg, k) is not None}
+    if not engine and is_known_gemma4(cfg.model):
+        for k, v in GEMMA4_OFFICIAL.items():
+            s.setdefault(k, v)
+    if cfg.line_dry and kind == "line":
+        s.update(dry_multiplier=cfg.dry_multiplier, dry_base=cfg.dry_base, dry_allowed_length=cfg.dry_allowed_length,
+                 dry_penalty_last_n=cfg.dry_penalty_last_n)
+    return s
+
+
 class HttpLLM:
     def __init__(self, cfg: LLMConfig, calllog: CallLog | None = None,
                  client: httpx.AsyncClient | None = None):
@@ -74,6 +132,7 @@ class HttpLLM:
         self.calllog = calllog or CallLog(None)
         self.http = client or httpx.AsyncClient(timeout=cfg.timeout_s)
         self.base = normalise_base(cfg.base_url)
+        self._engine: bool | None = cfg.engine
 
     async def aclose(self):
         await self.http.aclose()
@@ -81,14 +140,18 @@ class HttpLLM:
     def _headers(self) -> dict:
         return {"Authorization": f"Bearer {self.cfg.api_key}"} if self.cfg.api_key else {}
 
-    def _sampler(self, temperature: float | None, kind: str = "line") -> dict:
-        c = self.cfg
-        s = {"temperature": c.temperature if temperature is None else temperature,
-             "top_k": c.top_k, "top_p": c.top_p, "min_p": c.min_p}
-        if c.line_dry and kind == "line":
-            s.update(dry_multiplier=c.dry_multiplier, dry_base=c.dry_base, dry_allowed_length=c.dry_allowed_length,
-                     dry_penalty_last_n=c.dry_penalty_last_n)
-        return s
+    async def is_engine(self) -> bool:
+        if self._engine is None:
+            self._engine = await detect_engine(self.http, self.base, self._headers())
+            return bool(self._engine)
+        return self._engine
+
+    async def _sampling(self, kind: str, grammar: str | None, json_schema: dict | None) -> tuple[dict, dict]:
+        """(body fields, extra headers). The per-call ``temperature`` argument is not used: the
+        engine's profile for the call's kind decides, or the config when it forces a value."""
+        eng = await self.is_engine()
+        fields = sampler_fields(self.cfg, engine=eng, kind=kind)
+        return fields, ({"X-Hermes-Sampler": sampler_profile(kind, grammar=grammar, json_schema=json_schema)} if eng else {})
 
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,
@@ -98,9 +161,10 @@ class HttpLLM:
         t0 = time.perf_counter()
         st = CallStats(kind=kind, slot=slot, actor=actor)
         try:
+            samp, sh = await self._sampling(kind, grammar, json_schema)
             if self.cfg.mode == "native":
                 body = {"prompt": gemma_prompt(messages), "n_predict": max_tokens, "stop": stop,
-                        "cache_prompt": True, **self._sampler(temperature, kind)}
+                        "cache_prompt": True, **samp}
                 if slot is not None:
                     body["id_slot"] = slot
                 if grammar:
@@ -108,7 +172,7 @@ class HttpLLM:
                 if json_schema:
                     body["json_schema"] = json_schema
                 r = await self.http.post(self.base.removesuffix("/v1") + "/completion",
-                                         json=body, headers=self._headers())
+                                         json=body, headers={**self._headers(), **sh})
                 data = self._ok(r)
                 text = data.get("content", "")
                 tim = data.get("timings", {})
@@ -117,7 +181,7 @@ class HttpLLM:
                                      for ro, c in messages],
                         "max_tokens": max_tokens, "cache_prompt": True,
                         "chat_template_kwargs": {"enable_thinking": False},
-                        **self._sampler(temperature, kind)}
+                        **samp}
                 if stop:
                     body["stop"] = stop
                 if self.cfg.model:
@@ -129,7 +193,7 @@ class HttpLLM:
                 if json_schema:
                     body["json_schema"] = json_schema
                 r = await self.http.post(self.base + "/chat/completions", json=body,
-                                         headers=self._headers())
+                                         headers={**self._headers(), **sh})
                 data = self._ok(r)
                 text = data["choices"][0]["message"].get("content") or ""
                 tim = data.get("timings", {})
