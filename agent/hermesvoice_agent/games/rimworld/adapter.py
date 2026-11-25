@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from ...core import agegate
 from ...core.adapter import NameInfo, ProtocolNames
 from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
@@ -39,6 +40,9 @@ class RimWorldAdapter:
                              expiry_field="expires_tick")
     units_per_day = 60000                      # ticks
     intent_labels = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
+    # intents and vanilla interactions that are romantic: refused whenever either party is a minor (core/agegate.py)
+    romantic_intents = frozenset({"flirt", "romance", "romantic", "seduce", "woo", "propose", "lovin"})
+    romantic_interactions = frozenset({"RomanceAttempt", "MarriageProposal", "Breakup"})
     common_words = {"colony", "colonist", "colonists", "rimworld", "pirates", "tribals", "mechanoids"}
     narrator_prompt = ("You are a dry narrator of a RimWorld colony. Write one short third-person line "
                        "about what just happened. No speech, no invention.")
@@ -146,6 +150,7 @@ class RimWorldAdapter:
         return {"ref": str(data["ref"]), "initiator": pair[0], "recipient": pair[1],
                 "tier": "high" if data.get("tier") == "high" else "idle",
                 "sentence": str(data.get("vanilla_text") or event.get("summary", "")).strip(),
+                "romantic": key in self.romantic_interactions,
                 "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}
 
     def vanilla_request(self, info: dict, speaker: str, listener: str) -> str:
@@ -204,6 +209,11 @@ class RimWorldAdapter:
     def snapshot_name(self, snap: dict) -> Any:
         return snap.get("name")
 
+    def snapshot_age(self, snap: dict) -> float | None:
+        """Biological age in years, from the pawn snapshot (the mod sends AgeBiologicalYears); None when absent."""
+        a = snap.get("age")
+        return float(a) if isinstance(a, (int, float)) and not isinstance(a, bool) else None
+
     def snapshot_job(self, snap: dict) -> str:
         return snap.get("job") or ""
 
@@ -213,7 +223,8 @@ class RimWorldAdapter:
     def scene_present(self, scene: dict) -> list[tuple[int, bool]]:
         return [(int(q["pawn"]), bool(q.get("can_hear", True))) for q in scene.get("present", []) if "pawn" in q]
 
-    def build_scene(self, snap: dict, scene: dict, trigger: str, names: dict[int, str], known: set[int]) -> Scene:
+    def build_scene(self, snap: dict, scene: dict, trigger: str, names: dict[int, str], known: set[int],
+                    minors: set[int] | None = None) -> Scene:
         room = scene.get("room") or {}
         where = room.get("role", "") or "outdoors"
         extras = [f"{k} {room[k]}" for k in ("clean", "temp") if k in room]
@@ -227,7 +238,8 @@ class RimWorldAdapter:
                 continue
             n = names.get(pid)
             if n:
-                present.append(f"{n} ({q.get('job') or 'idle'})")
+                tag = "minor, " if pid in (minors or ()) else ""
+                present.append(f"{n} ({tag}{q.get('job') or 'idle'})")
         mood = snap.get("mood") or {}
         needs = snap.get("needs") or {}
         h = snap.get("health") or {}
@@ -243,7 +255,8 @@ class RimWorldAdapter:
                 st.append(f"{k.replace('_', ' ')} {v[0]} -> {v[-1]}")
         ths = [f"{t.get('label')} ({round(t.get('offset', 0)):+d})" for t in mood.get("thoughts", [])[:4]]
         return Scene(where=where, when=when or "daytime", present=present, state=", ".join(st) or "ordinary",
-                     job=snap.get("job") or "idle", thoughts=ths, trigger=trigger)
+                     job=snap.get("job") or "idle", thoughts=ths, trigger=trigger,
+                     minor_self=agegate.is_minor(self.snapshot_age(snap)))
 
     # ---- minds --------------------------------------------------------------------
     def facts_hash(self, snap: dict) -> str:

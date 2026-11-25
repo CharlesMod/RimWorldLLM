@@ -152,7 +152,7 @@ class Chronicle:
 
     async def write(self, llm: LLMClient, adapter, *, slot: int, today: int, ledger_lines: list[str],
                     name_tokens: dict[int, set[str]], budget: int = 6000, max_tokens: int = 220,
-                    common_words: set[str] | None = None) -> Entry | None:
+                    common_words: set[str] | None = None, minor_names: set[str] | None = None) -> Entry | None:
         d = self.due(today)
         if d is None:
             return None
@@ -166,7 +166,7 @@ class Chronicle:
         allnames = set().union(*name_tokens.values()) if name_tokens else set()
         s = sanitize_prose(c.text, known_names=allnames, all_names=allnames,
                            prompt_words=prompt_cap_words(msgs[1][1]), common_words=common_words,
-                           min_words=8, max_words=150)
+                           min_words=8, max_words=150, minor_names=minor_names)
         if not s.ok:
             return None
         game = max(n.game for n in notes)

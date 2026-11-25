@@ -100,7 +100,8 @@ def parse_result(text: str) -> ReflectResult | None:
 
 async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, str], *, slot: int, now: int,
                          day: int, max_tokens: int = 500, name_tokens: dict[int, set[str]] | None = None,
-                         common_words: set[str] | None = None) -> ReflectResult | None:
+                         common_words: set[str] | None = None, involves_minor: bool = False,
+                         minor_names: set[str] | None = None) -> ReflectResult | None:
     """The one call. None if the model failed, was malformed or wrote an ungrounded bio."""
     msgs = reflection_messages(adapter, mind, names, now, day)
     try:
@@ -115,7 +116,8 @@ async def run_reflection(llm: LLMClient, adapter, mind: Mind, names: dict[int, s
     all_names = set().union(*toks.values()) if toks else set()
     s = sanitize_prose(res.bio, known_names=all_names, all_names=all_names,
                        prompt_words=prompt_cap_words(msgs[1][1]), common_words=common_words,
-                       speaker_names=toks.get(mind.actor_id, set()), min_words=4, max_words=MAX_BIO_WORDS)
+                       speaker_names=toks.get(mind.actor_id, set()), min_words=4, max_words=MAX_BIO_WORDS,
+                       involves_minor=involves_minor, minor_names=minor_names)
     if not s.ok:
         return None
     res.bio = s.text

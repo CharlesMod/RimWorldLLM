@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from . import agegate
 from .common_words import COMMON_SENTENCE_START
 from .llm import strip_thought
 
@@ -80,13 +81,16 @@ def leaks_secret(text: str, secrets: list[str]) -> bool:
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
                   max_words: int = MAX_WORDS, common_words: set[str] | None = None,
-                  secrets: list[str] | None = None, narration_guard: bool = False) -> Sanitized:
+                  secrets: list[str] | None = None, narration_guard: bool = False,
+                  involves_minor: bool = False, minor_names: set[str] | None = None) -> Sanitized:
     """
     speaker_names: the speaker's own name tokens.
     known_names:   name tokens of actors the speaker knows (present, relations, memories).
     all_names:     name tokens of every actor that exists in the world.
     prompt_words:  capitalised words from the speaker's prompt (grounded vocabulary: places, factions).
     truncated:     the generation hit the token cap (a cut-off line is trimmed to its last sentence).
+    involves_minor / minor_names: the age gate. A romantic or sexual line is dropped (reason ``minor_safety``) when the
+                   speaker or listener is a minor, or when a minor is named in it (see core/agegate.py).
     narration_guard: drop a line that begins with the speaker's own name and a verb ("Tuk feels the bandage."), which is
                    third-person narration, not speech. Callers turn it off for a speaker whose voice card speaks of itself
                    in the third person, and never turn it on for prose (diaries and bios are third person by nature).
@@ -116,6 +120,8 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
         return Sanitized(None, "empty")
     if _REFUSAL.search(t):
         return Sanitized(None, "refusal")
+    if agegate.violation(t, involves_minor=involves_minor, minor_names=minor_names or ()):
+        return Sanitized(None, "minor_safety")
     if len(t.split()) > max_words:
         return Sanitized(None, "too_long")
     if narration_guard and is_self_narration(t, speaker_names):
@@ -190,11 +196,13 @@ def prompt_cap_words(prefix: str) -> set[str]:
 
 def sanitize_prose(raw: str, *, known_names: set[str], all_names: set[str], prompt_words: set[str],
                    common_words: set[str] | None = None, speaker_names: set[str] | None = None,
-                   min_words: int = 6, max_words: int = 140) -> Sanitized:
+                   min_words: int = 6, max_words: int = 140,
+                   involves_minor: bool = False, minor_names: set[str] | None = None) -> Sanitized:
     """A paragraph (diary entry, chronicle, bio): one block, refusals and invented names dropped."""
     flat = " ".join(strip_thought(raw).split())
     s = sanitize_line(flat, speaker_names=speaker_names or set(), known_names=known_names, all_names=all_names,
-                      prompt_words=prompt_words, max_words=max_words, common_words=common_words)
+                      prompt_words=prompt_words, max_words=max_words, common_words=common_words,
+                      involves_minor=involves_minor, minor_names=minor_names)
     if s.ok and len(s.text.split()) < min_words:
         return Sanitized(None, "too_short")
     return s

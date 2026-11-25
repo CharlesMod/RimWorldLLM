@@ -150,7 +150,8 @@ class IdleRunner:
         lease.generating = True
         res = await run_reflection(d.llm, d.adapter, mind, d.names, slot=lease.slot, now=now, day=d.day,
                                    max_tokens=d.cfg.reflection_max_tokens, name_tokens=d.name_tokens,
-                                   common_words=set(d.adapter.common_words))
+                                   common_words=set(d.adapter.common_words),
+                                   involves_minor=d.is_minor(aid), minor_names=d.minor_tokens())
         lease.generating = False
         if lease.preempted:
             return
@@ -193,7 +194,7 @@ class IdleRunner:
         known = set(toks.get(aid, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
         s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(user),
                            common_words=set(d.adapter.common_words), speaker_names=toks.get(aid, set()),
-                           min_words=5, max_words=90)
+                           min_words=5, max_words=90, involves_minor=d.is_minor(aid), minor_names=d.minor_tokens())
         if not s.ok:
             self._fail("diary", aid)
             d.dropped.append((aid, f"diary:{s.reason}"))
@@ -215,7 +216,7 @@ class IdleRunner:
             e = await d.chronicle.write(d.llm, d.adapter, slot=d.cfg.narrator_slot, today=today, ledger_lines=led,
                                         name_tokens=d.name_tokens, budget=d.cfg.narrator_context_tokens,
                                         max_tokens=d.cfg.chronicle_max_tokens,
-                                        common_words=set(d.adapter.common_words))
+                                        common_words=set(d.adapter.common_words), minor_names=d.minor_tokens())
             if e is None:
                 self._fail("chronicle", -1)
                 return

@@ -205,6 +205,10 @@ relations[{pawn, kind, opinion}], status ("colonist"|"prisoner"|"slave"|"guest"|
 faction, map, pos, room, alive, spawned`.
 DLC fields appear only when that DLC is active.
 
+`age` is the pawn's **biological** age in years (`AgeBiologicalYears`), not chronological. The agent's age gate
+(`core/agegate.py`) reads it: under 18 is a minor, and a missing or non-numeric `age` counts as a minor, so
+`age` must always be sent. Scene `present[]` entries carry no age; the agent reads it from each pawn's snapshot.
+
 ### `GET /scene/{id}`
 What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 `present[{pawn, job, distance, can_hear}]`, `time_of_day`, `weather`, `danger`,

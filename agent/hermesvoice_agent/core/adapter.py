@@ -45,6 +45,7 @@ class NameInfo:
 class GameAdapter(Protocol):
     name: str
     protocol: ProtocolNames
+    romantic_intents: frozenset[str]    # intent labels (and tools) that are romantic or sexual: never with a minor
     intent_labels: list[str]            # the closed effect set; the first one means "nothing"
     block_a: str                        # world rules, speech rules, output format, label glosses
     common_words: set[str]              # capitalised words that are never names in this game
@@ -85,11 +86,12 @@ class GameAdapter(Protocol):
     def roster_ledger(self, resp: dict) -> list[dict]: ...
     def name_info(self, raw_name: Any) -> NameInfo: ...
     def snapshot_name(self, snap: dict) -> Any: ...                        # raw name from a snapshot
+    def snapshot_age(self, snap: dict) -> float | None: ...                # biological years, None when unknown
     def snapshot_job(self, snap: dict) -> str: ...
     def relations(self, snap: dict) -> list[tuple[int, int | None]]: ...   # (other id, opinion)
     def scene_present(self, scene: dict) -> list[tuple[int, bool]]: ...    # (id, can hear)
     def build_scene(self, snap: dict, scene: dict, trigger: str, names: dict[int, str],
-                    known: set[int]) -> Scene: ...
+                    known: set[int], minors: set[int] | None = None) -> Scene: ...
 
     # ---- minds --------------------------------------------------------------------
     def facts_hash(self, snap: dict) -> str: ...

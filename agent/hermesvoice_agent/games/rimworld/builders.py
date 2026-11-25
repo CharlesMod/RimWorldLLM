@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 
+from ...core import agegate
 from ...core import gamedata as gd
 from ...core.minds import FixedBio, VoiceCard
 
@@ -102,6 +103,8 @@ def build_fixed_bio(p: dict, names: dict[int, str] | None = None) -> FixedBio:
         lines[0] += f" Xenotype: {p['xenotype']}" + (f"; genes: {genes}." if genes else ".")
         dlc["xenotype"] = p["xenotype"]
         dlc["genes"] = [_s(g) for g in p.get("genes", [])]
+    if agegate.is_minor(p.get("age")):
+        lines.append("Age group: minor, under 18 (hard fact). Nothing romantic or sexual ever involves them.")
     bs = _backstory(p.get("backstory"))
     if bs:
         lines.append(f"Backstory: {bs}")

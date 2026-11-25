@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from . import agegate
 from . import gamedata as gd
 from .minds import Memory, Mind
 
@@ -33,6 +34,7 @@ class Scene:
     job: str = "idle"
     thoughts: list[str] = field(default_factory=list)  # "text (+/-n)"
     trigger: str = ""
+    minor_self: bool = False             # the speaker is under 18 (or of unknown age)
 
 
 def block_b(mind: Mind) -> str:
@@ -79,6 +81,7 @@ def block_e(sc: Scene) -> str:
     th = "\n".join(f"- {c(t, 'label')}" for t in sc.thoughts) or "- nothing much"
     body = (f"Where: {c(sc.where, 'label')}\nWhen: {c(sc.when, 'label')}\n"
             f"Present: {', '.join(c(p, 'label') for p in sc.present) or 'nobody else'}\n"
+            + ("You are a minor (under 18).\n" if sc.minor_self else "") +
             f"Your state: {c(sc.state, 'line')}\nCurrent job: {c(sc.job, 'label')}\nYour current thoughts:\n{th}\n"
             f"What just happened: {c(sc.trigger, 'event')}\n")
     return "=== THE SCENE ===\n" + gd.data_section("scene", body)
@@ -88,6 +91,8 @@ def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines:
     """A-E as one string. Freeze it at lease start; never rebuild mid-lease."""
     if gd.DATA_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + gd.DATA_RULE
+    if agegate.MINOR_RULE not in block_a:
+        block_a = block_a.rstrip("\n") + "\n\n" + agegate.MINOR_RULE
     return "\n".join([block_a, block_b(mind), block_c(mind), block_d(memories, ledger_lines), block_e(sc)])
 
 
