@@ -106,6 +106,9 @@ namespace HermesVoice.Bridge
             return false;
         }
 
+        /// <summary>Two-way: no chat starts between the pair while either one avoids the other.</summary>
+        public bool Blocks(int a, int b, int nowTick) { return IsAvoiding(a, b, nowTick) | IsAvoiding(b, a, nowTick); }
+
         public void Prune(int nowTick)
         {
             List<long> dead = null;

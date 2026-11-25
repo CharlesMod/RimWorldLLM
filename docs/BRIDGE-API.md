@@ -185,8 +185,8 @@ adults) through `TryInteractWith`, so the existing vanilla-interaction hook voic
 ticks or 60 real seconds, and ends early if the target is despawned, downed, dead, in a mental state or hostile.
 The topic is flavour for the agent's own line; the mod does not use it. Never a romance interaction.
 
-`avoid`: for `wantsAvoidHours` game hours (setting, default 1) the pawn does not start a social interaction with the
-target (a Harmony prefix on `TryInteractWith` answers "no", which also stops the game's random chitchat picking them).
+`avoid`: for `wantsAvoidHours` game hours (setting, default 1) no social interaction starts between the pawn and the
+target in either direction (a Harmony prefix on `TryInteractWith` answers "no", which also stops the game's random chitchat picking them).
 Nobody walks away. The table is saved with the game and expires on game ticks.
 
 Errors: `bad_request` (invalid body); `not_found` (unknown pawn or target); `refused` (HTTP 409, `reason` field and

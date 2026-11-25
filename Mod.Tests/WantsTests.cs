@@ -17,6 +17,9 @@ namespace HermesVoice.Tests
             Assert.True(t.IsAvoiding(1, 2, 1000));
             Assert.True(t.IsAvoiding(1, 2, 3499));
             Assert.False(t.IsAvoiding(2, 1, 1000));          // one direction only
+            Assert.True(t.Blocks(1, 2, 1000));               // but no chat starts either way
+            Assert.True(t.Blocks(2, 1, 1000));
+            Assert.False(t.Blocks(2, 3, 1000));
             Assert.False(t.IsAvoiding(1, 2, 3500));
             Assert.Equal(0, t.Count);                         // expiry removed it
         }

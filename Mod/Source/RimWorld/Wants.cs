@@ -147,7 +147,7 @@ namespace HermesVoice
         public static bool Bypass;
     }
 
-    /// <summary>A pawn that avoids someone does not start a social interaction with them (this is also where the game's
+    /// <summary>While a pawn avoids someone, no social interaction starts between the two, either way (this is also where the game's
     /// random chitchat ends up: it picks a target, then calls TryInteractWith). Cheap: one dictionary lookup.</summary>
     [HarmonyPatch(typeof(Pawn_InteractionsTracker), nameof(Pawn_InteractionsTracker.TryInteractWith))]
     public static class Patch_AvoidSocial
@@ -164,7 +164,7 @@ namespace HermesVoice
                 if (comp == null || comp.Avoids.Count == 0) return true;
                 if (_pawn == null) _pawn = AccessTools.FieldRefAccess<Pawn_InteractionsTracker, Pawn>("pawn");
                 var p = _pawn(__instance);
-                if (p == null || !comp.Avoids.IsAvoiding(p.thingIDNumber, recipient.thingIDNumber, Find.TickManager.TicksGame)) return true;
+                if (p == null || !comp.Avoids.Blocks(p.thingIDNumber, recipient.thingIDNumber, Find.TickManager.TicksGame)) return true;
                 __result = false;
                 return false;
             }
