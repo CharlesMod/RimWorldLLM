@@ -15,7 +15,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, bystanders, firsts, gossip, group, lore, memory, recap
+from . import adult, agegate, bystanders, firsts, gossip, group, lore, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -196,6 +196,14 @@ class Director:
         self.bridge_cfg = await self.bridge.config()
         self.leases.pause_ambient_at_speed = int(
             self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed))
+        adult.set_enabled(self.bridge_cfg.get("adult_content", False))      # live: a missing key means off
+
+    def adult_off_drops(self) -> int:
+        """Lines dropped because the Adult content setting is off (reason ``adult_off``, any path)."""
+        return sum(1 for _, r in self.dropped if r.endswith("adult_off"))
+
+    def gate_stats(self) -> dict:
+        return {**self.gate.to_dict(), "adult_off_dropped": self.adult_off_drops()}
 
     async def roster_ids(self) -> list[int]:
         resp = await self.bridge.roster()

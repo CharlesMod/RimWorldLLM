@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from . import agegate
+from . import adult, agegate
 from .common_words import COMMON_SENTENCE_START
 from .llm import strip_thought
 
@@ -122,6 +122,8 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
         return Sanitized(None, "refusal")
     if agegate.violation(t, involves_minor=involves_minor, minor_names=minor_names or ()):
         return Sanitized(None, "minor_safety")
+    if adult.off() and adult.explicit(t):
+        return Sanitized(None, "adult_off")        # the "Adult content" setting is off (core/adult.py)
     if len(t.split()) > max_words:
         return Sanitized(None, "too_long")
     if narration_guard and is_self_narration(t, speaker_names):

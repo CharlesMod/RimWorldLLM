@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import agegate
+from . import adult, agegate
 from . import gamedata as gd
 from .minds import Memory, Mind
 
@@ -124,6 +124,8 @@ def build_prefix(block_a: str, mind: Mind, memories: list[Memory], ledger_lines:
         block_a = block_a.rstrip("\n") + "\n\n" + gd.DATA_RULE
     if agegate.MINOR_RULE not in block_a:
         block_a = block_a.rstrip("\n") + "\n\n" + agegate.MINOR_RULE
+    if adult.off() and adult.RULE not in block_a:
+        block_a = block_a.rstrip("\n") + "\n\n" + adult.RULE
     return "\n".join([block_a, block_b(mind), block_c(mind, worries=worries), block_d(memories, ledger_lines, thoughts, talk),
                       block_e(sc)])
 

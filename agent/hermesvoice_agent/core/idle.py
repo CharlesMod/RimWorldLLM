@@ -414,6 +414,9 @@ class IdleRunner:
                                         lore_lines=d.lore.lines() if d.cfg.lore else None)
             if e is None:
                 self._fail("chronicle", -1)
+                if d.chronicle.last_drop:
+                    d.dropped.append((-1, f"chronicle:{d.chronicle.last_drop}"))
+                    d.chronicle.last_drop = ""
                 return
             self.log.append({"kind": "chronicle", "day": e.day, "entry_kind": e.kind, "game": e.game,
                              "text": e.text, "summary": d.chronicle.state.summary})
