@@ -1,0 +1,131 @@
+{
+ "probe": {
+  "lore": {
+   "r2base": {
+    "n": 23,
+    "mean": 3.043,
+    "share_le2": 0.13
+   },
+   "r2bo4auto": {
+    "n": 24,
+    "mean": 3.458,
+    "share_le2": 0.083
+   },
+   "r2bo4llm": {
+    "n": 24,
+    "mean": 3.375,
+    "share_le2": 0.083
+   },
+   "r2cliche": {
+    "n": 23,
+    "mean": 3.304,
+    "share_le2": 0.087
+   },
+   "r2ground": {
+    "n": 23,
+    "mean": 3.304,
+    "share_le2": 0.087
+   },
+   "r2plan": {
+    "n": 23,
+    "mean": 3.783,
+    "share_le2": 0.0
+   }
+  }
+ },
+ "paired": {
+  "lore": {
+   "r2base - r2bo4auto": {
+    "n": 23,
+    "mean_diff": -0.435,
+    "wins": 3,
+    "losses": 12
+   },
+   "r2base - r2bo4llm": {
+    "n": 23,
+    "mean_diff": -0.304,
+    "wins": 3,
+    "losses": 8
+   },
+   "r2base - r2cliche": {
+    "n": 22,
+    "mean_diff": -0.273,
+    "wins": 3,
+    "losses": 8
+   },
+   "r2base - r2ground": {
+    "n": 22,
+    "mean_diff": -0.227,
+    "wins": 1,
+    "losses": 5
+   },
+   "r2base - r2plan": {
+    "n": 22,
+    "mean_diff": -0.727,
+    "wins": 1,
+    "losses": 13
+   },
+   "r2bo4auto - r2bo4llm": {
+    "n": 24,
+    "mean_diff": 0.083,
+    "wins": 9,
+    "losses": 8
+   },
+   "r2bo4auto - r2cliche": {
+    "n": 23,
+    "mean_diff": 0.13,
+    "wins": 6,
+    "losses": 5
+   },
+   "r2bo4auto - r2ground": {
+    "n": 23,
+    "mean_diff": 0.13,
+    "wins": 8,
+    "losses": 5
+   },
+   "r2bo4auto - r2plan": {
+    "n": 23,
+    "mean_diff": -0.348,
+    "wins": 3,
+    "losses": 9
+   },
+   "r2bo4llm - r2cliche": {
+    "n": 23,
+    "mean_diff": 0.087,
+    "wins": 7,
+    "losses": 6
+   },
+   "r2bo4llm - r2ground": {
+    "n": 23,
+    "mean_diff": 0.043,
+    "wins": 4,
+    "losses": 3
+   },
+   "r2bo4llm - r2plan": {
+    "n": 23,
+    "mean_diff": -0.391,
+    "wins": 3,
+    "losses": 10
+   },
+   "r2cliche - r2ground": {
+    "n": 22,
+    "mean_diff": 0.0,
+    "wins": 6,
+    "losses": 5
+   },
+   "r2cliche - r2plan": {
+    "n": 23,
+    "mean_diff": -0.478,
+    "wins": 3,
+    "losses": 11
+   },
+   "r2ground - r2plan": {
+    "n": 22,
+    "mean_diff": -0.455,
+    "wins": 1,
+    "losses": 9
+   }
+  }
+ },
+ "soak_families": {}
+}

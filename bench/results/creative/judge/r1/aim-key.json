@@ -1,0 +1,758 @@
+{
+ "1": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I hope she will eat something and stop looking so hollow."
+ },
+ "2": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I hope she will eat something before she breaks."
+ },
+ "3": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I just want him to eat something warm and stop staring at the stove."
+ },
+ "4": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "5": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I hope she will eat something soon."
+ },
+ "6": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "7": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I just want him to eat something warm and stop being quiet."
+ },
+ "8": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "9": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "10": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "11": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop questioning my movements."
+ },
+ "12": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I just want him to eat something warm and stop being quiet."
+ },
+ "13": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "14": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want them to leave so I can finish this work."
+ },
+ "15": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "16": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over some trivial thing."
+ },
+ "17": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "18": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "19": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I want them to leave me be, just for once."
+ },
+ "20": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear this commitment will ruin the simple pleasure of a good meal."
+ },
+ "21": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "22": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "23": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I just hope he isn't thinking about what he saw at the barricade."
+ },
+ "24": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I hope she will finally eat something decent."
+ },
+ "25": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear this commitment might ruin the simple pleasure of a good meal."
+ },
+ "26": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear this whole thing might not turn out as planned."
+ },
+ "27": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "28": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I just needed to make sure the perimeter was secure."
+ },
+ "29": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I hope the food is good enough for this big day."
+ },
+ "30": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "31": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "32": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I hope this marriage brings us a steady supply of good meals."
+ },
+ "33": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear this whole thing might end before the next meal."
+ },
+ "34": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our stations."
+ },
+ "35": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "Fear another confrontation over some meager meal."
+ },
+ "36": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than any bad harvest."
+ },
+ "37": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I just want him to eat something warm."
+ },
+ "38": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "39": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "Fear she'll bring up the lip again at dinner."
+ },
+ "40": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "fear she will strike me again"
+ },
+ "41": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our stations."
+ },
+ "42": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I just want a proper table to eat at, um..."
+ },
+ "43": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "44": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our living conditions."
+ },
+ "45": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "46": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "47": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "48": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I just needed a moment away from the kitchen."
+ },
+ "49": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "50": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I just want her to stop asking questions."
+ },
+ "51": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I hope he notices how much better my station is than his."
+ },
+ "52": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I just want to get back to the cooking before I get in trouble."
+ },
+ "53": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "54": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I just want a proper table to eat at, not this..."
+ },
+ "55": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the courtyard fight again."
+ },
+ "56": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle again."
+ },
+ "57": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I just needed to see what we had left."
+ },
+ "58": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "Fear another confrontation over some meager meal."
+ },
+ "59": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I want him to acknowledge the work I put in."
+ },
+ "60": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I want them to notice the difference in our living conditions."
+ },
+ "61": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I want them to feel the same slight discomfort I feel."
+ },
+ "62": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "63": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "Fear she'll bring up the rifle fight again."
+ },
+ "64": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I just want him to leave me to my work."
+ },
+ "65": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "66": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop watching me like I'm some stray animal."
+ },
+ "67": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "68": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 0,
+  "actor": 5,
+  "text": "I want them to notice the difference in our spaces."
+ },
+ "69": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I worry about her not eating, but I don't want to push her."
+ },
+ "70": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "71": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "72": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop watching me so I can sleep."
+ },
+ "73": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I worry about her not eating, given the recent events."
+ },
+ "74": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "Fear another sharp word from her, like the one that split my lip."
+ },
+ "75": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop watching me like I'm some stray animal."
+ },
+ "76": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop watching me like I'm some stray animal."
+ },
+ "77": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "78": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 3,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "79": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "80": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want him to acknowledge the difference in our living spaces."
+ },
+ "81": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "82": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "83": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "84": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I just needed to check the stores, nothing more."
+ }
+}

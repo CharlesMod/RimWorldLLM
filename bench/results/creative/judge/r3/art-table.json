@@ -1,0 +1,44 @@
+{
+ "probe": {
+  "art": {
+   "r2base": {
+    "n": 24,
+    "mean": 2.917,
+    "share_le2": 0.167
+   },
+   "r2ground": {
+    "n": 24,
+    "mean": 2.667,
+    "share_le2": 0.375
+   },
+   "r3artv2": {
+    "n": 24,
+    "mean": 2.875,
+    "share_le2": 0.208
+   }
+  }
+ },
+ "paired": {
+  "art": {
+   "r2base - r2ground": {
+    "n": 24,
+    "mean_diff": 0.25,
+    "wins": 10,
+    "losses": 3
+   },
+   "r2base - r3artv2": {
+    "n": 24,
+    "mean_diff": 0.042,
+    "wins": 6,
+    "losses": 5
+   },
+   "r2ground - r3artv2": {
+    "n": 24,
+    "mean_diff": -0.208,
+    "wins": 3,
+    "losses": 7
+   }
+  }
+ },
+ "soak_families": {}
+}

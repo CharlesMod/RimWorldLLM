@@ -1,0 +1,650 @@
+{
+ "1": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the next meal."
+ },
+ "2": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 2,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference between our spaces."
+ },
+ "3": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 4,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than any winter."
+ },
+ "4": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 6,
+  "actor": 5,
+  "text": "I want them to leave so I can finish this work."
+ },
+ "5": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "6": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope this marriage doesn't ruin the next meal."
+ },
+ "7": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "8": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 6,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "9": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 6,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our stations."
+ },
+ "10": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 7,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the feast."
+ },
+ "11": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 7,
+  "actor": 9,
+  "text": "I worry about her not eating, but I don't want to push her."
+ },
+ "12": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "13": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 7,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our stations."
+ },
+ "14": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "Fear she'll bring up the rifle fight again before breakfast."
+ },
+ "15": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 4,
+  "actor": 5,
+  "text": "I want them to notice the difference in our living conditions."
+ },
+ "16": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 2,
+  "actor": 9,
+  "text": "I worry about her not eating, given the recent events."
+ },
+ "17": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 6,
+  "actor": 9,
+  "text": "I hope she will eat something soon."
+ },
+ "18": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 7,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "19": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "20": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than any winter."
+ },
+ "21": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 7,
+  "actor": 3,
+  "text": "I hope this doesn't ruin the meal we planned."
+ },
+ "22": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "23": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "24": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 6,
+  "actor": 9,
+  "text": "I hope she will finally eat something."
+ },
+ "25": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 6,
+  "actor": 9,
+  "text": "I hope she will eat something soon."
+ },
+ "26": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 1,
+  "actor": 3,
+  "text": "I fear the weight of this commitment."
+ },
+ "27": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 3,
+  "actor": 9,
+  "text": "I hope she will eat something before she breaks."
+ },
+ "28": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 1,
+  "actor": 5,
+  "text": "I want them to notice the difference in our living conditions."
+ },
+ "29": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 4,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "30": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 3,
+  "actor": 9,
+  "text": "I worry she is letting the grief consume her entirely."
+ },
+ "31": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than any hunger."
+ },
+ "32": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 2,
+  "actor": 3,
+  "text": "Fear she will bring up the rifle fight again."
+ },
+ "33": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 4,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "34": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "35": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope this commitment doesn't ruin the next meal."
+ },
+ "36": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 4,
+  "actor": 5,
+  "text": "I want them to notice the difference in our living conditions."
+ },
+ "37": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 4,
+  "actor": 3,
+  "text": "I fear this commitment will ruin the simple peace we have."
+ },
+ "38": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 6,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "39": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 7,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in space."
+ },
+ "40": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "41": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 3,
+  "actor": 9,
+  "text": "I hope she will eat something soon."
+ },
+ "42": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 2,
+  "actor": 9,
+  "text": "I worry about her not eating, but I don't want to push her."
+ },
+ "43": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 7,
+  "actor": 9,
+  "text": "I hope she will finally eat something decent."
+ },
+ "44": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "45": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 7,
+  "actor": 5,
+  "text": "I want him to feel a bit of the discomfort I feel."
+ },
+ "46": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 1,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our living conditions."
+ },
+ "47": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 6,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "48": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 2,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our living conditions."
+ },
+ "49": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the next meal."
+ },
+ "50": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 4,
+  "actor": 9,
+  "text": "I hope she will eat something before she wastes away."
+ },
+ "51": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "52": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 4,
+  "actor": 2,
+  "text": "I want her to stop watching me like I'm some stray dog."
+ },
+ "53": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 4,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "54": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 3,
+  "actor": 3,
+  "text": "Fear she'll bring up the rifle fight again."
+ },
+ "55": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 4,
+  "actor": 5,
+  "text": "I want them to notice the difference in our spaces."
+ },
+ "56": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 4,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "57": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 5,
+  "actor": 9,
+  "text": "I worry about her not eating, but I don't want to push her."
+ },
+ "58": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 1,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the next meal."
+ },
+ "59": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 1,
+  "actor": 9,
+  "text": "I hope she will finally eat something."
+ },
+ "60": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 1,
+  "actor": 3,
+  "text": "I hope this commitment doesn't ruin the next meal."
+ },
+ "61": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 1,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our stations."
+ },
+ "62": {
+  "run": "p-a7-greedy",
+  "arm": "a7-greedy",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 5,
+  "actor": 9,
+  "text": "I hope they will finally eat something decent."
+ },
+ "63": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 7,
+  "actor": 3,
+  "text": "I fear this whole thing might just turn sour."
+ },
+ "64": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 5,
+  "actor": 9,
+  "text": "I hope she will eat something before she breaks."
+ },
+ "65": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 3,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the feast."
+ },
+ "66": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 4,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the next meal."
+ },
+ "67": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the next meal."
+ },
+ "68": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 2,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "69": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 6,
+  "actor": 5,
+  "text": "I want to see if you'll finally admit you're not better than me."
+ },
+ "70": {
+  "run": "p-a7-aim5",
+  "arm": "a7-aim5",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "71": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 2,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our living spaces."
+ },
+ "72": {
+  "run": "p-a7-aim3",
+  "arm": "a7-aim3",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear the commitment more than the ceremony itself."
+ }
+}

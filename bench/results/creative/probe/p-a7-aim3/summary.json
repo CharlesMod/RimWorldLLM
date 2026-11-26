@@ -1,0 +1,25 @@
+{
+ "arm": "a7-aim3",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true,
+  "aim_sampler": "aim3"
+ },
+ "seed": 7,
+ "reps": 8,
+ "features": {
+  "aim": {
+   "arm": "a7-aim3",
+   "n": 64,
+   "dropped": 7,
+   "latency_median": 1.7746,
+   "latency_p90": 1.9159,
+   "calls_mean": 1.984,
+   "slot_s_mean": 1.7679,
+   "words_mean": 9.6,
+   "share_i_just_want": 0.0,
+   "distinct_aim_share": 0.596,
+   "mean_pairwise_jaccard": 0.0977
+  }
+ }
+}

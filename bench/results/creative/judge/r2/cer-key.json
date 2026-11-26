@@ -1,0 +1,1289 @@
+{
+ "1": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "My hunger is eclipsed by the promise of your next meal, and I will see to it."
+ },
+ "2": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "I vow to walk beside you, friend, through all the salt and the dust."
+ },
+ "3": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "I vow to always have a full larder beside our hearth."
+ },
+ "4": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "I vow to share every meal, every quiet moment, and every sunrise with you, Mara."
+ },
+ "5": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo always was steady like the earth, friend. We must tend to the next meal, though."
+ },
+ "6": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo was steady, friend; he always knew when the rows needed tending. Now, we just need to clear this ground and start on the supper before it gets cold."
+ },
+ "7": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "Mara my sustenance I vow to keep, we'll see about the next meal."
+ },
+ "8": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "I promise to walk beside you, friend, through every good harvest and bitter frost."
+ },
+ "9": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "I vow to always share my rations with you, Mara."
+ },
+ "10": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo was a steady friend, always asking about the lines. I'll go check on the stew now, friend."
+ },
+ "11": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "I choose you, Cy, and all the ground we might stand on."
+ },
+ "12": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "I will keep you safe through every turn of this hard life, friend."
+ },
+ "13": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo always cared about his rows, friend; we should see about getting a new assignment after this."
+ },
+ "14": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "Hale was tough, tough; he died out there at the barricade when I couldn't reach him."
+ },
+ "15": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo always kept to his rows, just like he asked me. Bram, Cy, Dee, you all alright?"
+ },
+ "16": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "Enough. Hale was tough, tough."
+ },
+ "17": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "He fought hard, my brother fought hard."
+ },
+ "18": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "My light stays with you, Cy, through all the harsh winters ahead."
+ },
+ "19": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "Mara, I pledge my life to you, and our next meal will be substantial."
+ },
+ "20": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Hale, he was solid, reliable, a decent man, enough."
+ },
+ "21": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo always had such focus on things, even the straightness of his rice rows. I hope he found a good rest, friend."
+ },
+ "22": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "I vow to bring you good sustenance and a mind for good company."
+ },
+ "23": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "We will see about a hundred meals in this life, Mara."
+ },
+ "24": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "He was tough, always pushing through, always pushing through."
+ },
+ "25": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "He was a quiet soul, always checking the rows, friend. Now we have to tend to the next meal, though."
+ },
+ "26": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo always had those strange questions about the rows, didn't he, friend? Let's get this over with and then see what's next for dinner."
+ },
+ "27": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "I will always be here for you, friend."
+ },
+ "28": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "I will always be by your side, my friend, through sun and frost."
+ },
+ "29": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "To Mara, I offer the sustenance of a long life and good meals. We'll see."
+ },
+ "30": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "Mara you are my sustenance and my fine meal."
+ },
+ "31": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "I vow to always share my portion with you, Mara."
+ },
+ "32": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Hale took a bullet at the barricade, and I just couldn't get to him in time. Enough."
+ },
+ "33": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "Hale was strong. Strong enough to carry the burden, enough to endure."
+ },
+ "34": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "May our shared meals be plentiful and the coming years number at least one hundred."
+ },
+ "35": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "I will stand by you through every harvest and every raid, Cy."
+ },
+ "36": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "I will stay by your side, Cy, through the dust and the storms."
+ },
+ "37": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "He always worried about the straight lines, friend, I hope he finds some peace now."
+ },
+ "38": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo asked about the rows even when he was dying, friend. Next, we need to get the stew ready."
+ },
+ "39": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Enough. He fought hard, that much is clear. I only recall the shot."
+ },
+ "40": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "I promise to walk beside you through all the harsh seasons, friend."
+ },
+ "41": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "Enough. Hale was strong, strong but always too loud."
+ },
+ "42": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo always worried about the rows; I hope he finds a straight patch somewhere."
+ },
+ "43": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo was a quiet man who liked his rows straight, friend. We'll see about getting back to the kitchen soon."
+ },
+ "44": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I vow to stand beside you through whatever the dust brings, friend."
+ },
+ "45": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Odo asked about the rows even in the end; I hope his work is done now, friend."
+ },
+ "46": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "He was a steady hand, friend, always kept the ledger straight, even when we were at our weakest. Now we have more work to do, though."
+ },
+ "47": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "I vow to walk beside you, friend, through every harsh winter and every rising sun."
+ },
+ "48": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo, friend, always checked his rows straight, even as he scraped the ground."
+ },
+ "49": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "Cy, you are my anchor in this hard soil, and I pledge myself to you."
+ },
+ "50": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "He cared enough about the rows even in the end, friend. Now we put him to rest."
+ },
+ "51": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "He always had an eye for order, even in the muck, didn't he, friends?"
+ },
+ "52": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "I vow to keep the fires stoked and always share the provisions with you, Mara."
+ },
+ "53": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Hale, my brother, he was always too quick, too loud. Enough. He was always too quick, too loud."
+ },
+ "54": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "Mara, my sustenance, I promise always to share the best portion of the day with you."
+ },
+ "55": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo was quiet, friend, always checking those rows. Now the work for dinner awaits, though."
+ },
+ "56": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "Mara, you are the best meal this colony has ever produced; we'll see what tomorrow brings."
+ },
+ "57": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Enough. He was strong, tough, and he took what was put in front of him, enough."
+ },
+ "58": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "He was tough, my brother, and he died in a messy way. Enough."
+ },
+ "59": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I give you my life, Cy, through every harsh season."
+ },
+ "60": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo worried about the lines of the rice field right until the very end, friend. We should all get back to chopping wood now."
+ },
+ "61": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "Hale was a rough man, but he was my brother, my brother."
+ },
+ "62": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "I vow to walk the path beside you, friend."
+ },
+ "63": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "Enough. Hale was solid, a good strong man who did his part until the end."
+ },
+ "64": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "May this union be as strong as the earth beneath our feet, Cy."
+ },
+ "65": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo was a good friend to have around; he asked about the rows in the rice field every morning."
+ },
+ "66": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "Mara, you are the finest meal this harsh world could offer, and I shall see you through every single course."
+ },
+ "67": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo cared about the straight rows more than much else, friend. I hope his rest is peaceful after all that work."
+ },
+ "68": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Enough. He was tough. Tough."
+ },
+ "69": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "I vow to share every meal and every sunrise with you, Mara; we'll see."
+ },
+ "70": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo cared about the rows, friend; I remember him asking me about them even when he was gone."
+ },
+ "71": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "I vow to see all our meals together, Mara."
+ },
+ "72": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Enough. He was tough, and he died fighting."
+ },
+ "73": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "My whole life has found its way to you, Cy, friend."
+ },
+ "74": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "Cy, I will be by your side through the heat and the cold."
+ },
+ "75": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "I swear by the light, Cy, that I will walk this path with you always."
+ },
+ "76": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Odo was always so focused on things being just right, even when the fields were just dust. What's next, friend?"
+ },
+ "77": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "I promise to ensure every meal we share is fit to the finest taste."
+ },
+ "78": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "Mara, may the next few thousand days of sharing meals be better than any treaty."
+ },
+ "79": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "Mara, the sustenance I crave and the peace I seek, I pledge myself to you."
+ },
+ "80": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "Cy friend, I take you as my partner for all weather and all lean years."
+ },
+ "81": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "I promise to always share the next meal with you."
+ },
+ "82": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "I swear I'll always have enough for two meals, Mara. We'll see."
+ },
+ "83": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "He was a hunter, my brother, shot at the barricade. Enough. Enough."
+ },
+ "84": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "Enough. He was my brother."
+ },
+ "85": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "Enough. He was tough, a hunter, and he is gone."
+ },
+ "86": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Odo always made sure the rows were straight, friend; we miss him working with us."
+ },
+ "87": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "I vow to always find the best ingredients for your next meal."
+ },
+ "88": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "By your side I will stand through all this world, friend."
+ },
+ "89": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "Mara your sustenance and my future we will see."
+ },
+ "90": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo always cared about things being right, even if he didn't say much, friend. I need to get this meal started after this."
+ },
+ "91": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "Cy friend, my heart and my quiet light are yours for all these seasons."
+ },
+ "92": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "He asked if the rows were straight, even near the end. Now there is just the quiet field vigil."
+ },
+ "93": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "He always worried about the neatness of his rice rows, didn't he, friend? I hope the ground treats him well now."
+ },
+ "94": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Enough. He was strong. He was strong enough to do what he did."
+ },
+ "95": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "I will keep you, Cy, through the dry years and the bitter cold."
+ },
+ "96": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Enough. He was tough, tough, and he hunted the beasts."
+ },
+ "97": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Odo was always asking about the rows, friend; I hope the next harvest is straight for him."
+ },
+ "98": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Enough. Hale was tough, always pushing until the end."
+ },
+ "99": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "By my ancestors, I pledge my years to you, Cy."
+ },
+ "100": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "I remember him asking if the rows were straight, friend. Work follows after this, though."
+ },
+ "101": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 4,
+  "actor": 4,
+  "text": "Enough. He fought hard, he was tough, and now he is quiet."
+ },
+ "102": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "Mara, you are the best meal I have ever tasted; we'll see about the next one."
+ },
+ "103": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo always cared about the straight rows, and he always did his best with what he had."
+ },
+ "104": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "He was a brute to lose, a fighter at the barricade, that's what I remember. Enough."
+ },
+ "105": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Enough. Hale was tough. He brought down the thrumbo."
+ },
+ "106": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "I vow to always share my meager rations with you, Mara."
+ },
+ "107": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo was always curious about straight lines, even in his passing. We will miss his quiet presence among us, friend."
+ },
+ "108": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I promise to always keep you safe, friend, whatever this frontier throws at us."
+ },
+ "109": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo was a quiet friend, and I remember him asking if the rows were straight when he passed. We should all get back to mending those fences when this is done."
+ },
+ "110": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Hale was tough, even if he was a brute. He was my brother, and now he is done."
+ },
+ "111": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "I promise to always share the best portions of whatever meal we manage to procure."
+ },
+ "112": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "He was tough, my brother, tough."
+ },
+ "113": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "The barricade took him, that's all there is to it; I could not get to him in time, not in time."
+ },
+ "114": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 3,
+  "actor": 3,
+  "text": "I promise you sustenance through this life and all the calories that follow."
+ },
+ "115": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo asked about the rows of rice; a man who kept things straight for us."
+ },
+ "116": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "I give you my steady hand, Cy, through all that dust and cold."
+ },
+ "117": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "I will stand by you through the turning of every season, friend."
+ },
+ "118": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "I promise to always share the best portions of our coming meals with you."
+ },
+ "119": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "With this supper, I promise to share every calorie with you, Mara."
+ },
+ "120": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "He was stubborn, always pushing until the end, that was Hale, that was Hale."
+ },
+ "121": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 1,
+  "actor": 3,
+  "text": "I give you my hunger and all my future harvests, we'll see."
+ },
+ "122": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I pledge my life to you, Cy, through all the shifting winds and the quiet years."
+ },
+ "123": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 2,
+  "actor": 3,
+  "text": "My life is better now you are mine, Mara, we will see."
+ },
+ "124": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 2,
+  "actor": 4,
+  "text": "He was strong, tough. Strong, tough."
+ },
+ "125": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 0,
+  "actor": 9,
+  "text": "I vow to walk beside you through all the seasons, friend."
+ },
+ "126": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 2,
+  "actor": 9,
+  "text": "I will stay with you always, Cy, through sun and shadow."
+ },
+ "127": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo was steady, always making sure the rows were straight for us, friend. We’ll keep his memory honored while we start the supper prep."
+ },
+ "128": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Poor Odo, I remember him asking about the rows, friend. We need to get these shovels back to the field soon."
+ },
+ "129": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "I will always be here for you, friend, as the weather turns or not."
+ },
+ "130": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 3,
+  "actor": 9,
+  "text": "I vow to walk beside you through all the sharp edges, friend."
+ },
+ "131": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "Enough. Hale was tough."
+ },
+ "132": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 5,
+  "actor": 4,
+  "text": "He was a good fighter."
+ },
+ "133": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Odo always made sure the fences were strong, friend, so we all had a good place to rest."
+ },
+ "134": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 1,
+  "actor": 9,
+  "text": "I pledge my strength to you, friend, as long as this dirt remains beneath my feet."
+ },
+ "135": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Enough. Hale always had a way of taking the worst thing and just… absorbing it."
+ },
+ "136": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 5,
+  "actor": 3,
+  "text": "My patience with meager rations is matched only by my devotion to you, Mara."
+ },
+ "137": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I pledge my strength to you, Cy, through all the harsh years ahead."
+ },
+ "138": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "He always needed to push his limits, that one. Enough."
+ },
+ "139": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 5,
+  "actor": 9,
+  "text": "I promise to stand by you, Cy, through every dust storm we face."
+ },
+ "140": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 0,
+  "actor": 3,
+  "text": "Mara, you are the only sustenance I ever truly require."
+ },
+ "141": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "vows",
+  "case": "vow_cy",
+  "rep": 4,
+  "actor": 3,
+  "text": "I promise to always ensure there is plenty of food for us, Mara."
+ },
+ "142": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "vows",
+  "case": "vow_mara",
+  "rep": 4,
+  "actor": 9,
+  "text": "I will always stand by you, my friend, through whatever storm comes."
+ },
+ "143": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "eulogy",
+  "case": "eulogy_hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Hale was always steady enough. He was always steady enough."
+ }
+}

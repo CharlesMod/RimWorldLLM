@@ -1,0 +1,1262 @@
+{
+ "1": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Grassland Pod Crash: the open grassland where the escape pods landed"
+ },
+ "2": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Grassland Crawl: open grassland"
+ },
+ "3": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara married"
+ },
+ "4": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Grassland Three Pods: where the first group crashed"
+ },
+ "5": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Grassland Crash Landing: open grassland where the first group landed"
+ },
+ "6": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Rice Field: Odo's final patch"
+ },
+ "7": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Crash Site: the open grassland where the pods landed"
+ },
+ "8": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field Wake: where Old Odo died"
+ },
+ "9": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds' ambush: the raid from the west"
+ },
+ "10": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "The Rice Field Sleep: where Old Odo died"
+ },
+ "11": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Barricade Shot: Where Hale was killed"
+ },
+ "12": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Open Grassland: where the three escape pods landed"
+ },
+ "13": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Ana's Field Wake: the funeral by the rice field"
+ },
+ "14": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Vow Gathering: where Cy and Mara married"
+ },
+ "15": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "Yard Vows: The marriage of Cy and Mara"
+ },
+ "16": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Wedding: where Cy and Mara married"
+ },
+ "17": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Vows: the place where Cy and Mara were married"
+ },
+ "18": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Ceremony: The place Cy and Mara were married with Dee officiating"
+ },
+ "19": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Crash: the open grassland where the pods landed"
+ },
+ "20": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Crash: open grassland"
+ },
+ "21": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Rice Field Rest: where Old Odo died"
+ },
+ "22": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "Hounds West Ambush: the raid from the west by the Salt Hounds"
+ },
+ "23": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Crash Pods: open grassland where first group arrived"
+ },
+ "24": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vow: the yard where Cy and Mara were married"
+ },
+ "25": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "West Barricade: where Hale was shot dead"
+ },
+ "26": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo's Rice Field: where he died"
+ },
+ "27": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Hounds' Barricade: where Hale was shot dead"
+ },
+ "28": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "Yard Vows: marriage of Cy and Mara"
+ },
+ "29": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "The Yard Vows: where Cy and Mara married"
+ },
+ "30": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Vows: the place of Cy and Mara's marriage"
+ },
+ "31": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Salt Hound Strike: the raid from the west"
+ },
+ "32": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Grassland Wreck: the open grassland where the first group landed"
+ },
+ "33": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Crash: where the first group landed"
+ },
+ "34": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Vows: the yard where Cy and Mara married"
+ },
+ "35": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Rice Field Rest: where Old Odo died"
+ },
+ "36": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Rice Field Passing: where Old Odo died"
+ },
+ "37": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Rice Field Vigil: beside where Old Odo died"
+ },
+ "38": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Salt Hound Barracks: the place where Hale was shot dead"
+ },
+ "39": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Rice Field Rest: Odo's final spot"
+ },
+ "40": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Crash Grass: the open grassland where first group emerged"
+ },
+ "41": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Pod Landing: open grassland where three escape pods landed"
+ },
+ "42": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Rice Field Edge: where Old Odo passed"
+ },
+ "43": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Grassland Crash Site: open grassland where they landed"
+ },
+ "44": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married"
+ },
+ "45": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Crash Site: where the first three landed"
+ },
+ "46": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Landing Field: where the first group crashed"
+ },
+ "47": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field Rest: Old Odo's final resting spot"
+ },
+ "48": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Crawl: The open grassland where they landed"
+ },
+ "49": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field Death: Old Odo's passing by his field"
+ },
+ "50": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Vows: the location of Cy and Mara's marriage"
+ },
+ "51": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland Crash: open grassland"
+ },
+ "52": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Barricade Shot: the place Hale was shot dead"
+ },
+ "53": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "Yard Vows: the ceremony where Cy and Mara married"
+ },
+ "54": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Rice Field Death: Old Odo's resting spot"
+ },
+ "55": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Odo's Field: the rice field where Old Odo died"
+ },
+ "56": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Grassland Crash: where the first group landed"
+ },
+ "57": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hound Raid: the attack from the west"
+ },
+ "58": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Rice Field Rest: the spot Old Odo died by"
+ },
+ "59": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hound Raid: the attack from the west"
+ },
+ "60": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Rice Field Rest: where Old Odo died"
+ },
+ "61": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: the location of Cy and Mara's marriage"
+ },
+ "62": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field: where Old Odo died"
+ },
+ "63": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "Barricade's End: where Hale was shot dead"
+ },
+ "64": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hound Raid: raid from the west"
+ },
+ "65": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Grassland Crash Site: the open grassland where the first group landed"
+ },
+ "66": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Vows: the marriage ceremony in the yard"
+ },
+ "67": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 4,
+  "actor": null,
+  "text": "Grassland Crash Site: open grassland where the first group crashed"
+ },
+ "68": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale's Fall: the barricade where Hale was shot dead"
+ },
+ "69": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Pod Crash Landing: the open grassland arrival"
+ },
+ "70": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara married"
+ },
+ "71": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "Salt Hound Clash: the raid from the west"
+ },
+ "72": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "Yard Vows: the marriage of Cy and Mara"
+ },
+ "73": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Odo's Rice Field: where Old Odo died"
+ },
+ "74": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Crash Site: the open grassland where they crawled clear"
+ },
+ "75": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Rice Field: Odo's patch"
+ },
+ "76": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland Crash Site: the open grassland where three escape pods landed"
+ },
+ "77": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "Salt Hound Raid: west barricade"
+ },
+ "78": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "Yard Knot: the place Cy and Mara wed"
+ },
+ "79": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Field End: Old Odo's rice field"
+ },
+ "80": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: the yard where Cy and Mara were married"
+ },
+ "81": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married"
+ },
+ "82": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Grassland Wreckers: open grassland where escape pods landed"
+ },
+ "83": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field: Odo's last patch"
+ },
+ "84": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds' West Push: the raid from the west by Mirel Dask"
+ },
+ "85": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds Raid: the raid from the west"
+ },
+ "86": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Vows: the yard where Cy and Mara were married"
+ },
+ "87": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Rice Field End: Old Odo's resting place"
+ },
+ "88": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale's Barricade: the spot where Hale was shot"
+ },
+ "89": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "Yard Vows: Cy and Mara's wedding in the yard"
+ },
+ "90": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Rice Field End: Old Odo's final resting spot"
+ },
+ "91": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Field Dust: where Old Odo died beside his rice field"
+ },
+ "92": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland crash site: where the three escape pods landed"
+ },
+ "93": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Quiet field vigil: the rice field beside Old Odo"
+ },
+ "94": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Grassland Crawl: open grassland"
+ },
+ "95": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Knot: the marriage of Cy and Mara"
+ },
+ "96": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Rice Field: Old Odo's final resting place"
+ },
+ "97": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Grassland Pod Drop: the open grassland where the first group landed"
+ },
+ "98": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 5,
+  "actor": null,
+  "text": "Salt Hound Strike: raid from the west"
+ },
+ "99": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Rice Field End: Old Odo's spot"
+ },
+ "100": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale's End: the barricade where Hale was shot"
+ },
+ "101": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "The West Raid: the attack from the west"
+ },
+ "102": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "Yard Vow Spot: the yard where Cy and Mara married"
+ },
+ "103": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 2,
+  "actor": null,
+  "text": "Rice Field Watch: Old Odo's funeral beside his rice field"
+ },
+ "104": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hound Shot: Hale at the barricade"
+ },
+ "105": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married"
+ },
+ "106": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland Pod Crash: the open grassland where the three escape pods landed"
+ },
+ "107": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Hounds' Barricade: the spot where Hale was shot"
+ },
+ "108": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale's Block: the barricade where Hale was shot dead"
+ },
+ "109": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Pod Drop: the crash onto open grassland"
+ },
+ "110": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 5,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara married"
+ },
+ "111": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 5,
+  "actor": null,
+  "text": "Odo's Rice Field: where Old Odo died"
+ },
+ "112": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Vows: the marriage of Cy and Mara"
+ },
+ "113": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 4,
+  "actor": null,
+  "text": "Hounds' Barricade: where Hale was shot dead"
+ },
+ "114": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard vows: the marriage ceremony"
+ },
+ "115": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale's Stand: the barricade where Hale was shot dead"
+ },
+ "116": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married"
+ },
+ "117": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "West Barracks: where Hale was shot dead"
+ },
+ "118": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds' western charge: the raid from the west"
+ },
+ "119": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: the yard where Cy and Mara were married"
+ },
+ "120": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Union: where Cy and Mara married"
+ },
+ "121": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 4,
+  "actor": null,
+  "text": "Yard Vows: Cy and Mara's wedding spot"
+ },
+ "122": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 3,
+  "actor": null,
+  "text": "Rice Field: Odo's last patch"
+ },
+ "123": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Pods on Grassland: three escape pods landing on open grassland"
+ },
+ "124": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "The Grass Field: open grassland"
+ },
+ "125": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Wreck: the open grassland where three pods landed"
+ },
+ "126": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hound Crash: the west raid at the barricade"
+ },
+ "127": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Ana's field watch: Old Odo's rice field"
+ },
+ "128": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hound West Rush: the raid from the west by Mirel Dask"
+ },
+ "129": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Barricade Shootout: the place Hale was shot dead"
+ },
+ "130": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 2,
+  "actor": null,
+  "text": "The Yard Ceremony: the wedding where Cy and Mara wed"
+ },
+ "131": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Barricade Shot: where Hale was shot dead"
+ },
+ "132": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Rice field End: where Old Odo died"
+ },
+ "133": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married with Dee"
+ },
+ "134": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Rice Field: where Old Odo died"
+ },
+ "135": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Grassland Pod Crash: the open grassland where the three escape pods landed"
+ },
+ "136": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 4,
+  "actor": null,
+  "text": "Field's Morning Watch: Dee sitting with Old Odo's body until morning"
+ },
+ "137": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 5,
+  "actor": null,
+  "text": "Grassland Crash Site: where three escape pods landed"
+ },
+ "138": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds Attack: the western raid by Mirel Dask"
+ },
+ "139": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 3,
+  "actor": null,
+  "text": "Grassland Crash Site: the open grassland where the first group landed"
+ },
+ "140": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Rice Field: where Old Odo died"
+ }
+}

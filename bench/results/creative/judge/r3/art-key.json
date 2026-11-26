@@ -1,0 +1,650 @@
+{
+ "1": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Hale falls backward, shot in the chest, while Mirel Dask of the Salt Hounds lowers a rifle. Smoke chokes the scene behind the barricade. Dee crafts the grim scene in masterwork."
+ },
+ "2": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 1,
+  "actor": 1,
+  "text": "Bram and Kit pull the roofing down against the wind on the barn roof. Lightning splits the sky above the colony. Ana fashioned this piece from scrap."
+ },
+ "3": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 0,
+  "actor": 9,
+  "text": "A silver sculpture shows Hale bracing a spear against the ground as a thrumbo charges across the northern plain under light snow. The piece captures the moment Hale brought down the thrumbo."
+ },
+ "4": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 1,
+  "actor": 1,
+  "text": "Three escape pods burn in the open grassland. Ana, Bram, and Dee crawl clear under the heavy sky. Ana fashioned the piece."
+ },
+ "5": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Wood sculpture shows Old Odo lying among rice stalks while Dee kneels beside him in the light rain of the rice field. Ana, the kind cook, fashioned this small piece."
+ },
+ "6": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "storm",
+  "rep": 4,
+  "actor": 1,
+  "text": "Wood sculpture shows Bram and Kit holding a sheet of roofing against the wind on the barn roof during a violent thunderstorm. The scene captures a frantic moment as lightning splits the sky. Ana crafted this with her industrious hands."
+ },
+ "7": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "storm",
+  "rep": 4,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet of roofing against the wind atop the barn during a lightning-split storm. The small wood sculpture shows their frantic effort as the storm rages."
+ },
+ "8": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "crash",
+  "rep": 1,
+  "actor": 1,
+  "text": "Ana carves this granite piece. It shows Ana, Bram, and Dee crawling clear from burning escape pods in the open grassland under a heavy sky. Bram clutches the spare rifle within the scene."
+ },
+ "9": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Dee kneels beside Old Odo among the rice stalks in the light rain. Old Odo lies still on the ground. This wood sculpture shows that final quiet moment."
+ },
+ "10": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 0,
+  "actor": 2,
+  "text": "Bram crafts this small, heavy sculpture of gold. Cy, Mara, and Dee stand under cut branches in the yard. The colony watches the joyful ceremony."
+ },
+ "11": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Wood shows Old Odo among rice stalks while Dee kneels beside him. The scene takes place in the rice field under light rain. Ana, who cooks, made this small sculpture."
+ },
+ "12": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "crash",
+  "rep": 4,
+  "actor": 1,
+  "text": "Granite depicts three escape pods burning in the yellow grass of the open grassland under a heavy sky. Ana, Bram, and Dee crawl free from the wreckage."
+ },
+ "13": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "raid",
+  "rep": 3,
+  "actor": 5,
+  "text": "Jade depicts Hale fighting Skarn Ashfang of the Ashen Fang raiders at the east gate under a clear sky. The sculpture conveys a desperate struggle against the pressing raiders. Kit, a nervous mechanic, crafted this piece."
+ },
+ "14": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 2,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee stands between them as the colony watches. Bram crafted this small sculpture."
+ },
+ "15": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Dee kneels beside Old Odo in the rice field as light rain falls. Old Odo lies among the stalks. Ana carves this small sculpture from wood."
+ },
+ "16": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "storm",
+  "rep": 5,
+  "actor": 1,
+  "text": "Wood forms a small sculpture. Bram and Kit hold a roof against the wind on the barn roof during a thunderstorm."
+ },
+ "17": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "storm",
+  "rep": 1,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet of wood down against the wind on the barn roof as lightning splits the sky during a violent thunderstorm. The small wood sculpture shows this frantic moment."
+ },
+ "18": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. Ana fashioned this small sculpture. The scene captures a quiet moment in the rice field."
+ },
+ "19": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "raid",
+  "rep": 4,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang near the east gate under a clear sky. The jade sculpture shows the desperate clash between Hale and the Ashen Fang raiders. Kit fashioned this work."
+ },
+ "20": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "feud",
+  "rep": 2,
+  "actor": 3,
+  "text": "Steel sculpture of Cy and Kit grappling in the dirt of the courtyard. Kit's fist is raised while Cy's lip bleeds during the hot morning. The piece shows the fight over the stolen rifle."
+ },
+ "21": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 0,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field as Hale braces a spear into the ground. The sculpture captures the tense pride of that moment on the northern plain. Mara carved this piece."
+ },
+ "22": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo lies in the rice stalks while Dee kneels beside him in the light rain. Ana sculpted this scene."
+ },
+ "23": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 5,
+  "actor": 9,
+  "text": "Silver sculpture depicts Hale bracing a spear as a thrumbo charges across the northern plain in light snow. Mara, a tough maker, crafted this piece."
+ },
+ "24": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "raid",
+  "rep": 4,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang at the east gate. The raiders press hard against the clear sky. Kit sculpted this scene."
+ },
+ "25": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 0,
+  "actor": 3,
+  "text": "In the courtyard, Cy and Kit grapple in the dirt. Kit's fist hangs raised while Cy's lip bleeds during the hot morning. Cy made the sculpture."
+ },
+ "26": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "feud",
+  "rep": 1,
+  "actor": 3,
+  "text": "The steel sculpture shows Cy and Kit grappling in the dirt of the courtyard. Cy's lip bleeds as Kit's fist rises in the hot, dry morning. Cy, who enjoys eating well, crafted this poor piece."
+ },
+ "27": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. The small wooden sculpture shows this final scene in the rice field."
+ },
+ "28": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "crash",
+  "rep": 2,
+  "actor": 1,
+  "text": "Granite depicts escape pods burn in the open grassland beneath a heavy sky. Ana, Bram, and Dee crawl clear of the wreckage."
+ },
+ "29": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "raid",
+  "rep": 3,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders by the east gate under a clear sky. The jade sculpture shows the desperate struggle as the raiders press hard."
+ },
+ "30": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Wood forms a small sculpture of Old Odo among rice stalks. Dee kneels beside him in the light rain. The piece captures this final moment in the rice field. Ana crafted this piece with a careful hand."
+ },
+ "31": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "raid",
+  "rep": 3,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders by the east gate. The rifle and hatchet are raised against the pressing raiders under a clear sky. Kit carved this piece."
+ },
+ "32": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Marble shows Hale falling backward, shot through the chest, while Mirel Dask of the Salt Hounds lowers a rifle behind the barricade in thick smoke. Dee sculpt a tense, grim moment."
+ },
+ "33": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "crash",
+  "rep": 2,
+  "actor": 1,
+  "text": "Granite shows Ana, Bram, and Dee crawling clear of burning escape pods in the open grassland beneath a heavy sky. Ana, who is kind and industrious, crafted this work with a middling spirit."
+ },
+ "34": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "raid",
+  "rep": 4,
+  "actor": 5,
+  "text": "Hale faces Skarn Ashfang and the Ashen Fang raiders at the east gate under a clear sky. The jade sculpture shows the desperate fight. The nervous mechanic fashioned this piece."
+ },
+ "35": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 5,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field while Hale braces a spear into the ground. The small sculpture captures the scene on the northern plain. Mara crafted the piece with skilled hands."
+ },
+ "36": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 2,
+  "actor": 3,
+  "text": "Cy and Kit grapple in the dirt of the courtyard. Kit raises her fist while Cy's lip bleeds. The poor sculpture shows the bitter moment."
+ },
+ "37": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 0,
+  "actor": 2,
+  "text": "Gold captures Cy and Mara standing under cut branches with Dee between them. The colony watches this scene in the yard on a clear evening."
+ },
+ "38": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Mirel Dask lowers a rifle as Hale falls backward, shot through the chest, behind the barricade amidst thick smoke. This marble sculpture shows the moment of the raid."
+ },
+ "39": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 5,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field while Hale braces a spear into the ground. The small silver sculpture captures this tense moment on the northern plain."
+ },
+ "40": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 0,
+  "actor": 9,
+  "text": "Silver shows Hale bracing a spear against the ground as a thrumbo charges across the snowy northern plain. Mara, a tough guard, crafted this piece. The tension of the scene holds its proud weight."
+ },
+ "41": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 0,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass of the open grassland. Ana, Bram, and Dee crawl clear under the heavy sky. The sculpture depicts the scene from the seventh of Aprimay, 5503."
+ },
+ "42": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 0,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee stands between them as the colony watches on a clear evening. Bram crafted this small sculpture."
+ },
+ "43": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "The wood sculpture shows Old Odo lying among rice stalks with Dee kneeling beside him in the rice field during light rain. The piece captures the moment of Old Odo's passing. Ana crafted this excellent work."
+ },
+ "44": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "crash",
+  "rep": 3,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass of the open grassland under a heavy sky. Ana, Bram, and Dee crawl clear from the burning pods. The sculpture is made of granite."
+ },
+ "45": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "feud",
+  "rep": 0,
+  "actor": 3,
+  "text": "Steel sculpture shows Cy and Kit grappling in the courtyard during a hot, dry morning. Kit's fist is raised while Cy's lip bleeds from the struggle. Cy, a bookworm, crafted this piece."
+ },
+ "46": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo lies in the rice stalks while Dee kneels beside him in the rain. Ana carved this small sculpture from a memory."
+ },
+ "47": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "crash",
+  "rep": 1,
+  "actor": 1,
+  "text": "Granite forms a scene where three escape pods burn in the open grassland under a heavy sky. Ana, Bram, and Dee crawl clear from the wreckage. Ana made this good sculpture."
+ },
+ "48": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "crash",
+  "rep": 0,
+  "actor": 1,
+  "text": "The granite sculpture shows Ana, Bram, and Dee crawling clear as three escape pods burn in the open grassland under a heavy sky. Ana, a kind and industrious cook, crafted this work."
+ },
+ "49": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Wood shows Old Odo lying among rice stalks while Dee kneels beside him. Light rain falls over the rice field where Old Odo rests."
+ },
+ "50": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 4,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass under a heavy sky. Ana, Bram, and Dee crawl clear from the fire. The sculpture depicts this moment in the open grassland."
+ },
+ "51": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 2,
+  "actor": 2,
+  "text": "Gold sculpture. Cy and Mara stand under cut branches in the yard, Dee between them, as the colony watches. Bram shaped this piece with tough hands."
+ },
+ "52": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Marble holds Hale falling backward, shot through the chest, while Mirel Dask lowers a rifle within the smoke behind the barricade. Dee, an ascetic, shaped this stark scene."
+ },
+ "53": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "crash",
+  "rep": 4,
+  "actor": 1,
+  "text": "Ana crafts this good granite sculpture. It shows Ana, Bram, and Dee crawling clear of burning escape pods in the open grassland under a heavy sky."
+ },
+ "54": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "storm",
+  "rep": 1,
+  "actor": 1,
+  "text": "Wooden sculpture shows Bram and Kit on the barn roof as lightning splits the sky. They hold a sheet of roofing down amidst a violent thunderstorm. The piece was made by Ana."
+ },
+ "55": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "crash",
+  "rep": 3,
+  "actor": 1,
+  "text": "Granite captures Ana, Bram, and Dee crawling from burning escape pods in the open grassland. The heavy sky hangs over the scene of their landing. Ana, a kind and industrious cook, fashioned this work."
+ },
+ "56": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 1,
+  "actor": 3,
+  "text": "Cy and Kit grapple in the dirt of the courtyard. Kit's fist rises while Cy's lip bleeds in the hot morning sun. Cy made this sculpture."
+ },
+ "57": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo lies within the rice stalks while Dee kneels close beside him. Light rain falls upon the scene in the rice field. Ana fashioned this small sculpture."
+ },
+ "58": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Old Odo lies among rice stalks while Dee kneels beside him in the light rain. The wood sculpture shows the scene at the rice field."
+ },
+ "59": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Hale falls backward, pierced through the chest, as Mirel Dask lowers a rifle in the smoke behind the barricade. The large marble sculpture shows the moment."
+ },
+ "60": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. Ana crafted this small sculpture."
+ },
+ "61": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "feud",
+  "rep": 0,
+  "actor": 3,
+  "text": "Steel depicts Cy and Kit grappling in the dirt of the courtyard on a hot morning. Kit's fist hangs raised over Cy, whose lip bleeds from the struggle."
+ },
+ "62": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 5,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet against the strong wind on the barn roof. Lightning splits the sky during a violent thunderstorm. Ana made this small sculpture."
+ },
+ "63": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hale",
+  "rep": 1,
+  "actor": 4,
+  "text": "Hale falls backward, a rifle held by Mirel Dask behind the barricade in thick smoke. Dee crafts this large sculpture."
+ },
+ "64": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 2,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath cut branches in the yard as Dee joins them. The gold sculpture shows the whole colony watching this moment."
+ },
+ "65": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 3,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass as Ana, Bram, and Dee crawl clear. Ana crafted this large sculpture."
+ },
+ "66": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "feud",
+  "rep": 2,
+  "actor": 3,
+  "text": "In the courtyard, Cy and Kit grapple in the dirt. Kit’s fist is raised and Cy’s lip bleeds. The steel sculpture shows the fight over the stolen rifle on a hot, dry morning."
+ },
+ "67": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "feud",
+  "rep": 1,
+  "actor": 3,
+  "text": "Steel depicts Cy and Kit grappling in the dirt of the courtyard on a hot, dry morning. Kit's fist hangs raised while Cy's lip bleeds from the struggle over the stolen rifle."
+ },
+ "68": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 4,
+  "actor": 1,
+  "text": "Bram and Kit secure roofing on the barn as lightning tears the sky. The small sculpture captures the frantic moment on the barn roof during a violent thunderstorm. Ana shaped this piece."
+ },
+ "69": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "storm",
+  "rep": 5,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet of wood down as lightning splits the sky over the barn. The storm rages in the scene. This small wood sculpture captures the violent weather."
+ },
+ "70": {
+  "run": "p-r3artv2",
+  "arm": "r3artv2",
+  "feature": "art",
+  "case": "crash",
+  "rep": 0,
+  "actor": 1,
+  "text": "Granite holds Ana, Bram, and Dee crawling from burning escape pods in the open grassland beneath a heavy sky. The three individuals appear as they make it clear."
+ },
+ "71": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 2,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass under a heavy sky. Ana, Bram, and Dee crawl clear of the wreckage. Ana crafted the sculpture."
+ },
+ "72": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "art",
+  "case": "odo",
+  "rep": 5,
+  "actor": 1,
+  "text": "Wood sculptors create this piece. Old Odo lies among rice stalks while Dee kneels nearby in the light rain."
+ }
+}

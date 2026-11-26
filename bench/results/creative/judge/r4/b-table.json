@@ -1,0 +1,87 @@
+{
+ "probe": {
+  "lore": {
+   "r2base": {
+    "n": 23,
+    "mean": 2.522,
+    "share_le2": 0.478
+   },
+   "r3final": {
+    "n": 24,
+    "mean": 3.167,
+    "share_le2": 0.083
+   }
+  },
+  "recap": {
+   "r2base": {
+    "n": 18,
+    "mean": 2.611,
+    "share_le2": 0.444
+   },
+   "r3final": {
+    "n": 18,
+    "mean": 3.111,
+    "share_le2": 0.111
+   }
+  },
+  "eulogy": {
+   "r2base": {
+    "n": 12,
+    "mean": 2.0,
+    "share_le2": 0.833
+   },
+   "r3final": {
+    "n": 11,
+    "mean": 2.455,
+    "share_le2": 0.545
+   }
+  },
+  "vows": {
+   "r2base": {
+    "n": 12,
+    "mean": 2.333,
+    "share_le2": 0.667
+   },
+   "r3final": {
+    "n": 12,
+    "mean": 2.333,
+    "share_le2": 0.667
+   }
+  }
+ },
+ "paired": {
+  "lore": {
+   "r2base - r3final": {
+    "n": 23,
+    "mean_diff": -0.652,
+    "wins": 1,
+    "losses": 13
+   }
+  },
+  "recap": {
+   "r2base - r3final": {
+    "n": 18,
+    "mean_diff": -0.5,
+    "wins": 1,
+    "losses": 8
+   }
+  },
+  "eulogy": {
+   "r2base - r3final": {
+    "n": 11,
+    "mean_diff": -0.364,
+    "wins": 2,
+    "losses": 5
+   }
+  },
+  "vows": {
+   "r2base - r3final": {
+    "n": 12,
+    "mean_diff": 0.0,
+    "wins": 2,
+    "losses": 2
+   }
+  }
+ },
+ "soak_families": {}
+}

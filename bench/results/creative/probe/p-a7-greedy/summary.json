@@ -1,0 +1,25 @@
+{
+ "arm": "a7-greedy",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true,
+  "aim_sampler": ""
+ },
+ "seed": 7,
+ "reps": 8,
+ "features": {
+  "aim": {
+   "arm": "a7-greedy",
+   "n": 64,
+   "dropped": 11,
+   "latency_median": 1.7305,
+   "latency_p90": 1.8505,
+   "calls_mean": 1.969,
+   "slot_s_mean": 1.7169,
+   "words_mean": 9.23,
+   "share_i_just_want": 0.0,
+   "distinct_aim_share": 0.604,
+   "mean_pairwise_jaccard": 0.0989
+  }
+ }
+}

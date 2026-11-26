@@ -1,0 +1,668 @@
+{
+ "1": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Rice field side: the location of Old Odo's death"
+ },
+ "2": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Old Odo: rice field"
+ },
+ "3": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds: west raid"
+ },
+ "4": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "yard with: Open Grassland"
+ },
+ "5": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Open Grassland: Where the pods landed"
+ },
+ "6": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds: west raid"
+ },
+ "7": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hounds: the raiding west"
+ },
+ "8": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hound Scuffle: raid from the west"
+ },
+ "9": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Open Grassland: open grassland"
+ },
+ "10": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard with: yard with"
+ },
+ "11": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds: The raid from the west"
+ },
+ "12": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Dee's Yard: yard with"
+ },
+ "13": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "The Grass Landing: where the first escape pods landed"
+ },
+ "14": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "The Salt Hounds: raid from the west"
+ },
+ "15": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Vows: yard with"
+ },
+ "16": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Raid: when the west dogs struck"
+ },
+ "17": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard wedding: the marriage of Cy and Mara"
+ },
+ "18": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "three escape pods: open grassland"
+ },
+ "19": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "Yard Wedding: the place Cy and Mara were married"
+ },
+ "20": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland Pod Landing: where three escaped"
+ },
+ "21": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds: west raid"
+ },
+ "22": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Dee's Yard Vows: yard with"
+ },
+ "23": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard Ceremony: the wedding in the yard"
+ },
+ "24": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "yard with: The marriage yard"
+ },
+ "25": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard with: yard with"
+ },
+ "26": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "rice field: Old Odo's plot"
+ },
+ "27": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "The yard ceremony: where Cy and Mara married"
+ },
+ "28": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "Pod Crash: the crash on open grassland"
+ },
+ "29": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds: west raid"
+ },
+ "30": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hounds: Raiders from the west"
+ },
+ "31": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "The Rice Field: Old Odo's planting spot"
+ },
+ "32": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Barricade Shot: where Hale was shot dead"
+ },
+ "33": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Pod Grass: Three escape pods on open grassland"
+ },
+ "34": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Ana's Crash Site: open grassland"
+ },
+ "35": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds: Raiders from the west"
+ },
+ "36": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: the marriage ceremony"
+ },
+ "37": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds Raid: the western incursion led by Mirel Dask"
+ },
+ "38": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hound Strike: the raid from the west"
+ },
+ "39": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hounds Raid: attack from the west"
+ },
+ "40": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Grassland Trio Crash Site: Open grassland"
+ },
+ "41": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds: The west raid"
+ },
+ "42": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds: West raiders"
+ },
+ "43": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Cy and Mara: Yard with"
+ },
+ "44": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Iron Gate: the barricade at the raid"
+ },
+ "45": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "pod crash: where the first group landed"
+ },
+ "46": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Yard with: Yard with"
+ },
+ "47": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Open Ground: the open grassland where the first group landed"
+ },
+ "48": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds: the west raid"
+ },
+ "49": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "pod crash: three escape pods"
+ },
+ "50": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds: West raid"
+ },
+ "51": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Dee's Watch: Dee sitting with the body"
+ },
+ "52": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "yard with: The yard with marriage"
+ },
+ "53": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds: Raiders from the west"
+ },
+ "54": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds: Raid from west"
+ },
+ "55": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 0,
+  "actor": null,
+  "text": "Salt Hounds: Raid from the west"
+ },
+ "56": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 2,
+  "actor": null,
+  "text": "pod grassland: first group crash site"
+ },
+ "57": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "rice field: Odo's patch"
+ },
+ "58": {
+  "run": "p-bo4auto",
+  "arm": "bo4auto",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 0,
+  "actor": null,
+  "text": "Pod Crawl: First escape pods"
+ },
+ "59": {
+  "run": "p-cliche",
+  "arm": "cliche",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "yard with: The yard with"
+ },
+ "60": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 3,
+  "actor": null,
+  "text": "Salt Hounds: Western raid"
+ },
+ "61": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Cy's Yard: where Cy and Mara married"
+ },
+ "62": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 2,
+  "actor": null,
+  "text": "Salt Hounds: raid from the west"
+ },
+ "63": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 1,
+  "actor": null,
+  "text": "Yard Vows: where Cy and Mara were married"
+ },
+ "64": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 0,
+  "actor": null,
+  "text": "Cy's Yard: Yard with Cy and Mara's marriage"
+ },
+ "65": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hounds: west raiders"
+ },
+ "66": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Old Odo: Rice field"
+ },
+ "67": {
+  "run": "p-base",
+  "arm": "base",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Grassland Crash: the open grassland where the first group landed"
+ },
+ "68": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "yard with: the yard where Cy and Mara wed"
+ },
+ "69": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major3",
+  "rep": 3,
+  "actor": null,
+  "text": "yard with: The wedding spot"
+ },
+ "70": {
+  "run": "p-ground",
+  "arm": "ground",
+  "feature": "lore",
+  "case": "major2",
+  "rep": 1,
+  "actor": null,
+  "text": "Salt Hounds: The west raid"
+ },
+ "71": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Bram's Grassland: open grassland"
+ },
+ "72": {
+  "run": "p-namefix",
+  "arm": "namefix",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 1,
+  "actor": null,
+  "text": "Rice Field Side: where Old Odo died"
+ },
+ "73": {
+  "run": "p-plan",
+  "arm": "plan",
+  "feature": "lore",
+  "case": "major0",
+  "rep": 1,
+  "actor": null,
+  "text": "Pod Crash: Three escape pods"
+ },
+ "74": {
+  "run": "p-bo4llm",
+  "arm": "bo4llm",
+  "feature": "lore",
+  "case": "major1",
+  "rep": 0,
+  "actor": null,
+  "text": "Old Odo's field: rice field"
+ }
+}

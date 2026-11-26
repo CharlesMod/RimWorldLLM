@@ -1,0 +1,44 @@
+{
+ "probe": {
+  "aim": {
+   "a7-aim3": {
+    "n": 24,
+    "mean": 2.625,
+    "share_le2": 0.542
+   },
+   "a7-aim5": {
+    "n": 24,
+    "mean": 2.708,
+    "share_le2": 0.417
+   },
+   "a7-greedy": {
+    "n": 24,
+    "mean": 2.542,
+    "share_le2": 0.542
+   }
+  }
+ },
+ "paired": {
+  "aim": {
+   "a7-aim3 - a7-aim5": {
+    "n": 24,
+    "mean_diff": -0.083,
+    "wins": 4,
+    "losses": 5
+   },
+   "a7-aim3 - a7-greedy": {
+    "n": 24,
+    "mean_diff": 0.083,
+    "wins": 7,
+    "losses": 4
+   },
+   "a7-aim5 - a7-greedy": {
+    "n": 24,
+    "mean_diff": 0.167,
+    "wins": 6,
+    "losses": 1
+   }
+  }
+ },
+ "soak_families": {}
+}

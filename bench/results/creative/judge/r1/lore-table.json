@@ -1,0 +1,172 @@
+{
+ "probe": {
+  "lore": {
+   "base": {
+    "n": 12,
+    "mean": 3.167,
+    "share_le2": 0.167
+   },
+   "bo4auto": {
+    "n": 12,
+    "mean": 1.833,
+    "share_le2": 0.917
+   },
+   "bo4llm": {
+    "n": 12,
+    "mean": 2.417,
+    "share_le2": 0.667
+   },
+   "cliche": {
+    "n": 8,
+    "mean": 2.125,
+    "share_le2": 0.75
+   },
+   "ground": {
+    "n": 10,
+    "mean": 1.9,
+    "share_le2": 0.9
+   },
+   "namefix": {
+    "n": 11,
+    "mean": 2.818,
+    "share_le2": 0.182
+   },
+   "plan": {
+    "n": 9,
+    "mean": 1.778,
+    "share_le2": 0.889
+   }
+  }
+ },
+ "paired": {
+  "lore": {
+   "base - bo4auto": {
+    "n": 12,
+    "mean_diff": 1.333,
+    "wins": 9,
+    "losses": 1
+   },
+   "base - bo4llm": {
+    "n": 12,
+    "mean_diff": 0.75,
+    "wins": 8,
+    "losses": 1
+   },
+   "base - cliche": {
+    "n": 8,
+    "mean_diff": 1.125,
+    "wins": 5,
+    "losses": 0
+   },
+   "base - ground": {
+    "n": 10,
+    "mean_diff": 1.4,
+    "wins": 8,
+    "losses": 0
+   },
+   "base - namefix": {
+    "n": 11,
+    "mean_diff": 0.364,
+    "wins": 5,
+    "losses": 2
+   },
+   "base - plan": {
+    "n": 9,
+    "mean_diff": 1.444,
+    "wins": 6,
+    "losses": 0
+   },
+   "bo4auto - bo4llm": {
+    "n": 12,
+    "mean_diff": -0.583,
+    "wins": 1,
+    "losses": 5
+   },
+   "bo4auto - cliche": {
+    "n": 8,
+    "mean_diff": -0.25,
+    "wins": 1,
+    "losses": 2
+   },
+   "bo4auto - ground": {
+    "n": 10,
+    "mean_diff": -0.1,
+    "wins": 1,
+    "losses": 2
+   },
+   "bo4auto - namefix": {
+    "n": 11,
+    "mean_diff": -1.0,
+    "wins": 1,
+    "losses": 9
+   },
+   "bo4auto - plan": {
+    "n": 9,
+    "mean_diff": -0.222,
+    "wins": 0,
+    "losses": 2
+   },
+   "bo4llm - cliche": {
+    "n": 8,
+    "mean_diff": -0.125,
+    "wins": 0,
+    "losses": 1
+   },
+   "bo4llm - ground": {
+    "n": 10,
+    "mean_diff": 0.3,
+    "wins": 3,
+    "losses": 0
+   },
+   "bo4llm - namefix": {
+    "n": 11,
+    "mean_diff": -0.455,
+    "wins": 2,
+    "losses": 7
+   },
+   "bo4llm - plan": {
+    "n": 9,
+    "mean_diff": 0.556,
+    "wins": 4,
+    "losses": 1
+   },
+   "cliche - ground": {
+    "n": 8,
+    "mean_diff": 0.25,
+    "wins": 1,
+    "losses": 0
+   },
+   "cliche - namefix": {
+    "n": 8,
+    "mean_diff": -0.625,
+    "wins": 1,
+    "losses": 5
+   },
+   "cliche - plan": {
+    "n": 6,
+    "mean_diff": 0.5,
+    "wins": 2,
+    "losses": 0
+   },
+   "ground - namefix": {
+    "n": 9,
+    "mean_diff": -0.889,
+    "wins": 1,
+    "losses": 7
+   },
+   "ground - plan": {
+    "n": 7,
+    "mean_diff": 0.143,
+    "wins": 1,
+    "losses": 0
+   },
+   "namefix - plan": {
+    "n": 9,
+    "mean_diff": 1.111,
+    "wins": 7,
+    "losses": 0
+   }
+  }
+ },
+ "soak_families": {}
+}

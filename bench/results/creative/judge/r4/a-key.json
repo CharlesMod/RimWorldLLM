@@ -1,0 +1,866 @@
+{
+ "1": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 4,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "2": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "death_dee_ana",
+  "rep": 3,
+  "actor": 4,
+  "text": "I just want the fog to lift and the work to start."
+ },
+ "3": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "death_dee_ana",
+  "rep": 3,
+  "actor": 4,
+  "text": "I need to know if this grief will ever end."
+ },
+ "4": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I just needed a moment away from the kitchen."
+ },
+ "5": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo lies among rice stalks as Dee kneels beside him in the field. Light rain falls over the scene. Ana sculpted this piece."
+ },
+ "6": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "raid",
+  "rep": 2,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders at the east gate. He holds a rifle and a hatchet as raiders press hard under a clear sky. Kit crafted this large sculpture."
+ },
+ "7": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 5,
+  "actor": 9,
+  "text": "I hope she will eat something soon."
+ },
+ "8": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "raid",
+  "rep": 3,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders by the east gate. The rifle and hatchet are raised against the pressing raiders under a clear sky. Kit carved this piece."
+ },
+ "9": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks. Dee kneels beside him in the light rain of the rice field. Ana carved this small piece."
+ },
+ "10": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 3,
+  "actor": 9,
+  "text": "I just want her to eat something before she wastes away."
+ },
+ "11": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 4,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field while Hale braces a spear into the ground. Mara carved this small sculpture. The scene depicts the northern plain in light snow."
+ },
+ "12": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 3,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee officiates between them while the colony watches the clear evening. Bram crafted this sculpture with skill."
+ },
+ "13": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 5,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "14": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 5,
+  "actor": 1,
+  "text": "I just want him to eat something warm and stop looking so lost."
+ },
+ "15": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Hale falls backward as Mirel Dask lowers a rifle. The scene takes place behind the barricade in thick smoke. Dee crafted this large sculpture."
+ },
+ "16": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 4,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "17": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "storm",
+  "rep": 4,
+  "actor": 1,
+  "text": "Bram and Kit hold a piece of roofing against the wind on the barn roof. Lightning splits the sky as they endure the violent thunderstorm. Ana crafts this small sculpture."
+ },
+ "18": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him. The scene shows this moment in the rice field under light rain. Ana fashioned this small sculpture."
+ },
+ "19": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. Ana crafted this small sculpture."
+ },
+ "20": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 1,
+  "actor": 3,
+  "text": "Cy and Kit grapple in the dirt of the courtyard. Kit's fist rises while Cy's lip bleeds in the hot morning sun. Cy made this sculpture."
+ },
+ "21": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 5,
+  "actor": 3,
+  "text": "Fear she'll bring up the rifle fight again."
+ },
+ "22": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. Ana crafted this small sculpture from the field."
+ },
+ "23": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 5,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet against the strong wind on the barn roof. Lightning splits the sky during a violent thunderstorm. Ana made this small sculpture."
+ },
+ "24": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "25": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope this commitment doesn't ruin the next good meal."
+ },
+ "26": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 4,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than the feast."
+ },
+ "27": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 1,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "28": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "feud",
+  "rep": 4,
+  "actor": 3,
+  "text": "Cy sculpt the large piece. In the courtyard, Cy and Kit grapple in the dirt, Kit’s fist raised and Cy’s lip bleeding. The scene shows the moment between the two colonists."
+ },
+ "29": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 4,
+  "actor": 3,
+  "text": "In the courtyard, Cy and Kit grapple in the dirt. Kit raises a fist while Cy's lip bleeds during the hot morning. Cy sculpted this large piece."
+ },
+ "30": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "odo",
+  "rep": 0,
+  "actor": 1,
+  "text": "Old Odo lies in the rice stalks while Dee kneels near him. Rain falls over the scene in the field. Ana crafted this small sculpture."
+ },
+ "31": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I just needed a moment away from the kitchen."
+ },
+ "32": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 5,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "33": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 0,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet against the wind on the barn roof. Lightning splits the sky overhead in the violent thunderstorm. Ana fashioned this small sculpture from the moment."
+ },
+ "34": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 5,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "35": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 1,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "36": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 5,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "37": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Hale falls backward, struck through the chest, as Mirel Dask lowers a rifle. The sculpture shows this moment behind the barricade amidst thick smoke. Dee crafted this masterwork."
+ },
+ "38": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I just wanted to move around, not be questioned."
+ },
+ "39": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 2,
+  "actor": 1,
+  "text": "I just want him to eat and stop thinking about the raid."
+ },
+ "40": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 5,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee stands between them as the colony watches from around them. Bram crafts this small sculpture."
+ },
+ "41": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "raid",
+  "rep": 5,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders by the east gate. He holds a rifle in one hand and a hatchet in the other against the pressing raiders. Kit, the maker, carved this large sculpture."
+ },
+ "42": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_tam_ana",
+  "rep": 5,
+  "actor": 7,
+  "text": "I wish I could have helped more than just standing there."
+ },
+ "43": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 4,
+  "actor": 5,
+  "text": "I want them to feel the same cramped discomfort I feel."
+ },
+ "44": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "raid",
+  "rep": 2,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders at the east gate. The raiders press hard under a clear sky. Kit crafted this sculpture."
+ },
+ "45": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_tam_ana",
+  "rep": 3,
+  "actor": 7,
+  "text": "I just want a proper table to eat at, um..."
+ },
+ "46": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 3,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "47": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I hope the feast is as good as the vows."
+ },
+ "48": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I just want to see if he notices the difference in space."
+ },
+ "49": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 2,
+  "actor": 3,
+  "text": "I fear the weight of this commitment more than any harsh winter."
+ },
+ "50": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 4,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass under a heavy sky. Ana, Bram, and Dee crawl clear from the fire. The sculpture depicts this moment in the open grassland."
+ },
+ "51": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 0,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "52": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "crash",
+  "rep": 4,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass as Ana, Bram, and Dee crawl free. Ana crafted this large sculpture."
+ },
+ "53": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 1,
+  "actor": 1,
+  "text": "Three escape pods burn in the open grassland. Ana, Bram, and Dee crawl clear under the heavy sky. Ana fashioned the piece."
+ },
+ "54": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 0,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field as Hale braces a spear into the ground. The sculpture captures the tense pride of that moment on the northern plain. Mara carved this piece."
+ },
+ "55": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "crash",
+  "rep": 5,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass as Ana, Bram, and Dee crawl clear. The sculpture depicts the open grassland under a heavy sky. Ana crafted this piece."
+ },
+ "56": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "feud",
+  "rep": 3,
+  "actor": 3,
+  "text": "Cy and Kit grapple in the dirt of the courtyard on a hot, dry morning. Kit raises a fist while Cy's lip bleeds. Cy fashioned this large sculpture."
+ },
+ "57": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "odo",
+  "rep": 4,
+  "actor": 1,
+  "text": "In the rice field, Old Odo lies amidst the stalks while Dee kneels beside him. The scene shows a quiet stillness under the light rain. Ana crafted this small sculpture."
+ },
+ "58": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 0,
+  "actor": 1,
+  "text": "I worry about what he saw at the barricade."
+ },
+ "59": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 1,
+  "actor": 1,
+  "text": "Old Odo lies within the rice stalks while Dee kneels close beside him. Light rain falls upon the scene in the rice field. Ana fashioned this small sculpture."
+ },
+ "60": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 2,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "61": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 4,
+  "actor": 5,
+  "text": "I just want him to leave me to my work."
+ },
+ "62": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 2,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee stands between them as the colony watches. Bram crafted this small sculpture."
+ },
+ "63": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 1,
+  "actor": 1,
+  "text": "I just want him to eat something warm and stop staring at the floor."
+ },
+ "64": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_kit_cy",
+  "rep": 3,
+  "actor": 5,
+  "text": "I want them to acknowledge the difference in our spaces."
+ },
+ "65": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "crash",
+  "rep": 5,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass of the open grassland. Ana, Bram, and Dee crawl clear beneath a heavy sky. The large sculpture depicts this moment."
+ },
+ "66": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_tam_ana",
+  "rep": 5,
+  "actor": 7,
+  "text": "I just want to be left alone in the quiet."
+ },
+ "67": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hale",
+  "rep": 0,
+  "actor": 4,
+  "text": "Hale falls backward, shot in the chest, while Mirel Dask of the Salt Hounds lowers a rifle. Smoke chokes the scene behind the barricade. Dee crafts the grim scene in masterwork."
+ },
+ "68": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "storm",
+  "rep": 0,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet of roofing down against the wind. Lightning splits the sky over the barn. Ana crafted this small sculpture."
+ },
+ "69": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 5,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee stands between them while the colony watches. Bram sculpted the joyful scene."
+ },
+ "70": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I fear another confrontation over something trivial."
+ },
+ "71": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 1,
+  "actor": 3,
+  "text": "Fear another confrontation over some trivial thing."
+ },
+ "72": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "raid",
+  "rep": 5,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang of the Ashen Fang raiders at the east gate. The raiders press hard in this desperate scene. Kit crafted the large sculpture."
+ },
+ "73": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "crash",
+  "rep": 1,
+  "actor": 1,
+  "text": "Three escape pods burn in the yellow grass while Ana, Bram, and Dee crawl clear in the open grassland. Ana shaped this large sculpture."
+ },
+ "74": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 2,
+  "actor": 2,
+  "text": "Cy and Mara stand under a canopy of cut branches in the yard. Dee joins them as the whole colony watches this scene. Bram crafted this small sculpture."
+ },
+ "75": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope the wedding doesn't ruin the next meal."
+ },
+ "76": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 2,
+  "actor": 1,
+  "text": "Old Odo lies in the rice stalks while Dee kneels beside him in the rain. Ana carved this small sculpture from a memory."
+ },
+ "77": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 4,
+  "actor": 3,
+  "text": "I hope the feast is as good as the vows."
+ },
+ "78": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "odo",
+  "rep": 3,
+  "actor": 1,
+  "text": "Old Odo lies among the rice stalks while Dee kneels beside him in the light rain. Ana fashioned this small sculpture. The scene captures a quiet moment in the rice field."
+ },
+ "79": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "minor_tam_ana",
+  "rep": 3,
+  "actor": 7,
+  "text": "I want her to not worry about me, um..."
+ },
+ "80": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "wedding",
+  "rep": 3,
+  "actor": 2,
+  "text": "Cy and Mara stand beneath a canopy of cut branches in the yard. Dee officiates as the colony watches the ceremony on a clear evening. Bram crafts this small masterwork sculpture."
+ },
+ "81": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "minor_ana_tam",
+  "rep": 0,
+  "actor": 1,
+  "text": "I just want him to eat something warm."
+ },
+ "82": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "feud",
+  "rep": 3,
+  "actor": 3,
+  "text": "Two colonists grapple in the dirt of the courtyard. Kit raises her fist while Cy's lip bleeds in the scene. Cy crafted this piece."
+ },
+ "83": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "feud",
+  "rep": 1,
+  "actor": 3,
+  "text": "Cy and Kit grapple in the dirt of the courtyard. Kit raises a fist while Cy's lip bleeds. The sculpture shows this bitter moment."
+ },
+ "84": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "storm",
+  "rep": 5,
+  "actor": 1,
+  "text": "Bram and Kit hold a sheet of roofing against the gale atop the barn as lightning splits the sky. Ana crafts this small sculpture."
+ },
+ "85": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 1,
+  "actor": 2,
+  "text": "I just want her to stop asking questions."
+ },
+ "86": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 1,
+  "actor": 2,
+  "text": "I want her to stop asking questions about my movements."
+ },
+ "87": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 4,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field while Hale braces a spear into the ground in the northern plain. Mara carved this piece. The scene shows a tense and proud moment."
+ },
+ "88": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "secret_bram_ana",
+  "rep": 5,
+  "actor": 2,
+  "text": "I just needed to move around, nothing more."
+ },
+ "89": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "storm",
+  "rep": 4,
+  "actor": 1,
+  "text": "Bram and Kit secure roofing on the barn as lightning tears the sky. The small sculpture captures the frantic moment on the barn roof during a violent thunderstorm. Ana shaped this piece."
+ },
+ "90": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "feud_cy_kit",
+  "rep": 0,
+  "actor": 3,
+  "text": "I hope she doesn't bring up the rifle fight again."
+ },
+ "91": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "grief_mara_dee",
+  "rep": 3,
+  "actor": 9,
+  "text": "I worry about her not eating enough."
+ },
+ "92": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 5,
+  "actor": 3,
+  "text": "I fear this whole thing might turn out to be a disaster."
+ },
+ "93": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "hunt",
+  "rep": 0,
+  "actor": 9,
+  "text": "A thrumbo charges across the snow field while Hale braces a spear into the ground. Mara crafts the small sculpture to show this tense moment on the northern plain."
+ },
+ "94": {
+  "run": "p-r3final",
+  "arm": "r3final",
+  "feature": "art",
+  "case": "raid",
+  "rep": 3,
+  "actor": 5,
+  "text": "Hale fights Skarn Ashfang at the east gate. A rifle and hatchet are raised against the pressing raiders under a clear sky. Kit crafts this piece."
+ },
+ "95": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "art",
+  "case": "hale",
+  "rep": 3,
+  "actor": 4,
+  "text": "Hale falls backward through a chest wound while Mirel Dask lowers a rifle. Thick smoke fills the scene behind the barricade. Dee crafted this large sculpture in masterwork."
+ },
+ "96": {
+  "run": "p-r3baseaim",
+  "arm": "r3baseaim",
+  "feature": "aim",
+  "case": "wedding_cy_mara",
+  "rep": 5,
+  "actor": 3,
+  "text": "I hope this marriage brings us a steady supply of good meals."
+ }
+}

@@ -1,0 +1,974 @@
+{
+ "1": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale was killed by the Salt Hounds.\nCy insulted Kit and they fought.\nCy and Mara were married."
+ },
+ "2": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale was killed by the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died of old age."
+ },
+ "3": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy insulted Kit and they fought.\nAna led the funeral for Old Odo."
+ },
+ "4": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm damaged the barn roof.\nCy and Kit fought in the courtyard."
+ },
+ "5": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Old Odo died near the rice field.\nThe Salt Hounds raided and Hale was killed.\nCy and Kit fought over a stolen rifle."
+ },
+ "6": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the barn roof off.\nCy and Kit came to blows in the courtyard."
+ },
+ "7": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds raid.\nCy and Kit fought over a rifle.\nOld Odo died in his rice field."
+ },
+ "8": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nCy and Mara were married while Kit watched."
+ },
+ "9": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was killed by a Salt Hounds raid.\nCy and Kit fought in the courtyard.\nCy and Mara were married."
+ },
+ "10": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "The Salt Hounds raided under Mirel Dask; Hale was shot.\nCy insulted Kit over the stolen rifle.\nCy and Mara married, but Kit left before vows."
+ },
+ "11": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "The Salt Hounds raided; Hale died at the barricade.\nCy and Kit fought over a stolen rifle.\nCy and Mara married; Kit left before the vows."
+ },
+ "12": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit fought over a rifle.\nOld Odo died."
+ },
+ "13": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit fought in the courtyard.\nAna led the funeral for Old Odo."
+ },
+ "14": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Odo died of old age near his rice field.\nA thunderstorm damaged the barn roof.\nAna led the funeral for Odo."
+ },
+ "15": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale was shot during the Salt Hounds raid.\nCy and Kit had a fight over a rifle.\nCy and Mara married with Kit absent."
+ },
+ "16": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "Ana led the funeral for Odo on day forty-one.\nA storm ripped the barn roof on day thirty-eight.\nCy and Kit fought over a rifle on day forty-one."
+ },
+ "17": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died when the Salt Hounds raided the west.\nCy and Kit fought in the courtyard.\nAna led the funeral for Old Odo."
+ },
+ "18": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died near his rice field."
+ },
+ "19": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale died in the salt hounds raid.\nAna led the funeral for Odo.\nCy and Kit fought over a rifle."
+ },
+ "20": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died at the barricade from the Salt Hounds.\nOld Odo died and Ana led the funeral.\nCy and Kit fought in the courtyard."
+ },
+ "21": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died from the Salt Hounds raid.\nCy and Kit had a fight in the courtyard.\nKit watched the wedding from the back."
+ },
+ "22": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "A thunderstorm tore the roof off the barn.\nOld Odo died of old age beside his rice field; Ana led the funeral and Dee sat with the body until morning.\nCy insulted Kit over the stolen rifle; by afternoon the two had come to blows in the courtyard and Dee had to stitch Kit."
+ },
+ "23": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Mara were married.\nCy and Kit fought over a rifle."
+ },
+ "24": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale died in a Salt Hounds raid.\nCy and Mara married in the yard.\nCy and Kit fought over a rifle."
+ },
+ "25": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "Odo died of old age.\nCy and Kit fought in the courtyard.\nKit needed stitches."
+ },
+ "26": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale was shot dead in a Salt Hounds raid.\nCy and Mara married with Dee officiating.\nCy and Kit fought over a stolen rifle."
+ },
+ "27": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit fought in the courtyard.\nOdo died beside his rice field."
+ },
+ "28": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale died during the Salt Hounds raid.\nCy and Mara married; Cy and Kit fought.\nCy insulted Kit over a rifle."
+ },
+ "29": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Mara married while Kit watched and left.\nCy and Kit fought over a stolen rifle."
+ },
+ "30": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "Odo died of old age.\nAna led the funeral.\nCy and Kit fought over a rifle."
+ },
+ "31": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Mara married.\nCy and Kit fought over a rifle."
+ },
+ "32": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale was killed by a raid from the west.\nCy insulted Kit over a stolen rifle.\nCy and Mara were married with Kit watching."
+ },
+ "33": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale died from the Salt Hounds' raid.\nCy and Kit fought over a rifle.\nOld Odo died of age beside his rice field."
+ },
+ "34": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale died during the Salt Hounds raid.\nCy and Mara married with Dee officiating.\nCy and Kit fought over a stolen rifle."
+ },
+ "35": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "Old Odo died of old age beside his rice field.\nAna, Bram and Dee crashed in escape pods.\nCy and Kit had come to blows in the courtyard."
+ },
+ "36": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale was shot during the raid by the Salt Hounds.\nCy and Kit fought in the courtyard.\nKit left after the wedding."
+ },
+ "37": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "The Salt Hounds raided, and Hale was shot dead.\nCy and Kit fought in the courtyard.\nKit watched Cy and Mara get married."
+ },
+ "38": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died by his rice field."
+ },
+ "39": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "The Salt Hounds raided from the west.\nCy insulted Kit over a rifle.\nCy and Mara were married."
+ },
+ "40": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale died when the Salt Hounds raided the west.\nCy and Kit had a fight in the courtyard.\nOld Odo died of old age by his rice field."
+ },
+ "41": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "A feud erupted between Cy and Kit.\nThe Salt Hounds raided from the west.\nRaiders of the Ashen Fang were driven off, and Kit was cut."
+ },
+ "42": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale died during the Salt Hounds raid.\nCy and Kit fought over a rifle.\nCy and Mara were married."
+ },
+ "43": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "The Salt Hounds raided and Hale was killed.\nCy and Kit fought in the courtyard.\nCy and Mara married while Kit watched."
+ },
+ "44": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit had a fight over a rifle.\nOdo died of old age."
+ },
+ "45": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit fought in the courtyard.\nCy and Mara were married."
+ },
+ "46": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Odo died of old age.\nA storm damaged the barn roof.\nCy and Kit fought."
+ },
+ "47": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the barn roof.\nCy and Kit fought after a rifle dispute."
+ },
+ "48": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died during the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nCy and Mara married."
+ },
+ "49": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "Odo died of old age. Ana led the funeral.\nA storm tore off the barn roof.\nCy fought Kit over a stolen rifle."
+ },
+ "50": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "An old man died in the rice field.\nHale was killed during the Salt Hounds raid.\nCy and Kit fought over a rifle."
+ },
+ "51": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 0,
+  "actor": null,
+  "text": "The Salt Hounds raided and Hale was shot dead.\nCy insulted Kit.\nCy and Mara married, but Kit watched and left."
+ },
+ "52": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale felled a charging thrumbo.\nCy and Kit fought in the courtyard.\nKit required stitches after the fight."
+ },
+ "53": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "The Salt Hounds raided and Hale was killed.\nCy and Mara were married.\nAna led a funeral."
+ },
+ "54": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo died in his rice field.\nA Salt Hound raid killed Hale.\nCy and Kit fought over a stolen rifle."
+ },
+ "55": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale was shot dead in the Salt Hounds raid.\nCy and Mara married.\nCy and Kit fought over a rifle."
+ },
+ "56": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "A thunderstorm tore the roof off the barn.\nOld Odo died of old age beside his rice field; Ana led the funeral and Dee sat with the body until morning.\nCy insulted Kit over the stolen rifle; by afternoon the two had come to blows in the courtyard and Dee had to stitch Kit."
+ },
+ "57": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Old Odo died beside his rice field.\nA thunderstorm tore the barn roof.\nCy and Kit fought over a rifle."
+ },
+ "58": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "Old Odo died of age by his rice field.\nA thunderstorm damaged the barn roof.\nCy and Kit had a fight in the courtyard."
+ },
+ "59": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the roof off the barn.\nCy and Kit fought in the courtyard."
+ },
+ "60": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale died at the barricade during a Salt Hounds raid.\nCy and Mara married.\nCy and Kit fought over a rifle."
+ },
+ "61": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm damaged the barn roof.\nCy and Kit fought over a rifle."
+ },
+ "62": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot by the Salt Hounds.\nCy and Kit argued about a rifle.\nOld Odo died."
+ },
+ "63": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA storm damaged the barn roof.\nCy and Kit fought in the courtyard."
+ },
+ "64": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Odo died of old age.\nCy and Kit fought in the courtyard.\nDee had to stitch Kit."
+ },
+ "65": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Ana led the funeral for Old Odo.\nA thunderstorm tore the barn roof.\nCy and Kit fought over a stolen rifle."
+ },
+ "66": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale was shot dead during the Salt Hounds raid.\nCy and Mara were married.\nCy and Kit fought in the courtyard."
+ },
+ "67": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "Ana led the funeral after Odo died.\nBram and Kit held the roof against the storm.\nCy and Kit came to blows in the courtyard."
+ },
+ "68": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale was killed by the Salt Hounds raid.\nCy and Kit fought over a stolen rifle.\nCy and Mara were married while Kit watched from the back."
+ },
+ "69": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale died when the Salt Hounds raided.\nCy and Kit fought over a rifle.\nCy and Mara married."
+ },
+ "70": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the roof off the barn.\nCy and Kit fought over a rifle."
+ },
+ "71": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died during the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nCy and Mara married."
+ },
+ "72": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died of old age."
+ },
+ "73": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit argued near the courtyard.\nAna led the funeral for Old Odo."
+ },
+ "74": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "The Salt Hounds raided, and Hale was shot.\nCy and Mara married.\nCy insulted Kit, and Kit was stitched."
+ },
+ "75": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit had a fight.\nCy and Mara were married."
+ },
+ "76": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 2,
+  "actor": null,
+  "text": "Hale died from the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died of old age."
+ },
+ "77": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Old Odo died of old age by his rice field.\nA thunderstorm tore the barn roof off.\nCy and Kit came to blows over a rifle."
+ },
+ "78": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Odo died of old age.\nA thunderstorm destroyed the barn roof.\nCy fought Kit over a stolen rifle."
+ },
+ "79": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "A thrumbo charging was brought down.\nCy and Kit fought over a stolen rifle.\nKit required stitches after the fight."
+ },
+ "80": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit had a fight about a rifle.\nCy and Mara married, but Kit left."
+ },
+ "81": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale died in the raid by Mirel Dask.\nCy and Kit fought over a rifle.\nCy and Mara married while Kit watched."
+ },
+ "82": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "A thrumbo was felled in the northern plain.\nCy and Kit fought in the courtyard.\nKit still needed stitches."
+ },
+ "83": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "The Salt Hounds raided, and Hale was shot dead.\nCy and Kit fought in the courtyard.\nCy and Mara married, Kit watched and left."
+ },
+ "84": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit fought in the courtyard.\nCy and Mara were married."
+ },
+ "85": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit fought in the courtyard.\nOld Odo died."
+ },
+ "86": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "Old Odo died of old age.\nAna, Bram and Dee landed in grassland.\nCy fought Kit in the courtyard."
+ },
+ "87": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale was shot by the Salt Hounds.\nCy and Kit fought in the courtyard.\nOdo died of old age."
+ },
+ "88": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "Cy and Kit fought in the courtyard.\nThe Salt Hounds attacked from the west.\nThe Ashen Fang raiders were driven off, leaving Kit wounded."
+ },
+ "89": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale died at the barricade because of the Salt Hounds.\nKit received stitches after fighting Cy over a rifle.\nCy and Mara married, and Kit left the yard."
+ },
+ "90": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 3,
+  "actor": null,
+  "text": "Cy and Kit fought in the courtyard.\nA raid from the Salt Hounds killed Hale.\nThe Ashen Fang raiders were driven off."
+ },
+ "91": {
+  "run": "p-r2plan",
+  "arm": "r2plan",
+  "feature": "recap",
+  "case": "early",
+  "rep": 2,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm damaged the barn.\nCy and Kit fought in the courtyard."
+ },
+ "92": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 5,
+  "actor": null,
+  "text": "Old Odo died.\nA storm broke the barn roof.\nCy and Kit fought in the courtyard."
+ },
+ "93": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "Hale died in the Salt Hounds raid.\nCy and Kit had a fight in the courtyard.\nCy and Mara were married."
+ },
+ "94": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 1,
+  "actor": null,
+  "text": "A rifle theft sparked a fight.\nThe Salt Hounds raided from the west.\nCy and Mara were married."
+ },
+ "95": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 4,
+  "actor": null,
+  "text": "Cy and Kit fought in the courtyard.\nHale was shot dead by the Salt Hounds.\nKit sustained a cut from the Ashen Fang raiders."
+ },
+ "96": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 1,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the barn roof.\nCy and Kit came to blows."
+ },
+ "97": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm tore the barn roof.\nCy and Kit came to blows."
+ },
+ "98": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "The Salt Hounds raided, and Hale was shot dead.\nCy and Kit fought in the courtyard.\nCy and Mara married, and Kit left."
+ },
+ "99": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Old Odo died.\nA storm damaged the barn.\nCy and Kit fought."
+ },
+ "100": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale brought down a thrumbo.\nThe barn roof was damaged.\nCy and Kit fought over a stolen rifle."
+ },
+ "101": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 5,
+  "actor": null,
+  "text": "Hale was shot by the Salt Hounds.\nAna led a funeral.\nCy and Kit fought in the courtyard."
+ },
+ "102": {
+  "run": "p-r2ground",
+  "arm": "r2ground",
+  "feature": "recap",
+  "case": "early",
+  "rep": 4,
+  "actor": null,
+  "text": "Old Odo died of old age.\nA thunderstorm damaged the barn roof.\nCy and Kit fought in the courtyard."
+ },
+ "103": {
+  "run": "p-r2base",
+  "arm": "r2base",
+  "feature": "recap",
+  "case": "late",
+  "rep": 2,
+  "actor": null,
+  "text": "Cy and Kit fought in the courtyard.\nHale died during the Salt Hounds raid.\nCy and Mara married while Kit watched."
+ },
+ "104": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "early",
+  "rep": 3,
+  "actor": null,
+  "text": "Odo died of old age.\nBram and Kit held up a damaged barn.\nCy and Kit fought in the courtyard."
+ },
+ "105": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 4,
+  "actor": null,
+  "text": "Hale was shot dead by the Salt Hounds.\nCy and Kit had a fight.\nCy and Mara were married."
+ },
+ "106": {
+  "run": "p-r2bo4auto",
+  "arm": "r2bo4auto",
+  "feature": "recap",
+  "case": "early",
+  "rep": 0,
+  "actor": null,
+  "text": "Old Odo died of age beside the rice field.\nA thunderstorm ripped the barn roof off.\nA fight occurred between Cy and Kit."
+ },
+ "107": {
+  "run": "p-r2cliche",
+  "arm": "r2cliche",
+  "feature": "recap",
+  "case": "mid",
+  "rep": 3,
+  "actor": null,
+  "text": "Hale was shot by the Salt Hounds.\nKit received stitches from Dee.\nCy and Mara were married with Kit leaving."
+ },
+ "108": {
+  "run": "p-r2bo4llm",
+  "arm": "r2bo4llm",
+  "feature": "recap",
+  "case": "late",
+  "rep": 0,
+  "actor": null,
+  "text": "The Salt Hounds raided and Hale died.\nCy insulted Kit, and the two fought.\nCy and Mara married, but Kit left."
+ }
+}

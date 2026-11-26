@@ -1,0 +1,16 @@
+{
+ "mode": "local",
+ "external": {
+  "base_url": "",
+  "model": "",
+  "api_key": ""
+ },
+ "linger_s": 0,
+ "kv_type": "q4_0",
+ "sampler_policy": "enforce",
+ "model": "gemma4-e4b-rp-q40",
+ "backend": "cuda-linux-x64",
+ "book": {
+  "entries": {}
+ }
+}
