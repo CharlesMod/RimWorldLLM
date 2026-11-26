@@ -55,7 +55,7 @@ namespace HermesVoice
             l.Gap(6f);
 
             // Current custom file.
-            if (st != null && st.Custom != null)
+            if (EngineManager.CustomActive)
             {
                 GUI.color = st.Custom.Missing ? EngineManager.ColorOf(EngineManager.Light.Red) : EngineManager.ColorOf(EngineManager.Light.Green);
                 l.Label(UiUtil.T(st.Custom.Missing ? "HV_Custom_StatusMissing" : "HV_Custom_StatusUsing", st.Custom.Name ?? "", st.Custom.Path ?? ""));

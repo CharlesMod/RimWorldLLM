@@ -340,7 +340,8 @@ namespace HermesVoice
             return st.Model ?? "";
         }
 
-        public static bool CustomActive { get { var st = _status; return st != null && st.Custom != null; } }
+        /// <summary>The user's own GGUF file is the selected model (status.custom is also kept, as a memory, after a switch back to a catalog model).</summary>
+        public static bool CustomActive { get { var st = _status; return st != null && st.Custom != null && (st.Model ?? "").StartsWith("custom:", System.StringComparison.Ordinal); } }
 
         /// <summary>Line for a background model switch (the old one keeps talking), or null.</summary>
         public static string SwitchLine()
