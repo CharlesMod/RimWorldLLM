@@ -1,0 +1,43 @@
+{
+ "model": "gemma4-e4b-rp-q40",
+ "template_tail": "ip dropped a tray of stew on the floor.<turn|>\n<|turn>model\n",
+ "chat": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "|Hm. Cleanup, then.",
+   "|Hm. Keep those watch stations clear.",
+   "|Hm. More mess for me to deal with.",
+   "|Hm. Don't fuss over the soup.",
+   "|Hm. Get those buckets."
+  ]
+ },
+ "native_empty_thought": {
+  "n": 20,
+  "thought_or_list_leak": 15,
+  "empty": 0,
+  "first_line_starts_Hm": 2,
+  "samples": [
+   "Hm. Messy.\n<channel|>",
+   "Rook's persona requires gruff, few words, first-person lines starting with \"Hm.\"\n\"Raiders are at the north wall.\" is the input.\nA suitable short, gruff response is needed.<channel|>Hm. Too much noise.",
+   "Rook's persona: Gruff, few words, colony cook, first-person.\nConstraint: Start line with 'Hm.'.\nInput: \"Moth is bleeding in the infirmary.\"\n\nResponse: \"Hm. Needs more bandages.\"<channel|>Hm. Needs more bandages.",
+   "*   **Character:** Rook (colony cook) - Gruff, few words.\n*   **Starting Line:** 'Hm.'\n*   **Response:** Short line, first person, no narration.\n*   **Context:** Lux is complaining about the soup.<channel|>Hm. Eat it or starve.",
+   "The user is describing a problem: rain and a leaking roof over the stove.\nI need to respond as Rook, the colony cook: gruff, few words, starting with 'Hm.'.\nMy response should acknowledge the issue.\n\nConstraint Checklist:\n1. Gruff: Yes.\n2. Few words"
+  ]
+ },
+ "bare_turn": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "Hm. Another mess.",
+   "Hm. Fire the pots.",
+   "Hm. More mess to clean up.",
+   "Hm. More moping.",
+   "Hm. Damn roof."
+  ]
+ }
+}

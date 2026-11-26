@@ -1,0 +1,68 @@
+{
+  "gemma4-e2b-q4km": {
+    "fixed_mib": 1803,
+    "mib_per_1k_ctx": {
+      "f16": 6.368,
+      "q4_0": 4.054,
+      "q8_0": 5.528
+    },
+    "state_mib_per_slot": {
+      "f16": 3.9,
+      "q4_0": 0,
+      "q8_0": 1.4
+    },
+    "scratch_mib": 54,
+    "host_mib": 1540,
+    "decode_tps": {
+      "1": 200.9,
+      "2": 159.9,
+      "3": 126
+    },
+    "prompt_tps": {
+      "1": 21747.3,
+      "2": 14313.1,
+      "3": 9963
+    },
+    "measured_on": {
+      "gpu": "NVIDIA GeForce RTX 5080",
+      "vram_mib": 16303,
+      "backend": "cuda-linux-x64",
+      "llamacpp": "b12680",
+      "date": "2026-11-25",
+      "flags": "-ngl 999 -fa on --no-kv-unified -ub 512 --cache-reuse 256"
+    }
+  },
+  "gemma4-e4b-q4km": {
+    "fixed_mib": 3318,
+    "mib_per_1k_ctx": {
+      "f16": 16.111,
+      "q4_0": 8.915,
+      "q8_0": 12.833
+    },
+    "state_mib_per_slot": {
+      "f16": 34.1,
+      "q4_0": 0,
+      "q8_0": 11.9
+    },
+    "scratch_mib": 55,
+    "host_mib": 1848,
+    "decode_tps": {
+      "1": 129.9,
+      "2": 104.8,
+      "3": 92.2
+    },
+    "prompt_tps": {
+      "1": 11111.7,
+      "2": 6615.3,
+      "3": 4671.8
+    },
+    "measured_on": {
+      "gpu": "NVIDIA GeForce RTX 5080",
+      "vram_mib": 16303,
+      "backend": "cuda-linux-x64",
+      "llamacpp": "b12680",
+      "date": "2026-11-25",
+      "flags": "-ngl 999 -fa on --no-kv-unified -ub 512 --cache-reuse 256"
+    }
+  }
+}

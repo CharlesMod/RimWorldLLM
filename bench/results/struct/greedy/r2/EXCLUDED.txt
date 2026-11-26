@@ -1,0 +1,1 @@
+26B greedy r2 ran while the keeper's game took VRAM (vram 15862, reflection timeouts): excluded from every table.

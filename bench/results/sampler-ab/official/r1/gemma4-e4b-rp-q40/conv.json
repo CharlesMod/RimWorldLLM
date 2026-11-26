@@ -1,0 +1,512 @@
+{
+ "summary": {
+  "exchanges": 10,
+  "turns": 40,
+  "turn_drop_rate": 0.075,
+  "complete_exchanges": 0.7,
+  "answers_previous_rate": 0.8649,
+  "writes_other_line_rate": 0.0,
+  "repetition_loop_exchanges": 0,
+  "examples": [
+   {
+    "scene": "sc18",
+    "turns": [
+     [
+      "pip",
+      "Okay so, you're just scrubbing pots now, right, like you're totally finished with chores..."
+     ],
+     [
+      "rook",
+      "Hm. Scrubbing stew pots. Nobody needs scrubbing."
+     ],
+     [
+      "pip",
+      "Okay so, so what are we gonna do, just stand here staring at the pot all night..."
+     ],
+     [
+      "rook",
+      "DROP:unknown_name:Muck"
+     ]
+    ]
+   },
+   {
+    "scene": "sc19",
+    "turns": [
+     [
+      "moth",
+      "I think, maybe this tea will help, or probably I just need to finish this slide first."
+     ],
+     [
+      "lux",
+      "Naturally, one wonders if the relentless pursuit of knowledge will ever yield anything resembling a proper repose."
+     ],
+     [
+      "moth",
+      "I think I probably should just focus on the slide for now, Lux."
+     ],
+     [
+      "lux",
+      "DROP:unknown_name:Darjeeling"
+     ]
+    ]
+   },
+   {
+    "scene": "sc20",
+    "turns": [
+     [
+      "ash",
+      "Tuk, one muffalo haunch. Put it down."
+     ],
+     [
+      "tuk",
+      "This is good meat. Drop it, Ash. I need to get it to the stores."
+     ],
+     [
+      "ash",
+      "Negative. It belongs here until I say otherwise."
+     ],
+     [
+      "tuk",
+      "You are weak. Let me take the haul."
+     ]
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "scene": "sc18",
+   "a": "pip",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so, you're just scrubbing pots now, right, like you're totally finished with chores...",
+     "intent": "gossip"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Scrubbing stew pots. Nobody needs scrubbing.",
+     "intent": "insult"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so, so what are we gonna do, just stand here staring at the pot all night...",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "dropped": "unknown_name:Muck"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc19",
+   "a": "moth",
+   "b": "lux",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, maybe this tea will help, or probably I just need to finish this slide first.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "lux",
+     "text": "Naturally, one wonders if the relentless pursuit of knowledge will ever yield anything resembling a proper repose.",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think I probably should just focus on the slide for now, Lux.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "lux",
+     "dropped": "unknown_name:Darjeeling"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc20",
+   "a": "ash",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Tuk, one muffalo haunch. Put it down.",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "This is good meat. Drop it, Ash. I need to get it to the stores.",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Negative. It belongs here until I say otherwise.",
+     "intent": "insult"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "You are weak. Let me take the haul.",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc21",
+   "a": "lux",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "lux",
+     "text": "Naturally, this stew possesses the identical consistency as that offered on Tuesday.",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. It's thick stew. Eat it like stew.",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "lux",
+     "text": "My dear Nate, one could almost believe the sheer artistry of this culinary repetition.",
+     "intent": "insult"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. It tastes good. Eat the beans.",
+     "intent": "slight"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc22",
+   "a": "moth",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think... these are herbs, but maybe they are for the animals?",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so they're for the rabbits, like, they're special leaves, you know...",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think those leaves are probably good for the digestive tract, maybe?",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I just want to make sure they feel good, like not sick or anything.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc23",
+   "a": "tuk",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "tuk",
+     "text": "Good meat. This one is strong.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so is that calf totally gonna be good for, like, dinner...",
+     "intent": "gossip"
+    },
+    {
+     "turn": 2,
+     "speaker": "tuk",
+     "text": "It will be good meat once it is done.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so can we get a big roast for dinner later instead...",
+     "intent": "slight"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc24",
+   "a": "ash",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Lower. Elbow at ninety degrees. Copy that stance.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so my hands are just, like, shaking so much...",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Relax. Grip must not crush stock. Six more shots.",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I'm trying, like, but my arms just feel all tight...",
+     "intent": "complain"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc01",
+   "a": "rook",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "rook",
+     "text": "Hm. Back's shot. Leave the grain, Pip.",
+     "intent": "insult"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so is your back really that bad or what...",
+     "intent": "insult"
+    },
+    {
+     "turn": 2,
+     "speaker": "rook",
+     "text": "Hm. Bad. More cooking.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so can I get you some of that pain meds or like a heating pad or something?",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc02",
+   "a": "pip",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so this wire is totally mean, it hurt my hand...",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Stop. Let me look at the cut on your hand.",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so it's not that deep, but like, it’s still bleeding a bit...",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "You need clean water and bandages, Pip. Stay still.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc03",
+   "a": "moth",
+   "b": "ash",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, probably we should probably keep cleaning this wound more often?",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "ash",
+     "text": "Copy. Cleaning thrice hourly. Negative on extra passes.",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, well, the seepage seems maybe... a little excessive, don't you think?",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "ash",
+     "dropped": "unknown_name:Seepage"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,58 @@
+model                    np ctx/sl kv   moe | pred_vram meas_vram err_MiB  err_% | pred_ram meas_ram err_MiB
+gemma4-e4b-q4km           1   8192 q4_0   0 |      3024      3108     -84   -2.7 |        -        -       -
+gemma4-e4b-q4km           1  16384 q4_0   0 |      3095      3184     -89   -2.8 |        -        -       -
+gemma4-e4b-q4km           1  32768 q4_0   0 |      3238      3336     -98   -2.9 |        -        -       -
+gemma4-e4b-q4km           1  65536 q4_0   0 |      3525      3640    -115   -3.2 |        -        -       -
+gemma4-e4b-q4km           2   8192 q4_0   0 |      3107      3188     -81   -2.6 |        -        -       -
+gemma4-e4b-q4km           2  16384 q4_0   0 |      3250      3332     -82   -2.5 |        -        -       -
+gemma4-e4b-q4km           2  32768 q4_0   0 |      3536      3620     -84   -2.3 |        -        -       -
+gemma4-e4b-q4km           2  65536 q4_0   0 |      4108      4196     -88   -2.1 |        -        -       -
+gemma4-e4b-q4km           3   8192 q4_0   0 |      3189      3268     -79   -2.4 |        -        -       -
+gemma4-e4b-q4km           3  16384 q4_0   0 |      3404      3480     -76   -2.2 |        -        -       -
+gemma4-e4b-q4km           3  32768 q4_0   0 |      3833      3904     -71   -1.8 |        -        -       -
+gemma4-e4b-q4km           3  65536 q4_0   0 |      4691      4752     -61   -1.3 |        -        -       -
+gemma4-e4b-q4km           3  16384 q8_0   0 |      3626      3702     -76   -2.1 |        -        -       -
+gemma4-e4b-q4km           3  65536 q8_0   0 |      5489      5550     -61   -1.1 |        -        -       -
+gemma4-e4b-q4km           3  16384 f16    0 |      3850      3926     -76   -1.9 |        -        -       -
+gemma4-e2b-q4km           1   8192 q4_0   0 |      1672      1728     -56   -3.2 |        -        -       -
+gemma4-e2b-q4km           1  16384 q4_0   0 |      1705      1766     -61   -3.4 |        -        -       -
+gemma4-e2b-q4km           1  32768 q4_0   0 |      1771      1840     -69   -3.7 |        -        -       -
+gemma4-e2b-q4km           1  65536 q4_0   0 |      1903      1990     -87   -4.3 |        -        -       -
+gemma4-e2b-q4km           2   8192 q4_0   0 |      1709      1762     -53   -3.0 |        -        -       -
+gemma4-e2b-q4km           2  16384 q4_0   0 |      1775      1828     -53   -2.9 |        -        -       -
+gemma4-e2b-q4km           2  32768 q4_0   0 |      1907      1962     -55   -2.8 |        -        -       -
+gemma4-e2b-q4km           2  65536 q4_0   0 |      2171      2230     -59   -2.6 |        -        -       -
+gemma4-e2b-q4km           3   8192 q4_0   0 |      1745      1796     -51   -2.8 |        -        -       -
+gemma4-e2b-q4km           3  16384 q4_0   0 |      1844      1892     -48   -2.5 |        -        -       -
+gemma4-e2b-q4km           3  32768 q4_0   0 |      2042      2084     -42   -2.0 |        -        -       -
+gemma4-e2b-q4km           3  65536 q4_0   0 |      2439      2472     -33   -1.4 |        -        -       -
+gemma4-e2b-q4km           3  16384 q8_0   0 |      1925      1972     -47   -2.4 |        -        -       -
+gemma4-e2b-q4km           3  65536 q8_0   0 |      2736      2768     -32   -1.2 |        -        -       -
+gemma4-e2b-q4km           3  16384 f16    0 |      1981      2022     -41   -2.0 |        -        -       -
+
+per-model VRAM error (predicted - measured)
+model                    rows  mean_MiB   max_MiB signed_MiB     mean_%     max_%
+gemma4-e4b-q4km            15        81       115        -81        2.3       3.2
+gemma4-e2b-q4km            15        52        87        -52        2.7       4.3
+
+fitted terms: gemma4-e2b-q4km (15 rows)
+  fixed load                1649 MiB
+  q4_0 per 1k ctx          4.054 MiB   per slot     0.0 MiB
+  q8_0 per 1k ctx          5.528 MiB   per slot     1.4 MiB
+  f16  per 1k ctx          6.410 MiB   per slot     3.9 MiB
+  scratch (used-load)       54.0 MiB (range 54..54)
+  q4_0 line fit: 12 rows, residual max 28.0 MiB, rms 10.0 MiB (q8_0 / f16 slopes are exact through their 2 / 1 rows)
+  1 slots at 3x... ref ctx: decode 227.6 tok/s per stream, prompt 22350 tok/s
+  2 slots at 3x... ref ctx: decode 208.3 tok/s per stream, prompt 15393 tok/s
+  3 slots at 3x... ref ctx: decode 178.8 tok/s per stream, prompt 9603 tok/s
+
+fitted terms: gemma4-e4b-q4km (15 rows)
+  fixed load                2994 MiB
+  q4_0 per 1k ctx          8.915 MiB   per slot     0.0 MiB
+  q8_0 per 1k ctx         12.833 MiB   per slot    11.9 MiB
+  f16  per 1k ctx         16.111 MiB   per slot    34.1 MiB
+  scratch (used-load)       54.9 MiB (range 54..56)
+  q4_0 line fit: 12 rows, residual max 21.0 MiB, rms 8.2 MiB (q8_0 / f16 slopes are exact through their 2 / 1 rows)
+  1 slots at 3x... ref ctx: decode 142.6 tok/s per stream, prompt 11872 tok/s
+  2 slots at 3x... ref ctx: decode 135.4 tok/s per stream, prompt 7417 tok/s
+  3 slots at 3x... ref ctx: decode 119.9 tok/s per stream, prompt 4857 tok/s

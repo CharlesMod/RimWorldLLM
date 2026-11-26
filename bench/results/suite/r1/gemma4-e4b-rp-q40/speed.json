@@ -1,0 +1,1701 @@
+{
+ "cold_erased": {
+  "summary": {
+   "n": 12,
+   "ttft_s": {
+    "median": 0.14670374700108368,
+    "p90": 0.1486970099977043
+   },
+   "total_s": {
+    "median": 0.24370479699973657,
+    "p90": 0.2701215870001761
+   },
+   "decode_tps": {
+    "median": 142.66780778075588,
+    "p90": 143.76250434282565
+   },
+   "prompt_tps": {
+    "median": 16139.198543217475,
+    "p90": 16232.33539971208
+   },
+   "effective_prefill_tps": {
+    "median": 16139.198543217473,
+    "p90": 16232.33539971208
+   },
+   "prompt_n": {
+    "median": 2238.5,
+    "p90": 2253
+   },
+   "cache_n": {
+    "median": 0.0,
+    "p90": 0
+   },
+   "pred_n": {
+    "median": 14.5,
+    "p90": 19
+   },
+   "line_24_40_tokens_n": 1
+  },
+  "runs": [
+   {
+    "ttft_s": 0.14573273499991046,
+    "total_s": 0.21603235399743426,
+    "pred_n": 11,
+    "prompt_n": 2230,
+    "cache_n": 0,
+    "decode_tps": 142.4156543287238,
+    "prompt_tps": 16189.570431891276,
+    "effective_prefill_tps": 16189.570431891276,
+    "finish": "stop",
+    "text": "The cloth stings. Make it faster Ash."
+   },
+   {
+    "ttft_s": 0.14541055299923755,
+    "total_s": 0.2566076110015274,
+    "pred_n": 17,
+    "prompt_n": 2236,
+    "cache_n": 0,
+    "decode_tps": 144.09611210677522,
+    "prompt_tps": 16249.29145531445,
+    "effective_prefill_tps": 16249.291455314447,
+    "finish": "stop",
+    "text": "Hm. Stop weeping over that meat. I need hands on the stew pot."
+   },
+   {
+    "ttft_s": 0.14595625900255982,
+    "total_s": 0.26468489699982456,
+    "pred_n": 18,
+    "prompt_n": 2238,
+    "cache_n": 0,
+    "decode_tps": 143.3631303761174,
+    "prompt_tps": 16229.386938171692,
+    "effective_prefill_tps": 16229.386938171692,
+    "finish": "stop",
+    "text": "Okay so Moth, what's wrong... why are you just tearing up everything..."
+   },
+   {
+    "ttft_s": 0.15318346200001542,
+    "total_s": 0.23673745699852589,
+    "pred_n": 13,
+    "prompt_n": 2277,
+    "cache_n": 0,
+    "decode_tps": 143.76250434282565,
+    "prompt_tps": 15697.0611957893,
+    "effective_prefill_tps": 15697.0611957893,
+    "finish": "stop",
+    "text": "Copy. Nine pirates, north wall. Take fire now."
+   },
+   {
+    "ttft_s": 0.14843048000329873,
+    "total_s": 0.24019814799976302,
+    "pred_n": 14,
+    "prompt_n": 2248,
+    "cache_n": 0,
+    "decode_tps": 141.78518453887096,
+    "prompt_tps": 16041.33068832151,
+    "effective_prefill_tps": 16041.33068832151,
+    "finish": "stop",
+    "text": "I think, maybe we should see what that caravan has brought?"
+   },
+   {
+    "ttft_s": 0.14380674000130966,
+    "total_s": 0.22057126800063998,
+    "pred_n": 12,
+    "prompt_n": 2197,
+    "cache_n": 0,
+    "decode_tps": 143.68754490235779,
+    "prompt_tps": 16160.47194168401,
+    "effective_prefill_tps": 16160.471941684013,
+    "finish": "stop",
+    "text": "Hm. Level up. Keep peeling that potato mash."
+   },
+   {
+    "ttft_s": 0.1479406590005965,
+    "total_s": 0.3089167640027881,
+    "pred_n": 24,
+    "prompt_n": 2250,
+    "cache_n": 0,
+    "decode_tps": 142.88731781866977,
+    "prompt_tps": 16056.404364487515,
+    "effective_prefill_tps": 16056.404364487515,
+    "finish": "stop",
+    "text": "Of course, this wretched ochre hardly captures the true bleak magnificence of th"
+   },
+   {
+    "ttft_s": 0.1474296870001126,
+    "total_s": 0.19804560999909882,
+    "pred_n": 8,
+    "prompt_n": 2239,
+    "cache_n": 0,
+    "decode_tps": 138.77599571776926,
+    "prompt_tps": 16122.412241224123,
+    "effective_prefill_tps": 16122.412241224123,
+    "finish": "stop",
+    "text": "This good meat warm in gut."
+   },
+   {
+    "ttft_s": 0.1486970099977043,
+    "total_s": 0.24721144599971012,
+    "pred_n": 15,
+    "prompt_n": 2253,
+    "cache_n": 0,
+    "decode_tps": 142.23594912016907,
+    "prompt_tps": 16021.675129069417,
+    "effective_prefill_tps": 16021.675129069417,
+    "finish": "stop",
+    "text": "Naturally, this earth serves as a most inadequate receptacle for such sustenance"
+   },
+   {
+    "ttft_s": 0.14431368700024905,
+    "total_s": 0.2701215870001761,
+    "pred_n": 19,
+    "prompt_n": 2210,
+    "cache_n": 0,
+    "decode_tps": 143.184421534937,
+    "prompt_tps": 16232.33539971208,
+    "effective_prefill_tps": 16232.33539971208,
+    "finish": "stop",
+    "text": "Hm. Carrots cut weird. Change angle Pip, make that thick gruel. kind"
+   },
+   {
+    "ttft_s": 0.14673112300079083,
+    "total_s": 0.22397907600316103,
+    "pred_n": 12,
+    "prompt_n": 2243,
+    "cache_n": 0,
+    "decode_tps": 142.44829774284196,
+    "prompt_tps": 16155.984845210827,
+    "effective_prefill_tps": 16155.984845210825,
+    "finish": "stop",
+    "text": "This steel is heavy. Pass me a good chunk."
+   },
+   {
+    "ttft_s": 0.14667637100137654,
+    "total_s": 0.2522515670025314,
+    "pred_n": 16,
+    "prompt_n": 2233,
+    "cache_n": 0,
+    "decode_tps": 142.09524170400613,
+    "prompt_tps": 16089.403186177378,
+    "effective_prefill_tps": 16089.40318617738,
+    "finish": "stop",
+    "text": "Of course, this damp misery is a fitting backdrop for my current labor."
+   }
+  ]
+ },
+ "cold_new_pawn": {
+  "summary": {
+   "n": 12,
+   "ttft_s": {
+    "median": 0.14652949750052358,
+    "p90": 0.14846480999767664
+   },
+   "total_s": {
+    "median": 0.250223372999244,
+    "p90": 0.27906963500208803
+   },
+   "decode_tps": {
+    "median": 142.60481093767498,
+    "p90": 143.5150756063512
+   },
+   "prompt_tps": {
+    "median": 16043.881939627494,
+    "p90": 16131.120188711811
+   },
+   "effective_prefill_tps": {
+    "median": 16077.043029925757,
+    "p90": 16220.436014572371
+   },
+   "prompt_n": {
+    "median": 2233.0,
+    "p90": 2250
+   },
+   "cache_n": {
+    "median": 0.0,
+    "p90": 0
+   },
+   "pred_n": {
+    "median": 16.5,
+    "p90": 20
+   },
+   "line_24_40_tokens_n": 0
+  },
+  "runs": [
+   {
+    "ttft_s": 0.1483000059997721,
+    "total_s": 0.25347680100094294,
+    "pred_n": 16,
+    "prompt_n": 2248,
+    "cache_n": 0,
+    "decode_tps": 142.69406392694063,
+    "prompt_tps": 16031.949793182142,
+    "effective_prefill_tps": 16031.94979318214,
+    "finish": "stop",
+    "text": "I think, maybe we should check those crates for anything useful, perhaps."
+   },
+   {
+    "ttft_s": 0.14846480999767664,
+    "total_s": 0.2682805529984762,
+    "pred_n": 18,
+    "prompt_n": 2250,
+    "cache_n": 0,
+    "decode_tps": 142.000367530363,
+    "prompt_tps": 15997.042324619091,
+    "effective_prefill_tps": 15997.042324619093,
+    "finish": "stop",
+    "text": "Naturally, one does wonder how the dust settles upon such a profoundly uninspire"
+   },
+   {
+    "ttft_s": 0.1482335679975222,
+    "total_s": 0.2469699449975451,
+    "pred_n": 15,
+    "prompt_n": 2253,
+    "cache_n": 0,
+    "decode_tps": 141.87990879148722,
+    "prompt_tps": 16055.814086072845,
+    "effective_prefill_tps": 16055.814086072845,
+    "finish": "stop",
+    "text": "Naturally, this pot of sustenance seems decidedly less refined than court fare."
+   },
+   {
+    "ttft_s": 0.1471384059987031,
+    "total_s": 0.19734488599715405,
+    "pred_n": 8,
+    "prompt_n": 2243,
+    "cache_n": 0,
+    "decode_tps": 139.6703779081368,
+    "prompt_tps": 16131.120188711811,
+    "effective_prefill_tps": 16131.120188711811,
+    "finish": "stop",
+    "text": "More rock comes from this steel."
+   },
+   {
+    "ttft_s": 0.14589032400181168,
+    "total_s": 0.27906963500208803,
+    "pred_n": 20,
+    "prompt_n": 2220,
+    "cache_n": 0,
+    "decode_tps": 142.6994224428639,
+    "prompt_tps": 16098.271973778672,
+    "effective_prefill_tps": 16098.27197377867,
+    "finish": "stop",
+    "text": "I think, this spore pattern... maybe it's conclusive, I'm not sure."
+   },
+   {
+    "ttft_s": 0.14552260799973737,
+    "total_s": 0.2991180400022131,
+    "pred_n": 23,
+    "prompt_n": 2206,
+    "cache_n": 0,
+    "decode_tps": 143.5150756063512,
+    "prompt_tps": 16025.22192680411,
+    "effective_prefill_tps": 16025.221926804112,
+    "finish": "stop",
+    "text": "Okay so you're just scrubbing that pot, Nate? I'm totally bored out here with Bi"
+   },
+   {
+    "ttft_s": 0.14525800499905017,
+    "total_s": 0.24323875299887732,
+    "pred_n": 15,
+    "prompt_n": 2213,
+    "cache_n": 0,
+    "decode_tps": 143.0615164520744,
+    "prompt_tps": 16107.431399665189,
+    "effective_prefill_tps": 16107.431399665189,
+    "finish": "stop",
+    "text": "Tuk. Muffalo haunch. Where do you place it?"
+   },
+   {
+    "ttft_s": 0.1467417950007075,
+    "total_s": 0.27360978800061275,
+    "pred_n": 19,
+    "prompt_n": 2223,
+    "cache_n": 0,
+    "decode_tps": 142.51555794840937,
+    "prompt_tps": 15990.044884336517,
+    "effective_prefill_tps": 15990.044884336516,
+    "finish": "stop",
+    "text": "I think maybe those herbs might be useful for some kind of tissue... no, sorry."
+   },
+   {
+    "ttft_s": 0.1452196130012453,
+    "total_s": 0.26362779999908525,
+    "pred_n": 18,
+    "prompt_n": 2213,
+    "cache_n": 0,
+    "decode_tps": 143.62111061360008,
+    "prompt_tps": 16110.597468022685,
+    "effective_prefill_tps": 16110.597468022683,
+    "finish": "stop",
+    "text": "Negative. Grip is too tight. Lower. Stance at 45 degrees."
+   },
+   {
+    "ttft_s": 0.1485600890009664,
+    "total_s": 0.20565784499922302,
+    "pred_n": 9,
+    "prompt_n": 2250,
+    "cache_n": 0,
+    "decode_tps": 140.3607270685662,
+    "prompt_tps": 16002.162069897444,
+    "effective_prefill_tps": 16002.162069897446,
+    "finish": "stop",
+    "text": "Copy. Speak. Second wave location."
+   },
+   {
+    "ttft_s": 0.04589149299863493,
+    "total_s": 0.15793698800189304,
+    "pred_n": 17,
+    "prompt_n": 343,
+    "cache_n": 1921,
+    "decode_tps": 143.23441206749922,
+    "prompt_tps": 9005.461037597144,
+    "effective_prefill_tps": 59441.2938458307,
+    "finish": "stop",
+    "text": "Naturally, this persistent draft is a rather aggressive intrusion upon my curren"
+   },
+   {
+    "ttft_s": 0.14631720000033965,
+    "total_s": 0.23752101299760398,
+    "pred_n": 14,
+    "prompt_n": 2244,
+    "cache_n": 0,
+    "decode_tps": 142.44233824576781,
+    "prompt_tps": 16220.43601457237,
+    "effective_prefill_tps": 16220.436014572371,
+    "finish": "stop",
+    "text": "Watch the shelves. Spread the bucket line to the burning workshop."
+   }
+  ]
+ },
+ "warm": {
+  "summary": {
+   "n": 12,
+   "ttft_s": {
+    "median": 0.027857171000505332,
+    "p90": 0.030992089999926975
+   },
+   "total_s": {
+    "median": 0.09159403900048346,
+    "p90": 0.12722747700172476
+   },
+   "decode_tps": {
+    "median": 141.50454831655242,
+    "p90": 143.1753102131721
+   },
+   "prompt_tps": {
+    "median": 4346.507676069123,
+    "p90": 4471.238382316001
+   },
+   "effective_prefill_tps": {
+    "median": 110925.05994188001,
+    "p90": 113022.36685779224
+   },
+   "prompt_n": {
+    "median": 88.5,
+    "p90": 89
+   },
+   "cache_n": {
+    "median": 2127.0,
+    "p90": 2139
+   },
+   "pred_n": {
+    "median": 10.0,
+    "p90": 14
+   },
+   "line_24_40_tokens_n": 0
+  },
+  "runs": [
+   {
+    "ttft_s": 0.02850605700223241,
+    "total_s": 0.1546451829999569,
+    "pred_n": 19,
+    "prompt_n": 88,
+    "cache_n": 2108,
+    "decode_tps": 143.49489795918367,
+    "prompt_tps": 4192.472606002859,
+    "effective_prefill_tps": 104621.24821343498,
+    "finish": "stop",
+    "text": "Okay so this wire's totally sharp, like it's trying to eat me."
+   },
+   {
+    "ttft_s": 0.02741983699888806,
+    "total_s": 0.09056452699951478,
+    "pred_n": 10,
+    "prompt_n": 86,
+    "cache_n": 2139,
+    "decode_tps": 143.1753102131721,
+    "prompt_tps": 4346.068324236911,
+    "effective_prefill_tps": 112441.88397008288,
+    "finish": "stop",
+    "text": "Hm. Stop crying. Kitchen needs stirring."
+   },
+   {
+    "ttft_s": 0.03423560400187853,
+    "total_s": 0.12722747700172476,
+    "pred_n": 14,
+    "prompt_n": 93,
+    "cache_n": 2132,
+    "decode_tps": 140.11187394242478,
+    "prompt_tps": 4237.867395762133,
+    "effective_prefill_tps": 101389.8382319435,
+    "finish": "stop",
+    "text": "I think there are a fair amount of things happening right now."
+   },
+   {
+    "ttft_s": 0.02791296600116766,
+    "total_s": 0.09146638500169502,
+    "pred_n": 10,
+    "prompt_n": 89,
+    "cache_n": 2127,
+    "decode_tps": 141.9244961680386,
+    "prompt_tps": 4471.238382316001,
+    "effective_prefill_tps": 111328.8118563175,
+    "finish": "stop",
+    "text": "The snow will come soon. Eat now."
+   },
+   {
+    "ttft_s": 0.030992089999926975,
+    "total_s": 0.0739726760002668,
+    "pred_n": 7,
+    "prompt_n": 89,
+    "cache_n": 2131,
+    "decode_tps": 139.7851967476644,
+    "prompt_tps": 3877.995642701525,
+    "effective_prefill_tps": 96732.02614379086,
+    "finish": "stop",
+    "text": "This rock is hard work."
+   },
+   {
+    "ttft_s": 0.02664658700086875,
+    "total_s": 0.09057031000338611,
+    "pred_n": 10,
+    "prompt_n": 89,
+    "cache_n": 2109,
+    "decode_tps": 141.24737122947988,
+    "prompt_tps": 4650.919732441472,
+    "effective_prefill_tps": 114862.04013377926,
+    "finish": "stop",
+    "text": "Miss move. Low fat. Good chance."
+   },
+   {
+    "ttft_s": 0.027578553999774158,
+    "total_s": 0.11881215799803613,
+    "pred_n": 14,
+    "prompt_n": 86,
+    "cache_n": 2113,
+    "decode_tps": 143.1528872836189,
+    "prompt_tps": 4311.425276984008,
+    "effective_prefill_tps": 110242.14167543993,
+    "finish": "stop",
+    "text": "Tuk. Muffalo. Nine hours on wall. Copy."
+   },
+   {
+    "ttft_s": 0.0276235679993988,
+    "total_s": 0.09172169299927191,
+    "pred_n": 10,
+    "prompt_n": 89,
+    "cache_n": 2118,
+    "decode_tps": 140.9884859403149,
+    "prompt_tps": 4456.908207721969,
+    "effective_prefill_tps": 110521.30802744253,
+    "finish": "stop",
+    "text": "The calf good meat. I fix leg."
+   },
+   {
+    "ttft_s": 0.029664811998372898,
+    "total_s": 0.09375528500095243,
+    "pred_n": 10,
+    "prompt_n": 86,
+    "cache_n": 2150,
+    "decode_tps": 141.58066951925497,
+    "prompt_tps": 4346.947027901335,
+    "effective_prefill_tps": 113020.6227254347,
+    "finish": "stop",
+    "text": "Speak. Name. Location. Enemy count."
+   },
+   {
+    "ttft_s": 0.02692991200092365,
+    "total_s": 0.07700759300132631,
+    "pred_n": 8,
+    "prompt_n": 86,
+    "cache_n": 2102,
+    "decode_tps": 141.4284271138499,
+    "prompt_tps": 4442.378222015599,
+    "effective_prefill_tps": 113022.36685779224,
+    "finish": "stop",
+    "text": "Hm. The porridge needs stirring."
+   },
+   {
+    "ttft_s": 0.027801375999843003,
+    "total_s": 0.09830824100208702,
+    "pred_n": 11,
+    "prompt_n": 89,
+    "cache_n": 2127,
+    "decode_tps": 142.17874712088036,
+    "prompt_tps": 4430.064708810353,
+    "effective_prefill_tps": 110303.63364858138,
+    "finish": "stop",
+    "text": "Cut the tough bits and give me the hide."
+   },
+   {
+    "ttft_s": 0.028300625999690965,
+    "total_s": 0.07141522500023711,
+    "pred_n": 7,
+    "prompt_n": 86,
+    "cache_n": 2131,
+    "decode_tps": 139.84384104416733,
+    "prompt_tps": 4321.390884880157,
+    "effective_prefill_tps": 111401.43711371289,
+    "finish": "stop",
+    "text": "The execution takes place now."
+   }
+  ]
+ },
+ "concurrent3_cold": {
+  "summary": {
+   "n": 18,
+   "ttft_s": {
+    "median": 0.42191636899951845,
+    "p90": 0.4512425249995431
+   },
+   "total_s": {
+    "median": 0.5543817250018037,
+    "p90": 0.5865323069992883
+   },
+   "decode_tps": {
+    "median": 103.7887185698718,
+    "p90": 122.270085212844
+   },
+   "prompt_tps": {
+    "median": 5892.167963209906,
+    "p90": 7052.159124330269
+   },
+   "effective_prefill_tps": {
+    "median": 5925.769447660512,
+    "p90": 7260.599729430734
+   },
+   "prompt_n": {
+    "median": 2231.0,
+    "p90": 2277
+   },
+   "cache_n": {
+    "median": 0.0,
+    "p90": 0
+   },
+   "pred_n": {
+    "median": 14.0,
+    "p90": 19
+   },
+   "line_24_40_tokens_n": 0
+  },
+  "round_wall_s": {
+   "median": 0.5791970379978011,
+   "p90": 0.6163726769991626
+  },
+  "aggregate_decode_tps_median": 311.7370917830168,
+  "runs": [
+   {
+    "ttft_s": 0.39328854199993657,
+    "total_s": 0.5196102219997556,
+    "pred_n": 11,
+    "prompt_n": 2207,
+    "cache_n": 0,
+    "decode_tps": 79.31283360960637,
+    "prompt_tps": 5775.083146020374,
+    "effective_prefill_tps": 5775.083146020374,
+    "finish": "stop",
+    "text": "Hm. Rice spill. Move back, Pip."
+   },
+   {
+    "ttft_s": 0.43312553499708883,
+    "total_s": 0.5679505650005012,
+    "pred_n": 16,
+    "prompt_n": 2213,
+    "cache_n": 0,
+    "decode_tps": 111.56812721741653,
+    "prompt_tps": 5240.0278457873765,
+    "effective_prefill_tps": 5240.027845787377,
+    "finish": "stop",
+    "text": "Okay so my hand hurts like crazy, Tuk, what do I do?"
+   },
+   {
+    "ttft_s": 0.4512425249995431,
+    "total_s": 0.5759171199970297,
+    "pred_n": 16,
+    "prompt_n": 2240,
+    "cache_n": 0,
+    "decode_tps": 120.57974742562239,
+    "prompt_tps": 6756.736375674543,
+    "effective_prefill_tps": 6756.736375674543,
+    "finish": "stop",
+    "text": "I think maybe you should tell me if you feel pain, Corin."
+   },
+   {
+    "ttft_s": 0.3217475400015246,
+    "total_s": 0.5053241630012053,
+    "pred_n": 19,
+    "prompt_n": 2238,
+    "cache_n": 0,
+    "decode_tps": 98.15576228855613,
+    "prompt_tps": 7260.599729430734,
+    "effective_prefill_tps": 7260.599729430734,
+    "finish": "stop",
+    "text": "Okay so Moth, stop tearing up the stuff, you're gonna ruin everything... kind"
+   },
+   {
+    "ttft_s": 0.34263316199940164,
+    "total_s": 0.4518636079992575,
+    "pred_n": 14,
+    "prompt_n": 2277,
+    "cache_n": 0,
+    "decode_tps": 119.1087004324562,
+    "prompt_tps": 6914.5834851687205,
+    "effective_prefill_tps": 6914.58348516872,
+    "finish": "stop",
+    "text": "Copy. Nine pirates, north wall. They come in now."
+   },
+   {
+    "ttft_s": 0.3426647150008648,
+    "total_s": 0.4969243280029332,
+    "pred_n": 17,
+    "prompt_n": 424,
+    "cache_n": 1824,
+    "decode_tps": 104.07384038975654,
+    "prompt_tps": 1922.7106592539521,
+    "effective_prefill_tps": 10193.994250006803,
+    "finish": "stop",
+    "text": "I think maybe we should, well, check on that caravan before they leave?"
+   },
+   {
+    "ttft_s": 0.39967299600175465,
+    "total_s": 0.48207476300012786,
+    "pred_n": 7,
+    "prompt_n": 2239,
+    "cache_n": 0,
+    "decode_tps": 73.18590439481355,
+    "prompt_tps": 5826.829439671886,
+    "effective_prefill_tps": 5826.829439671886,
+    "finish": "stop",
+    "text": "This meat is good meat."
+   },
+   {
+    "ttft_s": 0.42872579200047767,
+    "total_s": 0.5752862769986677,
+    "pred_n": 18,
+    "prompt_n": 2253,
+    "cache_n": 0,
+    "decode_tps": 116.38733705772813,
+    "prompt_tps": 5446.699464516675,
+    "effective_prefill_tps": 5446.699464516675,
+    "finish": "stop",
+    "text": "Naturally, one must dine upon the cold flag when the proper surface remains in u"
+   },
+   {
+    "ttft_s": 0.4466952799994033,
+    "total_s": 0.5451854500024638,
+    "pred_n": 13,
+    "prompt_n": 2210,
+    "cache_n": 0,
+    "decode_tps": 122.44023386084667,
+    "prompt_tps": 6867.854401486689,
+    "effective_prefill_tps": 6867.854401486688,
+    "finish": "stop",
+    "text": "Hm. Carrots need squaring. Not that jagged mess."
+   },
+   {
+    "ttft_s": 0.3906244700010575,
+    "total_s": 0.5635780000011437,
+    "pred_n": 14,
+    "prompt_n": 2220,
+    "cache_n": 0,
+    "decode_tps": 75.28114612649549,
+    "prompt_tps": 5943.918327349254,
+    "effective_prefill_tps": 5943.918327349254,
+    "finish": "stop",
+    "text": "I think, this resolution... it probably means something, maybe."
+   },
+   {
+    "ttft_s": 0.4202405590003764,
+    "total_s": 0.48866380199979176,
+    "pred_n": 8,
+    "prompt_n": 2221,
+    "cache_n": 0,
+    "decode_tps": 102.59115957322078,
+    "prompt_tps": 5507.148631023521,
+    "effective_prefill_tps": 5507.148631023521,
+    "finish": "stop",
+    "text": "Wind moves them. Aim steady."
+   },
+   {
+    "ttft_s": 0.4340263379999669,
+    "total_s": 0.6085503340000287,
+    "pred_n": 19,
+    "prompt_n": 2206,
+    "cache_n": 0,
+    "decode_tps": 103.50359674998705,
+    "prompt_tps": 7052.159124330269,
+    "effective_prefill_tps": 7052.159124330268,
+    "finish": "stop",
+    "text": "Okay so you done with that pot, or are we just gonna stand here all evening..."
+   },
+   {
+    "ttft_s": 0.39317239000229165,
+    "total_s": 0.5730735079996521,
+    "pred_n": 19,
+    "prompt_n": 2232,
+    "cache_n": 0,
+    "decode_tps": 100.0138908181692,
+    "prompt_tps": 5876.715358448042,
+    "effective_prefill_tps": 5876.715358448042,
+    "finish": "stop",
+    "text": "Of course, this stew exhibits a truly magnificent consistency, much like a poorl"
+   },
+   {
+    "ttft_s": 0.42359217899866053,
+    "total_s": 0.5646984400009387,
+    "pred_n": 17,
+    "prompt_n": 2223,
+    "cache_n": 0,
+    "decode_tps": 113.70985509100342,
+    "prompt_tps": 5413.5404262158545,
+    "effective_prefill_tps": 5413.540426215855,
+    "finish": "stop",
+    "text": "I think, well, this herb pile is probably for the kennels then?"
+   },
+   {
+    "ttft_s": 0.4413138939999044,
+    "total_s": 0.5321707709990733,
+    "pred_n": 12,
+    "prompt_n": 2230,
+    "cache_n": 0,
+    "decode_tps": 121.85665226542595,
+    "prompt_tps": 6975.071158237152,
+    "effective_prefill_tps": 6975.071158237152,
+    "finish": "stop",
+    "text": "Pip watch me. I work. Good meat tomorrow."
+   },
+   {
+    "ttft_s": 0.39654152499861084,
+    "total_s": 0.5317816859969753,
+    "pred_n": 10,
+    "prompt_n": 2250,
+    "cache_n": 0,
+    "decode_tps": 66.74824785849371,
+    "prompt_tps": 5907.62056797177,
+    "effective_prefill_tps": 5907.62056797177,
+    "finish": "stop",
+    "text": "Twenty minutes. Speak. Or I count."
+   },
+   {
+    "ttft_s": 0.43907108699931996,
+    "total_s": 0.5638516639992304,
+    "pred_n": 13,
+    "prompt_n": 2277,
+    "cache_n": 0,
+    "decode_tps": 96.56315632770315,
+    "prompt_tps": 5373.565456257478,
+    "effective_prefill_tps": 5373.565456257478,
+    "finish": "stop",
+    "text": "Okay so this cold wind is kinda messing with my head..."
+   },
+   {
+    "ttft_s": 0.47984868500134326,
+    "total_s": 0.5865323069992883,
+    "pred_n": 14,
+    "prompt_n": 2264,
+    "cache_n": 0,
+    "decode_tps": 122.270085212844,
+    "prompt_tps": 6386.748061971768,
+    "effective_prefill_tps": 6386.748061971768,
+    "finish": "stop",
+    "text": "Naturally, this chill in the common room has become utterly unbearable."
+   }
+  ]
+ },
+ "concurrent3_warm": {
+  "summary": {
+   "n": 18,
+   "ttft_s": {
+    "median": 0.06292486349957471,
+    "p90": 0.06507929500003229
+   },
+   "total_s": {
+    "median": 0.17829577349948522,
+    "p90": 0.1966238790009811
+   },
+   "decode_tps": {
+    "median": 120.4907826890072,
+    "p90": 122.0479648501861
+   },
+   "prompt_tps": {
+    "median": 1870.1266748203416,
+    "p90": 2039.8762913732971
+   },
+   "effective_prefill_tps": {
+    "median": 47554.42386340904,
+    "p90": 49489.05769578586
+   },
+   "prompt_n": {
+    "median": 89.0,
+    "p90": 93
+   },
+   "cache_n": {
+    "median": 2121.5,
+    "p90": 2172
+   },
+   "pred_n": {
+    "median": 13.5,
+    "p90": 17
+   },
+   "line_24_40_tokens_n": 0
+  },
+  "round_wall_s": {
+   "median": 0.19441840600120486,
+   "p90": 0.21675358400170808
+  },
+  "aggregate_decode_tps_median": 360.3651322996885,
+  "runs": [
+   {
+    "ttft_s": 0.06531344799805083,
+    "total_s": 0.16528553899843246,
+    "pred_n": 13,
+    "prompt_n": 86,
+    "cache_n": 2110,
+    "decode_tps": 120.34901213519205,
+    "prompt_tps": 1656.6816281712931,
+    "effective_prefill_tps": 42303.17273795535,
+    "finish": "stop",
+    "text": "Hm. Don't just stand there with that pan."
+   },
+   {
+    "ttft_s": 0.06507929500003229,
+    "total_s": 0.17356686999846715,
+    "pred_n": 14,
+    "prompt_n": 88,
+    "cache_n": 2108,
+    "decode_tps": 120.12566993162076,
+    "prompt_tps": 1730.7503195987806,
+    "effective_prefill_tps": 43190.08752089684,
+    "finish": "stop",
+    "text": "Okay so this wire's totally sharp, like seriously sharp..."
+   },
+   {
+    "ttft_s": 0.06500268599847914,
+    "total_s": 0.1966238790009811,
+    "pred_n": 17,
+    "prompt_n": 93,
+    "cache_n": 2124,
+    "decode_tps": 121.98841110094541,
+    "prompt_tps": 1865.1852148974149,
+    "effective_prefill_tps": 44463.608832554506,
+    "finish": "stop",
+    "text": "I think, maybe it’s just the wound, it will settle soon."
+   },
+   {
+    "ttft_s": 0.06501542700061691,
+    "total_s": 0.17776349599807872,
+    "pred_n": 12,
+    "prompt_n": 88,
+    "cache_n": 2133,
+    "decode_tps": 97.83865516321265,
+    "prompt_tps": 1694.5888696321972,
+    "effective_prefill_tps": 42769.11226651262,
+    "finish": "stop",
+    "text": "Okay so Moth is totally having a meltdown right now."
+   },
+   {
+    "ttft_s": 0.06477284699940355,
+    "total_s": 0.13241812699925504,
+    "pred_n": 9,
+    "prompt_n": 86,
+    "cache_n": 2177,
+    "decode_tps": 119.04584753203079,
+    "prompt_tps": 1693.246702106714,
+    "effective_prefill_tps": 44556.01496357551,
+    "finish": "stop",
+    "text": "Copy. Nine pirates, engaging now."
+   },
+   {
+    "ttft_s": 0.06486384700110648,
+    "total_s": 0.2129341830004705,
+    "pred_n": 17,
+    "prompt_n": 93,
+    "cache_n": 2132,
+    "decode_tps": 108.3717149823896,
+    "prompt_tps": 1864.4373609189872,
+    "effective_prefill_tps": 44606.16266714781,
+    "finish": "stop",
+    "text": "I think, the caravan looks quite large, maybe it will be busy. gossip"
+   },
+   {
+    "ttft_s": 0.06275191999884555,
+    "total_s": 0.10688485300124739,
+    "pred_n": 6,
+    "prompt_n": 89,
+    "cache_n": 2127,
+    "decode_tps": 114.00688601591537,
+    "prompt_tps": 1855.9065790845584,
+    "effective_prefill_tps": 46209.9885309144,
+    "finish": "stop",
+    "text": "This meat is good."
+   },
+   {
+    "ttft_s": 0.06255062800119049,
+    "total_s": 0.1843548600008944,
+    "pred_n": 16,
+    "prompt_n": 90,
+    "cache_n": 2140,
+    "decode_tps": 123.62773217288104,
+    "prompt_tps": 1918.8128944226503,
+    "effective_prefill_tps": 47543.91949513901,
+    "finish": "stop",
+    "text": "Naturally, this arrangement upon the floor is a far cry from proper seating."
+   },
+   {
+    "ttft_s": 0.06260023200229625,
+    "total_s": 0.1543343770026695,
+    "pred_n": 12,
+    "prompt_n": 86,
+    "cache_n": 2113,
+    "decode_tps": 120.63255324282235,
+    "prompt_tps": 1875.068134743268,
+    "effective_prefill_tps": 47945.05614302845,
+    "finish": "stop",
+    "text": "Hm. Wrong angle again with the carrots, Pip."
+   },
+   {
+    "ttft_s": 0.05833659500058275,
+    "total_s": 0.19372673199904966,
+    "pred_n": 14,
+    "prompt_n": 93,
+    "cache_n": 2104,
+    "decode_tps": 96.00047261771135,
+    "prompt_tps": 2039.8762913732971,
+    "effective_prefill_tps": 48189.33561448532,
+    "finish": "stop",
+    "text": "I think the spores... they seem to have resolved, maybe?"
+   },
+   {
+    "ttft_s": 0.05808249699839507,
+    "total_s": 0.12565233999703196,
+    "pred_n": 9,
+    "prompt_n": 89,
+    "cache_n": 2109,
+    "decode_tps": 118.77013524949152,
+    "prompt_tps": 1968.765208158209,
+    "effective_prefill_tps": 48621.86435428925,
+    "finish": "stop",
+    "text": "Just another one coming through the fog."
+   },
+   {
+    "ttft_s": 0.05814229499810608,
+    "total_s": 0.18522475699865026,
+    "pred_n": 13,
+    "prompt_n": 88,
+    "cache_n": 2101,
+    "decode_tps": 94.62976105985332,
+    "prompt_tps": 1989.5098571170192,
+    "effective_prefill_tps": 49489.05769578586,
+    "finish": "stop",
+    "text": "Okay so the pot looks extra sticky for a rough day."
+   },
+   {
+    "ttft_s": 0.05885069000214571,
+    "total_s": 0.18293567100045038,
+    "pred_n": 16,
+    "prompt_n": 90,
+    "cache_n": 2119,
+    "decode_tps": 120.98628015583033,
+    "prompt_tps": 1961.5535504119262,
+    "effective_prefill_tps": 48145.24214288828,
+    "finish": "stop",
+    "text": "Naturally, this stew possesses the distinct flavor of repetition, my dear Nate."
+   },
+   {
+    "ttft_s": 0.058590325999830384,
+    "total_s": 0.18285755500255618,
+    "pred_n": 16,
+    "prompt_n": 93,
+    "cache_n": 2107,
+    "decode_tps": 121.01458629146768,
+    "prompt_tps": 2075.66119852695,
+    "effective_prefill_tps": 49101.66276085259,
+    "finish": "stop",
+    "text": "I think the day is... adequate, perhaps a bit more than that."
+   },
+   {
+    "ttft_s": 0.058680924001237145,
+    "total_s": 0.1498196159991494,
+    "pred_n": 12,
+    "prompt_n": 89,
+    "cache_n": 2118,
+    "decode_tps": 121.40744337998322,
+    "prompt_tps": 2030.3410516710392,
+    "effective_prefill_tps": 50347.89551728071,
+    "finish": "stop",
+    "text": "Rough day is the clear sky and the cold wind."
+   },
+   {
+    "ttft_s": 0.0633605479997641,
+    "total_s": 0.16197152599852416,
+    "pred_n": 13,
+    "prompt_n": 86,
+    "cache_n": 2150,
+    "decode_tps": 122.0479648501861,
+    "prompt_tps": 1773.8542139350686,
+    "effective_prefill_tps": 46120.209562311786,
+    "finish": "stop",
+    "text": "Speak. Or I make noise with this bionic arm."
+   },
+   {
+    "ttft_s": 0.06309780700030387,
+    "total_s": 0.17882805100089172,
+    "pred_n": 15,
+    "prompt_n": 88,
+    "cache_n": 2172,
+    "decode_tps": 121.40447635647824,
+    "prompt_tps": 1852.0857010565305,
+    "effective_prefill_tps": 47564.928231679085,
+    "finish": "stop",
+    "text": "Okay so this wind is kinda biting, like way more than usual..."
+   },
+   {
+    "ttft_s": 0.06312546599656343,
+    "total_s": 0.1866307849995792,
+    "pred_n": 16,
+    "prompt_n": 90,
+    "cache_n": 2151,
+    "decode_tps": 121.72755749598299,
+    "prompt_tps": 1934.651762682717,
+    "effective_prefill_tps": 48172.82889079965,
+    "finish": "stop",
+    "text": "The temperature in this damp den is quite unbearable, my dear Ines."
+   }
+  ]
+ },
+ "long_cold_erased": {
+  "summary": {
+   "n": 12,
+   "ttft_s": {
+    "median": 0.14711770699977933,
+    "p90": 0.14965660400048364
+   },
+   "total_s": {
+    "median": 0.3499736699995992,
+    "p90": 0.3694281720017898
+   },
+   "decode_tps": {
+    "median": 144.2263693342109,
+    "p90": 144.8795430085272
+   },
+   "prompt_tps": {
+    "median": 16207.369030928508,
+    "p90": 16326.442193130042
+   },
+   "effective_prefill_tps": {
+    "median": 16207.369030928508,
+    "p90": 16326.44219313004
+   },
+   "prompt_n": {
+    "median": 2249.5,
+    "p90": 2264
+   },
+   "cache_n": {
+    "median": 0.0,
+    "p90": 0
+   },
+   "pred_n": {
+    "median": 30.0,
+    "p90": 33
+   },
+   "line_24_40_tokens_n": 8
+  },
+  "runs": [
+   {
+    "ttft_s": 0.149961480001366,
+    "total_s": 0.3454897219999111,
+    "pred_n": 29,
+    "prompt_n": 2241,
+    "cache_n": 0,
+    "decode_tps": 143.35889900365567,
+    "prompt_tps": 16291.191416046933,
+    "effective_prefill_tps": 16291.191416046935,
+    "finish": "stop",
+    "text": "Not much better. This rough work on the bone will ache more later. I will bring "
+   },
+   {
+    "ttft_s": 0.14961428300011903,
+    "total_s": 0.3643123520014342,
+    "pred_n": 32,
+    "prompt_n": 2247,
+    "cache_n": 0,
+    "decode_tps": 144.52012326167932,
+    "prompt_tps": 16009.746922024624,
+    "effective_prefill_tps": 16009.746922024624,
+    "finish": "stop",
+    "text": "Hm. That's Hana's broth gone cold. Get up, Pip, stop leaking over the floor. Mot"
+   },
+   {
+    "ttft_s": 0.14847681099854526,
+    "total_s": 0.3694281720017898,
+    "pred_n": 33,
+    "prompt_n": 2249,
+    "cache_n": 0,
+    "decode_tps": 144.92687986014556,
+    "prompt_tps": 15997.66685872403,
+    "effective_prefill_tps": 15997.66685872403,
+    "finish": "stop",
+    "text": "Okay so Moth is totally having a bad time, like, I don't know what to do, I can'"
+   },
+   {
+    "ttft_s": 0.14965660400048364,
+    "total_s": 0.27733300600084476,
+    "pred_n": 19,
+    "prompt_n": 2288,
+    "cache_n": 0,
+    "decode_tps": 141.22299110295157,
+    "prompt_tps": 16168.12589656074,
+    "effective_prefill_tps": 16168.12589656074,
+    "finish": "stop",
+    "text": "Copy. Nine pirates, north wall. Pip, move to cover. Prepare for engagement."
+   },
+   {
+    "ttft_s": 0.14723486000002595,
+    "total_s": 0.3613566420026473,
+    "pred_n": 32,
+    "prompt_n": 2259,
+    "cache_n": 0,
+    "decode_tps": 144.85304425026868,
+    "prompt_tps": 16221.689238679284,
+    "effective_prefill_tps": 16221.689238679284,
+    "finish": "stop",
+    "text": "I think, maybe we should, well, probably check the manifest from the Guild first"
+   },
+   {
+    "ttft_s": 0.1462908770008653,
+    "total_s": 0.29210842400061665,
+    "pred_n": 22,
+    "prompt_n": 2208,
+    "cache_n": 0,
+    "decode_tps": 144.19214633442965,
+    "prompt_tps": 16208.121678362744,
+    "effective_prefill_tps": 16208.121678362742,
+    "finish": "stop",
+    "text": "Hm. Seventeen. More grease for the bean-slop. Keep peeling those spuds, Pip."
+   },
+   {
+    "ttft_s": 0.14650979799989727,
+    "total_s": 0.2995387530027074,
+    "pred_n": 23,
+    "prompt_n": 2261,
+    "cache_n": 0,
+    "decode_tps": 143.90748057249013,
+    "prompt_tps": 16326.442193130042,
+    "effective_prefill_tps": 16326.44219313004,
+    "finish": "stop",
+    "text": "Naturally, this golden luminescence proves the exterior is nothing more than a p"
+   },
+   {
+    "ttft_s": 0.14761939800155233,
+    "total_s": 0.2659180890004791,
+    "pred_n": 18,
+    "prompt_n": 2250,
+    "cache_n": 0,
+    "decode_tps": 143.92143582797155,
+    "prompt_tps": 16145.930507915093,
+    "effective_prefill_tps": 16145.930507915093,
+    "finish": "stop",
+    "text": "Good meat. This roast is solid. The northern herd is running thin this winter."
+   },
+   {
+    "ttft_s": 0.14603078400250524,
+    "total_s": 0.35459374300262425,
+    "pred_n": 31,
+    "prompt_n": 2264,
+    "cache_n": 0,
+    "decode_tps": 143.93390555057118,
+    "prompt_tps": 16387.865451571106,
+    "effective_prefill_tps": 16387.865451571106,
+    "finish": "stop",
+    "text": "Of course, one must dine upon the very substrate upon which one labors, my dear "
+   },
+   {
+    "ttft_s": 0.14631996599928243,
+    "total_s": 0.3544576179992873,
+    "pred_n": 31,
+    "prompt_n": 2221,
+    "cache_n": 0,
+    "decode_tps": 144.26059233399212,
+    "prompt_tps": 16047.455961619053,
+    "effective_prefill_tps": 16047.455961619053,
+    "finish": "stop",
+    "text": "Hm. Those carrots, Pip, they need to cut right through, not limp like overcooked"
+   },
+   {
+    "ttft_s": 0.1470005539995327,
+    "total_s": 0.3062336549992324,
+    "pred_n": 24,
+    "prompt_n": 2254,
+    "cache_n": 0,
+    "decode_tps": 144.4732693044554,
+    "prompt_tps": 16206.616383494273,
+    "effective_prefill_tps": 16206.616383494273,
+    "finish": "stop",
+    "text": "This stone is hard work. Ash holding the beam good for now. More chunks need mov"
+   },
+   {
+    "ttft_s": 0.1461731380004494,
+    "total_s": 0.3878715099999681,
+    "pred_n": 36,
+    "prompt_n": 2244,
+    "cache_n": 0,
+    "decode_tps": 144.8795430085272,
+    "prompt_tps": 16271.009469669505,
+    "effective_prefill_tps": 16271.009469669507,
+    "finish": "stop",
+    "text": "Naturally, this incessant precipitation renders the transport of timber rather t"
+   }
+  ]
+ },
+ "long_warm": {
+  "summary": {
+   "n": 12,
+   "ttft_s": {
+    "median": 0.027912857998671825,
+    "p90": 0.029390242998488247
+   },
+   "total_s": {
+    "median": 0.16788442350116384,
+    "p90": 0.18081747800169978
+   },
+   "decode_tps": {
+    "median": 143.98827051103098,
+    "p90": 145.3078389305343
+   },
+   "prompt_tps": {
+    "median": 4903.042576453857,
+    "p90": 4992.079873277972
+   },
+   "effective_prefill_tps": {
+    "median": 110024.2351450592,
+    "p90": 111749.16150015245
+   },
+   "prompt_n": {
+    "median": 99.5,
+    "p90": 100
+   },
+   "cache_n": {
+    "median": 2127.0,
+    "p90": 2139
+   },
+   "pred_n": {
+    "median": 21.0,
+    "p90": 23
+   },
+   "line_24_40_tokens_n": 0
+  },
+  "runs": [
+   {
+    "ttft_s": 0.02785687499999767,
+    "total_s": 0.16762793700036127,
+    "pred_n": 21,
+    "prompt_n": 99,
+    "cache_n": 2108,
+    "decode_tps": 143.62863380443525,
+    "prompt_tps": 4897.111199050257,
+    "effective_prefill_tps": 109170.95370003956,
+    "finish": "stop",
+    "text": "Okay so yeah, just wire, stupid wire, bit of blood but I'm totally fine..."
+   },
+   {
+    "ttft_s": 0.02782317899982445,
+    "total_s": 0.1461116430000402,
+    "pred_n": 18,
+    "prompt_n": 97,
+    "cache_n": 2139,
+    "decode_tps": 144.07390143650156,
+    "prompt_tps": 4808.88404144564,
+    "effective_prefill_tps": 110852.2135739428,
+    "finish": "stop",
+    "text": "Hm. The dead take too much space. Get that sheet off her, Moth."
+   },
+   {
+    "ttft_s": 0.02894756399837206,
+    "total_s": 0.1815233849993092,
+    "pred_n": 23,
+    "prompt_n": 104,
+    "cache_n": 2132,
+    "decode_tps": 144.29541206178467,
+    "prompt_tps": 4992.079873277972,
+    "effective_prefill_tps": 107329.71727547642,
+    "finish": "stop",
+    "text": "I think maybe we should see what the Guild has, just quickly? Especially with al"
+   },
+   {
+    "ttft_s": 0.027926473998377332,
+    "total_s": 0.17220918599923607,
+    "pred_n": 22,
+    "prompt_n": 100,
+    "cache_n": 2127,
+    "decode_tps": 145.87284056098525,
+    "prompt_tps": 4942.909396470763,
+    "effective_prefill_tps": 110078.59225940387,
+    "finish": "stop",
+    "text": "This meat is good. Day was hard work, then I sat here. I eat enough now. comfort"
+   },
+   {
+    "ttft_s": 0.029390242998488247,
+    "total_s": 0.1275029229982465,
+    "pred_n": 15,
+    "prompt_n": 100,
+    "cache_n": 2131,
+    "decode_tps": 143.42351940827552,
+    "prompt_tps": 4901.9607843137255,
+    "effective_prefill_tps": 109362.74509803923,
+    "finish": "stop",
+    "text": "This rock is hard work. I cut enough pieces for the fire."
+   },
+   {
+    "ttft_s": 0.0274788639981125,
+    "total_s": 0.1447754199980409,
+    "pred_n": 18,
+    "prompt_n": 100,
+    "cache_n": 2109,
+    "decode_tps": 145.3078389305343,
+    "prompt_tps": 5028.663381273257,
+    "effective_prefill_tps": 111083.17409232626,
+    "finish": "stop",
+    "text": "Muffalo moves slow. Arrow ready. Need good kill before mist burns off."
+   },
+   {
+    "ttft_s": 0.02820442500160425,
+    "total_s": 0.16779989000133355,
+    "pred_n": 21,
+    "prompt_n": 97,
+    "cache_n": 2113,
+    "decode_tps": 143.45452850082845,
+    "prompt_tps": 4739.336492890996,
+    "effective_prefill_tps": 107978.69741535155,
+    "finish": "stop",
+    "text": "Tuk, haul the carcass inside and clean it. I do not want it rotting out here."
+   },
+   {
+    "ttft_s": 0.02809934300239547,
+    "total_s": 0.1744179740016989,
+    "pred_n": 22,
+    "prompt_n": 100,
+    "cache_n": 2118,
+    "decode_tps": 143.9026395855604,
+    "prompt_tps": 4904.124368593988,
+    "effective_prefill_tps": 108773.47849541465,
+    "finish": "stop",
+    "text": "This calf has good bone for stew. You should come help me skin it later when the"
+   },
+   {
+    "ttft_s": 0.027899241998966318,
+    "total_s": 0.16796895700099412,
+    "pred_n": 21,
+    "prompt_n": 97,
+    "cache_n": 2150,
+    "decode_tps": 142.97663046974972,
+    "prompt_tps": 4830.677290836654,
+    "effective_prefill_tps": 111902.39043824702,
+    "finish": "stop",
+    "text": "Copy. You will speak. State something. Twenty minutes passed. Silence does not h"
+   },
+   {
+    "ttft_s": 0.027367356997274328,
+    "total_s": 0.1734218539968424,
+    "pred_n": 22,
+    "prompt_n": 97,
+    "cache_n": 2102,
+    "decode_tps": 144.12584244986482,
+    "prompt_tps": 4929.362740115865,
+    "effective_prefill_tps": 111749.16150015245,
+    "finish": "stop",
+    "text": "Hm. Bed's thin. Waking up for morning stew. Don't touch the stove."
+   },
+   {
+    "ttft_s": 0.02783297399946605,
+    "total_s": 0.18081747800169978,
+    "pred_n": 23,
+    "prompt_n": 100,
+    "cache_n": 2127,
+    "decode_tps": 144.29919782764114,
+    "prompt_tps": 4938.027751715964,
+    "effective_prefill_tps": 109969.87803071452,
+    "finish": "stop",
+    "text": "This man cooked good yesterday. I take the meat now for the freezer. Not enough "
+   },
+   {
+    "ttft_s": 0.030000825998286018,
+    "total_s": 0.1556104299997969,
+    "pred_n": 19,
+    "prompt_n": 97,
+    "cache_n": 2131,
+    "decode_tps": 143.63000909656722,
+    "prompt_tps": 4803.8827258320125,
+    "effective_prefill_tps": 110340.72900158478,
+    "finish": "stop",
+    "text": "The execution is complete. Move prisoner body to disposal area. Tuk, cover the g"
+   }
+  ]
+ },
+ "long_concurrent3_warm": {
+  "summary": {
+   "n": 18,
+   "ttft_s": {
+    "median": 0.062377334497796255,
+    "p90": 0.06556444600209943
+   },
+   "total_s": {
+    "median": 0.2361464245022944,
+    "p90": 0.2818967759994848
+   },
+   "decode_tps": {
+    "median": 123.58197789231949,
+    "p90": 127.33350007958342
+   },
+   "prompt_tps": {
+    "median": 2065.9057986751272,
+    "p90": 2239.3523104086817
+   },
+   "effective_prefill_tps": {
+    "median": 46617.76798901757,
+    "p90": 48146.074673786665
+   },
+   "prompt_n": {
+    "median": 100.0,
+    "p90": 104
+   },
+   "cache_n": {
+    "median": 2121.5,
+    "p90": 2172
+   },
+   "pred_n": {
+    "median": 22.5,
+    "p90": 29
+   },
+   "line_24_40_tokens_n": 6
+  },
+  "runs": [
+   {
+    "ttft_s": 0.06236965799689642,
+    "total_s": 0.31855786699816235,
+    "pred_n": 34,
+    "prompt_n": 97,
+    "cache_n": 2110,
+    "decode_tps": 128.85339997266746,
+    "prompt_tps": 1957.4210473211583,
+    "effective_prefill_tps": 44536.37372616285,
+    "finish": "stop",
+    "text": "Hm. Don't stand there like a lost chick. Keep the pans near the scrub-sink, Pip."
+   },
+   {
+    "ttft_s": 0.06220366300112801,
+    "total_s": 0.2404184549995989,
+    "pred_n": 23,
+    "prompt_n": 99,
+    "cache_n": 2108,
+    "decode_tps": 123.54553214430118,
+    "prompt_tps": 2040.1854714064914,
+    "effective_prefill_tps": 45481.71045852653,
+    "finish": "stop",
+    "text": "Ow, my hand stings, like a mean wire dug in, but Biscuit needed freeing, okay so"
+   },
+   {
+    "ttft_s": 0.06213276400012546,
+    "total_s": 0.2404057220010145,
+    "pred_n": 23,
+    "prompt_n": 104,
+    "cache_n": 2124,
+    "decode_tps": 123.61842364033781,
+    "prompt_tps": 2191.272834537831,
+    "effective_prefill_tps": 46943.80649375277,
+    "finish": "stop",
+    "text": "I think, the stitching holds, maybe it will close, although the bleeding is stil"
+   },
+   {
+    "ttft_s": 0.06349926099937875,
+    "total_s": 0.2555090069981816,
+    "pred_n": 25,
+    "prompt_n": 99,
+    "cache_n": 2133,
+    "decode_tps": 125.09773260359655,
+    "prompt_tps": 2041.5738678544915,
+    "effective_prefill_tps": 46028.210838901265,
+    "finish": "stop",
+    "text": "Oh wow, Moth is totally spiraling again, I should maybe go help her before she t"
+   },
+   {
+    "ttft_s": 0.06330936700032908,
+    "total_s": 0.2181515020020015,
+    "pred_n": 20,
+    "prompt_n": 97,
+    "cache_n": 2177,
+    "decode_tps": 122.92642529955229,
+    "prompt_tps": 2043.6541378729141,
+    "effective_prefill_tps": 47909.994943536156,
+    "finish": "stop",
+    "text": "Nine pirates. They breach. Turtle is on the wall, Pip is down. Prepare fire."
+   },
+   {
+    "ttft_s": 0.06318079099946772,
+    "total_s": 0.20913969399771304,
+    "pred_n": 19,
+    "prompt_n": 104,
+    "cache_n": 2132,
+    "decode_tps": 123.67479026816817,
+    "prompt_tps": 2239.3523104086817,
+    "effective_prefill_tps": 48146.074673786665,
+    "finish": "stop",
+    "text": "I think, maybe those traders have things that could actually help the microscopy"
+   },
+   {
+    "ttft_s": 0.06574243100112653,
+    "total_s": 0.21274185200309148,
+    "pred_n": 19,
+    "prompt_n": 100,
+    "cache_n": 2127,
+    "decode_tps": 122.67262764768421,
+    "prompt_tps": 1955.9137050873314,
+    "effective_prefill_tps": 43558.19821229487,
+    "finish": "stop",
+    "text": "The meat is good. The sun is out. More like this after the hunt. comfort"
+   },
+   {
+    "ttft_s": 0.06548480700075743,
+    "total_s": 0.2297296409997216,
+    "pred_n": 21,
+    "prompt_n": 101,
+    "cache_n": 2140,
+    "decode_tps": 122.1336753076242,
+    "prompt_tps": 2023.399310842215,
+    "effective_prefill_tps": 44895.424312845586,
+    "finish": "stop",
+    "text": "One must be accustomed to procuring one's sustenance from the bare stratum of th"
+   },
+   {
+    "ttft_s": 0.06556444600209943,
+    "total_s": 0.25931006300015724,
+    "pred_n": 25,
+    "prompt_n": 97,
+    "cache_n": 2113,
+    "decode_tps": 124.22488845640223,
+    "prompt_tps": 2024.2070116861437,
+    "effective_prefill_tps": 46118.53088480801,
+    "finish": "stop",
+    "text": "Hm. Angle's off again on those carrots, Pip. Cut them like they owe me silver, n"
+   },
+   {
+    "ttft_s": 0.06222494499888853,
+    "total_s": 0.22244825799862156,
+    "pred_n": 18,
+    "prompt_n": 104,
+    "cache_n": 2104,
+    "decode_tps": 106.14982110633089,
+    "prompt_tps": 2198.4991015748865,
+    "effective_prefill_tps": 46675.82707958989,
+    "finish": "stop",
+    "text": "I think, this culture, it resolved into spores, maybe that means something signi"
+   },
+   {
+    "ttft_s": 0.06202620700059924,
+    "total_s": 0.17716178599948762,
+    "pred_n": 15,
+    "prompt_n": 100,
+    "cache_n": 2109,
+    "decode_tps": 121.78148921363953,
+    "prompt_tps": 2134.2894950271057,
+    "effective_prefill_tps": 47146.45494514876,
+    "finish": "stop",
+    "text": "The mist burns my lungs. This calf moves slow enough to hit."
+   },
+   {
+    "ttft_s": 0.061894816000858555,
+    "total_s": 0.27073172599921236,
+    "pred_n": 25,
+    "prompt_n": 99,
+    "cache_n": 2101,
+    "decode_tps": 115.1233738823439,
+    "prompt_tps": 2155.970295520373,
+    "effective_prefill_tps": 47910.45101156385,
+    "finish": "stop",
+    "text": "Okay so what are you working on, Nate, this pot looks super clean, like you're b"
+   },
+   {
+    "ttft_s": 0.061990312999114394,
+    "total_s": 0.2818967759994848,
+    "pred_n": 29,
+    "prompt_n": 101,
+    "cache_n": 2119,
+    "decode_tps": 127.33350007958342,
+    "prompt_tps": 2142.281423662665,
+    "effective_prefill_tps": 47087.76990624867,
+    "finish": "stop",
+    "text": "Naturally, this stew possesses the singular charm of predictable, lukewarm medio"
+   },
+   {
+    "ttft_s": 0.0617758500011405,
+    "total_s": 0.23845821100258036,
+    "pred_n": 23,
+    "prompt_n": 104,
+    "cache_n": 2107,
+    "decode_tps": 124.68403930947713,
+    "prompt_tps": 2256.7975175227307,
+    "effective_prefill_tps": 47978.64722348806,
+    "finish": "stop",
+    "text": "I think, maybe those leaves are for the birds, no, wait, perhaps they are for so"
+   },
+   {
+    "ttft_s": 0.06181037800342892,
+    "total_s": 0.1678050880000228,
+    "pred_n": 14,
+    "prompt_n": 100,
+    "cache_n": 2118,
+    "decode_tps": 122.88147609010048,
+    "prompt_tps": 2220.1007925759827,
+    "effective_prefill_tps": 49241.835579335304,
+    "finish": "stop",
+    "text": "Calf is good meat now. Watch the bone break slow."
+   },
+   {
+    "ttft_s": 0.06264030500096851,
+    "total_s": 0.23383463800200843,
+    "pred_n": 22,
+    "prompt_n": 97,
+    "cache_n": 2150,
+    "decode_tps": 122.70368812228298,
+    "prompt_tps": 1921.8576636550956,
+    "effective_prefill_tps": 44519.73371374227,
+    "finish": "stop",
+    "text": "Copy. Talk. Second wave will not wait for you to be quiet. Three hundred words. "
+   },
+   {
+    "ttft_s": 0.06238501099869609,
+    "total_s": 0.25638218200037954,
+    "pred_n": 25,
+    "prompt_n": 99,
+    "cache_n": 2172,
+    "decode_tps": 123.86073924217871,
+    "prompt_tps": 2004.616692989916,
+    "effective_prefill_tps": 45984.69201798081,
+    "finish": "stop",
+    "text": "Okay so it's just cold here, even with Biscuit and the sun down, like I feel wei"
+   },
+   {
+    "ttft_s": 0.06249438299710164,
+    "total_s": 0.21618799699717783,
+    "pred_n": 20,
+    "prompt_n": 101,
+    "cache_n": 2151,
+    "decode_tps": 123.76560097970246,
+    "prompt_tps": 2088.15745947734,
+    "effective_prefill_tps": 46559.70889844525,
+    "finish": "stop",
+    "text": "Naturally, one finds the elements are quite opinionated when the hearth refuses "
+   }
+  ]
+ },
+ "vram_mib": 5438
+}

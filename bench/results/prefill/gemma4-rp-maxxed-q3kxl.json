@@ -1,0 +1,43 @@
+{
+ "model": "gemma4-rp-maxxed-q3kxl",
+ "template_tail": " the floor.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>",
+ "chat": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "|Hm. Clean it up, Pip, before I throw you in the scrap bin with it.",
+   "|Hm. Better grab the heavy ladle.",
+   "|Hm. Get the med-kit before the floor's ruined.",
+   "|Hm. If Lux wants better, tell 'em to find a kitchen.",
+   "|Hm. Move the pot before the soup turns to sludge."
+  ]
+ },
+ "native_empty_thought": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "Hm. Clean it up, Pip, before I make you scrub the pots.",
+   "Hm. Better grab the heavy ladle.",
+   "Hm. Get the med-kit and quit your howling.",
+   "Hm. Eat it or starve, Lux.",
+   "Hm. Move the pot before it's ruined."
+  ]
+ },
+ "bare_turn": {
+  "n": 20,
+  "thought_or_list_leak": 20,
+  "empty": 0,
+  "first_line_starts_Hm": 0,
+  "samples": [
+   "<|channel>thought\n<channel|>Hm. Get the mop, Pip, before I make you eat it off the tiles.",
+   "<|channel>thought\n<channel|>Hm. Better grab the heavy ladle before they get through.",
+   "<|channel>thought\n<channel|>Hm. Get me the bandages and a bowl, then move.",
+   "<|channel>thought\n<channel|>Hm. Eat it or starve, Lux.",
+   "<|channel>thought\n<channel|>Hm. Grab a bucket before the stew's ruined."
+  ]
+ }
+}
