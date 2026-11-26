@@ -115,6 +115,8 @@ def _parse_as(cur, raw: str):
         return int(raw)
     if isinstance(cur, float):
         return float(raw)
+    if isinstance(cur, (tuple, list)):
+        return tuple(x.strip() for x in raw.split(",") if x.strip())      # comma list, e.g. creative_plan_for=lore,eulogy
     return raw
 
 

@@ -149,3 +149,9 @@ def test_score_soak_sample_key(tmp_path):
     assert jp.main(["score", "--key", str(key), "--verdicts", str(ver), "--out", str(tmp_path / "o.md"), "--json", str(js)]) == 0
     fam = json.loads(js.read_text())["soak_families"]
     assert fam["art"]["mean"] == 5 and fam["aim"]["share_le2"] == 1.0 and fam["speech"]["n"] == 1
+
+
+def test_set_parses_comma_lists_for_tuple_fields():
+    import creative_probe as cp
+    assert cp._parse_as((), "lore, eulogy") == ("lore", "eulogy")
+    assert cp._parse_as(("x",), "") == ()
