@@ -303,7 +303,8 @@ namespace HermesVoice
             string phase = PhaseLabel(st.Phase);
             string line = phase;
             if (st.Progress != null && st.Progress.TotalBytes > 0)
-                line += " " + UiUtil.T("HV_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
+                line += " " + (st.Progress.Verifying ? UiUtil.T("HV_Eng_Verifying") + " " : "")
+                     + UiUtil.T("HV_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
             if (!string.IsNullOrEmpty(st.Model)) line = UiUtil.T("HV_Eng_ModelPrefix", st.Model) + " | " + line;
             if (st.Shape != null && st.Shape.Slots > 0) line += " | " + UiUtil.T("HV_Eng_Shape", st.Shape.Slots, Ctx(st.Shape.CtxPerSlot));
             if (st.TokS.HasValue && st.TokS.Value > 0) line += " | " + UiUtil.T("HV_Eng_TokS", Mathf.RoundToInt((float)st.TokS.Value));
@@ -350,6 +351,8 @@ namespace HermesVoice
             if (StarterInUse)
             {
                 int pct = StarterPercent();
+                var up = _status.Upgrade != null ? _status.Upgrade.Progress : null;
+                if (up != null && up.Verifying) return UiUtil.T("HV_Starter_StatusLineVerifying", pct < 0 ? 0 : pct);
                 return pct >= 0 ? UiUtil.T("HV_Starter_StatusLine", pct) : UiUtil.T("HV_Starter_StatusLineNoPct");
             }
             if (!FallbackInUse) return null;

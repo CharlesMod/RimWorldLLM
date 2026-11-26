@@ -303,6 +303,8 @@ Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Starter_MessageText>HermesVoice is talking with a small starter model while the full model downloads. Speech will be simpler until it switches over by itself.</HV_Starter_MessageText>
   <HV_Starter_ReadyText>HermesVoice switched to the full model ({0}).</HV_Starter_ReadyText>
   <HV_Starter_StatusLine>Starter model: simpler speech while the full model downloads ({0}%).</HV_Starter_StatusLine>
+  <HV_Starter_StatusLineVerifying>Starter model: the full model has downloaded and is being checked ({0}%).</HV_Starter_StatusLineVerifying>
+  <HV_Eng_Verifying>checking</HV_Eng_Verifying>
   <HV_Starter_StatusLineNoPct>Starter model: simpler speech while the full model downloads.</HV_Starter_StatusLineNoPct>
   <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
   <!-- Director camera -->

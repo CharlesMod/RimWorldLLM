@@ -20,6 +20,8 @@ namespace HermesVoice.Bridge
         [JsonProperty("eta_s")] public double EtaSeconds;
         [JsonProperty("step")] public string Step;
         public double Fraction { get { return TotalBytes > 0 ? Math.Min(1.0, (double)DoneBytes / TotalBytes) : 0.0; } }
+        /// <summary>The checksum pass after a download: the byte count starts again from zero.</summary>
+        public bool Verifying { get { return Step != null && Step.StartsWith("verifying", StringComparison.Ordinal); } }
     }
 
     public sealed class EngineShape

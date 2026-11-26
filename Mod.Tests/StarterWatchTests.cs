@@ -29,6 +29,14 @@ namespace HermesVoice.Tests
             Assert.False(w.KeepPolling);
         }
 
+        [Fact]
+        public void The_checksum_pass_is_recognised()
+        {
+            Assert.True(new EngineProgress { Step = "verifying model gemma4-rp-maxxed-q3kxl" }.Verifying);
+            Assert.False(new EngineProgress { Step = "model gemma4-rp-maxxed-q3kxl" }.Verifying);
+            Assert.False(new EngineProgress().Verifying);
+        }
+
         [Theory]
         [InlineData(0, 0, -1)]
         [InlineData(0, 100, 0)]
