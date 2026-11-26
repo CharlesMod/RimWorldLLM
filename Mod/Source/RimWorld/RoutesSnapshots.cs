@@ -70,7 +70,6 @@ namespace HermesVoice
             return ApiResult.Success(new JObject
             {
                 ["effects"] = s.effects,
-                ["language"] = s.language,
                 ["events"] = EventToggles(s),
                 ["talk_frequency"] = s.talkFrequency,
                 ["wants_enabled"] = s.wantsEnabled,

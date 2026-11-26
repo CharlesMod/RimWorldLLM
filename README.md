@@ -25,7 +25,7 @@ are included but not yet tested. Reports are very welcome (see [Reporting a prob
 ## First run
 
 1. Start or load a game. A letter offers to set up a local model: click **Set up**.
-   (If you closed it: Options, Mod settings, HermesVoice, Connection, **Set up / Change model...**)
+   (If you closed it: Options, Mod settings, HermesVoice, Model, **Change model...**)
 2. The setup window shows your graphics card, memory and disk, and recommends a model.
    Click **Install**.
 3. Your colonists start talking within a few minutes on a small **starter model** while the
@@ -61,10 +61,33 @@ Every download is checked against a fixed SHA-256 and resumes if interrupted. Wi
 card expect about 12 GB on disk for the 26B (about 16 GB at the peak, while the starter is still
 there), or about 6 GB for E4B RP.
 
+### Already have a GGUF model file?
+
+Options, Mod settings, HermesVoice, Model, **Use my own GGUF file...**: pick the file with
+**Browse...**, click **Check** to see whether it fits your card, then **Use this file**. The file
+stays where it is (it is never copied or deleted); only the model server (llama.cpp) is downloaded.
+
 ### Already run a model server?
 
-Options, Mod settings, HermesVoice, Connection: choose **My own endpoint** and enter the URL of
+Options, Mod settings, HermesVoice, Model: choose **My own endpoint** and enter the URL of
 any OpenAI-compatible server (llama.cpp, LM Studio, Ollama, vLLM, ...). Nothing is downloaded.
+
+## Settings
+
+Options, Mod settings, HermesVoice. Every option has a tooltip; nothing needs changing to get started.
+
+- **Model:** what is running and how fast, **Change model...** (each model with its size, memory need and
+  whether it fits your machine; switching keeps the current model talking until the new one is ready, then
+  offers to delete the old one), **Use my own GGUF file...**, or **My own endpoint**.
+- **Colonists:** how often they talk, how much lines nudge moods and opinions, wants, dreams, recaps, art,
+  and which kinds of events get lines.
+- **Display:** speech bubbles, inner-thought clouds, the director camera.
+- **Content:** adult content (off by default). The age gate is always on.
+- **Storage:** where the engine keeps its files and how much space they take, **Open folder**, delete single
+  models, and **Remove downloaded files...** to free all of it.
+- **Advanced:** bridge port, address and token, debug tools. Only needed for development.
+
+The full list, with defaults, is in [docs/SETTINGS.md](docs/SETTINGS.md).
 
 ## Content settings
 
@@ -92,7 +115,10 @@ text or save a picture card to `SaveData/HermesVoice/Shares` in RimWorld's save-
 
 ## Uninstall
 
-There is no uninstall button yet. To remove everything:
+To free the space but keep the mod: Options, Mod settings, HermesVoice, Storage,
+**Remove downloaded files...** (models, llama.cpp and Python; your settings stay).
+
+To remove everything:
 
 1. Quit RimWorld. The engine stops with it.
 2. Delete the engine folder (models, llama.cpp, Python, logs):
@@ -105,17 +131,16 @@ There is no uninstall button yet. To remove everything:
    (shared pictures).
 5. Unsubscribe from the mod, or delete `Mods/HermesVoice`.
 
-To free space but keep the mod, delete only the files in the engine folder's `models` subfolder
-that you no longer use; the setup window will download again if needed.
+To free some space, delete single models you no longer use in Settings, Storage.
 
 ## Troubleshooting
 
 | Problem | Try |
 |---|---|
-| No setup letter | Options, Mod settings, HermesVoice, Connection, **Set up / Change model...** |
+| No setup letter | Options, Mod settings, HermesVoice, Model, **Change model...** |
 | The download stopped | Open the setup window and click **Retry**; it resumes where it left off. |
 | "Not enough space" | The starter keeps working; free disk space and the full model download resumes by itself. |
-| Colonists are quiet | Check the status line in Settings, Connection. At 3x and 4x speed many moments pass before a line can be written; that is by design. |
+| Colonists are quiet | Check the status line in Settings, Model. At 3x and 4x speed many moments pass before a line can be written; that is by design. |
 | Speech is simple or repeats | You are on the starter (wait for the download) or on E2B (see Hardware). |
 | The game stutters or runs out of video memory | The engine shrinks when the game needs memory. If it persists, choose a smaller model. |
 | Antivirus warns about `hermes-engine` | It is the engine program shipped with the mod, built from the public [easyEngine](https://github.com/CharlesMod/easyEngine) source. See the checksums in the zip's `SHA256SUMS`. |

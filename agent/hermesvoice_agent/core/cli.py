@@ -110,8 +110,9 @@ async def _replay(cfg: Config, adapter: GameAdapter, path: str, use_llm: bool) -
         elif "dropped" in item:
             print(f"  (actor {item['actor']} dropped: {item['dropped']})")
         else:
-            tag = f" -> {item['intent']}" if item["intent"] != "none" else ""
-            print(f"{item['name']}: {item['text']}{tag}")
+            intent = item.get("intent", "none")  # some said items (e.g. group lines) carry no intent
+            tag = f" -> {intent}" if intent != "none" else ""
+            print(f"{item.get('name', '?')}: {item.get('text', '')}{tag}")
     return 0
 
 

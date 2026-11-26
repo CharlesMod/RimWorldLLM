@@ -33,7 +33,7 @@ Hardware
 - 12 GB card: the 26B with part of it in system memory (slower), or E4B RP.
 - 6 to 12 GB card, laptops, Apple Silicon: Gemma 4 E4B RP (uses about 5 GB). Good speech, simpler inner thoughts.
 - Very small cards or no card: stock Gemma 4 E2B. It works, but speech is simpler and repeats more; the mod tells you when it is in use.
-You can change the model any time: Options, Mod settings, HermesVoice, "Set up / Change model...".
+You can change the model any time, or use a GGUF file you already have: Options, Mod settings, HermesVoice, Model.
 
 Already run your own model server?
 Choose "My own endpoint" in the mod settings and point it at any OpenAI-compatible server. Nothing is downloaded.

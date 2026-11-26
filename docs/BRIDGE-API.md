@@ -265,7 +265,7 @@ appear only when that DLC is active.
 
 ### `GET /config`
 Settings the agent must honour:
-`{"effects": "normal"|"light"|"off", "language": "en", "events": {"injury": true, ...},
+`{"effects": "normal"|"light"|"off", "events": {"injury": true, ...},
 "talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "adult_content": false, "dreams": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `adult_content` (bool, default `false`) is the mod's "Adult content" setting. Off: the agent adds a fade-to-black

@@ -246,6 +246,115 @@ namespace HermesVoice
             });
         }
 
+        // ---------------------------------------------------------------------------------- storage and custom file
+        static volatile EngineStorage _storage;
+        static volatile bool _storageInFlight, _storageFailed;
+        static volatile CustomCheck _customCheck;
+        static volatile string _customCheckError;
+        static volatile bool _customCheckInFlight, _customBusy;
+
+        public static EngineStorage Storage { get { return _storage; } }
+        public static bool StorageInFlight { get { return _storageInFlight; } }
+        public static bool StorageFailed { get { return _storageFailed; } }
+        /// <summary>The last "Check" of a custom file (null until run or after the path changed).</summary>
+        public static CustomCheck LastCustomCheck { get { return _customCheck; } }
+        public static string CustomCheckError { get { return _customCheckError; } }
+        public static bool CustomCheckRunning { get { return _customCheckInFlight; } }
+        public static bool CustomBusy { get { return _customBusy; } }
+
+        /// <summary>GET /storage off the game thread; the result lands in <see cref="Storage"/>.</summary>
+        public static void RefreshStorage()
+        {
+            var c = _client;
+            if (c == null || _storageInFlight) return;
+            _storageInFlight = true;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var r = await c.GetStorageAsync(true).ConfigureAwait(false);
+                    if (r.Ok && r.Value != null) { _storage = r.Value; _storageFailed = false; }
+                    else _storageFailed = true;
+                }
+                finally { _storageInFlight = false; }
+            });
+        }
+
+        public static void ClearCustomCheck() { _customCheck = null; _customCheckError = null; }
+
+        /// <summary>POST custom/check: reads the file header only.</summary>
+        public static void CheckCustom(string path)
+        {
+            var c = _client;
+            if (c == null) { _customCheckError = UiUtil.T("HV_Custom_NoEngine"); return; }
+            if (_customCheckInFlight) return;
+            _customCheckInFlight = true;
+            _customCheck = null;
+            _customCheckError = null;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var r = await c.CheckCustomAsync(path).ConfigureAwait(false);
+                    if (r.Ok && r.Value != null) _customCheck = r.Value;
+                    else _customCheckError = r.Error ?? ("HTTP " + r.HttpStatus);
+                }
+                finally { _customCheckInFlight = false; }
+            });
+        }
+
+        static void BusyAct<T>(Func<EngineClient, Task<EngineResult<T>>> call, Action after = null)
+        {
+            var c = _client;
+            if (c == null) { _actionError = "engine not running"; return; }
+            if (_customBusy) return;
+            _customBusy = true;
+            _actionError = null;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var r = await call(c).ConfigureAwait(false);
+                    if (!r.Ok) _actionError = r.Error ?? ("HTTP " + r.HttpStatus);
+                    _planStale = true;
+                    await FetchStatusAsync().ConfigureAwait(false);
+                    if (after != null) after();
+                }
+                finally { _customBusy = false; }
+            });
+        }
+
+        public static void UseCustom(string path) { BusyAct(c => c.UseCustomAsync(path)); }
+        public static void ClearCustom() { BusyAct(c => c.ClearCustomAsync()); }
+        public static void DeleteModel(string file) { BusyAct(c => c.DeleteModelAsync(null, file), RefreshStorage); }
+        public static void DeleteModelById(string id) { BusyAct(c => c.DeleteModelAsync(id), RefreshStorage); }
+        public static void RemoveDownloads() { BusyAct(c => c.RemoveDownloadsAsync(), () => { _storage = null; RefreshStorage(); }); }
+
+        /// <summary>The model name to show: the engine's human name, the custom file's name, or the model id.</summary>
+        public static string ModelLabel()
+        {
+            var st = _status;
+            if (st == null) return "";
+            if (!string.IsNullOrEmpty(st.ModelName)) return st.ModelName;
+            if (st.Custom != null && !string.IsNullOrEmpty(st.Custom.Name)) return st.Custom.Name;
+            return st.Model ?? "";
+        }
+
+        /// <summary>The user's own GGUF file is the selected model (status.custom is also kept, as a memory, after a switch back to a catalog model).</summary>
+        public static bool CustomActive { get { var st = _status; return st != null && st.Custom != null && (st.Model ?? "").StartsWith("custom:", System.StringComparison.Ordinal); } }
+
+        /// <summary>Line for a background model switch (the old one keeps talking), or null.</summary>
+        public static string SwitchLine()
+        {
+            var st = _status;
+            if (st == null || st.Upgrade == null || StarterInUse || string.IsNullOrEmpty(st.Upgrade.State)) return null;
+            if (st.Upgrade.State == "done" || st.Upgrade.State == "idle") return null;
+            var p = st.Upgrade.Progress;
+            int pct = p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
+            string name = !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName : st.Upgrade.Target;
+            return pct >= 0 ? UiUtil.T("HV_Switch_Line", name, pct) : UiUtil.T("HV_Switch_LineNoPct", name);
+        }
+
         public static void Install(string modelId) { Act(c => c.InstallAsync(modelId)); }
         public static void Cancel() { Act(c => c.CancelAsync()); }
         public static void Import(string path) { Act(c => c.ImportAsync(path)); _planStale = true; }
@@ -305,7 +414,8 @@ namespace HermesVoice
             if (st.Progress != null && st.Progress.TotalBytes > 0)
                 line += " " + (st.Progress.Verifying ? UiUtil.T("HV_Eng_Verifying") + " " : "")
                      + UiUtil.T("HV_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
-            if (!string.IsNullOrEmpty(st.Model)) line = UiUtil.T("HV_Eng_ModelPrefix", st.Model) + " | " + line;
+            string mlabel = ModelLabel();
+            if (!string.IsNullOrEmpty(mlabel)) line = UiUtil.T("HV_Eng_ModelPrefix", mlabel) + " | " + line;
             if (st.Shape != null && st.Shape.Slots > 0) line += " | " + UiUtil.T("HV_Eng_Shape", st.Shape.Slots, Ctx(st.Shape.CtxPerSlot));
             if (st.TokS.HasValue && st.TokS.Value > 0) line += " | " + UiUtil.T("HV_Eng_TokS", Mathf.RoundToInt((float)st.TokS.Value));
             if (st.Phase == EnginePhase.Error && st.Errors != null && st.Errors.Count > 0) line += " | " + st.Errors[st.Errors.Count - 1];

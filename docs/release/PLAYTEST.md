@@ -38,7 +38,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
    Install click to "ready". A download that drops (pull the network for 10 s) resumes, never restarts from 0.
 7. **Time to first line.** Note the time from Install to the first spoken bubble. Target: a few minutes on a decent link.
 8. **Starter notice and tier read (open).** While the starter serves: the "small starter model" message once, the status
-   line with the download progress, and the starter flagged in Settings, Connection. Check the agent switches its
+   line with the download progress, and the starter flagged in Settings, Model. Check the agent switches its
    small-model settings for the starter (agent.log: the serving model read as starter, every 60 s).
 9. **Starter speech.** Lines are short and in character; no label leaks ("[calm]", "Intent:"), no meta text.
 
@@ -129,9 +129,40 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
     missed.
 42. **RimTalk.** (If available.) With RimTalk loaded too: both load, no errors, no pawn speaks twice for the same moment.
 
+## J. Settings (2.1.0 rework, all open)
+
+43. **Tabs and tooltips.** Options, Mod settings, HermesVoice opens on Model. The tabs read Model, Colonists, Display,
+    Content, Storage, Advanced. Hover every control on every tab: each shows a one-line tooltip in plain words; no
+    raw key names (`HV_...`) anywhere; nothing overlaps at 1280x720 and at your normal resolution.
+44. **Old settings load.** With a settings file from 2.0 (it has `<language>` and the old tabs' values), the game
+    loads with no red errors in the log and every value kept (talk frequency, bubbles, adult off/on, events).
+45. **Model picker.** Model, Change model...: each model shows size, memory need, fits / tight / won't fit, the
+    Recommended marker, the E2B warning, and "needs X of disk, Y free". With too little disk the button is off and
+    says why.
+46. **Switch keeps talking.** While the 26B serves, switch to E4B RP (or back): lines keep coming during the
+    download (the Model tab shows the background download), the swap happens by itself, and an offer appears to
+    delete the old model with its size. Delete it: the Storage tab no longer lists it and the space comes back.
+47. **Own GGUF file: browse and check.** Use my own GGUF file..., Browse...: drives (Windows) or / and home
+    (Linux/macOS), folders and `.gguf` files only, sizes shown, Up works, an unreadable folder does not error.
+    Pick a file, Check: architecture, parameters, quant, context, size and a fit verdict appear within a few seconds.
+    A non-GGUF file renamed to `.gguf` says "not a GGUF file".
+48. **Own GGUF file: use it.** Use this file: the engine loads it, the Model tab shows "Using your own file: <name>",
+    lines come in character. The file is still in its folder with the same size and date afterwards.
+49. **Own GGUF file goes missing.** Quit, rename the file, start: the Model tab says the file was not found (no crash,
+    no endless restarts). Stop using it returns to the last catalog model (or the setup offer on a fresh install).
+50. **Own GGUF on a fresh install.** On a machine with no engine folder, the first-run letter's "Use my GGUF file":
+    only llama.cpp and the helper download (no model download); then the file serves.
+51. **Storage.** The tab shows the engine folder, size per part and free space; Open folder opens it in the file
+    manager (Windows Explorer, Finder, the Linux file manager).
+52. **Remove downloaded files.** The confirmation names what goes and how much space comes back. Confirm: the engine
+    stops, the folder's models/backends/runtime/downloads are empty, the mod settings are unchanged, an own GGUF file
+    elsewhere is untouched, and Change model... (or the next game start) sets up from scratch and works.
+53. **Nothing blocks.** Open the settings and click through every tab while the engine is busy (downloading,
+    loading) and while it is not running: the game never freezes; buttons grey out while a call runs.
+
 ## Windows run (separate, short)
 
-Run sections A-C and item 39-41 on Windows, plus:
+Run sections A-C, items 39-41 and 47-52 on Windows, plus:
 
 W1. **GPU detection.** The setup window names the NVIDIA card and its memory (nvidia-smi) and, on a machine with an AMD
     or Intel card, falls back to Vulkan with the right memory figure.

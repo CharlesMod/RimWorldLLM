@@ -45,20 +45,20 @@ namespace HermesVoice
             Text.Font = GameFont.Small;
         }
 
-        static string Mib(int mib) { return mib >= 1024 ? (mib / 1024f).ToString("0.#") + " GB" : mib + " MB"; }
+        static string Mib(int mib) { return mib >= 1024 ? UiUtil.T("HV_Unit_GB", (mib / 1024f).ToString("0.#")) : UiUtil.T("HV_Unit_MB", mib); }
         public static string Bytes(long b)
         {
-            if (b >= 1L << 30) return (b / (double)(1L << 30)).ToString("0.0") + " GB";
-            if (b >= 1L << 20) return (b / (double)(1L << 20)).ToString("0.0") + " MB";
-            return (b / 1024L) + " KB";
+            if (b >= 1L << 30) return UiUtil.T("HV_Unit_GB", (b / (double)(1L << 30)).ToString("0.0"));
+            if (b >= 1L << 20) return UiUtil.T("HV_Unit_MB", (b / (double)(1L << 20)).ToString("0.0"));
+            return UiUtil.T("HV_Unit_KB", b / 1024L);
         }
         static string Eta(double s)
         {
             if (s <= 0) return "-";
             int t = (int)s;
-            if (t < 90) return t + " s";
-            if (t < 5400) return (t / 60) + " min";
-            return (t / 3600) + " h " + ((t % 3600) / 60) + " min";
+            if (t < 90) return UiUtil.T("HV_Unit_Sec", t);
+            if (t < 5400) return UiUtil.T("HV_Unit_Min", t / 60);
+            return UiUtil.T("HV_Unit_HourMin", t / 3600, (t % 3600) / 60);
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -91,6 +91,9 @@ namespace HermesVoice
                 string am = string.IsNullOrEmpty(st.Agent.Message) ? "" : " - " + st.Agent.Message;
                 Dim(l, UiUtil.T("HV_Setup_Agent", st.Agent.Phase, st.Agent.Restarts) + am);
             }
+            string swLine = EngineManager.SwitchLine();
+            if (swLine != null) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber); l.Label(swLine); GUI.color = Color.white; }
+            if (st != null && st.Previous != null) SettingsWindow.PreviousOffer(l, st.Previous);
             string err = EngineManager.ActionError;
             if (!string.IsNullOrEmpty(err)) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Red); l.Label(UiUtil.T("HV_Setup_ActionError", err)); GUI.color = Color.white; }
 
@@ -114,6 +117,11 @@ namespace HermesVoice
             DrawHardware(l);
             DrawProgress(l, st);
             DrawModels(l, st);
+
+            // Own file.
+            l.GapLine();
+            Dim(l, UiUtil.T("HV_Setup_OwnFileHelp"));
+            if (l.ButtonText(UiUtil.T("HV_Model_UseOwnFile"))) Find.WindowStack.Add(new Window_CustomGguf());
 
             // Import.
             l.GapLine();
@@ -205,31 +213,38 @@ namespace HermesVoice
 
         void ModelRow(Listing_Standard l, EnginePlanModel m, bool busy, EngineStatus st, bool big)
         {
-            var row = l.GetRect((big ? 54f : 44f) + (m.Fallback ? 36f : 0f));
+            var row = l.GetRect((big ? 58f : 52f) + (m.Fallback ? 36f : 0f));
             float btnW = 110f;
             Color vc = m.Fits == "yes" ? EngineManager.ColorOf(EngineManager.Light.Green)
                      : m.Fits == "tight" ? EngineManager.ColorOf(EngineManager.Light.Amber)
                      : EngineManager.ColorOf(EngineManager.Light.Red);
             string head = (string.IsNullOrEmpty(m.Name) ? m.Id : m.Name) + "  (" + Bytes(m.Size) + ")";
             if (m.Installed) head += "  " + UiUtil.T("HV_Setup_Installed");
-            if (st != null && st.Model == m.Id && st.Phase == EnginePhase.Ready) head += "  " + UiUtil.T("HV_Setup_InUse");
+            bool inUse = st != null && st.Model == m.Id && st.Phase == EnginePhase.Ready;
+            if (inUse) head += "  " + UiUtil.T("HV_Setup_InUse");
+            if (EngineManager.Plan != null && EngineManager.Plan.Recommended == m.Id) head += "  " + UiUtil.T("HV_Setup_RecommendedMark");
             Widgets.Label(new Rect(row.x, row.y, row.width - btnW - 10f, 22f), head);
             GUI.color = vc;
             string verdict = UiUtil.T(m.Fits == "yes" ? "HV_Setup_FitYes" : m.Fits == "tight" ? "HV_Setup_FitTight" : "HV_Setup_FitNo");
             string why = string.IsNullOrEmpty(m.Why) ? "" : " - " + m.Why;
             string est = m.EstVramMib > 0 ? "  " + UiUtil.T("HV_Setup_Est", Mib(m.EstVramMib), Mib(m.EstRamMib)) : "";
-            Widgets.Label(new Rect(row.x, row.y + 20f, row.width - btnW - 10f, big ? 34f : 24f), verdict + why + est);
+            var planNow = EngineManager.Plan;
+            long free = planNow != null ? planNow.DiskFreeBytes : -1;
+            bool noSpace = !m.Installed && m.DiskNeedBytes > 0 && free >= 0 && m.DiskNeedBytes > free;
+            if (!m.Installed && m.DiskNeedBytes > 0 && free >= 0) est += "  " + UiUtil.T(noSpace ? "HV_Setup_DiskShort" : "HV_Setup_DiskNeed", Bytes(m.DiskNeedBytes), Bytes(free));
+            Widgets.Label(new Rect(row.x, row.y + 20f, row.width - btnW - 10f, big ? 38f : 32f), verdict + why + est);
             GUI.color = Color.white;
             if (m.Fallback)
             {
                 GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber);
-                Widgets.Label(new Rect(row.x, row.y + (big ? 54f : 44f), row.width - btnW - 10f, 36f), UiUtil.T("HV_Fallback_RowWarning", EngineManager.FallbackNote(m.FallbackNote)));
+                Widgets.Label(new Rect(row.x, row.y + (big ? 58f : 52f), row.width - btnW - 10f, 36f), UiUtil.T("HV_Fallback_RowWarning", EngineManager.FallbackNote(m.FallbackNote)));
                 Widgets.Label(new Rect(row.xMax - btnW, row.y + 34f, btnW, 22f), UiUtil.T("HV_Fallback_Badge"));
                 GUI.color = Color.white;
             }
             var btn = new Rect(row.xMax - btnW, row.y + 4f, btnW, 28f);
             if (m.ImportOnly && !m.Installed) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("HV_Setup_ImportOnly")); GUI.color = Color.white; }
-            else if (Widgets.ButtonText(btn, UiUtil.T(m.Installed ? "HV_Setup_Use" : "HV_Setup_Install"), true, true, !busy && m.Fits != "no"))
+            else if (inUse) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("HV_Setup_InUse")); GUI.color = Color.white; }
+            else if (Widgets.ButtonText(btn, UiUtil.T(m.Installed ? "HV_Setup_Use" : (st != null && st.Phase == EnginePhase.Ready ? "HV_Setup_Switch" : "HV_Setup_Install")), true, true, !busy && m.Fits != "no" && !noSpace))
             {
                 if (!m.Fallback) EngineManager.Install(m.Id);
                 else
