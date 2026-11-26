@@ -129,11 +129,14 @@ class Param:
 
 @dataclass
 class ToolSpec:
-    """A tool the model may call. ``result_scales`` turns numbers in a dict result back into words for the model."""
+    """A tool the model may call. ``result_scales`` turns numbers in a dict result back into words for the model.
+    ``ends_turn``: once called, the turn is over (a "do nothing" choice); the loop does not ask the model again, so a
+    model that would only repeat the same call never meets the repeat rule."""
     name: str
     description: str
     params: list[Param] = field(default_factory=list)
     result_scales: dict[str, Scale] = field(default_factory=dict)
+    ends_turn: bool = False
 
     def __post_init__(self):
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", self.name):

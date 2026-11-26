@@ -35,7 +35,7 @@ def make_tools() -> list[ToolSpec]:
         ToolSpec("set_mood", "Change how you feel about a person.", [Param("target", "enum", choices=NAMES), Param("delta", "scale", scale=CHANGE)],
                  result_scales={"opinion": CHANGE}),
         ToolSpec("start_conversation", "Walk over and start talking with someone.", [Param("with_name", "enum", choices=NAMES), Param("topic")]),
-        ToolSpec("do_nothing", "Do nothing this moment."),
+        ToolSpec("do_nothing", "Do nothing this moment.", ends_turn=True),
     ]
 
 

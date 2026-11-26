@@ -37,7 +37,7 @@ def tools(names: list[str]) -> list[ToolSpec]:
         ToolSpec("avoid", "Keep clear of someone for a while.", [who] if who else []),
         ToolSpec("remember", "Keep one fact in mind.",
                  [Param("fact", "text", "the fact", max_len=160), Param("importance", "scale", "how much it matters", scale=IMPORTANCE)]),
-        ToolSpec("do_nothing", "Do nothing special.", []),
+        ToolSpec("do_nothing", "Do nothing special.", [], ends_turn=True),
     ]
 
 
