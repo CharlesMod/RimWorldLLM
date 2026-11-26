@@ -1,24 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
 	<name>HermesVoice</name>
-	<author>charless</author>
+	<author>Charleszard</author>
 	<supportedVersions>
 		<li>1.7</li>
 	</supportedVersions>
-	<description>Live LLM-driven pawn dialogue, powered by an external agent bridge.
+	<description>Your colonists talk, in their own voices. HermesVoice gives every pawn a mind and a way of speaking: speech bubbles over their heads, real back-and-forth conversations, private diaries, a colony chronicle, and inner thoughts that show what they want but don't say. Lines come from what is actually happening: injuries, deaths, raids, mental breaks, weddings, funerals, grudges and gossip. The tone matches RimWorld's own.
 
-HermesVoice watches your colony - injuries, deaths, mental breaks, skill level-ups, medical tending, social interactions, raids - sends those moments to the agent (each kind can be toggled in settings), and shows the agent's replies as in-character speech bubbles spoken by the pawns themselves.
+2.1.0 beta. Tested on Linux with NVIDIA cards. Windows and macOS builds are included but not yet tested; reports are welcome.
 
-The mod dials out to a Hermes agent bridge over your local network (Tailscale). The agent roleplays your colonists using their full in-game context, and the lines appear as overhead dialogue boxes, recorded to a conversation log.
+Runs on your own computer
+- Free. No API key, no account, no subscription.
+- Everything stays on your machine. Nothing about your colony is sent anywhere.
 
-An authenticated HTTP bridge (default port 9765) exposes colony state, events and pawn minds so the agent can read the world and speak as pawns in real time. Spoken lines appear as bubbles and in the pawns' Log tabs, and can nudge moods and opinions (adjustable in settings). Other mods can add context through a small API.
+One click to set up
+On first start the mod offers to set up a local model. Click "Set up": it checks your graphics card and memory, picks a model that fits, and downloads it. Your colonists start talking on a small starter model within a few minutes, while the full model finishes downloading; the mod then switches over by itself and deletes the starter.
 
-Setup:
-1. Install the Harmony mod (v3, Steam Workshop).
-2. Run the Hermes bridge on your agent machine (see the README at https://github.com/CharlesMod/RimWorldLLM).
-3. Mod settings: set the Agent dial-out URL. The agent finds the bridge port and token in HermesVoice/bridge.json in the RimWorld config folder; set a fixed shared token in settings only if the agent runs on another machine.</description>
+What is downloaded
+- One AI model from Hugging Face, sized to your card (see below): 3.1 to 10.0 GB.
+- llama.cpp, the program that runs the model, from its official GitHub releases. For NVIDIA cards (CUDA) that is about 0.8 GB to download and 2 GB on disk; for AMD/Intel (Vulkan) or a Mac, under 0.1 GB.
+- uv and Python 3.12 for the mod's helper program: about 0.2 GB on disk.
+Disk space with an NVIDIA card: about 12 GB in all on a 16 GB card once setup is done (about 16 GB at the peak, while the starter and the full model are both on disk), about 6 GB with E4B RP.
+
+Where it lives and how to remove it
+- Windows: %LOCALAPPDATA%\HermesEngine
+- Linux: ~/.local/share/hermes-engine
+- macOS: ~/Library/Application Support/HermesEngine
+The helper's memory and log are in .local/share/hermesvoice-agent in your home folder. To remove everything: quit RimWorld (the engine stops with the game), delete those two folders, and unsubscribe or delete the mod.
+
+Hardware
+- 16 GB graphics card: Gemma 4 26B RP, the full experience (uses about 12 GB).
+- 12 GB card: the 26B with part of it in system memory (slower), or E4B RP.
+- 6 to 12 GB card, laptops, Apple Silicon: Gemma 4 E4B RP (uses about 5 GB). Good speech, simpler inner thoughts.
+- Very small cards or no card: stock Gemma 4 E2B. It works, but speech is simpler and repeats more; the mod tells you when it is in use.
+You can change the model any time: Options, Mod settings, HermesVoice, "Set up / Change model...".
+
+Already run your own model server?
+Choose "My own endpoint" in the mod settings and point it at any OpenAI-compatible server. Nothing is downloaded.
+
+Content
+- Adult content is off by default. Turning it on asks you to confirm.
+- A hard age gate is always on: nothing romantic or sexual for or about any pawn under 18, in either mode.
+
+Compatibility
+- Requires Harmony.
+- Does not need RimTalk and is meant to run alongside it.
+- Other mods can add context through a small hook API (see the GitHub page).
+
+Source code (MIT license)
+- Mod: https://github.com/CharlesMod/RimWorldLLM
+- Engine: https://github.com/CharlesMod/easyEngine
+The downloaded models carry their own terms (Gemma terms of use).</description>
 	<packageId>charless.HermesVoice</packageId>
-	<modVersion>2.0.0</modVersion>
+	<modVersion>2.1.0</modVersion>
 	<url>https://github.com/CharlesMod/RimWorldLLM</url>
 	<modDependencies>
 		<li>
