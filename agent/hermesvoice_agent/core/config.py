@@ -15,10 +15,19 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 
+def _windows() -> bool:
+    return os.name == "nt"
+
+
 def default_data_dir() -> Path:
     env = os.environ.get("HERMESVOICE_DATA_DIR")
     if env:
         return Path(env)
+    if _windows():
+        # Windows: %LOCALAPPDATA%\hermesvoice-agent, beside the engine's %LOCALAPPDATA%\HermesEngine
+        # (not a Linux-style %USERPROFILE%\.local\share).
+        local = os.environ.get("LOCALAPPDATA")
+        return Path(local if local else Path.home() / "AppData" / "Local") / "hermesvoice-agent"
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "hermesvoice-agent"
 
 
