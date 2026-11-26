@@ -249,7 +249,8 @@ async def run_art(col: Colony, args, rep) -> list[dict]:
         text, why = ((None, f"llm_error:{res[1]}") if isinstance(res, tuple) and res and res[0] == "__error__" else res)
         rows.append(row(args, "art", tale[0], rep, mk, text, why or None, meta,
                         {"maker": d.names.get(mk), "item": data["def_label"], "material": data.get("material"), "title": data["title"],
-                         "game_text": data["description"], "tale": data.get("tale")}))
+                         "game_text": data["description"], "tale": data.get("tale"), "quality": data.get("quality"),
+                         "maker_card": await _card(d, mk), "maker_knows": _known(d, mk, (data.get("tale") or {}).get("pawns"))}))
     return rows
 
 
@@ -279,8 +280,28 @@ async def run_recap(col: Colony, args, rep) -> list[dict]:
         else:
             lines = list(res)
             text, why = ("\n".join(lines), None) if lines else (None, "empty")
-        rows.append(row(args, "recap", name, rep, None, text, why, meta, {"window": [e["text"] for e in w[-4:]]}, lines=lines))
+        rows.append(row(args, "recap", name, rep, None, text, why, meta, {"window": [e["text"] for e in w]}, lines=lines))
     return rows
+
+
+def _known(d, aid, about=None, n=4) -> list[str]:
+    """What the speaker knows (non-private memories, heaviest first; those naming ``about`` first): judge context only."""
+    mind = d.minds.get(aid)
+    if mind is None:
+        return []
+    from hermesvoice_agent.core import memory as _mem
+    ms = [m.text for m in _mem.weight_sorted(mind, d.bridge.env.game, d.day) if m.visibility != "private"]
+    if about:
+        ms = [t for t in ms if any(a in t for a in about)] + [t for t in ms if not any(a in t for a in about)]
+    return ms[:n]
+
+
+async def _card(d, aid) -> list[str]:
+    try:
+        from hermesvoice_agent.core import grounding as _g
+    except ImportError:
+        return []
+    return _g.card_lines(await _g.actor_card(d, aid))
 
 
 class _Lease:
@@ -308,7 +329,10 @@ async def run_aim(col: Colony, args, rep) -> list[dict]:
                                max_tokens=d.cfg.llm.line_max_tokens, speech=lease.data.get("speech"), **d._inner_kw(mind, li))
 
         res, meta = await timed(col, go())
-        ctxd = {"scene": f"{room}, {when}", "trigger": trig, "speaker": d.names[sp], "listener": d.names[li]}
+        rel = mind.relations.get(li)
+        ctxd = {"scene": f"{room}, {when}", "trigger": trig, "speaker": d.names[sp], "listener": d.names[li],
+                "opinion_of_listener": getattr(rel, "opinion", None), "speaker_knows": _known(d, sp, [d.names[li]]),
+                "speaker_card": await _card(d, sp)}
         if isinstance(res, tuple):
             rows.append(row(args, "aim", case, rep, sp, None, f"llm_error:{res[1]}", meta, ctxd, label=None, delivery=None, line=None))
         elif isinstance(res, Dropped):
@@ -361,7 +385,9 @@ async def run_group(col: Colony, args, rep, feature) -> list[dict]:
         cases = [("vow_cy", g, 3), ("vow_mara", g, 9)]
     for case, g, me in cases:
         res, meta = await timed(col, _group_turn(col, g, me))
-        cx = {"occasion": g.kind, "deceased": g.deceased, "couple": [g.names[c] for c in g.couple], "speaker": g.names[me]}
+        about = [g.deceased] if g.deceased else [g.names[c] for c in g.couple]
+        cx = {"occasion": g.kind, "deceased": g.deceased, "couple": [g.names[c] for c in g.couple], "speaker": g.names[me],
+              "speaker_knows": _known(col.d, me, about), "speaker_card": await _card(col.d, me)}
         if isinstance(res, tuple):
             rows.append(row(args, feature, case, rep, me, None, f"llm_error:{res[1]}", meta, cx))
         elif isinstance(res, Dropped):

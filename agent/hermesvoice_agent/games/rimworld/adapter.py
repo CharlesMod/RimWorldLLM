@@ -144,14 +144,16 @@ class RimWorldAdapter:
         "Let the maker's manner (their traits and mood) show in how it is treated, never as a list. Use only people and "
         "events the data names. If the data names no scene, describe the piece's subject and its maker plainly.")
     recap_request_ground = (
-        "Write exactly 3 lines, one short sentence each, under 20 words. The chronicle entries are listed biggest first: "
-        "lead with the biggest event, name who it happened to and what changed because of it, then the next ones, and "
-        "end on what is still unresolved. Never small talk or chores. No title, no numbering, no quotes.")
+        "Write exactly 3 lines, one short sentence each, under 20 words. Lead with the entry marked (biggest): name who it "
+        "happened to and what changed because of it. Then the others in the order they happened; keep separate events "
+        "separate, never \"while\" or \"during\" unless the chronicle says so. End on what is still unresolved. Never "
+        "small talk or chores. No title, no numbering, no quotes.")
     lore_request_ground = (
         "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
-        "a 2 to 5 word name built from one concrete thing in the list of referents (a person, place, animal, enemy or "
-        "item), the way colonists would nickname it, never a label such as an incident or event name, a colon, then "
-        "what it refers to in under 10 words. Do not reuse a name already in use. Otherwise answer: none.")
+        "a 2 to 5 word name the colonists would actually say (a nickname, never a label such as an incident or event "
+        "name), a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
+        "months the colony ran short of food). Build the name from one vivid moment of the entry: who did what, where. "
+        "Do not reuse a name already in use. Otherwise answer: none.")
     # (pattern, weight): what makes a chronicle entry worth a recap line (core/recap.py ranks by the sum of matches)
     recap_importance = (
         (r"\b(?:died|dies|dead|death|killed|slain|funeral|buried|executed)\b", 10),

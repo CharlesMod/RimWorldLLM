@@ -118,8 +118,9 @@ def test_recap_messages_flag_off_unchanged_and_on_ranked():
     assert "Eli stole" in off[1][1] and "Raiders came" not in off[1][1]       # the last 4 only
     on = rc.messages(a, ENTRIES, ground=True)
     u = on[1][1]
-    assert "CHRONICLE (biggest first)" in u and u.index("Old Tam died") < u.index("Raiders came")
-    assert "lead with the biggest event" in u and u.count("<game_data") == 1
+    assert u.index("Raiders came") < u.index("Old Tam died")                # ranked in, kept in the order they happened
+    assert "(biggest) Day 5: Old Tam died" in u and "Dov planted" not in u
+    assert "Lead with the entry marked (biggest)" in u and u.count("<game_data") == 1
     for m in (off, on):                                                      # the safety fix holds with the flag off
         assert "MINORS" in m[0][1] and "GAME DATA RULE" in m[0][1]
 
@@ -129,12 +130,12 @@ def test_lore_referents_and_prompt(world):
     w = run(world.go())
     entry = "Ana killed the wolves in the east barracks. Bram buried Old Tam near the hollow."
     refs = grounding.referents([entry], list(w.d.names.values()))
-    assert "Ana" in refs and "Bram" in refs and any("barracks" in r for r in refs)
+    assert "Ana" in refs and "Bram" in refs and not any("barracks" == r for r in refs)
     a = w.d.adapter
     off = lore.messages(a, entry, [])
     on = lore.messages(a, entry, [], refs)
     assert "REFERENTS" not in off[1][1] and a.lore_request in off[1][1]
-    assert '<game_data kind="referents">' in on[1][1] and "built from one concrete thing" in on[1][1]
+    assert '<game_data kind="referents">' in on[1][1] and "one vivid moment" in on[1][1]
     for m in (off, on):
         assert "MINORS" in m[0][1] and "GAME DATA RULE" in m[0][1]
 

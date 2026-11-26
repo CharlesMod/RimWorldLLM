@@ -36,9 +36,9 @@ _SENT = re.compile(r"(?<=[.!?])\s+")
 
 RANK_WINDOW = 12         # creative_ground: the last this-many entries are ranked
 RANK_TOP = 4             # ... and the top ones go in, biggest first
-GROUND_REQUEST = ("Write exactly 3 lines, one short sentence each, under 20 words. The entries are listed biggest first: "
-                  "lead with the biggest event, name who it happened to and what changed, then the next ones, and end on "
-                  "what is still unresolved. No title, no numbering, no quotes.")
+GROUND_REQUEST = ("Write exactly 3 lines, one short sentence each, under 20 words. Lead with the entry marked (biggest): "
+                  "name who it happened to and what changed. Then the others in the order they happened; keep separate "
+                  "events separate. End on what is still unresolved. No title, no numbering, no quotes.")
 
 
 def messages(adapter, entries: list[dict], day_label=lambda e: int(e.get("day", 0)) + 1,
@@ -47,8 +47,12 @@ def messages(adapter, entries: list[dict], day_label=lambda e: int(e.get("day", 
     ``ground`` (creative_ground) ranks the last RANK_WINDOW entries by importance and lists the top ones biggest first."""
     if ground:
         top = grounding.rank_entries(adapter, entries, RANK_WINDOW, RANK_TOP)
-        body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}" for e in top)
-        user = (f"=== CHRONICLE (biggest first) ===\n{gd.data_section('chronicle', body)}"
+        # the top entries in the order they happened (ranked order made the model merge separate events), the biggest marked
+        ids = {id(e) for e in top}
+        order = [e for e in entries[-RANK_WINDOW:] if id(e) in ids]
+        body = "\n".join(("(biggest) " if top and e is top[0] else "") + f"Day {day_label(e)}: "
+                         f"{gd.clean(e.get('text', ''), 'event', max_len=320)}" for e in order)
+        user = (f"=== CHRONICLE (oldest first) ===\n{gd.data_section('chronicle', body)}"
                 f"=== REQUEST ===\n{getattr(adapter, 'recap_request_ground', GROUND_REQUEST)}")
     else:
         body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}"

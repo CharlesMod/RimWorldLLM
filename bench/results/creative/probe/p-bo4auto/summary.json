@@ -1,0 +1,71 @@
+{
+ "arm": "bo4auto",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true,
+  "creative_best_of": 4,
+  "creative_rerank": "auto"
+ },
+ "seed": 7,
+ "reps": 4,
+ "features": {
+  "art": {
+   "arm": "bo4auto",
+   "n": 32,
+   "dropped": 0,
+   "latency_median": 3.2822,
+   "latency_p90": 3.5205,
+   "calls_mean": 4,
+   "slot_s_mean": 3.2319
+  },
+  "lore": {
+   "arm": "bo4auto",
+   "n": 16,
+   "dropped": 0,
+   "latency_median": 0.8218,
+   "latency_p90": 1.0949,
+   "calls_mean": 4,
+   "slot_s_mean": 0.8573
+  },
+  "recap": {
+   "arm": "bo4auto",
+   "n": 12,
+   "dropped": 0,
+   "latency_median": 2.6284,
+   "latency_p90": 2.8039,
+   "calls_mean": 4,
+   "slot_s_mean": 2.6288
+  },
+  "aim": {
+   "arm": "bo4auto",
+   "n": 32,
+   "dropped": 4,
+   "latency_median": 1.8097,
+   "latency_p90": 1.9708,
+   "calls_mean": 2,
+   "slot_s_mean": 1.8367,
+   "words_mean": 10.21,
+   "share_i_just_want": 0.0,
+   "distinct_aim_share": 0.821,
+   "mean_pairwise_jaccard": 0.0929
+  },
+  "eulogy": {
+   "arm": "bo4auto",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.3898,
+   "latency_p90": 1.573,
+   "calls_mean": 1,
+   "slot_s_mean": 1.4207
+  },
+  "vows": {
+   "arm": "bo4auto",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.3308,
+   "latency_p90": 1.3739,
+   "calls_mean": 1,
+   "slot_s_mean": 1.3337
+  }
+ }
+}

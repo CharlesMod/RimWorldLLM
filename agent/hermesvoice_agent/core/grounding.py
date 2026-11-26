@@ -15,7 +15,6 @@ from .lease import Cls
 _STOP = frozenset("the a an and or of in on at to for with from by his her their its this that was were is are it he she they "
                   "them there then when while after before day today night morning evening".split())
 _CAP_WORD = re.compile(r"\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?\b")
-_AFTER_ARTICLE = re.compile(r"\b(?:the|a|an)\s+([a-z][a-z-]{2,}(?:\s+[a-z][a-z-]{2,})?)", re.I)
 _NOT_REFERENT = frozenset("day days hour hours night morning evening time way rest while first last other same".split())
 
 
@@ -85,8 +84,8 @@ def rank_entries(adapter, entries: list[dict], window: int = 12, top: int = 4) -
 
 
 def referents(texts: list[str], names: Iterable[str], k: int = 8) -> list[str]:
-    """Concrete things a nickname could be built from: the people named, then capitalised names and "the <thing>"
-    phrases that appear in the texts. Cleaned, deduplicated, at most ``k``."""
+    """Concrete things a nickname could be built from: the people named, then capitalised names that appear in the
+    texts. Cleaned, deduplicated, at most ``k``."""
     out: list[str] = []
     seen: set[str] = set()
 
@@ -101,10 +100,7 @@ def referents(texts: list[str], names: Iterable[str], k: int = 8) -> list[str]:
     for n in names:
         if n and re.search(r"\b" + re.escape(str(n)) + r"\b", blob):
             add(str(n))
-    for m in _AFTER_ARTICLE.finditer(blob):
-        w = m.group(1).strip()
-        if not all(p.casefold() in _STOP | _NOT_REFERENT for p in w.split()):
-            add(w.split()[-1] if len(w.split()) > 2 else w)
+    # ("the <thing>" phrases were tried: they handed the model fragments like "yard with" as names; judge r1 lore 1.9)
     for m in _CAP_WORD.finditer(blob):
         w = m.group(0)
         if w.split()[0].casefold() not in _STOP:

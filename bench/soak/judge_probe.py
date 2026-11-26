@@ -38,6 +38,17 @@ def load_rows(run: Path) -> list[dict]:
     return rows
 
 
+def _extra(c: dict, who: str) -> list[str]:
+    out = []
+    if c.get("quality"):
+        out.append(f"quality: {c['quality']}")
+    if c.get(f"{who}_card"):
+        out.append(f"{who} (card): " + "; ".join(c[f"{who}_card"]))
+    if c.get(f"{who}_knows"):
+        out.append(f"{who} remembers: " + " | ".join(c[f"{who}_knows"]))
+    return out
+
+
 def context_lines(r: dict) -> list[str]:
     c = r.get("context") or {}
     f = r["feature"]
@@ -45,24 +56,31 @@ def context_lines(r: dict) -> list[str]:
         t = c.get("tale") or {}
         return [f"maker: {c.get('maker')}", f"item: {c.get('item')}, material: {c.get('material')}, title: {c.get('title')}",
                 f"the game's own text for the depicted event: {c.get('game_text')}",
-                f"depicted event (one line): {t.get('summary')} (pawns: {', '.join(t.get('pawns', []))})"]
+                f"depicted event (one line): {t.get('summary')} (pawns: {', '.join(t.get('pawns', []))})"] + _extra(c, "maker")
     if f == "lore":
         return [f"chronicle entry the name was coined for (day {c.get('day')}): {c.get('event')}"]
     if f == "recap":
         return ["chronicle window (newest last): " + " | ".join(c.get("window") or [])]
     if f == "aim":
         return [f"speaker: {c.get('speaker')}; listener: {c.get('listener')}", f"scene: {c.get('scene')}; just happened: {c.get('trigger')}",
-                f"the spoken line the aim belongs to ({r.get('label')}, {r.get('delivery')}): {r.get('line')}"]
+                f"the spoken line the aim belongs to ({r.get('label')}, {r.get('delivery')}): {r.get('line')}"] + _extra(c, "speaker") \
+            + ([f"speaker's opinion of the listener: {c['opinion_of_listener']}"] if c.get("opinion_of_listener") is not None else [])
     if f == "eulogy":
-        return [f"speaker: {c.get('speaker')}; the deceased: {c.get('deceased')}"]
+        return [f"speaker: {c.get('speaker')}; the deceased: {c.get('deceased')}"] + _extra(c, "speaker")
     if f == "vows":
-        return [f"speaker: {c.get('speaker')}; the couple: {' and '.join(c.get('couple') or [])}"]
+        return [f"speaker: {c.get('speaker')}; the couple: {' and '.join(c.get('couple') or [])}"] + _extra(c, "speaker")
     return []
 
 
 def make(a) -> int:
     rng = random.Random(a.seed)
     rows = [r for run in a.runs for r in load_rows(Path(run)) if r.get("text")]
+    if getattr(a, "context_from", ""):
+        # the same fixture gives the same context per (feature, case): fill it from a newer probe run's rows
+        ctx = {(r["feature"], r["case"]): r.get("context") for r in load_rows(Path(a.context_from))}
+        for r in rows:
+            if (r["feature"], r["case"]) in ctx:
+                r["context"] = ctx[(r["feature"], r["case"])]
     items = []
     want = set(a.features.split(",")) if getattr(a, "features", "") else set(ORDER)
     for f in ORDER:
@@ -165,6 +183,7 @@ def main(argv=None) -> int:
     m.add_argument("--per-feature-arm", type=int, default=12)
     m.add_argument("--seed", type=int, default=5)
     m.add_argument("--features", default="", help="comma list; default all features")
+    m.add_argument("--context-from", default="", help="a probe run whose per-case context replaces the rows' context")
     s = sub.add_parser("score")
     s.add_argument("--key", required=True)
     s.add_argument("--verdicts", required=True)
