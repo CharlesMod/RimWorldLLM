@@ -17,3 +17,17 @@ Runs the real Director against FakeBridge with a real (or fake) LLM, scripted ev
 8. Event density is high on purpose; at speed 3-4 queued events expire (see lease counts in drops.jsonl counters). Use speed 1-2 for coverage.
 9. Child Tam (9) and teen Uma (15) are in social events, a romance near-miss (witnesses), meals, party, wedding (guests), speech.
 10. A mid-run `reload_game()` fires at 60% once the chronicle has 2 entries; `meta.json` says if it was skipped.
+11. `--fixture rich` (default since the creative round, `fixture_rich.py`): 9 pawns, a 14-year-old, deaths, raids with named
+    factions, a wedding, a feud, 8 distinct art events a day with `material` and `tale`. `--fixture classic` reproduces older
+    runs (items 6 and 9 above describe the classic fixture). outputs.jsonl has one record per text; a text also logged under a
+    second kind carries `also`.
+
+## Creative probe and blind judge (docs/CREATIVE-ROUND.md)
+
+- `creative_probe.py --url U --reps 6 --arm NAME --out DIR [--features art,lore,recap,aim,eulogy,vows] [--set key=value ...]`:
+  the agent's own art/lore/recap/aim/eulogy/vow paths on the rich colony; `--set` flips agent config fields (tuples take
+  comma lists). Writes probe.jsonl (one row per piece: text as shown, drop, latency_s, calls, slot_s, context) and summary.json.
+- `judge_probe.py make --runs DIR... --features f,... --per-feature-arm N --out sample.md --key key.json` (blind, shuffled,
+  arms hidden; `--context-from DIR` fills per-case context from another run); a Claude judge writes verdict lines
+  `{"n", "score", "why"}`; `judge_probe.py score --key --verdicts --out table.md --json t.json` gives per arm and paired
+  tables, and per family and run for judge_sample.py keys.

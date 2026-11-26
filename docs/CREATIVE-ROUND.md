@@ -19,6 +19,7 @@ spoken prose by +0.7 to +1.0), keeping only changes that measurably help. Raw da
 | Wedding vows | 2.33-2.5 | 2.33 (no arm beat plain) | none | plain |
 | Aims / contrast clouds | 2.42-2.67; 47% open "I just want" | 3.0-3.1 (paired +0.33 / +0.63); 0% "I just want" | aim tension + subtext menu (aim_ground) | kept; clouds stay on (3.0, not below) |
 | Aim temperature (item 7) | greedy | 0.3 / 0.5: +0.08 / +0.17 n.s.; distinctness .60/.60/.64 | none | **no sampler change** |
+| Spoken lines and prose | unchanged by design (single shot, latency budget) | soak judge speech 2.79 -> 2.90, prose 2.76 -> 2.88 (small n) | aim steering only | |
 | Cliche filter (item 5) | | 0 stock phrases in 677 probe outputs | nothing to filter | off (code kept) |
 | Style models (item 6) | | not built | no RimWorld Defs or real tale text on sprinter or poe | blocked, keeper decision |
 
@@ -134,7 +135,9 @@ The subtext rotation already gives distinct aims under greedy; temperature adds 
 - Yield: every extra call (plan, candidate) first checks whether a line is waiting (idle work: actors want windows;
   recap and ceremonies: another actor's item of class REACTIVE or higher is queued or leased) and stops with the best so
   far. Unit-tested (test_creative), not exercised under load.
-- SOAK_LATENCY
+- Soak, same seed and script (1x, 1.5 game days, P40): line median 1.55 s -> 1.44 s (p90 2.37 -> 2.21); intent median
+  0.58 -> 0.63 s (p90 0.67 -> 0.85; the aim request is longer); lore 0.34 -> 0.56 s per call (plan + piece, 10 calls for
+  5 names); recap 0.86 -> 2.29 s (once per load); art none after (off on E4B).
 
 ## Model-tier switch (keeper decision applied)
 
@@ -145,7 +148,23 @@ the aim tension: `inner_cloud_small` stays True. Both are config fields the play
 
 ## Soak before / after
 
-SOAK_TABLE
+Rich fixture, seed 31, 1x for 1.5 game days, adult content off. Before = main's code (5154462, flags off, before the name
+fix); after = this branch's defaults. Analyzer (`bench/results/creative/an/`):
+
+| check | before | after |
+|---|---|---|
+| calls / errors | 272 / 0 | 281 / 0 |
+| canaries shown / in raw text | 0 / 0 | 0 / 0 |
+| explicit with adult off | 0 | 0 |
+| age-gate "violations" | 2 (analyzer false positive: the minor's bio "the hall was beautiful") | 2 (the same false positive) |
+| label leaks / over-length / empty | 0 / 0 / 0 | 0 / 0 / 0 |
+| aims stored / opening "I just want" / unique | 13 / 9 / 13 | 28 / **0** / 28 |
+| art shown | 4 (5 more dropped as unknown_name) | 0 (art off on small models: the tier read works live) |
+| lore / recap lines | 4 / 3 | 5 / 3 |
+
+Blind judge on a mixed sample of both soaks (184 items, run hidden; `judge/soak`): aims and clouds 2.25 -> 2.59
+(aim 2.50 -> 2.88, cloud 2.50 -> 2.83), gatherings 2.40 -> 3.29, lore 2.50 -> 2.80, recap 3.33 -> 3.33, speech 2.79 -> 2.90,
+prose 2.76 -> 2.88, dreams 3.25 -> 3.25. Small n per family (3-29); the probe tables above are the controlled numbers.
 
 ## Safety on the new paths
 
