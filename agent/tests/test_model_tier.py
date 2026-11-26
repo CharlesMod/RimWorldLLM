@@ -24,13 +24,13 @@ def test_classify(model, staging, want):
     assert classify(model, PATS, staging) == want
 
 
-def engine(model, seen, staging="full", ok=True):
+def engine(model, seen, staging="full", ok=True, size_class=None):
     def h(req):
         seen.append(str(req.url))
         if req.url.path.endswith("/engine/v1/status"):
             if not ok:
                 return httpx.Response(500)
-            return httpx.Response(200, json={"phase": "ready", "sampler": {}, "model": model, "model_tier": staging})
+            return httpx.Response(200, json={"phase": "ready", "sampler": {}, "model": model, "model_tier": staging, **({"model_size_class": size_class} if size_class is not None else {})})
         return httpx.Response(404)
     return httpx.AsyncClient(transport=httpx.MockTransport(h))
 
@@ -151,3 +151,26 @@ def test_art_on_for_small_by_default(world):
     art_event(w)
     run(w.d.step()); run(w.d.drain())
     assert w.d.art.jobs or w.fb.art_log      # keeper 2026-11-26: art on for E4B by default
+
+
+@pytest.mark.parametrize("model,sc,want", [
+    ("custom:Qwen3-4B", "small", "small"),
+    ("custom:my-e4b-merge-12b", "large", "large"),
+    ("custom:my-e4b-merge", "", "small"),
+    ("custom:Qwen3-4B", "", "large"),
+    ("custom:my-e4b-merge", "weird", "small"),
+])
+def test_classify_size_class(model, sc, want):
+    assert classify(model, PATS, "full", sc) == want
+    assert classify(model, PATS, "starter", "large") == "small"
+
+
+@pytest.mark.parametrize("model,sc,want", [
+    ("custom:Qwen3-4B", "small", True),
+    ("custom:gemma-e4b-merge-12b", "large", False),
+    ("custom:gemma-e4b-merge", None, True),
+])
+def test_engine_size_class_read(model, sc, want):
+    cfg, t, llm, now = make(model, [], size_class=sc)
+    run(t.refresh(llm))
+    assert t.small is want

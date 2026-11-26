@@ -40,9 +40,30 @@ class CallStats:
         return d
 
 
+MAX_BYTES = 20 * 1024 * 1024    # rotate calls.jsonl before it would pass this
+KEEP = 3                        # calls.jsonl.1 .. .3 are kept; the oldest is dropped
+
+
+def rotate_file(path: Path, keep: int) -> None:
+    """path -> path.1 -> ... -> path.<keep>; the oldest is dropped. Best effort."""
+    try:
+        path.with_name(f"{path.name}.{keep}").unlink(missing_ok=True)
+        for i in range(keep - 1, 0, -1):
+            src = path.with_name(f"{path.name}.{i}")
+            if src.exists():
+                src.replace(path.with_name(f"{path.name}.{i + 1}"))
+        if keep > 0:
+            path.replace(path.with_name(f"{path.name}.1"))
+        else:
+            path.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
 class CallLog:
-    def __init__(self, path: Path | None):
+    def __init__(self, path: Path | None, max_bytes: int = MAX_BYTES, keep: int = KEEP):
         self.path = Path(path) if path else None
+        self.max_bytes, self.keep = max_bytes, keep
         self.entries: list[dict] = []   # in-memory tail for the debug view and tests
         self._lock = threading.Lock()
         if self.path:
@@ -54,6 +75,13 @@ class CallLog:
             self.entries.append(d)
             del self.entries[:-500]
             if self.path:
-                with self.path.open("a", encoding="utf-8") as f:
-                    f.write(json.dumps(d, ensure_ascii=False) + "\n")
+                line = (json.dumps(d, ensure_ascii=False) + "\n").encode("utf-8")
+                try:
+                    size = self.path.stat().st_size
+                except OSError:
+                    size = 0
+                if size and size + len(line) > self.max_bytes:
+                    rotate_file(self.path, self.keep)
+                with self.path.open("ab") as f:
+                    f.write(line)
         return d

@@ -17,7 +17,7 @@ hermesvoice-agent replay events.jsonl                               # offline, f
 Config: defaults, then a TOML/JSON file (`--config` or `$HERMESVOICE_CONFIG`), then `HERMESVOICE_*`
 environment variables (`HERMESVOICE_LLM_URL`, `_LLM_KEY`, `_LLM_MODEL`, `_LLM_MODE`, `_BRIDGE_URL`, `_BRIDGE_TOKEN`,
 `_WINDOWS`). If no LLM URL is set there, the `llm` block of `bridge.json` is used. Without `bridge_url` the adapter's `bridge.json` location is read. Every LLM call is logged
-to `<data_dir>/calls.jsonl` with prompt_n, cache_n, prompt_ms, predicted_ms, raw and effective prefill.
+to `<data_dir>/calls.jsonl` (rotated at 20 MB, three old files kept as calls.jsonl.1 to .3) with prompt_n, cache_n, prompt_ms, predicted_ms, raw and effective prefill.
 
 ## Layout: core and adapter
 
