@@ -167,6 +167,11 @@ namespace HermesVoice.Bridge
         /// <summary>The game profile for HermesVoice (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
         public const int HostReserveEstimateMib = 1500;
 
+        /// <summary>How far the agent's own files may still grow on the engine's disk (docs/ENGINE.md §7c host_files_mib):
+        /// calls.jsonl rotates at 20 MB and keeps 3 old copies (agent core/calllog.py), so 4 x 20 MB, plus 4 MiB for
+        /// the agent's memory and diaries growing within one session.</summary>
+        public const int HostFilesMib = 84;
+
         public static JObject BuildProfile(string bridgeJsonPath, string wheelPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
         {
             var o = new JObject
@@ -175,7 +180,8 @@ namespace HermesVoice.Bridge
                 ["slots"] = 3,
                 ["min_slots"] = 1,
                 ["ctx_per_slot"] = new JObject { ["max"] = 65536, ["floor"] = 8192 },
-                ["game_reserve_mib"] = HostReserveEstimateMib   // the host estimate; the engine measures the game when it can
+                ["game_reserve_mib"] = HostReserveEstimateMib,  // the host estimate; the engine measures the game when it can
+                ["host_files_mib"] = HostFilesMib               // counted in every disk check the engine makes
             };
             if (hostPid > 0) o["host_pid"] = hostPid;
             if (hostAdapter != null && hostAdapter.Known) o["host_adapter"] = hostAdapter.ToJson();

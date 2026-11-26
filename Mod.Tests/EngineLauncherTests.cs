@@ -71,6 +71,7 @@ namespace HermesVoice.Tests
             Assert.Equal(65536, (int)j["ctx_per_slot"]["max"]);
             Assert.Equal(8192, (int)j["ctx_per_slot"]["floor"]);
             Assert.Equal(1500, (int)j["game_reserve_mib"]);
+            Assert.Equal(84, (int)j["host_files_mib"]);   // calls.jsonl 4 x 20 MB + 4 MiB, counted in the engine's disk need
             var a = j["agent"];
             Assert.Equal("hermesvoice-agent", (string)a["id"]);
             Assert.Equal("/m/Engine/agent/a.whl", (string)a["wheel"]);
