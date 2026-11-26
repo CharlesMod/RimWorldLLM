@@ -108,7 +108,8 @@ namespace HermesVoice.Bridge
             if (!string.Equals(want, got, cmp)) return "not the agent's folder";
             string root = System.IO.Path.GetPathRoot(got);
             if (string.IsNullOrEmpty(System.IO.Path.GetFileName(got)) || (root != null && string.Equals(root.TrimEnd('/', '\\'), got, cmp))) return "a drive or filesystem root";
-            if (!expected.Overridden && !string.Equals(System.IO.Path.GetFileName(got), LeafName, cmp)) return "not named " + LeafName;
+            // always the agent's own leaf name, even for an overridden folder: an override pointing at, say, Documents must never be emptied
+            if (!string.Equals(System.IO.Path.GetFileName(got), LeafName, cmp)) return "not named " + LeafName;
             if (extraProtected != null)
                 foreach (var p in extraProtected)
                 {

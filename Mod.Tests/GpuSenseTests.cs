@@ -272,12 +272,25 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
-        public void OverrideMayHaveAnyLeafAndIsEmptiedNotRemoved()
+        public void OverrideWithAnotherLeafIsRefusedAndUntouched()
         {
             using (var t = new Tmp())
             {
                 string home = t.Sub("home");
                 string dir = t.Sub("mydata"); Fill(dir);
+                var res = new AgentDataDir.Resolved { Path = dir, Overridden = true };
+                Assert.Equal(AgentDataDir.DeleteOutcome.Refused, AgentDataDir.Delete(res, dir, new[] { home }).Outcome);
+                Assert.NotEmpty(Directory.GetFileSystemEntries(dir));
+            }
+        }
+
+        [Fact]
+        public void OverrideNamedLikeTheAgentFolderIsEmptiedNotRemoved()
+        {
+            using (var t = new Tmp())
+            {
+                string home = t.Sub("home");
+                string dir = t.Sub("hermesvoice-agent"); Fill(dir);
                 var res = new AgentDataDir.Resolved { Path = dir, Overridden = true };
                 Assert.Equal(AgentDataDir.DeleteOutcome.Deleted, AgentDataDir.Delete(res, dir, new[] { home }).Outcome);
                 Assert.True(Directory.Exists(dir));
