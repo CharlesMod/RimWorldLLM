@@ -6,6 +6,7 @@ disclaimers, names of actors that do not exist or are not known to the speaker, 
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from . import adult, agegate
@@ -78,17 +79,32 @@ def leaks_secret(text: str, secrets: list[str]) -> bool:
     return False
 
 
+_TRAILING_LABEL = re.compile(r"^(.*[.!?…])\s+([a-z_]+)\s*[.!?]?$")
+
+
+def strip_trailing_label(t: str, labels: Iterable[str]) -> str:
+    """Cut one bare intent label left after the last sentence ("...before dark. kind" -> "...before dark.")."""
+    if not labels:
+        return t
+    m = _TRAILING_LABEL.match(t)
+    return m.group(1).rstrip() if m and m.group(2) in set(labels) else t
+
+
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
                   max_words: int = MAX_WORDS, common_words: set[str] | None = None,
                   secrets: list[str] | None = None, narration_guard: bool = False,
-                  involves_minor: bool = False, minor_names: set[str] | None = None) -> Sanitized:
+                  involves_minor: bool = False, minor_names: set[str] | None = None,
+                  intent_labels: Iterable[str] = ()) -> Sanitized:
     """
     speaker_names: the speaker's own name tokens.
     known_names:   name tokens of actors the speaker knows (present, relations, memories).
     all_names:     name tokens of every actor that exists in the world.
     prompt_words:  capitalised words from the speaker's prompt (grounded vocabulary: places, factions).
     truncated:     the generation hit the token cap (a cut-off line is trimmed to its last sentence).
+    intent_labels: the game's intent labels. A finished sentence followed by one bare label word ("Hold the knife
+                   steady. kind") is the model leaking the intent pass into speech; the word is cut. Only after a sentence
+                   end, so a line that merely ends with such a word ("You are so kind") is untouched.
     involves_minor / minor_names: the age gate. A romantic or sexual line is dropped (reason ``minor_safety``) when the
                    speaker or listener is a minor, or when a minor is named in it (see core/agegate.py).
     narration_guard: drop a line that begins with the speaker's own name and a verb ("Tuk feels the bandage."), which is
@@ -111,6 +127,7 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
     t = t.strip().strip('"“”‘’`').strip()
     t = re.sub(r"^[-–—>]+\s*", "", t)
     t = t.replace('"', "").replace("“", "").replace("”", "")
+    t = strip_trailing_label(t, intent_labels)
     if truncated and not re.search(r"[.!?…]$", t):
         cut = max(t.rfind(". "), t.rfind("! "), t.rfind("? "))
         if cut <= 0:

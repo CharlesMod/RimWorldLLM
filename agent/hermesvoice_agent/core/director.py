@@ -528,7 +528,8 @@ class Director:
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
                           prompt_cap_words(prefix), set(self.adapter.common_words),
                           third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())),
-                          minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens())
+                          minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens(),
+                          intent_labels=tuple(self.adapter.intent_labels))
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
 
