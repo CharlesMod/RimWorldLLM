@@ -134,3 +134,12 @@ def test_lore_and_recap_prompts_ask_for_nicknames_and_big_events():
     a = RimWorldAdapter()
     assert "never a label" in a.lore_request
     assert "biggest events" in a.recap_request and "never small" in a.recap_request
+
+
+def test_a_name_that_only_repeats_itself_is_dropped(world):
+    async def go():
+        w = await world.go()
+        w.llm.script["lore"] = ["Yard with: Yard with"]
+        assert await lore.coin(w.d, DEATH, 5, 0) is None
+        assert not w.d.lore.entries
+    run(go())

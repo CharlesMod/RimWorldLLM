@@ -23,7 +23,7 @@ RUBRIC = {
     "art": "Depicts the event concretely, grounded in the game data given (tale text, maker, material), fresh wording, reads like an art description.",
     "lore": "A memorable, concrete name a colonist would really use, tied to the referent (the event).",
     "recap": "Leads with the biggest events, names who and what changed, has a 'previously on' feel; accurate to the chronicle window.",
-    "aim": "A private want or fear that complicates the spoken line (not a restatement), specific to this pawn and scene, not 'I just want'.",
+    "aim": "A private want or fear that complicates the spoken line (not a restatement), specific to this pawn and scene.",
     "eulogy": "Specific to the person, moving, grounded in what is known of them, not generic.",
     "vows": "Specific to this couple, sincere, grounded, not generic.",
 }
@@ -64,8 +64,9 @@ def make(a) -> int:
     rng = random.Random(a.seed)
     rows = [r for run in a.runs for r in load_rows(Path(run)) if r.get("text")]
     items = []
+    want = set(a.features.split(",")) if getattr(a, "features", "") else set(ORDER)
     for f in ORDER:
-        fr = [r for r in rows if r["feature"] == f]
+        fr = [r for r in rows if r["feature"] == f and f in want]
         if not fr:
             continue
         arms = sorted({(r["_run"], r["arm"]) for r in fr})
@@ -80,7 +81,7 @@ def make(a) -> int:
     rng.shuffle(items)
     head = ["# Blind creative sample", "", f"{len(items)} items. Score each 1-5 (5 = excellent) on the rubric for its feature. "
             'Write one JSON line per item: {"n": int, "score": 1-5, "why": "short"}.', "", "## Rubrics"]
-    head += [f"- **{f}**: {RUBRIC[f]}" for f in ORDER]
+    head += [f"- **{f}**: {RUBRIC[f]}" for f in ORDER if f in want]
     out, key = [], {}
     for n, r in enumerate(items, 1):
         out.append(f"\n### #{n}  [{r['feature']}]\n" + "\n".join(f"- {x}" for x in context_lines(r)) + "\n\n> " + r["text"].replace("\n", "\n> ") + "\n")
@@ -163,6 +164,7 @@ def main(argv=None) -> int:
     m.add_argument("--key", required=True)
     m.add_argument("--per-feature-arm", type=int, default=12)
     m.add_argument("--seed", type=int, default=5)
+    m.add_argument("--features", default="", help="comma list; default all features")
     s = sub.add_parser("score")
     s.add_argument("--key", required=True)
     s.add_argument("--verdicts", required=True)

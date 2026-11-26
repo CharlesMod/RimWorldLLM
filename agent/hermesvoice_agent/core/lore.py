@@ -143,6 +143,8 @@ async def coin(d, entry_text: str, game: int, day: int) -> LoreEntry | None:
         p = parse_entry(" ".join(c.text.split()))
         if p is None or _REFUSAL.search(c.text) or not _NAME_OK.match(p[0]) or agegate.violation(c.text, minor_names=minors):
             return None
+        if p[0].strip(" .").lower() == p[1].strip(" .").lower():
+            return None                                   # "Yard with: Yard with" names nothing
         # the name is an invention by design; what it refers to must stand on the entry's own words and names
         s = sanitize_prose(p[1], known_names=allnames, all_names=allnames, prompt_words=pw,
                            common_words=set(d.adapter.common_words), min_words=2, max_words=12, minor_names=minors)

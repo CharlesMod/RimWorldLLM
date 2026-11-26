@@ -286,6 +286,7 @@ async def run_recap(col: Colony, args, rep) -> list[dict]:
 class _Lease:
     def __init__(self):
         self.data = {}
+        self.slot = None
 
 
 async def run_aim(col: Colony, args, rep) -> list[dict]:
@@ -338,9 +339,17 @@ async def _group_turn(col: Colony, g: group.Gathering, me: int):
     ctx.secrets = []
     req, _ = group.request(g, me)
     mt = d.cfg.eulogy_max_tokens if (g.kind == "funeral" and me == g.lead) else d.cfg.llm.line_max_tokens
-    return await speak(d.llm, slot=d.cfg.narrator_slot, mind=mind, name=g.names[me], prefix=lease.data["prefix"], turns=[], turn_no=0,
-                       ctx=ctx, listener_name=None, labels=d.labels_for(ctx.minor_involved), max_tokens=mt, request=req,
-                       speech=lease.data.get("speech"))
+    lease.slot = d.cfg.narrator_slot
+
+    async def say(request):
+        return await speak(d.llm, slot=d.cfg.narrator_slot, mind=mind, name=g.names[me], prefix=lease.data["prefix"], turns=[],
+                           turn_no=0, ctx=ctx, listener_name=None, labels=d.labels_for(ctx.minor_involved), max_tokens=mt,
+                           request=request, speech=lease.data.get("speech"))
+
+    # the game's path: ceremony turns (the lead's eulogy, the vows) go through group._compose_turn when the agent has it
+    if hasattr(group, "_compose_turn") and group.ceremony_turn(g, me):
+        return await group._compose_turn(d, g, me, mind, lease, req, say)
+    return await say(req)
 
 
 async def run_group(col: Colony, args, rep, feature) -> list[dict]:
