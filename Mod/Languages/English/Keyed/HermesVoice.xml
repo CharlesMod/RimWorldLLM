@@ -253,8 +253,9 @@
   <HV_Eng_Phase_External>Using your own endpoint</HV_Eng_Phase_External>
   <HV_Eng_Phase_Error>Error</HV_Eng_Phase_Error>
   <HV_First_Title>HermesVoice: local model</HV_First_Title>
-  <HV_First_Text>HermesVoice can set up a local model that runs on your own computer: it checks your graphics card and memory, picks a model that fits, and downloads it. Or you can use an endpoint you already have.</HV_First_Text>
+  <HV_First_Text>HermesVoice can set up a local model that runs on your own computer: it checks your graphics card and memory, picks a model that fits, and downloads it. Or you can use a GGUF model file or an endpoint you already have.</HV_First_Text>
   <HV_First_SetUp>Set up</HV_First_SetUp>
+  <HV_First_OwnFile>Use my GGUF file</HV_First_OwnFile>
   <HV_First_Own>Use my own endpoint</HV_First_Own>
   <HV_First_Later>Later</HV_First_Later>
   <HV_Setup_Title>HermesVoice: set up a local model</HV_Setup_Title>

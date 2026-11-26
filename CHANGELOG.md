@@ -13,6 +13,11 @@ Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are inclu
   cards, laptops and Apple Silicon, and stock Gemma 4 E2B as a fallback with an in-game warning.
 - The engine sizes itself to your free video memory, leaves room for the game, and starts and stops with the game.
 - **My own endpoint** still works for anyone with their own OpenAI-compatible server.
+- **Use my own GGUF file:** point the mod at a GGUF you already have (in-game file browser, a fit check for your card);
+  it is served in place, never copied or deleted, and only llama.cpp is downloaded.
+- Settings reorganised into Model, Colonists, Display, Content, Storage and Advanced, with a tooltip on every option.
+  Changing model keeps the current one talking until the new one is ready, and shows the disk space needed first.
+  The Storage tab shows what the engine keeps on disk and can remove it all in one click.
 - Replaces the old external agent setup over the network; the agent now runs on your machine, started by the engine.
 
 ### Colonists with more inner life
