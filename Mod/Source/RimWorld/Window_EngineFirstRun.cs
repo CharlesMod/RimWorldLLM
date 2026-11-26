@@ -27,7 +27,7 @@ namespace HermesVoice
             {
                 if (s != null) { s.engineSetupDismissed = true; HermesVoiceMod.Instance.WriteSettings(); }
                 Close();
-                Find.WindowStack.Add(new Window_EngineSetup());
+                Find.WindowStack.Add(new Window_EngineSetup(true));   // installs the recommended model: one click
             }
             if (Widgets.ButtonText(new Rect(w + 10f, y, w, 34f), UiUtil.T("HV_First_Own")))
             {

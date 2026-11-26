@@ -16,11 +16,16 @@ namespace HermesVoice
         Vector2 _scroll;
         float _viewHeight = 700f;
         string _importPath = "";
+        // Set by the first-run "Set up": install the recommended model as soon as the plan is known (one click).
+        bool _installRecommended;
 
         public override Vector2 InitialSize { get { return new Vector2(Mathf.Min(UI.screenWidth - 40f, 780f), Mathf.Min(UI.screenHeight - 80f, 700f)); } }
 
-        public Window_EngineSetup()
+        public Window_EngineSetup() : this(false) { }
+
+        public Window_EngineSetup(bool installRecommended)
         {
+            _installRecommended = installRecommended;
             doCloseX = true;
             draggable = true;
             resizeable = true;
@@ -97,6 +102,13 @@ namespace HermesVoice
                 _viewHeight = l.CurHeight + 12f;
                 Widgets.EndScrollView();
                 return;
+            }
+
+            if (_installRecommended && EngineManager.Plan != null && st != null)
+            {
+                _installRecommended = false;
+                string id = SetupChoice.AutoInstallTarget(EngineManager.Plan, st);
+                if (id != null) EngineManager.Install(id);
             }
 
             DrawHardware(l);
