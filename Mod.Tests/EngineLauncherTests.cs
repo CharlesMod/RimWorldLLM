@@ -200,5 +200,50 @@ namespace HermesVoice.Tests
                 Assert.Null(r.Client);
             }
         }
-    }
+    
+        // Splits a command line the way Windows programs (Go's runtime included) do: CommandLineToArgvW rules.
+        static List<string> SplitWindows(string cmd)
+        {
+            var args = new List<string>();
+            var cur = new System.Text.StringBuilder();
+            bool inQ = false, any = false;
+            for (int i = 0; i < cmd.Length; i++)
+            {
+                char c = cmd[i];
+                if (c == '\\')
+                {
+                    int n = 0; while (i < cmd.Length && cmd[i] == '\\') { n++; i++; }
+                    if (i < cmd.Length && cmd[i] == '"') { cur.Append('\\', n / 2); if (n % 2 == 1) cur.Append('"'); else { inQ = !inQ; any = true; } }
+                    else { cur.Append('\\', n); i--; }
+                    continue;
+                }
+                if (c == '"') { inQ = !inQ; any = true; continue; }
+                if ((c == ' ' || c == '\t') && !inQ) { if (cur.Length > 0 || any) args.Add(cur.ToString()); cur.Clear(); any = false; continue; }
+                cur.Append(c);
+            }
+            if (cur.Length > 0 || any) args.Add(cur.ToString());
+            return args;
+        }
+
+        [Theory]
+        [InlineData(@"C:\Users\Boss\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Config\HermesVoice\engine-profile.json")]
+        [InlineData(@"C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\HermesVoice\")]
+        [InlineData("say \"hi\" there")]
+        [InlineData(@"a\\""b c")]
+        [InlineData("/home/some one/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Config")]
+        [InlineData("plain")]
+        [InlineData("")]
+        public void Quote_RoundTripsThroughWindowsArgvRules(string arg)
+        {
+            var line = SystemProcessStarter.Quote(arg) + " next";
+            var got = SplitWindows(line);
+            Assert.Equal(new List<string> { arg, "next" }, got);
+        }
+
+        [Fact]
+        public void Quote_LeavesWindowsSeparatorsSingle()
+        {
+            Assert.Equal("\"C:\\Program Files\\x.json\"", SystemProcessStarter.Quote(@"C:\Program Files\x.json"));
+        }
+}
 }

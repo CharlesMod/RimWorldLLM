@@ -84,10 +84,26 @@ namespace HermesVoice.Bridge
             p.BeginErrorReadLine();
         }
 
-        static string Quote(string a)
+        /// <summary>
+        /// Quotes one argument for a command line under the Windows (MSVCRT/CommandLineToArgvW) rules, which Mono's
+        /// Unix argument splitter also reads the same way: backslashes are doubled only where they come before a quote
+        /// or the closing quote, so "C:\Program Files\x" reaches the engine unchanged (doubling every backslash, as
+        /// before, handed Windows paths to the engine with every separator doubled).
+        /// </summary>
+        public static string Quote(string a)
         {
             if (a.Length > 0 && a.IndexOfAny(new[] { ' ', '\t', '"' }) < 0) return a;
-            return "\"" + a.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+            var sb = new System.Text.StringBuilder("\"");
+            int slashes = 0;
+            foreach (char ch in a)
+            {
+                if (ch == '\\') { slashes++; continue; }
+                if (ch == '"') { sb.Append('\\', slashes * 2 + 1); sb.Append('"'); }
+                else { sb.Append('\\', slashes); sb.Append(ch); }
+                slashes = 0;
+            }
+            sb.Append('\\', slashes * 2);
+            return sb.Append('"').ToString();
         }
     }
 
