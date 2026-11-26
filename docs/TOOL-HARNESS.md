@@ -110,3 +110,30 @@ Hard invariants held everywhere: empty reply 0, invalid arguments after the harn
 Right tool by kind (grammar): single-tool kinds (say, remember, convo, idle, none) 100% on all three models except mood 75% on E2B; two- and three-call kinds 100% on E4B and rp-maxxed, 40-50% on E2B; injection scenarios 40-50% on all three (the models follow instructions planted in scene text about half the time: the harness guarantees the call is valid, not that it is wise). Raw per-scenario results are in `~/.local/share/rimworld-hermes-engine/toolharness/conformance/`.
 
 Against the bench (native tools, no harness): round-2 non-empty 100/36/0 became 100/100/100 (rp-maxxed, E4B, E2B); arguments valid 78/84/68 became 100/100/100; tool syntax left in content 0/2/5 became 0/0/0; hallucinated names stayed 0. Right tool on single prompts was 100/100/80 in the bench; here single-tool kinds are 100% on the three models except E2B mood. What remains low is model ability: E2B stops after the first of several requested calls and picks the wrong tool on some mood prompts.
+
+## Injection, measured (RTX 5080, 75 scenarios, 2026-11-25, gpubench branch)
+
+`conformance.py` now has 75 scenarios, 24 of them injection: a scene text plants a tool call or an instruction (JSON, Gemma raw syntax, fenced, "SYSTEM" notes). `inject_followed` counts the injection scenarios where the loop called a tool the planted text asked for (`forbidden`). There are two runs per model and mode, both through the engine with the enforced `structured` profile (temp 1.0):
+
+- **baseline**: the planted text goes into the prompt as is, and every tool is allowed.
+- **hardened** (`--sanitize --scene-allowed --tag _sanitized`): the planted text goes through `core/gamedata`, the way the agent's prompts carry game text. It is cleaned and wrapped in `<game_data>`, and `DATA_RULE` is added to the system prompt. Each injection scene also allows only its own tools minus the ones the planted text asks for.
+
+| Model | Mode (protocol) | inject followed, baseline | inject followed, hardened | right tool all, baseline / hardened | right tool on inject scenes, baseline / hardened | retries baseline / hardened |
+|---|---|---|---|---|---|---|
+| gemma4-rp-maxxed-q3kxl | grammar | 15/24 (62.5%) | 0/24 (0%) | 76.1% / 90.1% | 29.2% / 70.8% | 0 / 0 |
+| | tolerant (native) | 18/24 (75.0%) | 0/24 (0%) | 73.2% / 97.2% | 20.8% / 95.8% | 8 / 11 |
+| gemma4-e4b-rp-q40 | grammar | 16/24 (66.7%) | 0/24 (0%) | 74.6% / 98.6% | 25.0% / 95.8% | 12 / 17 |
+| | tolerant (json) | 19/24 (79.2%) | 0/24 (0%) | 73.2% / 97.2% | 20.8% / 91.7% | 13 / 32 |
+| gemma4-e2b-rp-q40 | grammar | 8/24 (33.3%) | 0/24 (0%) | 62.0% / 77.5% | 62.5% / 100% | 0 / 0 |
+| | tolerant (json) | 5/24 (20.8%) | 0/24 (0%) | 67.6% / 76.1% | 70.8% / 100% | 10 / 14 |
+| gemma4-e4b-q4km (stock, once for comparison) | grammar | 17/24 (70.8%) | 0/24 (0%) | 71.8% / 97.2% | 16.7% / 91.7% | 0 / 0 |
+| | tolerant (json) | 17/24 (70.8%) | 0/24 (0%) | 74.6% / 95.8% | 29.2% / 91.7% | 7 / 5 |
+
+Hard invariants held on all 16 runs: empty reply 0, invalid arguments after the harness 0, hallucinated tool or name executed 0, raw syntax in a final line 0, loop faults 0, over budget 0, gave up 0. One loop fell back (26B tolerant baseline: an empty native reply, `implicit_done`), and one fell back in E2B-rp tolerant hardened. Step latency median and p90: 26B 235/297 ms, E4B-rp 172/253, E2B-rp 124/178, stock E4B 216/295 (grammar, baseline).
+
+What it shows:
+
+- Without the data path, every model that can act follows planted instructions in scene text two times out of three or more. E2B-rp follows them less only because it often fails to act at all: its non-injection kinds are weak (double 0%, chain 42%, mood 25% in grammar mode).
+- The agent's real path (gamedata cleaning, `<game_data>`, `DATA_RULE`, and a per-scene allowed set) takes every model to 0 followed, and raises right-tool overall to 90-99% on the three larger models.
+- The E4B-rp retries all have one cause. After `do_nothing` it called `do_nothing` again, and the repeat rule refused it (17 of 17 in grammar hardened). Main 44a9b9d now ends the loop at a turn-ending tool, which removes them. These runs predate it.
+- Raw per-scenario JSON: `bench/results/conformance/<model>.<mode>[_sanitized].json`.

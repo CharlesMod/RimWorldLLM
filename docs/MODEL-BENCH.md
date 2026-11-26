@@ -647,3 +647,105 @@ Only E2B has a loop problem (about 23% of exchanges); DRY lowers it to about 18%
 - Speed uses the agent's exact request body, streamed; "cold (slot erased)" erases the slot first; "cold, new pawn prefix" leaves another pawn's prefix in the slot (block A still matches).
 - Tool tests use temperature 0.2 and a six-line system prompt; all five tools have JSON schemas with required fields and numeric ranges.
 - Reproduce: `bench/models/run_all.sh` (engine up on 47480), `rescore.py`, `report.py <results> verdicts.json extra.md`. Raw per-model JSON lives in `~/.local/share/rimworld-hermes-engine/bench/results/<model>/`.
+
+## GPU bench 2026-11-25: rp E builds, sampler A/B, conformance (gpubench branch)
+
+Run on sprinter's RTX 5080 (llama.cpp b12680) through the engine's proxy with `sampler_policy: enforce`, from a private engine home whose `catalog.json` (version 6) adds `gemma4-e4b-rp-q40` (`gemma-4-E4B-it-qat-rp-Q4_0.gguf`, sha f272d8be...) and `gemma4-e2b-rp-q40` (sha 6a4e36a2...); the easyEngine catalog was not edited. Partway through, the keeper moved sprinter to gaming. The last structured runs (greedy on E4B-rp, plus a temp 1.0 control) were redone on poe's spare Tesla P40 (`CUDA_VISIBLE_DEVICES=0`, PCI order) against a bare llama-server with the same flags and sampler defaults. Only latency differs there; those latency numbers are marked P40. One 26B greedy rep ran while the game held the card (VRAM 15.9 GB, reflection timeouts); it is excluded. Raw data is under `bench/results/` (`footprints/`, `sampler-ab/`, `struct/`, `struct-poe-P40/`, `suite/`, `conformance/`, `prefill/`) and the scripts are in `bench/results/scripts/`.
+
+### Footprints of the rp E builds
+
+The sweep used `sweep.py` (1-3 slots x 8k-64k ctx at q4_0, plus 3 x 16k/64k at q8_0 and 3 x 16k at f16; 60 rows, all ok). The stock files were re-measured in the same session. `tools/fitcheck -fit -emit` read the rp GGUF headers. Entries in the catalog `Footprint` shape: `~/.local/share/rimworld-hermes-engine/bench/rp-footprints.json` (copy in `bench/results/footprints/`). The predictor error on the rp rows is 2.3% mean / 3.2% max (E4B) and 2.7% / 4.3% (E2B), always an under-prediction.
+
+| | E4B rp | E4B stock | E2B rp | E2B stock |
+|---|---|---|---|---|
+| fixed MiB | 2994 | 3318 | 1649 | 1803 |
+| MiB per 1k ctx q4_0 / q8_0 / f16 | 8.915 / 12.833 / 16.111 | same | 4.054 / 5.528 / 6.410 | 4.054 / 5.528 / 6.368 |
+| per-slot state q8_0 / f16 MiB | 11.9 / 34.1 | same | 1.4 / 3.9 | same |
+| host (RAM) MiB, per-layer embeddings | 912 | 1848 | 760 | 1540 |
+| VRAM at 3 x 65536 q4_0 (measured) | 4752 | 5076 | 2472 | 2626 |
+| decode tok/s per stream, 1 / 2 / 3 slots | 143 / 135 / 120 | 130 / 105 / 92 | 228 / 208 / 179 | 201 / 160 / 126 |
+| prompt tok/s, 1 / 3 slots | 11873 / 4857 | 11112 / 4672 | 22350 / 9603 | 21747 / 9963 |
+
+The fresh stock rows match the catalog's `measured.json` to within 1-3% on speed and exactly on the terms. The rp builds cost about 320 MiB (E4B) and 150 MiB (E2B) less VRAM, need half the RAM, and decode 30-40% faster at 3 slots, because the pruned 158k vocabulary shrinks the output layer. The KV terms are identical.
+
+### Sampler A/B: the rp profile
+
+Arms: `official` is the engine's rp profile today (temp 1.0, top_k 64, top_p 0.95, min_p 0). `old` is the earlier agent setting (temp 0.8, top_k 64, top_p 0.95, min_p 0.05), applied through a game profile `samplers.rp` override, which the engine enforces. I checked it in llama-server's `/slots` params. Each arm got 3 alternating reps of lines (100), conversations (10) and voice (72 lines). Loops are counted twice: by the bench heuristic and by replaying every turn through `core/loopguard.find_repeat`.
+
+| | 26B official | 26B old | E4B-rp official | E4B-rp old |
+|---|---|---|---|---|
+| lines raw all-pass (300) | 99.7% | 99.3% | 92.7% | 95.0% |
+| same, after the intent-label cut (main 94c33f4) | 99.7% | 99.3% | **99.3%** | 97.7% |
+| trailing intent label leaked (of 300 lines) | 0 | 0 | 20 | 8 |
+| sanitizer drop rate | 0.3% | 0% | 1.0% | 0.7% |
+| spelling / grammar / in-character fails | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 1 / 0 / 2 |
+| duplicate lines / distinct-2 (lines) | 2 / 0.80 | 0 / 0.80 | 0 / 0.88 | 2 / 0.85 |
+| conversation loops (bench / loopguard), of 30 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| answers previous turn / turn drop | 87% / 1.7% | 81% / 1.7% | 80% / 4.2% | 88% / 2.5% |
+| distinct-2 (conversations) | 0.76 | 0.73 | 0.85 | 0.83 |
+| voice pawn-ID accuracy (3 reps) | 0.851 (0.83-0.88) | 0.860 (0.82-0.91) | 0.852 (0.82-0.89) | 0.863 (0.86-0.87) |
+| slop rate | 0 | 0 | 0.5% | 0 |
+
+**The all-pass gap on E4B-rp (92.7% vs 95.0%) came from the intent-label leak, and the sanitiser now fixes it.** E4B-rp sometimes ends a finished line with a bare intent label ("Hold knife steady, little morsel. gossip"). That failed the `terminal` check, and the sanitiser at the time kept it. The label is not in the prompt; the model adds it. Main 94c33f4 (`intent_labels` in `sanitize_line`) cuts it. Rescored offline with that cut (`scripts/rescore_labels.py`), the official arm passes 99.3% and the old arm 97.7%. Stock E4B leaks too, 2 of 300 lines in the suite below.
+
+Otherwise the two arms are within run-to-run spread on both models: no loops either way, the same voice accuracy, and no grammar or format failures that track the sampler. Official gives slightly more varied text (distinct-2 +0.03); old answers the previous turn slightly more often on E4B-rp and slightly less on the 26B.
+
+### Structured profile: temp 1.0 against greedy
+
+These are the intent (30 labelled lines; GBNF grammar, json_schema and free modes) and reflection (20 runs) suites. Greedy is a game profile `samplers.structured = {temperature: 0}` on the engine, or the server default `--temp 0` on the P40.
+
+| | 26B temp 1.0 (3 reps) | 26B greedy | E4B-rp temp 1.0 (3 reps, 5080) | E4B-rp temp 1.0 (P40) | E4B-rp greedy (2 reps, P40) |
+|---|---|---|---|---|---|
+| intent accuracy, grammar (the agent's mode) | 96.7% | 96.7% | 82.2% (80-83) | 80.0% | **86.7%** (both reps) |
+| intent accuracy, json_schema / valid | 87.8% / 90% | 96.7% / 100% | 63.3% / 85.6% | 63.3% / 83.3% | 80.0% / 100% |
+| intent accuracy, free / valid | 94.4% / 100% | 96.7% / 100% | 80.0% / 98.9% | 80.0% / 96.7% | 86.7% / 100% |
+| reflection parse / schema / accepted | 100 / 100 / 100% | 100 / 100 / 100% | 100 / 100 / 96.7% | 100 / 100 / 95% | 100 / 100 / 97.5% |
+| reflection latency median | 2.6 s | 3.0 s | 2.0 s | 5.5 s (P40) | 5.3 s (P40) |
+
+On both machines greedy beats temp 1.0 on every intent mode for E4B-rp, and it removes every invalid schema and free reply on both models. In the agent's grammar mode the 26B is already at its ceiling, so greedy changes nothing there. Reflection is unchanged. A grammar or schema leaves several tokens legal, and sampling at temp 1.0 among them only adds noise to a classification.
+
+**Recommendation:** keep `rp` = official (no reason left to change it once the label cut is in). Make `structured` greedy (temperature 0; top_k, top_p and min_p as official, which have no effect at temp 0). The profiles are unchanged in this branch. The proposed SAMPLERS.md wording is in the branch report.
+
+### Conformance and injection under the enforced samplers
+
+These runs used the `structured` profile (temp 1.0) and both harness modes on 75 scenarios (24 injection). The tables are in docs/TOOL-HARNESS.md ("Injection, measured"). In short: hard invariants held on all 16 runs. Injected tool calls were followed on 62-79% of injection scenarios by 26B, E4B-rp and stock E4B, and 21-33% by E2B-rp, which mostly fails to act at all. Hardened (`--sanitize --scene-allowed`), every model followed 0%. These ran before main 44a9b9d, so E4B-rp's 12-17 retries come from repeating `do_nothing` into the repeat rule, which 44a9b9d now ends at once.
+
+### rp against stock E models (the final E4B pass)
+
+This is the MODEL-BENCH suite through the engine at the official profiles: lines, conversations and voice x3 reps, and structured, tools and speed x1. Speed and VRAM are 5080 numbers (the game was not running yet).
+
+| | E4B rp | E4B stock | E2B rp | E2B stock |
+|---|---|---|---|---|
+| lines raw all-pass (300) / after label cut | 91.3% / **98.0%** | 97.7% / 98.3% | 95.0% / 95.0% | 99.0% / 99.0% |
+| check fails (300): terminal / grammar / spelling / in-character / invented | 20 / 0 / 2 / 2 / 2 | 2 / 0 / 4 / 1 / 0 | 5 / 7 / 2 / 0 / 1 | 3 / 0 / 0 / 0 / 0 |
+| sanitizer drop rate / duplicate lines | 0.3% / 0 | 0.7% / 0 | 1.0% / 2 | 0% / 9 |
+| words per line (median) / distinct-2 | 10.7 / 0.88 | 10.7 / 0.85 | 9.2 / 0.84 | 8.7 / 0.75 |
+| conversation loops (bench / loopguard exchanges), of 30 | 0 / 0 | 0 / 0 | 2 / 3 | 5 / 8 |
+| answers previous turn / turn drop | 81% / 4.2% | 77% / 1.7% | 80% / 1.7% | 74% / 0% |
+| **voice pawn-ID accuracy** (chance 17%) | **0.905** (0.86-0.93) | 0.839 | 0.735 | 0.771 |
+| intent accuracy grammar / schema / free | 76.7 / 56.7 / 76.7% | 80.0 / 60.0 / 76.7% | 56.7 / 30.0 / 40.0% | 56.7 / 30.0 / 56.7% |
+| E4B-rp intent grammar over 4 reps (3 structured-A/B reps + this one) | 80.8% | | | |
+| reflection accepted | 95% | 95% | 95% (1 unparseable) | 100% |
+| tools (native) right tool single, auto / required | 100 / 100% | 100 / 100% | 80 / 75% | 85 / 95% |
+| tools args valid auto / required | 80 / 87% | 72 / 83% | 79 / 79% | 74 / 80% |
+| tools round 2 non-empty, auto (native; the harness owns this turn) | 16% | 44% | 17% | 0% |
+| harness conformance, grammar: right tool / two- and three-call kinds | 74.6% (98.6% hardened) / 100% | 71.8% (97.2%) / 100% | 62.0% (77.5%) / 0-42% | 71.9% (earlier run) / 40-50% |
+| warm TTFT / decode tok/s, 1 stream | 0.028 s / 142 | 0.029 s / 131 | 0.019 s / 222 | 0.021 s / 191 |
+| decode tok/s, 3 slots warm | 120 | 89 | 187 | 137 |
+| VRAM, 3 x 65536 q4_0 (planner shape / GPU total) | 4696 / 5382 MiB | 5020 / 5706 | 2418 / 3104 | 2572 / 3258 |
+
+**E4B-rp: ship it with the label cut.** It is the most distinct voice of all the E models (0.905 against 0.839 stock, close to the 26B's 0.85-0.86 on this scorer), has no loops, writes more varied lines, is 35% faster at 3 slots, and uses 324 MiB less VRAM. Its only line-quality regression is the trailing intent label, which main 94c33f4 cuts; after the cut it passes 98.0%, level with stock. Intent and reflection match stock within noise (80.8% over 4 reps vs 80%). With the greedy structured profile above it reaches 86.7%. Its native round 2 is quieter than stock's (16% vs 44%), but the harness owns that turn (TOOL-ROUND2.md), and under the harness it matches stock on every kind.
+
+**E2B-rp: no clear win, and a tool-use regression.** It loops less than stock E2B (2-3 of 30 exchanges vs 5-8), writes fewer duplicates (2 vs 9) and more varied text, and decodes 37% faster. But its voice accuracy is lower (0.735 vs 0.771). It has 7 grammar faults in 300 lines (stock 0), plus one empty line and one unparseable reflection. Its tool use is worse in the harness: double calls 0-20%, mood 25-75%, convo 50-100%, against stock's 40/75/100. If E2B ships only as the low-VRAM fallback, the stock build is the safer pick on behaviour, and the rp build the better pick on repetition and speed.
+
+### M0_NOTHOUGHT: does the agent have the prefill problem with E models?
+
+It does not in its default mode, and it does in the opt-in native mode. `bench/results/prefill/*.json` (`scripts/prefill_probe.py`) sends 20 short in-character requests each way, through the engine at the official rp profile:
+
+| model | template's own generation prompt (`/apply-template`, `enable_thinking: false`) | chat completions (agent `mode="openai"`, the default) | agent native `gemma_prompt` (prefills `<|channel>thought\n<channel|>`) | bare `<|turn>model\n` prefill |
+|---|---|---|---|---|
+| E4B-rp | ends in `<|turn>model\n` | 0/20 leaks, 20/20 in voice | **15/20 leak** (`<channel|>` or a written plan); 2/20 in voice | 0/20 leaks, 20/20 in voice |
+| E2B-rp | ends in `<|turn>model\n` | 0/20, 20/20 | **18/20 leak** ("Constraint Checklist & Confidence Score: ..."); 1/20 in voice | 0/20, 20/20 |
+| 26B | ends in `<|turn>model\n<|channel>thought\n<channel|>` | 0/20, 20/20 | 0/20, 20/20 | 20/20 emit `<|channel>thought\n<channel|>` as text |
+
+`core/llm.py` `gemma_prompt` (lines 51-63) always adds the empty thought block (the 26B convention). It is used only when `LLMConfig.mode == "native"` (`--llm-mode native` or `HERMESVOICE_LLM_MODE=native`; the default is `"openai"`, config.py:31). The openai path sends messages to `/chat/completions` with `enable_thinking: false`, and llama-server's own template renders the right ending per model. So the shipped agent is fine. Native mode with an E model would leak thoughts into most lines. If native mode is kept, its generation prompt should follow the model, or copy the template's (`/apply-template`). A bare `<|turn>model\n` is not right for the 26B either: it prints the channel markers as text. `core/llm.py` is not changed here.

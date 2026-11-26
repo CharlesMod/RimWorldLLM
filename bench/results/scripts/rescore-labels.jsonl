@@ -1,0 +1,8 @@
+{"label": "e4brp-official", "n": 300, "raw_all_pass": 0.9267, "all_pass_after_label_cut": 0.9933, "label_leaks_cut": 20}
+{"label": "e4brp-old", "n": 300, "raw_all_pass": 0.95, "all_pass_after_label_cut": 0.9767, "label_leaks_cut": 8}
+{"label": "26b-official", "n": 300, "raw_all_pass": 0.9967, "all_pass_after_label_cut": 0.9967, "label_leaks_cut": 0}
+{"label": "26b-old", "n": 300, "raw_all_pass": 0.9933, "all_pass_after_label_cut": 0.9933, "label_leaks_cut": 0}
+{"label": "suite-e4b-rp", "n": 300, "raw_all_pass": 0.9133, "all_pass_after_label_cut": 0.98, "label_leaks_cut": 20}
+{"label": "suite-e4b", "n": 300, "raw_all_pass": 0.9767, "all_pass_after_label_cut": 0.9833, "label_leaks_cut": 2}
+{"label": "suite-e2b-rp", "n": 300, "raw_all_pass": 0.95, "all_pass_after_label_cut": 0.95, "label_leaks_cut": 0}
+{"label": "suite-e2b", "n": 300, "raw_all_pass": 0.99, "all_pass_after_label_cut": 0.99, "label_leaks_cut": 0}
