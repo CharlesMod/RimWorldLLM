@@ -126,7 +126,7 @@ async def coin(d, entry_text: str, game: int, day: int) -> LoreEntry | None:
     if not d.cfg.lore:
         return None
     referents = None
-    if getattr(d.cfg, "creative_ground", False):
+    if creative.on(d, "ground", "lore"):
         recent = [e.text for e in d.chronicle.state.recent[-5:]]
         referents = grounding.referents([entry_text, *recent], d.names.values())
     msgs = messages(d.adapter, entry_text, d.lore.lines(), referents)

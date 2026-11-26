@@ -197,13 +197,32 @@ async def _rerank(d, st: PieceStats, cands: list[str], slot: int | None, actor: 
     return None
 
 
+def on(d, feature: str, kind: str) -> bool:
+    """Is a creative feature ("ground", "plan", "best_of") on for this kind? The global field means every kind;
+    ``creative_<feature>_for`` lists single kinds."""
+    cfg = getattr(d, "cfg", None)
+    g = getattr(cfg, "creative_" + feature, False)
+    if feature == "best_of":
+        g = int(g or 1) > 1
+    return bool(g) or kind in (getattr(cfg, "creative_" + feature + "_for", ()) or ())
+
+
+def best_of(d, kind: str) -> int:
+    """Candidates for this kind: the global creative_best_of, else creative_best_of_n when the kind is listed, else 1."""
+    cfg = getattr(d, "cfg", None)
+    n = int(getattr(cfg, "creative_best_of", 1) or 1)
+    if kind in (getattr(cfg, "creative_best_of_for", ()) or ()):
+        n = max(n, int(getattr(cfg, "creative_best_of_n", 4) or 4))
+    return max(1, min(MAX_BEST_OF, n))
+
+
 async def compose(d, *, kind: str, slot: int | None, actor: int | None, facts: str, names: set[str],
                   write: Callable[[str], Awaitable[str | None]],
                   plan: Callable[[], Awaitable[str | None]] | None = None,
                   should_yield: Callable[[], bool] | None = None) -> tuple[str | None, PieceStats]:
     cfg = getattr(d, "cfg", None)
-    use_plan = bool(getattr(cfg, "creative_plan", False)) and plan is not None
-    best_of = max(1, min(MAX_BEST_OF, int(getattr(cfg, "creative_best_of", 1) or 1)))
+    use_plan = on(d, "plan", kind) and plan is not None
+    n_cands = best_of(d, kind)
     rerank = str(getattr(cfg, "creative_rerank", "auto") or "auto").lower()
     retry = bool(getattr(cfg, "cliche_retry", False))
     st = PieceStats(kind=kind)
@@ -228,7 +247,7 @@ async def compose(d, *, kind: str, slot: int | None, actor: int | None, facts: s
                 note = _plan_note(st.plan)
 
         cands: list[str] = []
-        for i in range(best_of):
+        for i in range(n_cands):
             if i > 0 and should_yield is not None and should_yield():
                 st.yielded = True
                 break

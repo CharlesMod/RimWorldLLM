@@ -1,0 +1,29 @@
+{
+ "arm": "ground",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true
+ },
+ "seed": 7,
+ "reps": 4,
+ "features": {
+  "eulogy": {
+   "arm": "ground",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.3073,
+   "latency_p90": 1.5718,
+   "calls_mean": 1,
+   "slot_s_mean": 1.3453
+  },
+  "vows": {
+   "arm": "ground",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.2256,
+   "latency_p90": 1.249,
+   "calls_mean": 1,
+   "slot_s_mean": 1.2062
+  }
+ }
+}

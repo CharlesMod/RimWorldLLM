@@ -85,7 +85,7 @@ def test_art_flag_on_carries_tale_material_maker_and_stays_wrapped(world):
     user = msgs[1][1]
     assert "Material: granite" in user and "The event it depicts: Ana held the east wall" in user
     assert "People in it: Ana, Bram" in user and "today" in user or "days ago" in user
-    assert "=== THE MAKER ===" in user and "Traits: kind" in user
+    assert "=== THE MAKER (" in user and "Traits: kind" in user
     assert "Wolves hit the east wall" in user                      # the entry that names the depicted people
     assert "Cy cleaned the kitchen" not in user                    # generic recent lines no longer fill the history
     assert user.count("<game_data") == user.count("</game_data>")  # the injected closer was neutralised
@@ -304,3 +304,47 @@ def test_art_plan_and_best_of_flags_reach_compose(world):
         assert "Granite and a dog" in calls[1]["messages"][1][1]
         assert w.fb.art_log
     run(go())
+
+
+# ---- per-kind grounding and art grounding v2 -------------------------------------------------
+def test_art_ground_only_for_the_art_kind(world):
+    w = run(world.go())
+
+    async def go(kinds):
+        w.d.cfg.creative_ground = False
+        w.d.cfg.creative_ground_for = kinds
+        w.llm.script["art"] = [TEXT]
+        art_event(w, {"material": "granite", "tale": TALE})
+        await step(w)
+        return [c for c in w.llm.calls if c["kind"] == "art"][-1]["messages"][1][1]
+    assert "Material: granite" in run(go(("art",)))
+    assert "Material: granite" not in run(go(("lore", "recap")))
+
+
+def test_recap_ground_per_kind(world):
+    w = run(world.go())
+    for kinds, expect in ((("recap",), True), (("art",), False)):
+        w.d.cfg.creative_ground_for = kinds
+        w.llm.script["recap"] = ["Raiders came.\nThe wall held."]
+        run(rc.build(w.d, ENTRIES))
+        user = [c for c in w.llm.calls if c["kind"] == "recap"][-1]["messages"][1][1]
+        assert ("(biggest)" in user) is expect
+
+
+def test_art_v2_prompt_has_no_mood_or_ordinary_quality_and_keeps_event_and_material(world):
+    w = run(world.go())
+    msgs = art_prompt(w, {"material": "granite", "tale": TALE, "quality": "good"}, True)
+    user = msgs[1][1]
+    assert "Mood" not in user and "mood" not in user.split("=== REQUEST ===")[0]
+    assert "Quality" not in user.split("=== REQUEST ===")[0]
+    assert "Material: granite" in user and "The event it depicts: Ana held the east wall" in user
+    assert "never name them" in user and "Traits: kind" in user and "Background" not in user
+    assert "Never name the maker's traits, mood or the quality grade" in user
+    assert user.count("<game_data") == user.count("</game_data>") >= 3
+    assert "GAME DATA RULE" in msgs[0][1] and "MINORS" in msgs[0][1]
+
+
+def test_art_v2_keeps_masterwork_quality(world):
+    w = run(world.go())
+    user = art_prompt(w, {"material": "granite", "tale": TALE, "quality": "masterwork"}, True)[1][1]
+    assert "Quality: masterwork" in user

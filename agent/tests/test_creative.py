@@ -184,3 +184,59 @@ def test_creative_log_capped():
     for _ in range(230):
         go(d, w)
     assert len(d.creative_log) == 200
+
+
+# ---- per-kind flags ---------------------------------------------------------------------------
+KINDS = ("art", "lore", "recap", "eulogy", "vow")
+
+
+def test_per_kind_defaults_off_for_every_kind():
+    d = mk(creative_ground=False, creative_plan=False, creative_best_of=1)
+    for k in KINDS:
+        assert not cr.on(d, "ground", k) and not cr.on(d, "plan", k) and not cr.on(d, "best_of", k)
+        assert cr.best_of(d, k) == 1
+
+
+def test_per_kind_tuple_turns_on_only_listed_kinds():
+    d = mk(creative_ground=False, creative_plan=False, creative_best_of=1, creative_ground_for=("art", "vow"),
+           creative_plan_for=("recap",), creative_best_of_for=("lore",), creative_best_of_n=4)
+    assert [cr.on(d, "ground", k) for k in KINDS] == [True, False, False, False, True]
+    assert [cr.on(d, "plan", k) for k in KINDS] == [False, False, True, False, False]
+    assert [cr.best_of(d, k) for k in KINDS] == [1, 4, 1, 1, 1]
+    assert [cr.on(d, "best_of", k) for k in KINDS] == [False, True, False, False, False]
+
+
+def test_global_flag_means_all_kinds():
+    d = mk(creative_ground=True, creative_plan=True, creative_best_of=3, creative_ground_for=(), creative_best_of_for=("art",),
+           creative_best_of_n=5)
+    for k in KINDS:
+        assert cr.on(d, "ground", k) and cr.on(d, "plan", k) and cr.on(d, "best_of", k)
+    assert cr.best_of(d, "lore") == 3 and cr.best_of(d, "art") == 5
+
+
+def test_compose_uses_the_per_kind_best_of_and_plan():
+    d = mk(creative_plan=False, creative_best_of=1, creative_best_of_for=("art",), creative_best_of_n=2,
+           creative_plan_for=("art",))
+    w, seen = scripted([GOOD, GOOD])
+
+    async def plan():
+        return "the dog and the wall"
+    text, st = go(d, w, plan=plan)
+    assert st.candidates == 2 and st.plan and text
+    d2 = mk(creative_plan=False, creative_best_of=1, creative_best_of_for=("lore",), creative_best_of_n=2,
+            creative_plan_for=("lore",))
+    w2, _ = scripted([GOOD, GOOD])
+    _, st2 = go(d2, w2, plan=plan)
+    assert st2.candidates == 1 and not st2.plan
+
+
+def test_config_accepts_lists_for_per_kind_fields(tmp_path):
+    from hermesvoice_agent.core.config import load_config
+    p = tmp_path / "c.json"
+    p.write_text('{"creative_ground_for": ["art", "lore"], "creative_plan_for": ["recap"], "creative_best_of_for": ["art"]}')
+    c = load_config(p)
+    assert tuple(c.creative_ground_for) == ("art", "lore") and tuple(c.creative_best_of_for) == ("art",)
+    assert c.creative_best_of_n == 4 and tuple(c.creative_plan_for) == ("recap",)
+    t = tmp_path / "c.toml"
+    t.write_text('creative_ground_for = ["vow"]\n')
+    assert tuple(load_config(t).creative_ground_for) == ("vow",)

@@ -263,8 +263,9 @@ async def details(d, g: Gathering, me: int) -> str:
 
 async def _compose_turn(d, g: Gathering, sp: int, mind, lease, req: str, say):
     """One eulogy or vow through creative.compose. With every flag off it is one call to ``say(req)``, as before."""
+    kind = "eulogy" if g.kind == "funeral" else "vow"
     base = req
-    if getattr(d.cfg, "creative_ground", False):
+    if creative.on(d, "ground", kind):
         base = (await details(d, g, sp)) + req
     results: list = []
 
@@ -283,7 +284,7 @@ async def _compose_turn(d, g: Gathering, sp: int, mind, lease, req: str, say):
                                  actor=sp)
         return c.text
 
-    text, _ = await creative.compose(d, kind="eulogy" if g.kind == "funeral" else "vow", slot=lease.slot, actor=sp,
+    text, _ = await creative.compose(d, kind=kind, slot=lease.slot, actor=sp,
                                      facts=base.split("=== REQUEST ===")[0], names=set(), write=write, plan=plan,
                                      should_yield=lambda: grounding.other_reactive_waiting(d, sp))
     for r in reversed(results):

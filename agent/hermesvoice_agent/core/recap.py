@@ -85,7 +85,7 @@ def fallback_lines(entries: list[dict], minor_names: set[str] | None = None) -> 
 async def build(d: "Director", entries: list[dict]) -> list[str]:
     """The recap lines (1 to 3), from the model when it gives usable lines, else from the chronicle itself."""
     minors = d.minor_tokens()
-    msgs = messages(d.adapter, entries, ground=bool(getattr(d.cfg, "creative_ground", False)))
+    msgs = messages(d.adapter, entries, ground=creative.on(d, "ground", "recap"))
     allnames = set().union(*d.name_tokens.values()) if d.name_tokens else set()
     pw = prompt_cap_words(msgs[1][1])
 

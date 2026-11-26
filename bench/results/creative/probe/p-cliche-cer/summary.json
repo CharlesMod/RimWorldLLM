@@ -1,0 +1,30 @@
+{
+ "arm": "cliche",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true,
+  "cliche_retry": true
+ },
+ "seed": 7,
+ "reps": 4,
+ "features": {
+  "eulogy": {
+   "arm": "cliche",
+   "n": 8,
+   "dropped": 1,
+   "latency_median": 1.4268,
+   "latency_p90": 1.5759,
+   "calls_mean": 1,
+   "slot_s_mean": 1.4013
+  },
+  "vows": {
+   "arm": "cliche",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.358,
+   "latency_p90": 1.3979,
+   "calls_mean": 1,
+   "slot_s_mean": 1.3454
+  }
+ }
+}

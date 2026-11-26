@@ -1,0 +1,30 @@
+{
+ "arm": "plan",
+ "sets": {
+  "creative_ground": true,
+  "aim_ground": true,
+  "creative_plan": true
+ },
+ "seed": 7,
+ "reps": 4,
+ "features": {
+  "eulogy": {
+   "arm": "plan",
+   "n": 8,
+   "dropped": 1,
+   "latency_median": 1.9649,
+   "latency_p90": 2.0628,
+   "calls_mean": 2,
+   "slot_s_mean": 1.9518
+  },
+  "vows": {
+   "arm": "plan",
+   "n": 8,
+   "dropped": 0,
+   "latency_median": 1.7481,
+   "latency_p90": 1.8366,
+   "calls_mean": 2,
+   "slot_s_mean": 1.7513
+  }
+ }
+}

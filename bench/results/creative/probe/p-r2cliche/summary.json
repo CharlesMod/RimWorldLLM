@@ -1,0 +1,56 @@
+{
+ "arm": "r2cliche",
+ "sets": {
+  "creative_ground": true,
+  "cliche_retry": true
+ },
+ "seed": 7,
+ "reps": 6,
+ "features": {
+  "art": {
+   "arm": "r2cliche",
+   "n": 48,
+   "dropped": 0,
+   "latency_median": 0.8068,
+   "latency_p90": 0.908,
+   "calls_mean": 1,
+   "slot_s_mean": 0.79
+  },
+  "lore": {
+   "arm": "r2cliche",
+   "n": 24,
+   "dropped": 1,
+   "latency_median": 0.4195,
+   "latency_p90": 0.4586,
+   "calls_mean": 1,
+   "slot_s_mean": 0.4201
+  },
+  "recap": {
+   "arm": "r2cliche",
+   "n": 18,
+   "dropped": 0,
+   "latency_median": 0.6638,
+   "latency_p90": 0.7471,
+   "calls_mean": 1,
+   "slot_s_mean": 0.6708
+  },
+  "eulogy": {
+   "arm": "r2cliche",
+   "n": 12,
+   "dropped": 0,
+   "latency_median": 1.4595,
+   "latency_p90": 1.6649,
+   "calls_mean": 1,
+   "slot_s_mean": 1.4633
+  },
+  "vows": {
+   "arm": "r2cliche",
+   "n": 12,
+   "dropped": 0,
+   "latency_median": 1.3816,
+   "latency_p90": 1.418,
+   "calls_mean": 1,
+   "slot_s_mean": 1.3638
+  }
+ }
+}

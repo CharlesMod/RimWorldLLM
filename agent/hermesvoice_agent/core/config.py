@@ -164,6 +164,10 @@ class Config(BaseModel):
     aim_ground: bool = False           # the aim request carries the scene's tension and one subtext kind (core/inner.py)
     creative_plan: bool = False        # a one-line private plan before the piece (core/creative.py)
     creative_best_of: int = 1          # candidates per piece (core/creative.py)
+    creative_ground_for: tuple = ()    # kinds ("art", "lore", "recap", "eulogy", "vow") that get creative_ground; the bool above means all kinds
+    creative_plan_for: tuple = ()      # kinds that get creative_plan
+    creative_best_of_for: tuple = ()   # kinds that get best-of creative_best_of_n candidates
+    creative_best_of_n: int = 4        # candidates for the kinds in creative_best_of_for
     creative_rerank: str = "auto"      # how the best of N is picked: "auto" (rules) or "llm"
     cliche_retry: bool = False         # one retry when the piece holds a stock phrase
     aim_sampler: str = ""              # non-empty: the aim-carrying intent pass asks the engine for this sampler profile

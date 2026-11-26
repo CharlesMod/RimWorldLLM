@@ -127,7 +127,7 @@ def art_messages(d: "Director", job: ArtJob, card: dict | None = None,
                  request: str | None = None) -> tuple[list[tuple[str, str]], list]:
     """(messages, the maker memories used). With creative_ground the data is richer (see ``_ground_messages``);
     ``card`` is the maker's traits and mood from grounding.actor_card (None: none known)."""
-    if getattr(d.cfg, "creative_ground", False):
+    if creative.on(d, "ground", "art"):
         return _ground_messages(d, job, card or {}, request)
     now = d.bridge.env.game
     maker = d.names.get(job.maker, "Someone")
@@ -153,9 +153,13 @@ def art_messages(d: "Director", job: ArtJob, card: dict | None = None,
     return [("system", system + "\n\n" + gd.DATA_RULE + "\n" + agegate.MINOR_RULE), ("user", user)], mems
 
 
+GAME_QUALITY = frozenset({"masterwork", "legendary"})     # the only quality words the game's art text itself carries
+
 GROUND_REQUEST = ("Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. Say what the piece "
-                  "depicts as the data gives it (who, where, how it ended), name its material, and let the maker's manner "
-                  "show in the treatment. Use only people and events the data names.")
+                  "depicts as the data gives it (who, where, the weather if given, how it ended) in your own words, not the "
+                  "game text's order. Name the material once. If the maker remembers this event, let one detail of that "
+                  "memory show in how the scene is treated. Never name the maker's traits, mood or the quality grade. Use "
+                  "only people and events the data names.")
 
 
 def _ground_messages(d: "Director", job: ArtJob, card: dict, request: str | None) -> tuple[list[tuple[str, str]], list]:
@@ -166,7 +170,7 @@ def _ground_messages(d: "Director", job: ArtJob, card: dict, request: str | None
     tokens = grounding.tokens_of([maker, *people])
     tale_kw = {w for w in memory.keywords(job.tale_summary)} if job.tale_summary else set()
     facts = [f"Maker: {gd.name(maker)}", f"Item: {gd.clean(job.label, 'label') or 'artwork'}"]
-    if job.quality:
+    if job.quality and gd.clean(job.quality, 'label').casefold() in GAME_QUALITY:
         facts.append(f"Quality: {gd.clean(job.quality, 'label')}")
     if job.title:
         facts.append(f"Title: {gd.clean(job.title, 'name')}")
@@ -192,8 +196,10 @@ def _ground_messages(d: "Director", job: ArtJob, card: dict, request: str | None
     ent = ent or recent[-MAX_CHRONICLE:]
     hist = "\n".join(f"- {gd.clean(t, 'event', max_len=200)}" for t in ent) or "- (nothing written yet)"
     mem = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems) or "- (nothing in particular)"
-    who = grounding.card_lines(card)
-    maker_sec = (f"=== THE MAKER ===\n{gd.data_section('maker', chr(10).join(who))}" if who else "")
+    # only the traits (no mood, no mood thoughts, no background): they shape the treatment and are never named
+    traits = [gd.clean(t, "label") for t in (card.get("traits") or []) if t]
+    maker_sec = (f"=== THE MAKER (these shape the treatment only; never name them) ===\n"
+                 f"{gd.data_section('maker', 'Traits: ' + ', '.join(traits))}" if traits else "")
     user = (f"=== THE ARTWORK ===\n{gd.data_section('artwork', chr(10).join(facts))}"
             f"{maker_sec}"
             f"=== HISTORY THAT TOUCHES IT ===\n{gd.data_section('history', hist)}"
@@ -212,7 +218,7 @@ def _with_note(msgs: list[tuple[str, str]], note: str) -> list[tuple[str, str]]:
 
 async def write_art(d: "Director", job: ArtJob, slot: int) -> tuple[str | None, str]:
     """(text, reason): the sanitised description, or None and why it was dropped. LLMError is not caught here."""
-    ground = bool(getattr(d.cfg, "creative_ground", False))
+    ground = creative.on(d, "ground", "art")
     card = await grounding.actor_card(d, job.maker) if ground else None
     msgs, mems = art_messages(d, job, card)
     toks = d.name_tokens

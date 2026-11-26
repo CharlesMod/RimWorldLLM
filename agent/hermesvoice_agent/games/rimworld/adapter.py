@@ -140,9 +140,10 @@ class RimWorldAdapter:
     # ---- creative_ground wording (core/art.py, recap.py, lore.py, group.py read these with getattr) -------------
     art_request_ground = (
         "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. Say what the piece depicts as the "
-        "data gives it: who is in it, where, the weather if it says, and how it ended. Name the material it is made of. "
-        "Let the maker's manner (their traits and mood) show in how it is treated, never as a list. Use only people and "
-        "events the data names. If the data names no scene, describe the piece's subject and its maker plainly.")
+        "data gives it (who, where, the weather if given, how it ended) in your own words, not the game text's order. "
+        "Name the material once. If the maker remembers this event, let one detail of that memory show in how the scene "
+        "is treated. Never name the maker's traits, mood or the quality grade. Use only people and events the data "
+        "names. If the data names no scene, describe the piece's subject and its maker plainly.")
     recap_request_ground = (
         "Write exactly 3 lines, one short sentence each, under 20 words. Lead with the entry marked (biggest): name who it "
         "happened to and what changed because of it. Then the others in the order they happened; keep separate events "
