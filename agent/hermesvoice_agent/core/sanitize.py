@@ -90,6 +90,21 @@ def strip_trailing_label(t: str, labels: Iterable[str]) -> str:
     return m.group(1).rstrip() if m and m.group(2) in set(labels) else t
 
 
+_SENTENCE = re.compile(r"[^.!?…]+[.!?…]+|[^.!?…]+$")
+
+
+def drop_repeated_sentences(t: str) -> str:
+    """A sentence said twice in one line or paragraph ("We eat now. We eat now.") keeps only its first saying."""
+    seen, out = set(), []
+    for sent in _SENTENCE.findall(t):
+        key = re.sub(r"[^a-z0-9 ]", "", sent.lower()).strip()
+        if key and key in seen and len(key.split()) >= 2:
+            continue
+        seen.add(key)
+        out.append(sent.strip())
+    return " ".join(out) if out else t
+
+
 def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], all_names: set[str],
                   prompt_words: set[str] | None = None, truncated: bool = False,
                   max_words: int = MAX_WORDS, common_words: set[str] | None = None,
@@ -128,6 +143,7 @@ def sanitize_line(raw: str, *, speaker_names: set[str], known_names: set[str], a
     t = re.sub(r"^[-–—>]+\s*", "", t)
     t = t.replace('"', "").replace("“", "").replace("”", "")
     t = strip_trailing_label(t, intent_labels)
+    t = drop_repeated_sentences(t)
     if truncated and not re.search(r"[.!?…]$", t):
         cut = max(t.rfind(". "), t.rfind("! "), t.rfind("? "))
         if cut <= 0:

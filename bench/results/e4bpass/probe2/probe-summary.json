@@ -1,0 +1,727 @@
+{
+ "mode": "http://127.0.0.1:47480",
+ "model": "",
+ "reps": 4,
+ "scenes": 12,
+ "seconds": 166.1,
+ "common_words_source": "core/common_words.COMMON_SENTENCE_START (rare = not in it)",
+ "register_pairs": {
+  "smart_vs_dull": {
+   "line": {
+    "mean_word_len": {
+     "a_mean": 4.9719,
+     "b_mean": 4.201,
+     "n_a": 47,
+     "n_b": 46,
+     "cohen_d": 1.023,
+     "d_ci95": [
+      0.624,
+      1.49
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 5.4184,
+     "b_mean": 3.913,
+     "n_a": 47,
+     "n_b": 46,
+     "cohen_d": 1.159,
+     "d_ci95": [
+      0.797,
+      1.636
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.3556,
+     "b_mean": 0.188,
+     "n_a": 47,
+     "n_b": 46,
+     "cohen_d": 1.156,
+     "d_ci95": [
+      0.73,
+      1.706
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.7799,
+     "b_mean": 0.7302,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.836,
+     "d_ci95": [
+      0.706,
+      7.451
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0208,
+     "b_mean": 0.0417,
+     "n_a": 48,
+     "n_b": 48,
+     "cohen_d": -0.119,
+     "d_ci95": [
+      -0.422,
+      0.292
+     ]
+    }
+   },
+   "thought": {
+    "mean_word_len": {
+     "a_mean": 4.9229,
+     "b_mean": 4.1726,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.008,
+     "d_ci95": [
+      -0.233,
+      4.694
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 7.5,
+     "b_mean": 6.75,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.588,
+     "d_ci95": [
+      -0.894,
+      4.0
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.3215,
+     "b_mean": 0.1905,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.547,
+     "d_ci95": [
+      -1.629,
+      1.991
+     ]
+    },
+    "mattr50": {
+     "a_mean": 1.0,
+     "b_mean": 0.9643,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.707,
+     "d_ci95": [
+      0.0,
+      2.121
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.0,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.0,
+     "d_ci95": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "diary": {
+    "mean_word_len": {
+     "a_mean": 5.6872,
+     "b_mean": 4.3272,
+     "n_a": 2,
+     "n_b": 4,
+     "cohen_d": 8.546,
+     "d_ci95": [
+      7.687,
+      410.881
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 8.25,
+     "b_mean": 6.5,
+     "n_a": 2,
+     "n_b": 4,
+     "cohen_d": 1.268,
+     "d_ci95": [
+      -0.577,
+      16.743
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.5218,
+     "b_mean": 0.2827,
+     "n_a": 2,
+     "n_b": 4,
+     "cohen_d": 3.741,
+     "d_ci95": [
+      3.6,
+      210.733
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.8615,
+     "b_mean": 0.8941,
+     "n_a": 2,
+     "n_b": 4,
+     "cohen_d": -0.703,
+     "d_ci95": [
+      -13.0,
+      4.134
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.5,
+     "b_mean": 0.0,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.225,
+     "d_ci95": [
+      0.0,
+      2.121
+     ]
+    }
+   },
+   "_a_words": "articulate, a wide vocabulary, precise wording",
+   "_b_words": "simple words and short plain sentences",
+   "_b_right_now": ""
+  },
+  "sober_vs_drunk": {
+   "line": {
+    "mean_word_len": {
+     "a_mean": 4.4767,
+     "b_mean": 4.0028,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 0.924,
+     "d_ci95": [
+      0.532,
+      1.367
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 9.5729,
+     "b_mean": 3.2801,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 2.736,
+     "d_ci95": [
+      2.292,
+      3.385
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.2295,
+     "b_mean": 0.0876,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 1.381,
+     "d_ci95": [
+      0.986,
+      1.914
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.7373,
+     "b_mean": 0.6906,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.207,
+     "d_ci95": [
+      -0.082,
+      5.75
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.0208,
+     "n_a": 48,
+     "n_b": 48,
+     "cohen_d": -0.204,
+     "d_ci95": [
+      -0.361,
+      0.0
+     ]
+    }
+   },
+   "thought": {
+    "mean_word_len": {
+     "a_mean": 5.7869,
+     "b_mean": 4.5179,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 2.971,
+     "d_ci95": [
+      2.2,
+      9.0
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 6.0,
+     "b_mean": 7.25,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": -1.846,
+     "d_ci95": [
+      -4.95,
+      -0.949
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.5345,
+     "b_mean": 0.3482,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.796,
+     "d_ci95": [
+      0.729,
+      4.95
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.9643,
+     "b_mean": 0.8616,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 2.017,
+     "d_ci95": [
+      0.614,
+      21.92
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.0,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.0,
+     "d_ci95": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "diary": {
+    "mean_word_len": {
+     "a_mean": 5.0231,
+     "b_mean": 4.2075,
+     "n_a": 4,
+     "n_b": 2,
+     "cohen_d": 2.571,
+     "d_ci95": [
+      1.648,
+      8.283
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 10.625,
+     "b_mean": 7.25,
+     "n_a": 4,
+     "n_b": 2,
+     "cohen_d": 2.409,
+     "d_ci95": [
+      1.467,
+      13.6
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.4092,
+     "b_mean": 0.2807,
+     "n_a": 4,
+     "n_b": 2,
+     "cohen_d": 2.073,
+     "d_ci95": [
+      1.177,
+      8.066
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.8029,
+     "b_mean": 0.8491,
+     "n_a": 4,
+     "n_b": 2,
+     "cohen_d": -1.722,
+     "d_ci95": [
+      -13.256,
+      -0.728
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.5,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": -1.225,
+     "d_ci95": [
+      -2.121,
+      0.0
+     ]
+    }
+   },
+   "_a_words": "clear and well-spoken, a good vocabulary",
+   "_b_words": "simple words and short plain sentences",
+   "_b_right_now": "Right now: very drunk: words slur badly, barely coherent, much simpler and looser than usual. So for now your words are: simple words and short plain sentences."
+  },
+  "adult_vs_child": {
+   "line": {
+    "mean_word_len": {
+     "a_mean": 4.4371,
+     "b_mean": 4.1964,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 0.438,
+     "d_ci95": [
+      0.026,
+      0.863
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 10.2188,
+     "b_mean": 6.1596,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 1.481,
+     "d_ci95": [
+      1.041,
+      2.05
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.2359,
+     "b_mean": 0.1522,
+     "n_a": 48,
+     "n_b": 47,
+     "cohen_d": 0.769,
+     "d_ci95": [
+      0.343,
+      1.257
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.7523,
+     "b_mean": 0.6786,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 2.137,
+     "d_ci95": [
+      1.553,
+      7.779
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.0208,
+     "n_a": 48,
+     "n_b": 48,
+     "cohen_d": -0.204,
+     "d_ci95": [
+      -0.361,
+      0.0
+     ]
+    }
+   },
+   "thought": {
+    "mean_word_len": {
+     "a_mean": 4.9286,
+     "b_mean": 4.7696,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.459,
+     "d_ci95": [
+      -1.309,
+      3.149
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 7.75,
+     "b_mean": 5.5,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 1.608,
+     "d_ci95": [
+      0.894,
+      3.674
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.3607,
+     "b_mean": 0.2696,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.534,
+     "d_ci95": [
+      -1.441,
+      2.157
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.9393,
+     "b_mean": 1.0,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": -1.188,
+     "d_ci95": [
+      -7.307,
+      0.0
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.0,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": 0.0,
+     "d_ci95": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "diary": {
+    "mean_word_len": {
+     "a_mean": 5.1712,
+     "b_mean": 4.4231,
+     "n_a": 4,
+     "n_b": 1,
+     "cohen_d": null,
+     "d_ci95": [
+      null,
+      null
+     ]
+    },
+    "words_per_sentence": {
+     "a_mean": 11.5833,
+     "b_mean": 6.5,
+     "n_a": 4,
+     "n_b": 1,
+     "cohen_d": null,
+     "d_ci95": [
+      null,
+      null
+     ]
+    },
+    "rare_share": {
+     "a_mean": 0.4609,
+     "b_mean": 0.2692,
+     "n_a": 4,
+     "n_b": 1,
+     "cohen_d": null,
+     "d_ci95": [
+      null,
+      null
+     ]
+    },
+    "mattr50": {
+     "a_mean": 0.8224,
+     "b_mean": 0.8077,
+     "n_a": 4,
+     "n_b": 1,
+     "cohen_d": null,
+     "d_ci95": [
+      null,
+      null
+     ]
+    },
+    "drop_rate": {
+     "a_mean": 0.0,
+     "b_mean": 0.75,
+     "n_a": 4,
+     "n_b": 4,
+     "cohen_d": -2.121,
+     "d_ci95": [
+      -2.121,
+      -0.707
+     ]
+    }
+   },
+   "_a_words": "clear and well-spoken, a good vocabulary",
+   "_b_words": "simple words and short plain sentences",
+   "_b_right_now": ""
+  }
+ },
+ "card_cost": {
+  "token_method": "/tokenize",
+  "per_pawn": [
+   {
+    "pawn": "smart_vs_dull:A",
+    "full": {
+     "block_b_chars": 1670,
+     "prefix_chars": 7451,
+     "block_b_tokens": 410,
+     "prefix_tokens": 1836
+    },
+    "old": {
+     "block_b_chars": 753,
+     "prefix_chars": 6534,
+     "block_b_tokens": 215,
+     "prefix_tokens": 1641
+    },
+    "delta_block_b_chars": 917,
+    "delta_prefix_chars": 917,
+    "delta_block_b_tokens": 195,
+    "delta_prefix_tokens": 195
+   },
+   {
+    "pawn": "smart_vs_dull:B",
+    "full": {
+     "block_b_chars": 1575,
+     "prefix_chars": 7356,
+     "block_b_tokens": 389,
+     "prefix_tokens": 1815
+    },
+    "old": {
+     "block_b_chars": 731,
+     "prefix_chars": 6512,
+     "block_b_tokens": 209,
+     "prefix_tokens": 1635
+    },
+    "delta_block_b_chars": 844,
+    "delta_prefix_chars": 844,
+    "delta_block_b_tokens": 180,
+    "delta_prefix_tokens": 180
+   },
+   {
+    "pawn": "sober_vs_drunk:A",
+    "full": {
+     "block_b_chars": 1566,
+     "prefix_chars": 7347,
+     "block_b_tokens": 391,
+     "prefix_tokens": 1817
+    },
+    "old": {
+     "block_b_chars": 720,
+     "prefix_chars": 6501,
+     "block_b_tokens": 209,
+     "prefix_tokens": 1635
+    },
+    "delta_block_b_chars": 846,
+    "delta_prefix_chars": 846,
+    "delta_block_b_tokens": 182,
+    "delta_prefix_tokens": 182
+   },
+   {
+    "pawn": "sober_vs_drunk:B",
+    "full": {
+     "block_b_chars": 1566,
+     "prefix_chars": 7508,
+     "block_b_tokens": 391,
+     "prefix_tokens": 1852
+    },
+    "old": {
+     "block_b_chars": 720,
+     "prefix_chars": 6662,
+     "block_b_tokens": 209,
+     "prefix_tokens": 1670
+    },
+    "delta_block_b_chars": 846,
+    "delta_prefix_chars": 846,
+    "delta_block_b_tokens": 182,
+    "delta_prefix_tokens": 182
+   },
+   {
+    "pawn": "adult_vs_child:A",
+    "full": {
+     "block_b_chars": 1566,
+     "prefix_chars": 7347,
+     "block_b_tokens": 391,
+     "prefix_tokens": 1817
+    },
+    "old": {
+     "block_b_chars": 720,
+     "prefix_chars": 6501,
+     "block_b_tokens": 209,
+     "prefix_tokens": 1635
+    },
+    "delta_block_b_chars": 846,
+    "delta_prefix_chars": 846,
+    "delta_block_b_tokens": 182,
+    "delta_prefix_tokens": 182
+   },
+   {
+    "pawn": "adult_vs_child:B",
+    "full": {
+     "block_b_chars": 1650,
+     "prefix_chars": 7459,
+     "block_b_tokens": 409,
+     "prefix_tokens": 1846
+    },
+    "old": {
+     "block_b_chars": 804,
+     "prefix_chars": 6613,
+     "block_b_tokens": 227,
+     "prefix_tokens": 1664
+    },
+    "delta_block_b_chars": 846,
+    "delta_prefix_chars": 846,
+    "delta_block_b_tokens": 182,
+    "delta_prefix_tokens": 182
+   },
+   {
+    "pawn": "ground:Ada 'Wren' Voss",
+    "full": {
+     "block_b_chars": 1639,
+     "prefix_chars": 7420,
+     "block_b_tokens": 406,
+     "prefix_tokens": 1832
+    },
+    "old": {
+     "block_b_chars": 743,
+     "prefix_chars": 6524,
+     "block_b_tokens": 215,
+     "prefix_tokens": 1641
+    },
+    "delta_block_b_chars": 896,
+    "delta_prefix_chars": 896,
+    "delta_block_b_tokens": 191,
+    "delta_prefix_tokens": 191
+   },
+   {
+    "pawn": "ground:Mara 'Flint' Okoro",
+    "full": {
+     "block_b_chars": 1224,
+     "prefix_chars": 7005,
+     "block_b_tokens": 326,
+     "prefix_tokens": 1752
+    },
+    "old": {
+     "block_b_chars": 705,
+     "prefix_chars": 6486,
+     "block_b_tokens": 209,
+     "prefix_tokens": 1635
+    },
+    "delta_block_b_chars": 519,
+    "delta_prefix_chars": 519,
+    "delta_block_b_tokens": 117,
+    "delta_prefix_tokens": 117
+   },
+   {
+    "pawn": "ground:Tobias 'Tobi' Lund",
+    "full": {
+     "block_b_chars": 1352,
+     "prefix_chars": 7133,
+     "block_b_tokens": 352,
+     "prefix_tokens": 1778
+    },
+    "old": {
+     "block_b_chars": 740,
+     "prefix_chars": 6521,
+     "block_b_tokens": 213,
+     "prefix_tokens": 1639
+    },
+    "delta_block_b_chars": 612,
+    "delta_prefix_chars": 612,
+    "delta_block_b_tokens": 139,
+    "delta_prefix_tokens": 139
+   }
+  ],
+  "mean_delta": {
+   "delta_block_b_chars": 796.9,
+   "delta_prefix_chars": 796.9,
+   "delta_block_b_tokens": 172.2,
+   "delta_prefix_tokens": 172.2
+  }
+ },
+ "rows": 360,
+ "drops": 12,
+ "grounding_pawns": [
+  "ground:Ada 'Wren' Voss",
+  "ground:Mara 'Flint' Okoro",
+  "ground:Tobias 'Tobi' Lund"
+ ]
+}

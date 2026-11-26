@@ -1,0 +1,282 @@
+[
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "old",
+  "rep": 0,
+  "text": "East Hill Widow's Rest: where Ana and Cy christened the spot"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "old",
+  "rep": 1,
+  "text": "Widow's Rest: place where colony first took shape"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "old",
+  "rep": 2,
+  "text": "Widow's Rest: east hill when colony first took shape"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "old",
+  "rep": 3,
+  "text": "Widow's Rest: where the colony first took shape"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "new",
+  "rep": 0,
+  "text": "east hill: Widow's Rest"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "new",
+  "rep": 1,
+  "text": "East Hill: Widow's Rest"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "new",
+  "rep": 2,
+  "text": "Widow's Rest: the spot where the colony first took shape"
+ },
+ {
+  "case": "lore",
+  "call_id": 38,
+  "arm": "new",
+  "rep": 3,
+  "text": "Widow's Rest: the east hill where the colony took shape"
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 0,
+  "text": "That rat bite still feels tight."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 1,
+  "text": "That rat bite still aches in the arm."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 2,
+  "text": "Rat bite will need stitches."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 3,
+  "text": "Rat bite needs better cleaning."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 0,
+  "text": "Rat bite sting bad now."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 1,
+  "text": "Rat bite hurt, feels bad now."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 2,
+  "text": "Rat bite hurt a little."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 3,
+  "text": "Rat bite ache still there."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "old",
+  "rep": 0,
+  "text": "Rat bit me. Had to clean it up fast. Finished the sculpture. Dee was there when I talked."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "old",
+  "rep": 1,
+  "text": "Spoke with Dee. Finished the sculpture. Had a party and some stew. Got bitten by a rat. Need to clean the bite fast."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "old",
+  "rep": 2,
+  "text": "Spoke with Dee today. Finished the sculpture. A rat bit me. Need to clean that bite up fast."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "old",
+  "rep": 3,
+  "text": "Talk with Dee finished. Bit a rat today. Had to clean the bite. Finished the last sculpture at the party."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "new",
+  "rep": 0,
+  "text": "Talk to Dee. Rat bite. Cut it. Thing done, the art. Fire hot. Stew okay."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "new",
+  "rep": 1,
+  "text": "Dee talked. Rat got me. Bitten. Now, clean it fast. Finished the carving. Party was loud."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "new",
+  "rep": 2,
+  "text": "Dee talked. Then I made thing. Rat bit me. Bad bite. Now cleaning."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 62,
+  "arm": "new",
+  "rep": 3,
+  "text": "Dee talks. Finished shape. Party was loud. Small bite from rat. Need to clean it up now."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "old",
+  "rep": 0,
+  "text": "Ana and Bram spoke that day."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "old",
+  "rep": 1,
+  "text": "Ana and Bram shared a romantic moment."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "old",
+  "rep": 2,
+  "text": "Ana and Bram had a romantic exchange."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "old",
+  "rep": 3,
+  "text": "Ana and Bram exchanged words."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "new",
+  "rep": 0,
+  "text": "Old Odo died."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "new",
+  "rep": 1,
+  "text": "Old Odo passed away on Day 1."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "new",
+  "rep": 2,
+  "text": "A colonist was wounded by a bullet."
+ },
+ {
+  "case": "recap",
+  "call_id": 97,
+  "arm": "new",
+  "rep": 3,
+  "text": "Old Odo passed away during the day."
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "old",
+  "rep": 0,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "old",
+  "rep": 1,
+  "text": "Raider Clash: the conflict with raiders"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "old",
+  "rep": 2,
+  "text": "Projectil Day: the day Cy was hit by a projectile"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "old",
+  "rep": 3,
+  "text": "The Raider Visit: the appearance and conflict with raiders"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "new",
+  "rep": 0,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "new",
+  "rep": 1,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "new",
+  "rep": 2,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 127,
+  "arm": "new",
+  "rep": 3,
+  "text": "none"
+ }
+]

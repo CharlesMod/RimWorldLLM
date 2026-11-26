@@ -270,3 +270,13 @@ def test_temporary_conditions_stay_out_of_frozen_bio():
                                  {"def": "Scar", "label": "old scar", "part": "Left leg"}]
     text = build_fixed_bio(p).text
     assert "drunk" not in text and "old scar" in text
+
+
+def test_inline_register_names_the_temporary_state():
+    from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+    p = pawn()
+    sober = RimWorldAdapter().speech_register(p)
+    assert "drunk" not in sober
+    q = with_health(copy.deepcopy(p), [cond("AlcoholHigh", severity=0.7)])
+    drunk = RimWorldAdapter().speech_register(q)
+    assert drunk.startswith("right now very drunk") and R.effective_words(q) in drunk

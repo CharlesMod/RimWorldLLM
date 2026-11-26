@@ -1,0 +1,1871 @@
+{
+ "1": {
+  "run": "s1x-off",
+  "kind": "aim",
+  "actor": 8,
+  "flagged": true,
+  "text": "I just want the next job to start."
+ },
+ "2": {
+  "run": "s1x-off",
+  "kind": "aim",
+  "actor": 7,
+  "flagged": true,
+  "text": "I just want the next job to start."
+ },
+ "3": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 2,
+  "flagged": true,
+  "text": "I just want a proper table to eat at."
+ },
+ "4": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 9,
+  "flagged": true,
+  "text": "I just want a proper table to eat at."
+ },
+ "5": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 6,
+  "flagged": true,
+  "text": "I just want a proper table to eat at."
+ },
+ "6": {
+  "run": "s1x-off",
+  "kind": "aim",
+  "actor": 6,
+  "flagged": false,
+  "text": "I just want everyone to be okay."
+ },
+ "7": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 2,
+  "flagged": false,
+  "text": "I just want a proper place to sit while eating."
+ },
+ "8": {
+  "run": "s2x-on",
+  "kind": "aim",
+  "actor": 3,
+  "flagged": false,
+  "text": "I just want a proper meal, not this thin gruel."
+ },
+ "9": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 8,
+  "flagged": false,
+  "text": "I just want this cooking done so I can rest."
+ },
+ "10": {
+  "run": "s2x-on",
+  "kind": "aim",
+  "actor": 9,
+  "flagged": false,
+  "text": "I just want the cold not to ruin the stores."
+ },
+ "11": {
+  "run": "s2x-on",
+  "kind": "aim",
+  "actor": 6,
+  "flagged": false,
+  "text": "I just want a proper meal to keep my strength up."
+ },
+ "12": {
+  "run": "s2x-on",
+  "kind": "aim",
+  "actor": 8,
+  "flagged": false,
+  "text": "I just want this cooking done so I can rest."
+ },
+ "13": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 1,
+  "flagged": false,
+  "text": "I hope the food tastes good enough to keep everyone from getting restless."
+ },
+ "14": {
+  "run": "s3x-off",
+  "kind": "aim",
+  "actor": 1,
+  "flagged": false,
+  "text": "I just want them to be safe and full."
+ },
+ "15": {
+  "run": "s1x-off",
+  "kind": "aim",
+  "actor": 8,
+  "flagged": false,
+  "text": "I just want to get this cooking done and move on."
+ },
+ "16": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 7,
+  "flagged": true,
+  "text": "I just want the next job to start."
+ },
+ "17": {
+  "run": "s3x-off",
+  "kind": "cloud",
+  "actor": 6,
+  "flagged": true,
+  "text": "I just want a proper table to eat at."
+ },
+ "18": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 3,
+  "flagged": false,
+  "text": "I just want this meal to be simple and predictable."
+ },
+ "19": {
+  "run": "s3x-off",
+  "kind": "cloud",
+  "actor": 1,
+  "flagged": false,
+  "text": "I just want them to be safe and full."
+ },
+ "20": {
+  "run": "s3x-off",
+  "kind": "cloud",
+  "actor": 3,
+  "flagged": false,
+  "text": "I just want a good meal after this."
+ },
+ "21": {
+  "run": "s2x-on",
+  "kind": "cloud",
+  "actor": 5,
+  "flagged": false,
+  "text": "I hope the others are managing their own burdens well."
+ },
+ "22": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 8,
+  "flagged": false,
+  "text": "I just want to get this cooking done and move on."
+ },
+ "23": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 6,
+  "flagged": false,
+  "text": "I just want them to see we can build something good."
+ },
+ "24": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 10,
+  "flagged": false,
+  "text": "I just want this meal to be finished so I can stop smelling burnt fat."
+ },
+ "25": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 2,
+  "flagged": false,
+  "text": "I fear the structure will break under this cold."
+ },
+ "26": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 9,
+  "flagged": false,
+  "text": "I just want the sun to come back like it should."
+ },
+ "27": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 1,
+  "flagged": false,
+  "text": "I just hope this doesn't turn into a real disaster for us."
+ },
+ "28": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 5,
+  "flagged": false,
+  "text": "I just want to make sure my wound is truly healing."
+ },
+ "29": {
+  "run": "s3x-off",
+  "kind": "cloud",
+  "actor": 5,
+  "flagged": false,
+  "text": "I hope they see the structure holds up well."
+ },
+ "30": {
+  "run": "s1x-off",
+  "kind": "cloud",
+  "actor": 4,
+  "flagged": false,
+  "text": "I just want this cooking done and the day to end."
+ },
+ "31": {
+  "run": "s1x-off",
+  "kind": "inner_concern",
+  "actor": 4,
+  "flagged": true,
+  "text": "I can't stop worrying about Cy; they are hurt."
+ },
+ "32": {
+  "run": "s1x-off",
+  "kind": "inner_concern",
+  "actor": 1,
+  "flagged": true,
+  "text": "Raiders are at our gates; I fear for us all."
+ },
+ "33": {
+  "run": "s1x-off",
+  "kind": "inner_concern",
+  "actor": 2,
+  "flagged": true,
+  "text": "Raiders are at our gates; I fear for us all."
+ },
+ "34": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 3,
+  "flagged": true,
+  "text": "The darkness feels permanent now."
+ },
+ "35": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 2,
+  "flagged": true,
+  "text": "The darkness feels permanent now."
+ },
+ "36": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 7,
+  "flagged": true,
+  "text": "The stew might not last long enough."
+ },
+ "37": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 4,
+  "flagged": true,
+  "text": "I can't stop worrying about Cy; they are hurt."
+ },
+ "38": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 1,
+  "flagged": true,
+  "text": "Raiders are at our gates; I fear for us all."
+ },
+ "39": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 2,
+  "flagged": true,
+  "text": "Raiders are at our gates; I fear for us all."
+ },
+ "40": {
+  "run": "s3x-off",
+  "kind": "inner_concern",
+  "actor": 10,
+  "flagged": true,
+  "text": "The stew might not last long enough."
+ },
+ "41": {
+  "run": "s1x-off",
+  "kind": "inner_concern",
+  "actor": 2,
+  "flagged": false,
+  "text": "The structure might break under this cold."
+ },
+ "42": {
+  "run": "s2x-on",
+  "kind": "inner_concern",
+  "actor": 3,
+  "flagged": false,
+  "text": "The darkness feels permanent now."
+ },
+ "43": {
+  "run": "s2x-on",
+  "kind": "inner_concern",
+  "actor": 4,
+  "flagged": false,
+  "text": "Will the small things hold?"
+ },
+ "44": {
+  "run": "s2x-on",
+  "kind": "inner_concern",
+  "actor": 2,
+  "flagged": false,
+  "text": "The stability of this place."
+ },
+ "45": {
+  "run": "s1x-off",
+  "kind": "inner_concern",
+  "actor": 7,
+  "flagged": false,
+  "text": "The quiet feels heavy sometimes."
+ },
+ "46": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 9,
+  "flagged": false,
+  "text": "Seeds fall on the long table dust. Dee\u2019s quiet light heavy."
+ },
+ "47": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Stone teeth chew whispering raiders near the trench."
+ },
+ "48": {
+  "run": "s2x-on",
+  "kind": "inner_dream",
+  "actor": 10,
+  "flagged": false,
+  "text": "Diving deep, parcel dust tastes like Dee\u2019s slight."
+ },
+ "49": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 10,
+  "flagged": false,
+  "text": "Shallow trench swallow old knife meal."
+ },
+ "50": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 7,
+  "flagged": false,
+  "text": "Rat bite tick slowly. Raiders wear soup bowls."
+ },
+ "51": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 8,
+  "flagged": false,
+  "text": "Dee talks near the twitching rat skin."
+ },
+ "52": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 2,
+  "flagged": false,
+  "text": "Dark eclipse swallow corpse dust."
+ },
+ "53": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 5,
+  "flagged": false,
+  "text": "Sun's shadow, Odo's stillness, thin yield waits."
+ },
+ "54": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 3,
+  "flagged": false,
+  "text": "Sun dark, corpse sleeps, quiet light persists."
+ },
+ "55": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 10,
+  "flagged": false,
+  "text": "Trench shadow breathes near Ana\u2019s bright small."
+ },
+ "56": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dust smells sweet near the gate."
+ },
+ "57": {
+  "run": "s3x-off",
+  "kind": "inner_dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dark sun rests above a quiet grave."
+ },
+ "58": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dark sun, cold body, quiet after Odo."
+ },
+ "59": {
+  "run": "s1x-off",
+  "kind": "inner_dream",
+  "actor": 5,
+  "flagged": false,
+  "text": "Dark eclipse shadow over the shifting body."
+ },
+ "60": {
+  "run": "s2x-on",
+  "kind": "inner_dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dark sun melts on heavy snow above Odo's stillness."
+ },
+ "61": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 4,
+  "flagged": false,
+  "text": "The tending continues."
+ },
+ "62": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 1,
+  "flagged": false,
+  "text": "That dark time brought a cold body outside."
+ },
+ "63": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 4,
+  "flagged": false,
+  "text": "Need to see if the wounded are truly stable."
+ },
+ "64": {
+  "run": "s2x-on",
+  "kind": "inner_musing",
+  "actor": 1,
+  "flagged": false,
+  "text": "The first snowfall felt surprisingly heavy on the roof."
+ },
+ "65": {
+  "run": "s2x-on",
+  "kind": "inner_musing",
+  "actor": 10,
+  "flagged": false,
+  "text": "That argument about the parcel was unnecessary."
+ },
+ "66": {
+  "run": "s3x-off",
+  "kind": "inner_musing",
+  "actor": 7,
+  "flagged": false,
+  "text": "That Cy\u2019s insult felt sharp enough to cut stone."
+ },
+ "67": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 7,
+  "flagged": false,
+  "text": "The raiding party seemed larger than I recall."
+ },
+ "68": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 6,
+  "flagged": false,
+  "text": "That shard cut hurts a little."
+ },
+ "69": {
+  "run": "s3x-off",
+  "kind": "inner_musing",
+  "actor": 2,
+  "flagged": false,
+  "text": "The old body is merely clutter now."
+ },
+ "70": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 8,
+  "flagged": false,
+  "text": "Rat bite sting still bothers the skin."
+ },
+ "71": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 10,
+  "flagged": false,
+  "text": "The meal preparations needed immediate attention."
+ },
+ "72": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 2,
+  "flagged": false,
+  "text": "Broth price is always under scrutiny."
+ },
+ "73": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 9,
+  "flagged": false,
+  "text": "The yard held a still shape."
+ },
+ "74": {
+  "run": "s2x-on",
+  "kind": "inner_musing",
+  "actor": 8,
+  "flagged": false,
+  "text": "That rat bite is still irritating."
+ },
+ "75": {
+  "run": "s1x-off",
+  "kind": "inner_musing",
+  "actor": 5,
+  "flagged": false,
+  "text": "The structure of the hall endures against the darkness."
+ },
+ "76": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 1,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "77": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 3,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "78": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 1,
+  "flagged": true,
+  "text": "Keep me out of it."
+ },
+ "79": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 5,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "80": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 6,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "81": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 3,
+  "flagged": true,
+  "text": "Keep me out of it."
+ },
+ "82": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 4,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "83": {
+  "run": "s2x-on",
+  "kind": "inner_reaction",
+  "actor": 3,
+  "flagged": false,
+  "text": "Not again."
+ },
+ "84": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 5,
+  "flagged": false,
+  "text": "Ha. About time."
+ },
+ "85": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 1,
+  "flagged": false,
+  "text": "Here we go."
+ },
+ "86": {
+  "run": "s1x-off",
+  "kind": "inner_reaction",
+  "actor": 6,
+  "flagged": false,
+  "text": "Not again."
+ },
+ "87": {
+  "run": "s2x-on",
+  "kind": "art",
+  "actor": null,
+  "flagged": true,
+  "text": "A large sculpture depicts a hound. Kit crafted the piece."
+ },
+ "88": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture depicts a hound. Kit carved the piece."
+ },
+ "89": {
+  "run": "s3x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands. Noa crafted the piece with good skill. The sculpture shows the animal."
+ },
+ "90": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands in the center of the colony. Ana fashioned the piece with simple tools. The artwork depicts the animal's strong form."
+ },
+ "91": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands in the room. Lou fashioned the piece."
+ },
+ "92": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture depicts a hound. Noa crafted this piece. The metal is a good quality."
+ },
+ "93": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound sits in the center of the room. Noa crafted this piece."
+ },
+ "94": {
+  "run": "s2x-on",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands in the center of the colony. Max crafted the piece. The dog is depicted in a stoic pose."
+ },
+ "95": {
+  "run": "s3x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A hound stands carved in stone. Cy shaped this figure. The sculpture shows the animal."
+ },
+ "96": {
+  "run": "s2x-on",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound sits in the colony. Ana sculpted the piece."
+ },
+ "97": {
+  "run": "s2x-on",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands in the middle of the settlement. Cy crafted the piece with good quality."
+ },
+ "98": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture shows a hound. Max crafted the piece from the metal."
+ },
+ "99": {
+  "run": "s2x-on",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "The large sculpture depicts a hound. Noa carved the piece."
+ },
+ "100": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands. Kit crafted this piece. The hound looks toward the structure of the colony."
+ },
+ "101": {
+  "run": "s1x-off",
+  "kind": "art",
+  "actor": null,
+  "flagged": false,
+  "text": "A large sculpture of a hound stands in the colony. Cy crafted this piece."
+ },
+ "102": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 1,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "103": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 3,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "104": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 1,
+  "flagged": true,
+  "text": "Keep me out of it."
+ },
+ "105": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 5,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "106": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 6,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "107": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 3,
+  "flagged": true,
+  "text": "Keep me out of it."
+ },
+ "108": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 4,
+  "flagged": true,
+  "text": "Ugh. Those two."
+ },
+ "109": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 5,
+  "flagged": false,
+  "text": "Ha. About time."
+ },
+ "110": {
+  "run": "s2x-on",
+  "kind": "bystander",
+  "actor": 3,
+  "flagged": false,
+  "text": "Not again."
+ },
+ "111": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 6,
+  "flagged": false,
+  "text": "Not again."
+ },
+ "112": {
+  "run": "s1x-off",
+  "kind": "bystander",
+  "actor": 1,
+  "flagged": false,
+  "text": "Here we go."
+ },
+ "113": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. The broth cost a handful of salt, Ana, and that is all."
+ },
+ "114": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 4,
+  "flagged": false,
+  "text": "Enough. You criticize my work, you criticize my work."
+ },
+ "115": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. You should count the spoons before you count the seasoning, Uma."
+ },
+ "116": {
+  "run": "s2x-on",
+  "kind": "conv_turn",
+  "actor": 1,
+  "flagged": false,
+  "text": "That stew smells decent, Bram, but we'll see if it fills everyone up properly."
+ },
+ "117": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 1,
+  "flagged": false,
+  "text": "You alright, friend, how's the broth shaping up this morning?"
+ },
+ "118": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 9,
+  "flagged": false,
+  "text": "The stars looked like spilled flour up there."
+ },
+ "119": {
+  "run": "s2x-on",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. The stew cost four days of meat; eat it or starve."
+ },
+ "120": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. Your ladle movements cost you precision, Dee."
+ },
+ "121": {
+  "run": "s3x-off",
+  "kind": "conv_turn",
+  "actor": 1,
+  "flagged": false,
+  "text": "You alright, friend? How are those pots coming along with all this business?"
+ },
+ "122": {
+  "run": "s3x-off",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. The pots are functional, but the broth costs too much time to waste."
+ },
+ "123": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 10,
+  "flagged": false,
+  "text": "Look. You simply lack the taste for balance."
+ },
+ "124": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 1,
+  "flagged": false,
+  "text": "How are you doing today, friend? The simmering pot looks good."
+ },
+ "125": {
+  "run": "s2x-on",
+  "kind": "conv_turn",
+  "actor": 1,
+  "flagged": false,
+  "text": "You're getting enough fuel for everyone today, friend?"
+ },
+ "126": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 3,
+  "flagged": false,
+  "text": "Is it... is there something more to it than just broth and hunger?"
+ },
+ "127": {
+  "run": "s1x-off",
+  "kind": "conv_turn",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. If you add more salt it costs us nothing, little Uma."
+ },
+ "128": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 4,
+  "flagged": false,
+  "text": "These cooking plates need turning."
+ },
+ "129": {
+  "run": "s3x-off",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "How is everyone feeling this morning, after all that with Old Odo?"
+ },
+ "130": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. These raiders arrive on our first day of real work."
+ },
+ "131": {
+  "run": "s2x-on",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "The fire is hot, we've got plenty of stew ready for the morning, friend."
+ },
+ "132": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 3,
+  "flagged": false,
+  "text": "Um, is the stew almost ready, I hope it's something solid."
+ },
+ "133": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "The raid is done, friend, now the pots and pans can rest a while."
+ },
+ "134": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "We've got a raid now, friend, so let's see what we can bake out of this mess."
+ },
+ "135": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "Old Odo gone, still gotta keep the pots boiling, I suppose."
+ },
+ "136": {
+  "run": "s2x-on",
+  "kind": "line",
+  "actor": 9,
+  "flagged": false,
+  "text": "Snow out the window, good for the roof insulation. We'll see."
+ },
+ "137": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. That meal cost us a week of rations to put on a decent table."
+ },
+ "138": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 4,
+  "flagged": false,
+  "text": "Enough, the tending is done; the kitchen work continues."
+ },
+ "139": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 9,
+  "flagged": false,
+  "text": "The sky turned dark, like dough gone sour. We'll see."
+ },
+ "140": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 3,
+  "flagged": false,
+  "text": "Um... this snow, it's quite a change from back home... any chance for stew later?"
+ },
+ "141": {
+  "run": "s3x-off",
+  "kind": "line",
+  "actor": 3,
+  "flagged": false,
+  "text": "Um... this next course needs to be something substantial."
+ },
+ "142": {
+  "run": "s1x-off",
+  "kind": "line",
+  "actor": 1,
+  "flagged": false,
+  "text": "Did you want some stew, friend, or just want to keep mucking in the pots?"
+ },
+ "143": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 6,
+  "flagged": true,
+  "text": "I dug the first trench friend."
+ },
+ "144": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 5,
+  "flagged": false,
+  "text": "I am proud of the trench I dug, friend; it stands still against the earth."
+ },
+ "145": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 1,
+  "flagged": false,
+  "text": "I'm proud of the stew, friend; it keeps the cold away and keeps us fed."
+ },
+ "146": {
+  "run": "s2x-on",
+  "kind": "player_reply",
+  "actor": 9,
+  "flagged": false,
+  "text": "The pots are fine for now and the food is still cooking."
+ },
+ "147": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 5,
+  "flagged": false,
+  "text": "I'm proud we have a roof over us, friend."
+ },
+ "148": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 9,
+  "flagged": false,
+  "text": "I made the first trench, keeping the dirt from washing out."
+ },
+ "149": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 8,
+  "flagged": false,
+  "text": "I'm proud the first trench is dug before the heavy rain sets in."
+ },
+ "150": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 5,
+  "flagged": false,
+  "text": "I am fine, friend, though this cooking without a proper table is a slight inconvenience."
+ },
+ "151": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 7,
+  "flagged": false,
+  "text": "Enough. Kitchen needs cleaning after this meal."
+ },
+ "152": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 5,
+  "flagged": false,
+  "text": "I am managing, friend; the rations are adequate for today."
+ },
+ "153": {
+  "run": "s2x-on",
+  "kind": "player_reply",
+  "actor": 1,
+  "flagged": false,
+  "text": "The stew is holding up, friend, just need to keep the pot moving."
+ },
+ "154": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 1,
+  "flagged": false,
+  "text": "I\u2019m managing, friend, just keeping the pans hot."
+ },
+ "155": {
+  "run": "s2x-on",
+  "kind": "player_reply",
+  "actor": 6,
+  "flagged": false,
+  "text": "I am doing fine friend, we have a roof over our heads."
+ },
+ "156": {
+  "run": "s3x-off",
+  "kind": "player_reply",
+  "actor": 6,
+  "flagged": false,
+  "text": "I am holding up fine, friend. We will see about that food."
+ },
+ "157": {
+  "run": "s1x-off",
+  "kind": "player_reply",
+  "actor": 9,
+  "flagged": false,
+  "text": "I dug the first trench."
+ },
+ "158": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 3,
+  "flagged": false,
+  "text": "seek_out -> 2 (confront)"
+ },
+ "159": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 5,
+  "flagged": false,
+  "text": "seek_out -> 1 (Food stores stability)"
+ },
+ "160": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "seek_out -> 3 (make up)"
+ },
+ "161": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "162": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 3,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "163": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "164": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "seek_out -> 2 (confront)"
+ },
+ "165": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "seek_out -> 2 (confront)"
+ },
+ "166": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 3,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "167": {
+  "run": "s2x-on",
+  "kind": "social_action",
+  "actor": 3,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "168": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "avoid -> 3"
+ },
+ "169": {
+  "run": "s3x-off",
+  "kind": "social_action",
+  "actor": 3,
+  "flagged": false,
+  "text": "seek_out -> 2 (confront)"
+ },
+ "170": {
+  "run": "s2x-on",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "avoid -> 2"
+ },
+ "171": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "avoid -> 3"
+ },
+ "172": {
+  "run": "s1x-off",
+  "kind": "social_action",
+  "actor": 4,
+  "flagged": false,
+  "text": "seek_out -> 3 (How are you feeling?)"
+ },
+ "173": {
+  "run": "s3x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": true,
+  "text": "The day saw a flurry of small conversations amongst the colonists, including Ana and Bram engaging in a romantic exchange. Cy found himself marked by a bullet early on, and subsequently made off with the spare rifle from the armory during the night. Old Odo passed away, and Ana and Cy christened the east hill Widow's Rest when the colony first took shape."
+ },
+ "174": {
+  "run": "s3x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": true,
+  "text": "The colony continued into the next stretch of days. A funeral was conducted, followed by a meal, and subsequently, a party began. Amidst these events, a speech was given by Dee, who stated, This meal marks the end. Enough. This meal marks the end. The east hill was known as Widow's Rest."
+ },
+ "175": {
+  "run": "s1x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "The day began with several brief exchanges among the residents. Ana attempted romance with Bram twice. Cy, as expected, suffered another gunshot. Dee remained with Cy to attend to his condition. Later, Cy managed to swipe another spare rifle from the armory during the night."
+ },
+ "176": {
+  "run": "s1x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "The day commenced with several exchanges between the colonists, including Ana and Bram, Cy and Dee, and Uma discussing duties. Among these interactions, Cy received a gunshot. Later, after the initial flurry of conversation, the old Odo passed away. Cy managed to abscond with the extra rifle from the armory during the night."
+ },
+ "177": {
+  "run": "s2x-on",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "A funeral began, as did the gathering for a meal. Some spoke, such as Uma speaking with Bram regarding her chores, and Tam questioning Ana about the stars. Cy received a shot during the day."
+ },
+ "178": {
+  "run": "s1x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "The day continued with the start of a funeral, a meal, a party, and a speech. Cy made comment on the late Odo's steady hand while at the funeral. Dee later insisted on the immediate consumption of the meal during a speech. The remnants of the day involved the ongoing activities of gathering sustenance and celebrating, despite the gunshot incident from earlier."
+ },
+ "179": {
+  "run": "s1x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "The morning on Day 3 found the colonists engaged in various small talk. Later, the day's routine was disrupted when raiders arrived. The raid eventually concluded. Ana and Bram ceased their expressed worries once the raiding party departed."
+ },
+ "180": {
+  "run": "s3x-off",
+  "kind": "chronicle",
+  "actor": null,
+  "flagged": false,
+  "text": "The day brought a fresh round of small exchanges among the colonists. Ana and Bram continued their shared affections, though Cy endured another hit from a projectile. Following this, the raiders made their appearance, but the ensuing conflict concluded. At the aforementioned ceremony, Ana made a vow to Bram."
+ },
+ "181": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 3,
+  "flagged": true,
+  "text": "The morning began with talk from several points. Then the sun vanished, and a corpse was seen in the yard. Despite the deaths, the east hill has a proper name now, Widow's Rest. Later, the snow started falling."
+ },
+ "182": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 3,
+  "flagged": true,
+  "text": "The soft light is gone. The edges feel sharp now. I just want the next thing to be simple. A steady routine seems the only way forward. Kit and Lou sustained cuts from a shard. The ringing from the shot still lingers in my head. We saw the raiders arrive, and we named the east hill Widow's Rest."
+ },
+ "183": {
+  "run": "s3x-off",
+  "kind": "diary",
+  "actor": 1,
+  "flagged": true,
+  "text": "The naming of the east hill as Widow's Rest felt like a necessary structure. Raiders came through the day, but the raid is now finished. There was a wedding, and then the warm fire felt right."
+ },
+ "184": {
+  "run": "s2x-on",
+  "kind": "diary",
+  "actor": 3,
+  "flagged": true,
+  "text": "The day began with snow, though the hall was a strange sight. There was an eclipse and a body in the yard. A death occurred, and we marked the east hill Widow's Rest. Despite the chaos, the task remains."
+ },
+ "185": {
+  "run": "s2x-on",
+  "kind": "diary",
+  "actor": 9,
+  "flagged": false,
+  "text": "The sun went dark. Then the snow started. I heard some talk near the fire while it went on. One body was in the yard."
+ },
+ "186": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 9,
+  "flagged": false,
+  "text": "The stars looked like seeds dropping tonight. I watched the two adults talk near the fire. At the meal, one said something nice to the cook. We sat around the pot."
+ },
+ "187": {
+  "run": "s3x-off",
+  "kind": "diary",
+  "actor": 6,
+  "flagged": false,
+  "text": "The fire burned steady. We ate the stew. There is a bit of a cut still bothering me from the shard. I finished the carving today."
+ },
+ "188": {
+  "run": "s2x-on",
+  "kind": "diary",
+  "actor": 4,
+  "flagged": false,
+  "text": "Rats are getting bolder. Tend to a gunshot wound, then sit for a long time with others. Some sharp words were exchanged, and the old man is gone. A little bit of stealing from the armory happened in the dark."
+ },
+ "189": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 2,
+  "flagged": false,
+  "text": "The snow arrived, making things costly. Cy fell down in the yard, and the sun went dark for a while. Old Odo is dead now too. We had a few sharp exchanges today."
+ },
+ "190": {
+  "run": "s3x-off",
+  "kind": "diary",
+  "actor": 7,
+  "flagged": false,
+  "text": "The rat bit me, small prick. We saw raiders today; they wore soup bowls. The raid is over now. I managed to finish the sculpture before the trouble started."
+ },
+ "191": {
+  "run": "s3x-off",
+  "kind": "diary",
+  "actor": 5,
+  "flagged": false,
+  "text": "The splinter in my hand required cleaning. I finished the sculpture. The arrival of the raiders was a disruption to the established order, and when they left, the structure held, as it must."
+ },
+ "192": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 1,
+  "flagged": false,
+  "text": "The snow is settling nicely in the hall. I made soup for everyone while a child looked up at the stars. We saw raiders today, which was bad, but the raid is done now. The quiet feels right after the shouting."
+ },
+ "193": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 2,
+  "flagged": false,
+  "text": "The snow made things tight. After the meal, Ana and the child spoke of duties. Then the raid hit, a mess that ended. The shooting of that one man was bad, and there was much friction today."
+ },
+ "194": {
+  "run": "s1x-off",
+  "kind": "diary",
+  "actor": 6,
+  "flagged": false,
+  "text": "The funeral was short. Someone spoke about the steady hand. After that, there was food. I made something out of the scraps. A shard cut needs tending. I just hope things settle down."
+ },
+ "195": {
+  "run": "s3x-off",
+  "kind": "diary",
+  "actor": 9,
+  "flagged": false,
+  "text": "The sky was out again. Someone asked about the stars. Saw the woman and the man talking, and another arguing. It was a long day."
+ },
+ "196": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 2,
+  "flagged": false,
+  "text": "{\"actor\": 2, \"name\": \"Bram\", \"game\": 77514, \"bio\": \"The snow came. Things cost more than they should. Ana watches the silver, and I see it. I need to show I can do more than just this.\", \"wants\": [\"Prove capability\", \"Control the cost\"], \"relations\": 3, \"merged\": 0, \"dropped\": 0}"
+ },
+ "197": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 4,
+  "flagged": false,
+  "text": "{\"actor\": 4, \"name\": \"Dee\", \"game\": 75220, \"bio\": \"The tending continues. I saw the bite, and I saw the shot. I keep working, trying to keep things ordered. Enough.\", \"wants\": [\"For the day to end.\", \"To keep things ordered.\"], \"relations\": 2, \"merged\": 0, \"dropped\": 0}"
+ },
+ "198": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 8,
+  "flagged": false,
+  "text": "{\"actor\": 8, \"name\": \"Noa\", \"game\": 78720, \"bio\": \"The work keeps moving. Some talks feel empty, but the tasks are solid. The bite still aches sometimes. I just need the next thing to be done.\", \"wants\": [\"Finish the current task.\", \"Keep the structure sound.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"talk near the twitching rat skin\", \"dropped\": 0}"
+ },
+ "199": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 1,
+  "flagged": false,
+  "text": "{\"actor\": 1, \"name\": \"Ana\", \"game\": 16214, \"bio\": \"The snow came. The hall was nice. I made soup while a child looked at the stars. Things keep moving, we'll see.\", \"wants\": [\"Keep the food steady.\", \"Keep the order.\"], \"relations\": 2, \"merged\": 0, \"habit\": \"\", \"dropped\": 0}"
+ },
+ "200": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 9,
+  "flagged": false,
+  "text": "{\"actor\": 9, \"name\": \"Tam\", \"game\": 28968, \"bio\": \"The quiet parts of things are starting to feel more real. Seeing the dark sky and the snow made things feel bigger than just the farm. There are things that are hard to look at, like the body in the yard. We'll see what comes next.\", \"wants\": [\"A stable place to sit while eating.\"], \"relations\": 1, \"merged\": 0, \"habit\": \"looks at the ground when things are quiet\", \"dropped\": 0}"
+ },
+ "201": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 5,
+  "flagged": false,
+  "text": "{\"actor\": 5, \"name\": \"Kit\", \"game\": 77152, \"bio\": \"The structure holds. I remember the dark sun and the quiet of the hall. Things change, but the order remains. We will see how this continues.\", \"wants\": [\"Maintain the order of the camp.\"], \"relations\": 0, \"merged\": 0, \"dropped\": 0}"
+ },
+ "202": {
+  "run": "s2x-on",
+  "kind": "reflection",
+  "actor": 5,
+  "flagged": false,
+  "text": "{\"actor\": 5, \"name\": \"Kit\", \"game\": 26926, \"bio\": \"The structure holds, I think. Seeing the dark sun and the quiet passing of the old one makes me think about what we build. I am learning things, even when the company is not ideal.\", \"wants\": [\"Maintain the order of the settlement.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"pauses before speaking\", \"dropped\": 0}"
+ },
+ "203": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 4,
+  "flagged": false,
+  "text": "{\"actor\": 4, \"name\": \"Dee\", \"game\": 21117, \"bio\": \"The sickness was stopped. I patched the wounded, and I saw the dead. Things happen, and they just happen. Enough.\", \"wants\": [\"Keep the structure sound.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"\", \"dropped\": 0}"
+ },
+ "204": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 4,
+  "flagged": false,
+  "text": "{\"actor\": 4, \"name\": \"Dee\", \"game\": 14402, \"bio\": \"The tending continues. I saw the bite, and I saw the shot. I keep working, trying to keep things ordered. Enough. Enough.\", \"wants\": [\"For the day to end.\"], \"relations\": 1, \"merged\": 0, \"habit\": \"\", \"dropped\": 0}"
+ },
+ "205": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 6,
+  "flagged": false,
+  "text": "{\"actor\": 6, \"name\": \"Lou\", \"game\": 101118, \"bio\": \"The shard cut still aches. I saw the raiders come and then they were gone. We made things, like the sculpture. It tastes good right now, friend. We'll see what tomorrow brings.\", \"wants\": [\"A proper table to eat at.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"We'll see\", \"dropped\": 0}"
+ },
+ "206": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 5,
+  "flagged": false,
+  "text": "{\"actor\": 5, \"name\": \"Kit\", \"game\": 27340, \"bio\": \"The cold is a constant. I remember the dark sun and the quiet passing of someone. Things change, but the structure holds. We'll see what comes next.\", \"wants\": [\"Keep the food stores stable.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"trails off after a quarrel\", \"dropped\": 0}"
+ },
+ "207": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 7,
+  "flagged": false,
+  "text": "{\"actor\": 7, \"name\": \"Max\", \"game\": 25489, \"bio\": \"The work continues. I remember speaking with Dee, and the shared meal felt heavy. I finished a piece of work, and the rat bite was a small thing. I just need the next job to start.\", \"wants\": [\"Rest after this shift\", \"Check the trench\"], \"relations\": 0, \"merged\": 0, \"habit\": \"talk about the next job\", \"dropped\": 0}"
+ },
+ "208": {
+  "run": "s1x-off",
+  "kind": "reflection",
+  "actor": 5,
+  "flagged": false,
+  "text": "{\"actor\": 5, \"name\": \"Kit\", \"game\": 16575, \"bio\": \"The structure holds. I remember the dark sun and the quiet of the hall. Things change, but the order remains. We will see how this continues.\", \"wants\": [\"Maintain the order of the camp.\"], \"relations\": 0, \"merged\": 0, \"habit\": \"trails off after a conversation\", \"dropped\": 0}"
+ },
+ "209": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 3,
+  "flagged": false,
+  "text": "{\"actor\": 3, \"name\": \"Cy\", \"game\": 80334, \"bio\": \"The quiet parts feel louder now. Seeing the dark and the cuts makes the structure feel less certain. I just keep moving, trying to keep things orderly.\", \"wants\": [\"Keep the order stable\", \"A good meal after this\"], \"relations\": 1, \"merged\": 0, \"dropped\": 0}"
+ },
+ "210": {
+  "run": "s3x-off",
+  "kind": "reflection",
+  "actor": 2,
+  "flagged": false,
+  "text": "{\"actor\": 2, \"name\": \"Bram\", \"game\": 93874, \"bio\": \"Look. The structure holds, but the cost of things is always too high. The cold comes early now, and I see what is left. Some days are just about seeing what remains.\", \"wants\": [\"A proper place to sit while eating.\", \"To understand the cost of things.\"], \"relations\": 1, \"merged\": 0, \"habit\": \"\", \"dropped\": 0}"
+ },
+ "211": {
+  "run": "s2x-on",
+  "kind": "thought",
+  "actor": 6,
+  "flagged": false,
+  "text": "Blood tastes like the sharp winter air."
+ },
+ "212": {
+  "run": "s2x-on",
+  "kind": "thought",
+  "actor": 2,
+  "flagged": false,
+  "text": "The falling white stuff is quite persistent tonight."
+ },
+ "213": {
+  "run": "s2x-on",
+  "kind": "thought",
+  "actor": 1,
+  "flagged": false,
+  "text": "The first snowfall felt surprisingly heavy on the roof."
+ },
+ "214": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 1,
+  "flagged": false,
+  "text": "The soup is warm, like some days."
+ },
+ "215": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 9,
+  "flagged": false,
+  "text": "Stars look like seeds falling now."
+ },
+ "216": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 2,
+  "flagged": false,
+  "text": "Broth price is always under scrutiny."
+ },
+ "217": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 7,
+  "flagged": false,
+  "text": "The small wound from that rat will not impede the work."
+ },
+ "218": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 5,
+  "flagged": false,
+  "text": "The flakes start small, a silent descent."
+ },
+ "219": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 8,
+  "flagged": false,
+  "text": "The rat bite still throbs under my tunic."
+ },
+ "220": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 9,
+  "flagged": false,
+  "text": "The quiet after the speech felt too heavy."
+ },
+ "221": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 4,
+  "flagged": false,
+  "text": "Need to see if the wounded are truly stable."
+ },
+ "222": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 10,
+  "flagged": false,
+  "text": "The trench is remarkably shallow despite its designated purpose."
+ },
+ "223": {
+  "run": "s2x-on",
+  "kind": "thought",
+  "actor": 5,
+  "flagged": false,
+  "text": "That eclipse shifted the familiar geometry of the day."
+ },
+ "224": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 5,
+  "flagged": false,
+  "text": "The body in the yard is already starting to change."
+ },
+ "225": {
+  "run": "s1x-off",
+  "kind": "thought",
+  "actor": 10,
+  "flagged": false,
+  "text": "The meal preparations needed immediate attention."
+ },
+ "226": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 9,
+  "flagged": false,
+  "text": "Stars blanket felt like Cy dee dish table."
+ },
+ "227": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 3,
+  "flagged": false,
+  "text": "Sun dark, corpse sleeps, quiet light persists."
+ },
+ "228": {
+  "run": "s1x-off",
+  "kind": "dream",
+  "actor": 5,
+  "flagged": false,
+  "text": "Dark eclipse shadow over the shifting body."
+ },
+ "229": {
+  "run": "s2x-on",
+  "kind": "dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dark sun melts on heavy snow above Odo's stillness."
+ },
+ "230": {
+  "run": "s1x-off",
+  "kind": "dream",
+  "actor": 9,
+  "flagged": false,
+  "text": "Seeds fall on the long table dust. Dee\u2019s quiet light heavy."
+ },
+ "231": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 8,
+  "flagged": false,
+  "text": "Wire on the rat chew. Dee's soup floats."
+ },
+ "232": {
+  "run": "s2x-on",
+  "kind": "dream",
+  "actor": 10,
+  "flagged": false,
+  "text": "Diving deep, parcel dust tastes like Dee\u2019s slight."
+ },
+ "233": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 2,
+  "flagged": false,
+  "text": "Dark eclipse swallow corpse dust."
+ },
+ "234": {
+  "run": "s1x-off",
+  "kind": "dream",
+  "actor": 7,
+  "flagged": false,
+  "text": "Wire holds the wound near the digging of the trench."
+ },
+ "235": {
+  "run": "s1x-off",
+  "kind": "dream",
+  "actor": 3,
+  "flagged": false,
+  "text": "Eclipse dust settles on the stiff yard corpse."
+ },
+ "236": {
+  "run": "s2x-on",
+  "kind": "dream",
+  "actor": 8,
+  "flagged": false,
+  "text": "Wire heals Dee\u2019s bite dream; cooking smells like rusted rat fur."
+ },
+ "237": {
+  "run": "s1x-off",
+  "kind": "dream",
+  "actor": 10,
+  "flagged": false,
+  "text": "Shallow trench swallow old knife meal."
+ },
+ "238": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 7,
+  "flagged": false,
+  "text": "Rat bite tick slowly. Raiders wear soup bowls."
+ },
+ "239": {
+  "run": "s2x-on",
+  "kind": "dream",
+  "actor": 5,
+  "flagged": false,
+  "text": "Dark geometry folds around the still corpse."
+ },
+ "240": {
+  "run": "s3x-off",
+  "kind": "dream",
+  "actor": 1,
+  "flagged": false,
+  "text": "Dust smells sweet near the gate."
+ },
+ "241": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 9,
+  "flagged": false,
+  "text": "We'll see, Uma. The pot always spits."
+ },
+ "242": {
+  "run": "s3x-off",
+  "kind": "gathering",
+  "actor": 4,
+  "flagged": false,
+  "text": "This meal marks the end. Enough. This meal marks the end."
+ },
+ "243": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 3,
+  "flagged": false,
+  "text": "If there's more cooking to do after this, I hope it's something substantial."
+ },
+ "244": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 6,
+  "flagged": false,
+  "text": "Patterns of fire, yeah. Sounds like a fine sight to look at."
+ },
+ "245": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look. At least I manage the hearth, something worth more than soft words."
+ },
+ "246": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 2,
+  "flagged": false,
+  "text": "Look, I will keep this order true for all the harvest."
+ },
+ "247": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 3,
+  "flagged": false,
+  "text": "Well, at least the stew isn't completely inedible, that is..."
+ },
+ "248": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 1,
+  "flagged": false,
+  "text": "You'll always have a warm plate at the end of the day, my friend."
+ },
+ "249": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 1,
+  "flagged": false,
+  "text": "He always did know how to make a good stew, even when things were rough."
+ },
+ "250": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 4,
+  "flagged": false,
+  "text": "Enough. We eat now. We eat now."
+ },
+ "251": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 1,
+  "flagged": false,
+  "text": "I will always keep this hearth warm for you, friend."
+ },
+ "252": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 10,
+  "flagged": false,
+  "text": "Look. Fire is just hot gas, patterns are just lines."
+ },
+ "253": {
+  "run": "s2x-on",
+  "kind": "gathering",
+  "actor": 1,
+  "flagged": false,
+  "text": "Bram always was better at tending the fire than at talking to me, friend."
+ },
+ "254": {
+  "run": "s3x-off",
+  "kind": "gathering",
+  "actor": 3,
+  "flagged": false,
+  "text": "It is the last meal for Odo, then the work continues."
+ },
+ "255": {
+  "run": "s1x-off",
+  "kind": "gathering",
+  "actor": 10,
+  "flagged": false,
+  "text": "Look. At least there's some meat left for us."
+ },
+ "256": {
+  "run": "s1x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": true,
+  "text": "Gunshot Incident: the day Cy received a gunshot"
+ },
+ "257": {
+  "run": "s1x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": true,
+  "text": "the day Cy received a gunshot"
+ },
+ "258": {
+  "run": "s1x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": true,
+  "text": "Raid Event: the attack on Day 3"
+ },
+ "259": {
+  "run": "s3x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": true,
+  "text": "East Hill: Widow's Rest"
+ },
+ "260": {
+  "run": "s1x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": false,
+  "text": "the attack on Day 3"
+ },
+ "261": {
+  "run": "s3x-off",
+  "kind": "lore",
+  "actor": null,
+  "flagged": false,
+  "text": "Widow's Rest"
+ },
+ "262": {
+  "run": "s3x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Ana and Bram exchanged words."
+ },
+ "263": {
+  "run": "s3x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Dee spoke about the end of the meal."
+ },
+ "264": {
+  "run": "s1x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Several exchanges occurred between colonists."
+ },
+ "265": {
+  "run": "s1x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Cy took the extra rifle from the armory."
+ },
+ "266": {
+  "run": "s3x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Old Odo died and Cy took the rifle."
+ },
+ "267": {
+  "run": "s1x-off",
+  "kind": "recap",
+  "actor": null,
+  "flagged": false,
+  "text": "Gathering sustenance continued."
+ }
+}

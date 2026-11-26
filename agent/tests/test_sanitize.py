@@ -191,3 +191,11 @@ def test_sanitize_line_cuts_the_label_only_when_given_labels():
     assert sanitize_line("Good meat here. Not bad like that scrap yesterday. kind", intent_labels=_LABELS, **kw).text \
         == "Good meat here. Not bad like that scrap yesterday."
     assert sanitize_line("Good meat here. kind", **kw).text.endswith("kind")
+
+
+def test_a_sentence_said_twice_keeps_its_first_saying():
+    from hermesvoice_agent.core.sanitize import drop_repeated_sentences
+    assert drop_repeated_sentences("This meal marks the end. Enough. This meal marks the end.") == "This meal marks the end. Enough."
+    assert drop_repeated_sentences("Enough. We eat now. We eat now.") == "Enough. We eat now."
+    assert drop_repeated_sentences("No. No. Not again.") == "No. No. Not again."      # one-word beats are kept
+    assert drop_repeated_sentences("Right, so what now?") == "Right, so what now?"

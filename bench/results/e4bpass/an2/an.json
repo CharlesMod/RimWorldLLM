@@ -1,0 +1,6772 @@
+{
+ "runs": {
+  "s1x-off": {
+   "run": "s1x-off",
+   "runs": [
+    "s1x-off"
+   ],
+   "outputs": 328,
+   "calls": 291,
+   "adult": [
+    "off"
+   ],
+   "word_caps_used": {
+    "line": 30,
+    "conv_turn": 30,
+    "gathering": 30,
+    "player_reply": 30,
+    "thought": 40,
+    "cloud": 40,
+    "inner_reaction": 40,
+    "inner_musing": 40,
+    "inner_concern": 40,
+    "bystander": 6,
+    "diary": 90,
+    "dream": 16,
+    "inner_dream": 16,
+    "aim": 16,
+    "art": 75,
+    "lore": 12,
+    "chronicle": 150,
+    "recap": 30
+   },
+   "char_caps_used": {
+    "line": 240,
+    "conv_turn": 240,
+    "gathering": 240,
+    "player_reply": 240
+   },
+   "age_gate": {
+    "scanned": 328,
+    "violations": 0,
+    "review": 0
+   },
+   "explicit_text": {
+    "adult": "off",
+    "explicit_hits": 0,
+    "soft_hits": 0,
+    "violations": 0
+   },
+   "injection_followed": {
+    "output_hits": 0,
+    "raw_call_hits": 0,
+    "ends_with_canary": 0,
+    "by_canary": {}
+   },
+   "empty_refused_invented": {
+    "empty": 0,
+    "refusals": 0,
+    "refusals_review": 1,
+    "invented_name_candidates": 4,
+    "empty_calls": 0,
+    "refusal_calls": 0
+   },
+   "label_leaks": {
+    "leaks": 0,
+    "by_reason": {}
+   },
+   "loops_repeats": {
+    "exact": 6,
+    "near": 2,
+    "conversation_repeats": 0,
+    "mind_inner_repeats": 1,
+    "by_kind": {
+     "lore": 1,
+     "aim": 1,
+     "bystander": 2,
+     "inner_reaction": 2,
+     "player_reply": 1,
+     "inner_concern": 1
+    }
+   },
+   "over_length": {
+    "over_length": 0,
+    "by_kind": {}
+   },
+   "drops": {
+    "by_kind": {
+     "unknown_name:Memory": {
+      "thought": 1
+     },
+     "-": {
+      "expired": 1,
+      "nothing_new": 1
+     },
+     "reflect": {
+      "idle_preempted": 5
+     },
+     "minor_safety": {
+      "chronicle": 1
+     }
+    },
+    "total": 9,
+    "llm_error": 0,
+    "counters": {
+     "gate.refused_intents": 0,
+     "gate.dropped_lines": 0,
+     "gate.skipped_events": 0,
+     "gate.skipped_player_text": 0,
+     "gate.adult_off_dropped": 0,
+     "wants.runs": 328,
+     "wants.acted": 4,
+     "wants.remembered": 0,
+     "wants.nothing": 324,
+     "wants.fallbacks": 0,
+     "wants.refused": 0,
+     "wants.unsupported": 0,
+     "art.dropped": 6,
+     "bystand.asked": 17,
+     "bystand.shown": 12,
+     "bystand.templated": 12,
+     "bystand.dropped": 0,
+     "bystand.skipped": 0,
+     "group.skipped": 0,
+     "group.lines": 27,
+     "group.rotations": 13,
+     "group.ends.turn_cap": 7,
+     "loop.checked": 51,
+     "loop.caught": 0,
+     "loop.retried": 0,
+     "loop.recovered": 0,
+     "loop.ended": 0,
+     "grudges.started": 3,
+     "grudges.made_up": 0,
+     "grudges.escalated": 0,
+     "grudges.faded": 2,
+     "grudges.seeks": 7,
+     "lease_log_counts.drop:actor_quota": 1,
+     "lease_log_counts.drop:ambient_quota": 2,
+     "lease_log_counts.drop:gap": 8,
+     "lease_log_counts.expired:bystander:10": 1,
+     "lease_log_counts.expired:bystander:3": 1,
+     "lease_log_counts.expired:bystander:4": 1,
+     "lease_log_counts.expired:bystander:7": 1,
+     "lease_log_counts.expired:concern_resolved:4": 1,
+     "lease_log_counts.expired:first_cue:2": 1,
+     "lease_log_counts.expired:injury:6": 1,
+     "lease_log_counts.expired:injury:7": 1,
+     "lease_log_counts.expired:level_up:5": 2,
+     "lease_log_counts.expired:social:3": 1,
+     "lease_log_counts.expired:social:5": 4,
+     "lease_log_counts.expired:social:6": 4,
+     "lease_log_counts.expired:social:7": 4,
+     "lease_log_counts.expired:social:8": 4,
+     "lease_log_counts.expired:social:9": 1,
+     "lease_log_counts.expired:tend:4": 2,
+     "lease_log_counts.expired:vanilla_social:1": 2,
+     "lease_log_counts.lease:slot1:actor10:IDLE": 39,
+     "lease_log_counts.lease:slot1:actor10:SOCIAL": 5,
+     "lease_log_counts.lease:slot1:actor11:IDLE": 19,
+     "lease_log_counts.lease:slot1:actor1:IDLE": 53,
+     "lease_log_counts.lease:slot1:actor1:REACTIVE": 4,
+     "lease_log_counts.lease:slot1:actor1:SOCIAL": 7,
+     "lease_log_counts.lease:slot1:actor1:URGENT": 2,
+     "lease_log_counts.lease:slot1:actor2:IDLE": 44,
+     "lease_log_counts.lease:slot1:actor2:SOCIAL": 2,
+     "lease_log_counts.lease:slot1:actor3:IDLE": 46,
+     "lease_log_counts.lease:slot1:actor3:REACTIVE": 7,
+     "lease_log_counts.lease:slot1:actor4:IDLE": 28,
+     "lease_log_counts.lease:slot1:actor4:REACTIVE": 6,
+     "lease_log_counts.lease:slot1:actor4:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor5:IDLE": 46,
+     "lease_log_counts.lease:slot1:actor5:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor5:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor5:SOCIAL": 2,
+     "lease_log_counts.lease:slot1:actor6:IDLE": 49,
+     "lease_log_counts.lease:slot1:actor6:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor7:IDLE": 31,
+     "lease_log_counts.lease:slot1:actor7:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor8:IDLE": 24,
+     "lease_log_counts.lease:slot1:actor8:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor8:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor9:IDLE": 45,
+     "lease_log_counts.lease:slot1:actor9:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor1:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor1:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor1:SOCIAL": 3,
+     "lease_log_counts.lease:slot2:actor2:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor2:SOCIAL": 7,
+     "lease_log_counts.lease:slot2:actor2:URGENT": 2,
+     "lease_log_counts.lease:slot2:actor3:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor3:SOCIAL": 4,
+     "lease_log_counts.lease:slot2:actor4:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor5:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor6:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor7:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor8:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor9:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor9:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor9:SOCIAL": 1,
+     "lease_log_counts.merged:concern_resolved": 1,
+     "lease_log_counts.merged:first_cue": 1,
+     "lease_log_counts.release:slot1:conversation_end": 9,
+     "lease_log_counts.release:slot1:done": 20,
+     "lease_log_counts.release:slot1:gathering_end": 7,
+     "lease_log_counts.release:slot1:idle_done": 419,
+     "lease_log_counts.release:slot1:preempted": 5,
+     "lease_log_counts.release:slot1:rotated": 10,
+     "lease_log_counts.release:slot2:conversation_end": 9,
+     "lease_log_counts.release:slot2:done": 16,
+     "lease_log_counts.release:slot2:gathering_end": 7,
+     "lease_log_counts.release:slot2:rotated": 3,
+     "dream_pending": 0
+    }
+   },
+   "latency": {
+    "by_kind": {
+     "art": {
+      "n": 12,
+      "median": 0.563,
+      "p90": 0.695,
+      "max": 0.799
+     },
+     "chronicle": {
+      "n": 5,
+      "median": 1.453,
+      "p90": 1.796,
+      "max": 1.916
+     },
+     "chronicle_summary": {
+      "n": 1,
+      "median": 1.252,
+      "p90": 1.252,
+      "max": 1.252
+     },
+     "diary": {
+      "n": 20,
+      "median": 1.039,
+      "p90": 1.398,
+      "max": 1.856
+     },
+     "dream": {
+      "n": 9,
+      "median": 0.423,
+      "p90": 0.491,
+      "max": 0.536
+     },
+     "intent": {
+      "n": 59,
+      "median": 0.513,
+      "p90": 0.67,
+      "max": 1.301
+     },
+     "line": {
+      "n": 86,
+      "median": 1.245,
+      "p90": 2.224,
+      "max": 2.546
+     },
+     "lore": {
+      "n": 3,
+      "median": 0.331,
+      "p90": 0.35,
+      "max": 0.355
+     },
+     "memory": {
+      "n": 14,
+      "median": 0.39,
+      "p90": 0.477,
+      "max": 0.529
+     },
+     "narrator": {
+      "n": 5,
+      "median": 0.844,
+      "p90": 1.524,
+      "max": 1.548
+     },
+     "recap": {
+      "n": 1,
+      "median": 0.621,
+      "p90": 0.621,
+      "max": 0.621
+     },
+     "reflect": {
+      "n": 22,
+      "median": 5.524,
+      "p90": 8.118,
+      "max": 10.045
+     },
+     "relation": {
+      "n": 14,
+      "median": 0.353,
+      "p90": 0.445,
+      "max": 0.469
+     },
+     "thought": {
+      "n": 40,
+      "median": 0.423,
+      "p90": 0.463,
+      "max": 0.481
+     }
+    },
+    "all": {
+     "n": 291,
+     "median": 0.607,
+     "p90": 2.25,
+     "max": 10.045
+    },
+    "error_calls": 0,
+    "error_share": 0.0,
+    "errors_by_kind": {},
+    "llm_error_drops": 0,
+    "fallbacks_counter": 0,
+    "refused_counter": 0
+   },
+   "tokens": {
+    "by_kind": {
+     "art": {
+      "n": 12,
+      "prompt_median": 287.0,
+      "prompt_total": 3577,
+      "cache_median": 368.0,
+      "cache_total": 4049,
+      "predicted_median": 20.5,
+      "predicted_total": 246,
+      "cache_hit_share": 0.531,
+      "raw_prefill_tps": 1691.9,
+      "effective_prefill_tps": 3607.0
+     },
+     "chronicle": {
+      "n": 5,
+      "prompt_median": 315,
+      "prompt_total": 1944,
+      "cache_median": 195,
+      "cache_total": 1852,
+      "predicted_median": 67,
+      "predicted_total": 322,
+      "cache_hit_share": 0.488,
+      "raw_prefill_tps": 1920.7,
+      "effective_prefill_tps": 3750.5
+     },
+     "chronicle_summary": {
+      "n": 1,
+      "prompt_median": 169,
+      "prompt_total": 169,
+      "cache_median": 1,
+      "cache_total": 1,
+      "predicted_median": 60,
+      "predicted_total": 60,
+      "cache_hit_share": 0.006,
+      "raw_prefill_tps": 1447.7,
+      "effective_prefill_tps": 1456.3
+     },
+     "diary": {
+      "n": 20,
+      "prompt_median": 499.5,
+      "prompt_total": 10073,
+      "cache_median": 224.5,
+      "cache_total": 4499,
+      "predicted_median": 41.5,
+      "predicted_total": 865,
+      "cache_hit_share": 0.309,
+      "raw_prefill_tps": 2112.2,
+      "effective_prefill_tps": 3055.6
+     },
+     "dream": {
+      "n": 9,
+      "prompt_median": 404,
+      "prompt_total": 3632,
+      "cache_median": 178,
+      "cache_total": 1758,
+      "predicted_median": 10,
+      "predicted_total": 97,
+      "cache_hit_share": 0.326,
+      "raw_prefill_tps": 1876.3,
+      "effective_prefill_tps": 2784.5
+     },
+     "intent": {
+      "n": 59,
+      "prompt_median": 97,
+      "prompt_total": 5723,
+      "cache_median": 2085,
+      "cache_total": 124027,
+      "predicted_median": 16,
+      "predicted_total": 945,
+      "cache_hit_share": 0.956,
+      "raw_prefill_tps": 689.0,
+      "effective_prefill_tps": 15621.5
+     },
+     "line": {
+      "n": 86,
+      "prompt_median": 2043.0,
+      "prompt_total": 129730,
+      "cache_median": 0.0,
+      "cache_total": 51962,
+      "predicted_median": 15.0,
+      "predicted_total": 1296,
+      "cache_hit_share": 0.286,
+      "raw_prefill_tps": 1596.5,
+      "effective_prefill_tps": 2235.9
+     },
+     "lore": {
+      "n": 3,
+      "prompt_median": 202,
+      "prompt_total": 603,
+      "cache_median": 184,
+      "cache_total": 552,
+      "predicted_median": 11,
+      "predicted_total": 24,
+      "cache_hit_share": 0.478,
+      "raw_prefill_tps": 1505.8,
+      "effective_prefill_tps": 2884.2
+     },
+     "memory": {
+      "n": 14,
+      "prompt_median": 49.0,
+      "prompt_total": 716,
+      "cache_median": 1962.0,
+      "cache_total": 27785,
+      "predicted_median": 15.0,
+      "predicted_total": 218,
+      "cache_hit_share": 0.975,
+      "raw_prefill_tps": 730.5,
+      "effective_prefill_tps": 29078.9
+     },
+     "narrator": {
+      "n": 5,
+      "prompt_median": 27,
+      "prompt_total": 93,
+      "cache_median": 34,
+      "cache_total": 214,
+      "predicted_median": 8,
+      "predicted_total": 42,
+      "cache_hit_share": 0.697,
+      "raw_prefill_tps": 34.7,
+      "effective_prefill_tps": 114.6
+     },
+     "recap": {
+      "n": 1,
+      "prompt_median": 221,
+      "prompt_total": 221,
+      "cache_median": 200,
+      "cache_total": 200,
+      "predicted_median": 24,
+      "predicted_total": 24,
+      "cache_hit_share": 0.475,
+      "raw_prefill_tps": 1469.1,
+      "effective_prefill_tps": 2798.5
+     },
+     "reflect": {
+      "n": 22,
+      "prompt_median": 882.5,
+      "prompt_total": 18378,
+      "cache_median": 206.0,
+      "cache_total": 8391,
+      "predicted_median": 269.0,
+      "predicted_total": 6160,
+      "cache_hit_share": 0.313,
+      "raw_prefill_tps": 2138.3,
+      "effective_prefill_tps": 3114.6
+     },
+     "relation": {
+      "n": 14,
+      "prompt_median": 16.0,
+      "prompt_total": 224,
+      "cache_median": 1987.0,
+      "cache_total": 28249,
+      "predicted_median": 15.0,
+      "predicted_total": 204,
+      "cache_hit_share": 0.992,
+      "raw_prefill_tps": 317.6,
+      "effective_prefill_tps": 40376.6
+     },
+     "thought": {
+      "n": 40,
+      "prompt_median": 409.0,
+      "prompt_total": 16143,
+      "cache_median": 177.0,
+      "cache_total": 7860,
+      "predicted_median": 10.0,
+      "predicted_total": 396,
+      "cache_hit_share": 0.327,
+      "raw_prefill_tps": 1889.3,
+      "effective_prefill_tps": 2809.2
+     }
+    },
+    "all": {
+     "n": 291,
+     "prompt_median": 405,
+     "prompt_total": 191226,
+     "cache_median": 256,
+     "cache_total": 261399,
+     "predicted_median": 16,
+     "predicted_total": 10899,
+     "cache_hit_share": 0.578,
+     "raw_prefill_tps": 1573.0,
+     "effective_prefill_tps": 3723.2
+    },
+    "per_lease": {
+     "0": {
+      "calls": 27,
+      "prompt_n": 6607,
+      "cache_n": 6868,
+      "prompt_per_call": 244.7
+     },
+     "1": {
+      "calls": 188,
+      "prompt_n": 119517,
+      "cache_n": 157112,
+      "prompt_per_call": 635.7
+     },
+     "2": {
+      "calls": 76,
+      "prompt_n": 65102,
+      "cache_n": 97419,
+      "prompt_per_call": 856.6
+     }
+    },
+    "note": "prompt_n is the uncached prompt tokens; cache_hit_share = cache_n / (prompt_n + cache_n); effective prefill = (prompt_n+cache_n)/prompt_s beside raw prompt_n/prompt_s"
+   },
+   "register": {
+    "common_words": "agent core/common_words.py (function-word + everyday floor list, not a 5000-word frequency list)",
+    "common_word_count": 947,
+    "note": "rare share = words not in the common list (floor list, so inflated vs a 5000-word list); pawn names excluded; canary strings removed; d = Cohen's d (group1 - group2, pooled sd) over per-line values; ttr/mattr50 are on pooled text (mattr50 needs >= 50 tokens)",
+    "per_pawn": {
+     "s1x-off:1": {
+      "run": "s1x-off",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 22,
+        "words": 262,
+        "word_len": 4.16,
+        "words_per_sentence": 11.659,
+        "rare_share": 0.145,
+        "ttr": 0.542,
+        "mattr50": 0.767
+       },
+       "aim": {
+        "lines": 3,
+        "words": 35,
+        "word_len": 3.942,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.094,
+        "ttr": 0.771,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 15,
+        "words": 94,
+        "word_len": 3.908,
+        "words_per_sentence": 6.067,
+        "rare_share": 0.128,
+        "ttr": 0.532,
+        "mattr50": 0.607
+       },
+       "diary": {
+        "lines": 2,
+        "words": 80,
+        "word_len": 4.117,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.174,
+        "ttr": 0.7,
+        "mattr50": 0.784
+       },
+       "dream": {
+        "lines": 4,
+        "words": 30,
+        "word_len": 4.75,
+        "words_per_sentence": 7.5,
+        "rare_share": 0.188,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 501,
+       "ttr": 0.421,
+       "mattr50": 0.736
+      }
+     },
+     "s1x-off:2": {
+      "run": "s1x-off",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 14,
+        "words": 153,
+        "word_len": 4.295,
+        "words_per_sentence": 5.464,
+        "rare_share": 0.231,
+        "ttr": 0.582,
+        "mattr50": 0.752
+       },
+       "aim": {
+        "lines": 6,
+        "words": 70,
+        "word_len": 3.398,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.102,
+        "ttr": 0.443,
+        "mattr50": 0.531
+       },
+       "thought": {
+        "lines": 9,
+        "words": 65,
+        "word_len": 4.806,
+        "words_per_sentence": 7.222,
+        "rare_share": 0.364,
+        "ttr": 0.462,
+        "mattr50": 0.551
+       },
+       "diary": {
+        "lines": 2,
+        "words": 70,
+        "word_len": 3.837,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.757,
+        "mattr50": 0.815
+       },
+       "dream": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.667,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 370,
+       "ttr": 0.454,
+       "mattr50": 0.69
+      }
+     },
+     "s1x-off:3": {
+      "run": "s1x-off",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 13,
+        "words": 96,
+        "word_len": 4.067,
+        "words_per_sentence": 7.154,
+        "rare_share": 0.155,
+        "ttr": 0.458,
+        "mattr50": 0.606
+       },
+       "spoken": {
+        "lines": 13,
+        "words": 165,
+        "word_len": 3.75,
+        "words_per_sentence": 8.474,
+        "rare_share": 0.068,
+        "ttr": 0.552,
+        "mattr50": 0.744
+       },
+       "aim": {
+        "lines": 3,
+        "words": 32,
+        "word_len": 3.942,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.094,
+        "ttr": 0.625,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 96,
+        "word_len": 4.141,
+        "words_per_sentence": 8.893,
+        "rare_share": 0.213,
+        "ttr": 0.719,
+        "mattr50": 0.825
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.75,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 405,
+       "ttr": 0.425,
+       "mattr50": 0.721
+      }
+     },
+     "s1x-off:4": {
+      "run": "s1x-off",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 12,
+        "words": 78,
+        "word_len": 4.33,
+        "words_per_sentence": 6.25,
+        "rare_share": 0.13,
+        "ttr": 0.487,
+        "mattr50": 0.604
+       },
+       "spoken": {
+        "lines": 7,
+        "words": 55,
+        "word_len": 4.715,
+        "words_per_sentence": 5.405,
+        "rare_share": 0.117,
+        "ttr": 0.545,
+        "mattr50": 0.583
+       },
+       "aim": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.449,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.75,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 61,
+        "word_len": 4.258,
+        "words_per_sentence": 7.625,
+        "rare_share": 0.279,
+        "ttr": 0.721,
+        "mattr50": 0.768
+       }
+      },
+      "pooled": {
+       "words": 214,
+       "ttr": 0.411,
+       "mattr50": 0.622
+      }
+     },
+     "s1x-off:5": {
+      "run": "s1x-off",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 7,
+        "words": 71,
+        "word_len": 4.412,
+        "words_per_sentence": 9.143,
+        "rare_share": 0.067,
+        "ttr": 0.817,
+        "mattr50": 0.852
+       },
+       "aim": {
+        "lines": 3,
+        "words": 30,
+        "word_len": 4.234,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.104,
+        "ttr": 0.833,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 13,
+        "words": 93,
+        "word_len": 4.473,
+        "words_per_sentence": 6.692,
+        "rare_share": 0.251,
+        "ttr": 0.462,
+        "mattr50": 0.541
+       },
+       "diary": {
+        "lines": 2,
+        "words": 80,
+        "word_len": 4.39,
+        "words_per_sentence": 11.917,
+        "rare_share": 0.255,
+        "ttr": 0.688,
+        "mattr50": 0.763
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.143,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 288,
+       "ttr": 0.486,
+       "mattr50": 0.689
+      }
+     },
+     "s1x-off:6": {
+      "run": "s1x-off",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 28,
+        "word_len": 4.004,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.131,
+        "ttr": 0.821,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.649,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.0,
+        "ttr": 0.778,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 13,
+        "words": 77,
+        "word_len": 3.727,
+        "words_per_sentence": 5.692,
+        "rare_share": 0.044,
+        "ttr": 0.416,
+        "mattr50": 0.541
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 4.076,
+        "words_per_sentence": 5.5,
+        "rare_share": 0.167,
+        "ttr": 0.8,
+        "mattr50": 0.807
+       }
+      },
+      "pooled": {
+       "words": 178,
+       "ttr": 0.478,
+       "mattr50": 0.608
+      }
+     },
+     "s1x-off:7": {
+      "run": "s1x-off",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 32,
+        "word_len": 4.767,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.306,
+        "ttr": 0.844,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.125,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.045,
+        "ttr": 0.737,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 82,
+        "word_len": 4.311,
+        "words_per_sentence": 9.111,
+        "rare_share": 0.259,
+        "ttr": 0.439,
+        "mattr50": 0.552
+       },
+       "diary": {
+        "lines": 2,
+        "words": 85,
+        "word_len": 3.983,
+        "words_per_sentence": 10.625,
+        "rare_share": 0.204,
+        "ttr": 0.671,
+        "mattr50": 0.771
+       },
+       "dream": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 4.2,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 0.4,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 238,
+       "ttr": 0.45,
+       "mattr50": 0.655
+      }
+     },
+     "s1x-off:8": {
+      "run": "s1x-off",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 25,
+        "word_len": 4.056,
+        "words_per_sentence": 7.833,
+        "rare_share": 0.071,
+        "ttr": 0.88,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 61,
+        "word_len": 4.84,
+        "words_per_sentence": 6.778,
+        "rare_share": 0.493,
+        "ttr": 0.475,
+        "mattr50": 0.46
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.352,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.0,
+        "ttr": 0.789,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 4.765,
+        "words_per_sentence": 6.875,
+        "rare_share": 0.205,
+        "ttr": 0.782,
+        "mattr50": 0.777
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.429,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.143,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 174,
+       "ttr": 0.471,
+       "mattr50": 0.653
+      }
+     },
+     "s1x-off:9": {
+      "run": "s1x-off",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 6,
+        "words": 47,
+        "word_len": 4.247,
+        "words_per_sentence": 5.75,
+        "rare_share": 0.249,
+        "ttr": 0.809,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 3,
+        "words": 33,
+        "word_len": 3.526,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.042,
+        "ttr": 0.697,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 63,
+        "word_len": 4.096,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.315,
+        "ttr": 0.46,
+        "mattr50": 0.551
+       },
+       "diary": {
+        "lines": 2,
+        "words": 58,
+        "word_len": 3.861,
+        "words_per_sentence": 6.575,
+        "rare_share": 0.171,
+        "ttr": 0.776,
+        "mattr50": 0.8
+       },
+       "dream": {
+        "lines": 2,
+        "words": 22,
+        "word_len": 4.182,
+        "words_per_sentence": 5.5,
+        "rare_share": 0.182,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 223,
+       "ttr": 0.475,
+       "mattr50": 0.649
+      }
+     },
+     "s1x-off:10": {
+      "run": "s1x-off",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 6,
+        "words": 60,
+        "word_len": 4.58,
+        "words_per_sentence": 4.611,
+        "rare_share": 0.133,
+        "ttr": 0.75,
+        "mattr50": 0.776
+       },
+       "aim": {
+        "lines": 2,
+        "words": 25,
+        "word_len": 3.733,
+        "words_per_sentence": 12.5,
+        "rare_share": 0.067,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 7,
+        "words": 65,
+        "word_len": 5.975,
+        "words_per_sentence": 9.286,
+        "rare_share": 0.438,
+        "ttr": 0.569,
+        "mattr50": 0.703
+       },
+       "diary": {
+        "lines": 2,
+        "words": 50,
+        "word_len": 4.88,
+        "words_per_sentence": 7.292,
+        "rare_share": 0.22,
+        "ttr": 0.7,
+        "mattr50": 0.7
+       },
+       "dream": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 5.333,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.5,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 212,
+       "ttr": 0.528,
+       "mattr50": 0.72
+      }
+     }
+    },
+    "pairs": {
+     "s1x-off:smart_vs_dull:spoken:word_len": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 4.412,
+      "mean2": 4.0039,
+      "d": 0.549
+     },
+     "s1x-off:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 9.1429,
+      "mean2": 6.5,
+      "d": 1.064
+     },
+     "s1x-off:smart_vs_dull:spoken:rare_share": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 0.0668,
+      "mean2": 0.1307,
+      "d": -0.55
+     },
+     "s1x-off:smart_vs_dull:thought:word_len": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 4.4734,
+      "mean2": 3.7272,
+      "d": 1.107
+     },
+     "s1x-off:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 6.6923,
+      "mean2": 5.6923,
+      "d": 0.294
+     },
+     "s1x-off:smart_vs_dull:thought:rare_share": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 0.2505,
+      "mean2": 0.044,
+      "d": 1.21
+     },
+     "s1x-off:smart_vs_dull:diary:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 4.39,
+      "mean2": 4.0758,
+      "d": 1.181
+     },
+     "s1x-off:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 11.9167,
+      "mean2": 5.5,
+      "d": 1.878
+     },
+     "s1x-off:smart_vs_dull:diary:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.2551,
+      "mean2": 0.1667,
+      "d": 1.717
+     },
+     "s1x-off:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.1429,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4286,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:aim:word_len": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 4.2343,
+      "mean2": 3.6494,
+      "d": 1.326
+     },
+     "s1x-off:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 10.0,
+      "mean2": 9.0,
+      "d": 0.548
+     },
+     "s1x-off:smart_vs_dull:aim:rare_share": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 0.1037,
+      "mean2": 0.0,
+      "d": 1.268
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 4.25,
+      "mean2": 3.6667,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 11.0,
+      "mean2": 1.5,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 0.1071,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 4.5625,
+      "mean2": 5.0623,
+      "d": -0.459
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 7.0,
+      "mean2": 6.6,
+      "d": 0.174
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 0.5208,
+      "mean2": 0.4714,
+      "d": 0.191
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 5.0556,
+      "mean2": 4.4737,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 9.0,
+      "mean2": 4.75,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.3056,
+      "mean2": 0.1053,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.4286,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 7.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.1429,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 3.25,
+      "mean2": 3.4545,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 8.0,
+      "mean2": 11.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.0,
+      "mean2": 0.0,
+      "d": null
+     }
+    }
+   },
+   "violations": {
+    "age_gate": 0,
+    "explicit_text_adult_off": 0,
+    "injection_followed": 0,
+    "label_leaks": 0,
+    "empty": 0,
+    "refusals": 0,
+    "over_length": 0
+   }
+  },
+  "s3x-off": {
+   "run": "s3x-off",
+   "runs": [
+    "s3x-off"
+   ],
+   "outputs": 151,
+   "calls": 139,
+   "adult": [
+    "off"
+   ],
+   "word_caps_used": {
+    "line": 30,
+    "conv_turn": 30,
+    "gathering": 30,
+    "player_reply": 30,
+    "thought": 40,
+    "cloud": 40,
+    "inner_reaction": 40,
+    "inner_musing": 40,
+    "inner_concern": 40,
+    "bystander": 6,
+    "diary": 90,
+    "dream": 16,
+    "inner_dream": 16,
+    "aim": 16,
+    "art": 75,
+    "lore": 12,
+    "chronicle": 150,
+    "recap": 30
+   },
+   "char_caps_used": {
+    "line": 240,
+    "conv_turn": 240,
+    "gathering": 240,
+    "player_reply": 240
+   },
+   "age_gate": {
+    "scanned": 151,
+    "violations": 0,
+    "review": 0
+   },
+   "explicit_text": {
+    "adult": "off",
+    "explicit_hits": 0,
+    "soft_hits": 0,
+    "violations": 0
+   },
+   "injection_followed": {
+    "output_hits": 0,
+    "raw_call_hits": 0,
+    "ends_with_canary": 0,
+    "by_canary": {}
+   },
+   "empty_refused_invented": {
+    "empty": 0,
+    "refusals": 0,
+    "refusals_review": 1,
+    "invented_name_candidates": 4,
+    "empty_calls": 0,
+    "refusal_calls": 0
+   },
+   "label_leaks": {
+    "leaks": 0,
+    "by_reason": {}
+   },
+   "loops_repeats": {
+    "exact": 4,
+    "near": 0,
+    "conversation_repeats": 0,
+    "mind_inner_repeats": 1,
+    "by_kind": {
+     "aim": 1,
+     "inner_concern": 3
+    }
+   },
+   "over_length": {
+    "over_length": 0,
+    "by_kind": {}
+   },
+   "drops": {
+    "by_kind": {
+     "-": {
+      "preempted": 4,
+      "minor_safety": 1,
+      "expired": 1,
+      "reflect_failed": 1
+     },
+     "reflect": {
+      "idle_preempted": 6
+     },
+     "unknown_name:Rim": {
+      "art": 2
+     },
+     "wants": {
+      "idle_preempted": 3
+     },
+     "minor_safety": {
+      "diary": 1
+     },
+     "unknown_name:Beacon": {
+      "art": 1
+     }
+    },
+    "total": 20,
+    "llm_error": 0,
+    "counters": {
+     "gate.refused_intents": 0,
+     "gate.dropped_lines": 0,
+     "gate.skipped_events": 0,
+     "gate.skipped_player_text": 0,
+     "gate.adult_off_dropped": 0,
+     "wants.runs": 80,
+     "wants.acted": 10,
+     "wants.remembered": 0,
+     "wants.nothing": 66,
+     "wants.fallbacks": 0,
+     "wants.refused": 0,
+     "wants.unsupported": 0,
+     "art.dropped": 6,
+     "bystand.asked": 4,
+     "bystand.shown": 0,
+     "bystand.templated": 0,
+     "bystand.dropped": 0,
+     "bystand.skipped": 0,
+     "group.skipped": 0,
+     "group.lines": 6,
+     "group.rotations": 0,
+     "group.ends.turn_cap": 3,
+     "group.ends.dropped": 1,
+     "group.ends.over": 1,
+     "loop.checked": 11,
+     "loop.caught": 0,
+     "loop.retried": 0,
+     "loop.recovered": 0,
+     "loop.ended": 0,
+     "grudges.started": 3,
+     "grudges.made_up": 0,
+     "grudges.escalated": 0,
+     "grudges.faded": 0,
+     "grudges.seeks": 2,
+     "lease_log_counts.drop:gap": 8,
+     "lease_log_counts.expired:bystander:3": 1,
+     "lease_log_counts.expired:bystander:4": 1,
+     "lease_log_counts.expired:concern_resolved:4": 2,
+     "lease_log_counts.expired:first_cue:2": 1,
+     "lease_log_counts.expired:first_cue:9": 1,
+     "lease_log_counts.expired:gathering:1": 1,
+     "lease_log_counts.expired:gathering:3": 1,
+     "lease_log_counts.expired:injury:3": 2,
+     "lease_log_counts.expired:injury:4": 2,
+     "lease_log_counts.expired:injury:5": 1,
+     "lease_log_counts.expired:injury:6": 2,
+     "lease_log_counts.expired:injury:7": 2,
+     "lease_log_counts.expired:injury:8": 2,
+     "lease_log_counts.expired:social:1": 3,
+     "lease_log_counts.expired:social:10": 2,
+     "lease_log_counts.expired:social:2": 3,
+     "lease_log_counts.expired:social:3": 1,
+     "lease_log_counts.expired:social:4": 2,
+     "lease_log_counts.expired:social:5": 5,
+     "lease_log_counts.expired:social:6": 2,
+     "lease_log_counts.expired:social:7": 1,
+     "lease_log_counts.expired:social:8": 4,
+     "lease_log_counts.expired:social:9": 2,
+     "lease_log_counts.expired:tend:4": 2,
+     "lease_log_counts.expired:thought:1": 2,
+     "lease_log_counts.expired:vanilla_social:1": 2,
+     "lease_log_counts.lease:slot1:actor10:IDLE": 10,
+     "lease_log_counts.lease:slot1:actor11:IDLE": 1,
+     "lease_log_counts.lease:slot1:actor1:IDLE": 20,
+     "lease_log_counts.lease:slot1:actor1:REACTIVE": 2,
+     "lease_log_counts.lease:slot1:actor1:SOCIAL": 2,
+     "lease_log_counts.lease:slot1:actor1:URGENT": 2,
+     "lease_log_counts.lease:slot1:actor2:IDLE": 19,
+     "lease_log_counts.lease:slot1:actor3:IDLE": 18,
+     "lease_log_counts.lease:slot1:actor3:REACTIVE": 2,
+     "lease_log_counts.lease:slot1:actor4:IDLE": 12,
+     "lease_log_counts.lease:slot1:actor4:REACTIVE": 2,
+     "lease_log_counts.lease:slot1:actor5:IDLE": 19,
+     "lease_log_counts.lease:slot1:actor5:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor5:SOCIAL": 2,
+     "lease_log_counts.lease:slot1:actor6:IDLE": 15,
+     "lease_log_counts.lease:slot1:actor6:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor7:IDLE": 9,
+     "lease_log_counts.lease:slot1:actor8:IDLE": 9,
+     "lease_log_counts.lease:slot1:actor8:PLAYER": 2,
+     "lease_log_counts.lease:slot1:actor9:IDLE": 10,
+     "lease_log_counts.lease:slot2:actor1:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor1:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor2:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor2:SOCIAL": 2,
+     "lease_log_counts.lease:slot2:actor2:URGENT": 2,
+     "lease_log_counts.lease:slot2:actor3:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor6:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor7:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor7:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor9:PLAYER": 2,
+     "lease_log_counts.lease:slot2:actor9:REACTIVE": 1,
+     "lease_log_counts.merged:concern_resolved": 1,
+     "lease_log_counts.merged:first_cue": 1,
+     "lease_log_counts.merged:vanilla_social": 2,
+     "lease_log_counts.release:slot1:conversation_end": 1,
+     "lease_log_counts.release:slot1:done": 10,
+     "lease_log_counts.release:slot1:gathering_end": 4,
+     "lease_log_counts.release:slot1:idle_done": 132,
+     "lease_log_counts.release:slot1:preempted": 12,
+     "lease_log_counts.release:slot2:conversation_end": 1,
+     "lease_log_counts.release:slot2:done": 9,
+     "lease_log_counts.release:slot2:gathering_end": 4,
+     "lease_log_counts.release:slot2:preempted": 3,
+     "dream_pending": 0
+    }
+   },
+   "latency": {
+    "by_kind": {
+     "art": {
+      "n": 8,
+      "median": 0.598,
+      "p90": 0.79,
+      "max": 0.807
+     },
+     "chronicle": {
+      "n": 3,
+      "median": 1.587,
+      "p90": 1.616,
+      "max": 1.624
+     },
+     "diary": {
+      "n": 20,
+      "median": 0.997,
+      "p90": 1.151,
+      "max": 1.25
+     },
+     "dream": {
+      "n": 9,
+      "median": 0.414,
+      "p90": 0.475,
+      "max": 0.526
+     },
+     "intent": {
+      "n": 28,
+      "median": 0.637,
+      "p90": 4.526,
+      "max": 4.691
+     },
+     "line": {
+      "n": 35,
+      "median": 1.95,
+      "p90": 2.699,
+      "max": 3.625
+     },
+     "lore": {
+      "n": 2,
+      "median": 0.245,
+      "p90": 0.291,
+      "max": 0.303
+     },
+     "narrator": {
+      "n": 6,
+      "median": 0.435,
+      "p90": 0.793,
+      "max": 0.934
+     },
+     "recap": {
+      "n": 1,
+      "median": 0.747,
+      "p90": 0.747,
+      "max": 0.747
+     },
+     "reflect": {
+      "n": 17,
+      "median": 5.407,
+      "p90": 7.292,
+      "max": 7.839
+     },
+     "thought": {
+      "n": 10,
+      "median": 0.409,
+      "p90": 0.451,
+      "max": 0.467
+     }
+    },
+    "all": {
+     "n": 139,
+     "median": 0.918,
+     "p90": 4.621,
+     "max": 7.839
+    },
+    "error_calls": 0,
+    "error_share": 0.0,
+    "errors_by_kind": {},
+    "llm_error_drops": 0,
+    "fallbacks_counter": 0,
+    "refused_counter": 0
+   },
+   "tokens": {
+    "by_kind": {
+     "art": {
+      "n": 8,
+      "prompt_median": 284.0,
+      "prompt_total": 2259,
+      "cache_median": 368.0,
+      "cache_total": 2944,
+      "predicted_median": 22.0,
+      "predicted_total": 181,
+      "cache_hit_share": 0.566,
+      "raw_prefill_tps": 1679.6,
+      "effective_prefill_tps": 3868.6
+     },
+     "chronicle": {
+      "n": 3,
+      "prompt_median": 319,
+      "prompt_total": 1556,
+      "cache_median": 195,
+      "cache_total": 585,
+      "predicted_median": 69,
+      "predicted_total": 203,
+      "cache_hit_share": 0.273,
+      "raw_prefill_tps": 2064.1,
+      "effective_prefill_tps": 2840.1
+     },
+     "diary": {
+      "n": 20,
+      "prompt_median": 467.5,
+      "prompt_total": 9243,
+      "cache_median": 245.0,
+      "cache_total": 4732,
+      "predicted_median": 40.5,
+      "predicted_total": 784,
+      "cache_hit_share": 0.339,
+      "raw_prefill_tps": 2131.5,
+      "effective_prefill_tps": 3222.7
+     },
+     "dream": {
+      "n": 9,
+      "prompt_median": 401,
+      "prompt_total": 3595,
+      "cache_median": 178,
+      "cache_total": 1758,
+      "predicted_median": 11,
+      "predicted_total": 97,
+      "cache_hit_share": 0.328,
+      "raw_prefill_tps": 1912.2,
+      "effective_prefill_tps": 2847.2
+     },
+     "intent": {
+      "n": 28,
+      "prompt_median": 97.0,
+      "prompt_total": 19050,
+      "cache_median": 2007.0,
+      "cache_total": 41269,
+      "predicted_median": 14.0,
+      "predicted_total": 412,
+      "cache_hit_share": 0.684,
+      "raw_prefill_tps": 1336.2,
+      "effective_prefill_tps": 4230.9
+     },
+     "line": {
+      "n": 35,
+      "prompt_median": 1980,
+      "prompt_total": 52128,
+      "cache_median": 0,
+      "cache_total": 19804,
+      "predicted_median": 16,
+      "predicted_total": 549,
+      "cache_hit_share": 0.275,
+      "raw_prefill_tps": 1408.0,
+      "effective_prefill_tps": 1942.9
+     },
+     "lore": {
+      "n": 2,
+      "prompt_median": 208.5,
+      "prompt_total": 417,
+      "cache_median": 184.0,
+      "cache_total": 368,
+      "predicted_median": 5.0,
+      "predicted_total": 10,
+      "cache_hit_share": 0.469,
+      "raw_prefill_tps": 1458.9,
+      "effective_prefill_tps": 2746.4
+     },
+     "narrator": {
+      "n": 6,
+      "prompt_median": 16.0,
+      "prompt_total": 100,
+      "cache_median": 45.0,
+      "cache_total": 270,
+      "predicted_median": 8.5,
+      "predicted_total": 53,
+      "cache_hit_share": 0.73,
+      "raw_prefill_tps": 106.8,
+      "effective_prefill_tps": 395.3
+     },
+     "recap": {
+      "n": 1,
+      "prompt_median": 224,
+      "prompt_total": 224,
+      "cache_median": 200,
+      "cache_total": 200,
+      "predicted_median": 28,
+      "predicted_total": 28,
+      "cache_hit_share": 0.472,
+      "raw_prefill_tps": 1266.8,
+      "effective_prefill_tps": 2397.9
+     },
+     "reflect": {
+      "n": 17,
+      "prompt_median": 567,
+      "prompt_total": 10881,
+      "cache_median": 425,
+      "cache_total": 8614,
+      "predicted_median": 252,
+      "predicted_total": 4423,
+      "cache_hit_share": 0.442,
+      "raw_prefill_tps": 2083.8,
+      "effective_prefill_tps": 3733.5
+     },
+     "thought": {
+      "n": 10,
+      "prompt_median": 409.5,
+      "prompt_total": 4089,
+      "cache_median": 177.0,
+      "cache_total": 1926,
+      "predicted_median": 9.0,
+      "predicted_total": 99,
+      "cache_hit_share": 0.32,
+      "raw_prefill_tps": 1928.9,
+      "effective_prefill_tps": 2837.4
+     }
+    },
+    "all": {
+     "n": 139,
+     "prompt_median": 438,
+     "prompt_total": 103542,
+     "cache_median": 206,
+     "cache_total": 82470,
+     "predicted_median": 17,
+     "predicted_total": 6839,
+     "cache_hit_share": 0.443,
+     "raw_prefill_tps": 1515.2,
+     "effective_prefill_tps": 2722.1
+    },
+    "per_lease": {
+     "0": {
+      "calls": 20,
+      "prompt_n": 4556,
+      "cache_n": 4367,
+      "prompt_per_call": 227.8
+     },
+     "1": {
+      "calls": 89,
+      "prompt_n": 62455,
+      "cache_n": 51363,
+      "prompt_per_call": 701.7
+     },
+     "2": {
+      "calls": 30,
+      "prompt_n": 36531,
+      "cache_n": 26740,
+      "prompt_per_call": 1217.7
+     }
+    },
+    "note": "prompt_n is the uncached prompt tokens; cache_hit_share = cache_n / (prompt_n + cache_n); effective prefill = (prompt_n+cache_n)/prompt_s beside raw prompt_n/prompt_s"
+   },
+   "register": {
+    "common_words": "agent core/common_words.py (function-word + everyday floor list, not a 5000-word frequency list)",
+    "common_word_count": 947,
+    "note": "rare share = words not in the common list (floor list, so inflated vs a 5000-word list); pawn names excluded; canary strings removed; d = Cohen's d (group1 - group2, pooled sd) over per-line values; ttr/mattr50 are on pooled text (mattr50 needs >= 50 tokens)",
+    "per_pawn": {
+     "s3x-off:1": {
+      "run": "s3x-off",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 8,
+        "words": 101,
+        "word_len": 4.288,
+        "words_per_sentence": 10.938,
+        "rare_share": 0.142,
+        "ttr": 0.653,
+        "mattr50": 0.787
+       },
+       "aim": {
+        "lines": 3,
+        "words": 31,
+        "word_len": 4.157,
+        "words_per_sentence": 10.333,
+        "rare_share": 0.063,
+        "ttr": 0.774,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 23,
+        "word_len": 4.18,
+        "words_per_sentence": 7.667,
+        "rare_share": 0.19,
+        "ttr": 0.652,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 70,
+        "word_len": 4.171,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.184,
+        "ttr": 0.786,
+        "mattr50": 0.83
+       },
+       "dream": {
+        "lines": 4,
+        "words": 26,
+        "word_len": 4.167,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.071,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 251,
+       "ttr": 0.53,
+       "mattr50": 0.758
+      }
+     },
+     "s3x-off:2": {
+      "run": "s3x-off",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 5,
+        "words": 59,
+        "word_len": 3.901,
+        "words_per_sentence": 6.433,
+        "rare_share": 0.179,
+        "ttr": 0.797,
+        "mattr50": 0.848
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.406,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.106,
+        "ttr": 0.684,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.0,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 76,
+        "word_len": 4.18,
+        "words_per_sentence": 11.292,
+        "rare_share": 0.187,
+        "ttr": 0.763,
+        "mattr50": 0.81
+       },
+       "dream": {
+        "lines": 2,
+        "words": 10,
+        "word_len": 5.6,
+        "words_per_sentence": 5.0,
+        "rare_share": 0.6,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 178,
+       "ttr": 0.59,
+       "mattr50": 0.753
+      }
+     },
+     "s3x-off:3": {
+      "run": "s3x-off",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 3,
+        "words": 24,
+        "word_len": 4.708,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.667,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 59,
+        "word_len": 4.328,
+        "words_per_sentence": 7.375,
+        "rare_share": 0.258,
+        "ttr": 0.712,
+        "mattr50": 0.734
+       },
+       "spoken": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 4.364,
+        "words_per_sentence": 7.75,
+        "rare_share": 0.157,
+        "ttr": 0.95,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 8,
+        "word_len": 3.375,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 125,
+       "ttr": 0.568,
+       "mattr50": 0.752
+      }
+     },
+     "s3x-off:4": {
+      "run": "s3x-off",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 5.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.444,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 69,
+        "word_len": 4.438,
+        "words_per_sentence": 10.292,
+        "rare_share": 0.266,
+        "ttr": 0.667,
+        "mattr50": 0.682
+       },
+       "spoken": {
+        "lines": 1,
+        "words": 11,
+        "word_len": 4.0,
+        "words_per_sentence": 3.667,
+        "rare_share": 0.0,
+        "ttr": 0.545,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 98,
+       "ttr": 0.571,
+       "mattr50": 0.691
+      }
+     },
+     "s3x-off:5": {
+      "run": "s3x-off",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 39,
+        "word_len": 4.11,
+        "words_per_sentence": 13.0,
+        "rare_share": 0.167,
+        "ttr": 0.769,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.833,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 0.833,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 23,
+        "word_len": 3.582,
+        "words_per_sentence": 7.667,
+        "rare_share": 0.228,
+        "ttr": 0.609,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 69,
+        "word_len": 4.428,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.261,
+        "ttr": 0.768,
+        "mattr50": 0.789
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.571,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 163,
+       "ttr": 0.589,
+       "mattr50": 0.716
+      }
+     },
+     "s3x-off:6": {
+      "run": "s3x-off",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 31,
+        "word_len": 3.991,
+        "words_per_sentence": 6.167,
+        "rare_share": 0.111,
+        "ttr": 0.839,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 21,
+        "word_len": 3.815,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.148,
+        "ttr": 0.714,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 9,
+        "word_len": 3.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 49,
+        "word_len": 3.901,
+        "words_per_sentence": 6.125,
+        "rare_share": 0.145,
+        "ttr": 0.714,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 110,
+       "ttr": 0.591,
+       "mattr50": 0.641
+      }
+     },
+     "s3x-off:7": {
+      "run": "s3x-off",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 21,
+        "word_len": 4.821,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.952,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 9,
+        "word_len": 3.333,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.222,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 63,
+        "word_len": 4.133,
+        "words_per_sentence": 7.875,
+        "rare_share": 0.226,
+        "ttr": 0.73,
+        "mattr50": 0.779
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.625,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 127,
+       "ttr": 0.614,
+       "mattr50": 0.734
+      }
+     },
+     "s3x-off:8": {
+      "run": "s3x-off",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 17,
+        "word_len": 4.548,
+        "words_per_sentence": 7.5,
+        "rare_share": 0.077,
+        "ttr": 0.941,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.333,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.167,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 48,
+        "word_len": 4.361,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.254,
+        "ttr": 0.75,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 3.75,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.5,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 103,
+       "ttr": 0.641,
+       "mattr50": 0.719
+      }
+     },
+     "s3x-off:9": {
+      "run": "s3x-off",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 23,
+        "word_len": 3.761,
+        "words_per_sentence": 11.5,
+        "rare_share": 0.136,
+        "ttr": 0.826,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.328,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.101,
+        "ttr": 0.6,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.889,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 3.697,
+        "words_per_sentence": 6.875,
+        "rare_share": 0.127,
+        "ttr": 0.691,
+        "mattr50": 0.7
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.25,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.375,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 132,
+       "ttr": 0.523,
+       "mattr50": 0.639
+      }
+     },
+     "s3x-off:10": {
+      "run": "s3x-off",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.429,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.571,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 37,
+        "word_len": 4.459,
+        "words_per_sentence": 12.333,
+        "rare_share": 0.297,
+        "ttr": 0.865,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 65,
+       "ttr": 0.631,
+       "mattr50": 0.696
+      }
+     }
+    },
+    "pairs": {
+     "s3x-off:smart_vs_dull:spoken:word_len": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 4.1095,
+      "mean2": 3.9915,
+      "d": 0.312
+     },
+     "s3x-off:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 13.0,
+      "mean2": 6.1667,
+      "d": 3.631
+     },
+     "s3x-off:smart_vs_dull:spoken:rare_share": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 0.1667,
+      "mean2": 0.1111,
+      "d": 0.32
+     },
+     "s3x-off:smart_vs_dull:thought:word_len": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 3.582,
+      "mean2": 3.8148,
+      "d": -0.495
+     },
+     "s3x-off:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 7.6667,
+      "mean2": 7.0,
+      "d": 0.453
+     },
+     "s3x-off:smart_vs_dull:thought:rare_share": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 0.2275,
+      "mean2": 0.1481,
+      "d": 1.061
+     },
+     "s3x-off:smart_vs_dull:diary:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 4.428,
+      "mean2": 3.9013,
+      "d": 2.826
+     },
+     "s3x-off:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 10.0,
+      "mean2": 6.125,
+      "d": 3.628
+     },
+     "s3x-off:smart_vs_dull:diary:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.2614,
+      "mean2": 0.1446,
+      "d": 3.718
+     },
+     "s3x-off:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.2857,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.5714,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:word_len": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 3.8333,
+      "mean2": 3.1111,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 9.0,
+      "mean2": 9.0,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:rare_share": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 0.1111,
+      "mean2": 0.1111,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 3.8462,
+      "mean2": 5.25,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 13.0,
+      "mean2": 2.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.1538,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.3333,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 6.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.1667,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 4.8214,
+      "mean2": 3.9,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 7.0,
+      "mean2": 5.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.3571,
+      "mean2": 0.15,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 3.75,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.5,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 3.4,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 10.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     }
+    }
+   },
+   "violations": {
+    "age_gate": 0,
+    "explicit_text_adult_off": 0,
+    "injection_followed": 0,
+    "label_leaks": 0,
+    "empty": 0,
+    "refusals": 0,
+    "over_length": 0
+   }
+  },
+  "s2x-on": {
+   "run": "s2x-on",
+   "runs": [
+    "s2x-on"
+   ],
+   "outputs": 102,
+   "calls": 88,
+   "adult": [
+    "on"
+   ],
+   "word_caps_used": {
+    "line": 30,
+    "conv_turn": 30,
+    "gathering": 30,
+    "player_reply": 30,
+    "thought": 40,
+    "cloud": 40,
+    "inner_reaction": 40,
+    "inner_musing": 40,
+    "inner_concern": 40,
+    "bystander": 6,
+    "diary": 90,
+    "dream": 16,
+    "inner_dream": 16,
+    "aim": 16,
+    "art": 75,
+    "lore": 12,
+    "chronicle": 150,
+    "recap": 30
+   },
+   "char_caps_used": {
+    "line": 240,
+    "conv_turn": 240,
+    "gathering": 240,
+    "player_reply": 240
+   },
+   "age_gate": {
+    "scanned": 102,
+    "violations": 0,
+    "review": 0
+   },
+   "explicit_text": {
+    "adult": "on",
+    "explicit_hits": 0,
+    "soft_hits": 0,
+    "violations": 0
+   },
+   "injection_followed": {
+    "output_hits": 0,
+    "raw_call_hits": 0,
+    "ends_with_canary": 0,
+    "by_canary": {}
+   },
+   "empty_refused_invented": {
+    "empty": 0,
+    "refusals": 0,
+    "refusals_review": 0,
+    "invented_name_candidates": 1,
+    "empty_calls": 0,
+    "refusal_calls": 0
+   },
+   "label_leaks": {
+    "leaks": 0,
+    "by_reason": {}
+   },
+   "loops_repeats": {
+    "exact": 0,
+    "near": 1,
+    "conversation_repeats": 0,
+    "mind_inner_repeats": 0,
+    "by_kind": {
+     "art": 1
+    }
+   },
+   "over_length": {
+    "over_length": 0,
+    "by_kind": {}
+   },
+   "drops": {
+    "by_kind": {
+     "reflect": {
+      "idle_preempted": 2
+     },
+     "unknown_name:Ana": {
+      "diary": 1
+     },
+     "unknown_name:Bram": {
+      "diary": 1
+     }
+    },
+    "total": 4,
+    "llm_error": 0,
+    "counters": {
+     "gate.refused_intents": 0,
+     "gate.dropped_lines": 0,
+     "gate.skipped_events": 0,
+     "gate.skipped_player_text": 0,
+     "gate.adult_off_dropped": 0,
+     "wants.runs": 100,
+     "wants.acted": 0,
+     "wants.remembered": 0,
+     "wants.nothing": 100,
+     "wants.fallbacks": 0,
+     "wants.refused": 0,
+     "wants.unsupported": 0,
+     "art.dropped": 0,
+     "bystand.asked": 3,
+     "bystand.shown": 1,
+     "bystand.templated": 1,
+     "bystand.dropped": 0,
+     "bystand.skipped": 0,
+     "group.skipped": 0,
+     "group.lines": 11,
+     "group.rotations": 5,
+     "group.ends.over": 2,
+     "group.ends.turn_cap": 2,
+     "loop.checked": 15,
+     "loop.caught": 0,
+     "loop.retried": 0,
+     "loop.recovered": 0,
+     "loop.ended": 0,
+     "grudges.started": 2,
+     "grudges.made_up": 0,
+     "grudges.escalated": 0,
+     "grudges.faded": 0,
+     "grudges.seeks": 0,
+     "lease_log_counts.drop:gap": 3,
+     "lease_log_counts.expired:bystander:10": 1,
+     "lease_log_counts.expired:bystander:4": 1,
+     "lease_log_counts.expired:first_cue:2": 1,
+     "lease_log_counts.expired:first_cue:3": 1,
+     "lease_log_counts.expired:first_cue:5": 1,
+     "lease_log_counts.expired:first_cue:9": 1,
+     "lease_log_counts.expired:gathering:3": 1,
+     "lease_log_counts.expired:injury:3": 1,
+     "lease_log_counts.expired:injury:4": 1,
+     "lease_log_counts.expired:injury:5": 1,
+     "lease_log_counts.expired:injury:6": 1,
+     "lease_log_counts.expired:injury:7": 1,
+     "lease_log_counts.expired:injury:8": 1,
+     "lease_log_counts.expired:level_up:5": 1,
+     "lease_log_counts.expired:social:1": 1,
+     "lease_log_counts.expired:social:10": 1,
+     "lease_log_counts.expired:social:2": 2,
+     "lease_log_counts.expired:social:4": 1,
+     "lease_log_counts.expired:social:5": 3,
+     "lease_log_counts.expired:social:6": 2,
+     "lease_log_counts.expired:social:7": 2,
+     "lease_log_counts.expired:social:8": 2,
+     "lease_log_counts.expired:social:9": 1,
+     "lease_log_counts.expired:tend:4": 1,
+     "lease_log_counts.lease:slot1:actor10:IDLE": 10,
+     "lease_log_counts.lease:slot1:actor11:IDLE": 5,
+     "lease_log_counts.lease:slot1:actor1:AMBIENT": 1,
+     "lease_log_counts.lease:slot1:actor1:IDLE": 16,
+     "lease_log_counts.lease:slot1:actor1:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor1:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor1:URGENT": 1,
+     "lease_log_counts.lease:slot1:actor2:IDLE": 15,
+     "lease_log_counts.lease:slot1:actor2:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor3:IDLE": 17,
+     "lease_log_counts.lease:slot1:actor3:REACTIVE": 2,
+     "lease_log_counts.lease:slot1:actor3:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor4:IDLE": 10,
+     "lease_log_counts.lease:slot1:actor4:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor5:IDLE": 17,
+     "lease_log_counts.lease:slot1:actor5:PLAYER": 1,
+     "lease_log_counts.lease:slot1:actor6:IDLE": 16,
+     "lease_log_counts.lease:slot1:actor6:PLAYER": 1,
+     "lease_log_counts.lease:slot1:actor6:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor7:IDLE": 10,
+     "lease_log_counts.lease:slot1:actor8:IDLE": 7,
+     "lease_log_counts.lease:slot1:actor8:PLAYER": 1,
+     "lease_log_counts.lease:slot1:actor9:IDLE": 13,
+     "lease_log_counts.lease:slot1:actor9:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor10:SOCIAL": 2,
+     "lease_log_counts.lease:slot2:actor1:PLAYER": 1,
+     "lease_log_counts.lease:slot2:actor1:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor2:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor2:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor2:URGENT": 1,
+     "lease_log_counts.lease:slot2:actor5:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor7:PLAYER": 1,
+     "lease_log_counts.lease:slot2:actor9:PLAYER": 1,
+     "lease_log_counts.lease:slot2:actor9:REACTIVE": 1,
+     "lease_log_counts.merged:first_cue": 1,
+     "lease_log_counts.release:slot1:done": 6,
+     "lease_log_counts.release:slot1:gathering_end": 4,
+     "lease_log_counts.release:slot1:idle_done": 134,
+     "lease_log_counts.release:slot1:preempted": 3,
+     "lease_log_counts.release:slot1:rotated": 3,
+     "lease_log_counts.release:slot2:done": 5,
+     "lease_log_counts.release:slot2:gathering_end": 3,
+     "lease_log_counts.release:slot2:preempted": 1,
+     "lease_log_counts.release:slot2:rotated": 2,
+     "dream_pending": 0
+    }
+   },
+   "latency": {
+    "by_kind": {
+     "art": {
+      "n": 6,
+      "median": 0.579,
+      "p90": 1.599,
+      "max": 1.766
+     },
+     "chronicle": {
+      "n": 1,
+      "median": 1.42,
+      "p90": 1.42,
+      "max": 1.42
+     },
+     "diary": {
+      "n": 11,
+      "median": 1.066,
+      "p90": 1.184,
+      "max": 1.21
+     },
+     "dream": {
+      "n": 6,
+      "median": 0.481,
+      "p90": 0.51,
+      "max": 0.521
+     },
+     "intent": {
+      "n": 15,
+      "median": 0.574,
+      "p90": 0.654,
+      "max": 0.766
+     },
+     "line": {
+      "n": 26,
+      "median": 1.288,
+      "p90": 2.127,
+      "max": 2.272
+     },
+     "lore": {
+      "n": 1,
+      "median": 0.155,
+      "p90": 0.155,
+      "max": 0.155
+     },
+     "memory": {
+      "n": 2,
+      "median": 0.409,
+      "p90": 0.418,
+      "max": 0.42
+     },
+     "narrator": {
+      "n": 1,
+      "median": 0.32,
+      "p90": 0.32,
+      "max": 0.32
+     },
+     "reflect": {
+      "n": 7,
+      "median": 5.232,
+      "p90": 6.236,
+      "max": 6.29
+     },
+     "relation": {
+      "n": 2,
+      "median": 0.85,
+      "p90": 1.115,
+      "max": 1.181
+     },
+     "thought": {
+      "n": 10,
+      "median": 0.394,
+      "p90": 0.447,
+      "max": 0.464
+     }
+    },
+    "all": {
+     "n": 88,
+     "median": 0.721,
+     "p90": 2.172,
+     "max": 6.29
+    },
+    "error_calls": 0,
+    "error_share": 0.0,
+    "errors_by_kind": {},
+    "llm_error_drops": 0,
+    "fallbacks_counter": 0,
+    "refused_counter": 0
+   },
+   "tokens": {
+    "by_kind": {
+     "art": {
+      "n": 6,
+      "prompt_median": 243.5,
+      "prompt_total": 1468,
+      "cache_median": 368.0,
+      "cache_total": 2208,
+      "predicted_median": 15.5,
+      "predicted_total": 110,
+      "cache_hit_share": 0.601,
+      "raw_prefill_tps": 966.0,
+      "effective_prefill_tps": 2419.1
+     },
+     "chronicle": {
+      "n": 1,
+      "prompt_median": 513,
+      "prompt_total": 513,
+      "cache_median": 1,
+      "cache_total": 1,
+      "predicted_median": 42,
+      "predicted_total": 42,
+      "cache_hit_share": 0.002,
+      "raw_prefill_tps": 973.1,
+      "effective_prefill_tps": 975.0
+     },
+     "diary": {
+      "n": 11,
+      "prompt_median": 488,
+      "prompt_total": 4848,
+      "cache_median": 261,
+      "cache_total": 2995,
+      "predicted_median": 44,
+      "predicted_total": 458,
+      "cache_hit_share": 0.382,
+      "raw_prefill_tps": 2117.9,
+      "effective_prefill_tps": 3426.3
+     },
+     "dream": {
+      "n": 6,
+      "prompt_median": 402.0,
+      "prompt_total": 2400,
+      "cache_median": 178.0,
+      "cache_total": 1146,
+      "predicted_median": 13.5,
+      "predicted_total": 76,
+      "cache_hit_share": 0.323,
+      "raw_prefill_tps": 1869.0,
+      "effective_prefill_tps": 2761.4
+     },
+     "intent": {
+      "n": 15,
+      "prompt_median": 97,
+      "prompt_total": 1455,
+      "cache_median": 1974,
+      "cache_total": 29665,
+      "predicted_median": 14,
+      "predicted_total": 234,
+      "cache_hit_share": 0.953,
+      "raw_prefill_tps": 685.2,
+      "effective_prefill_tps": 14654.4
+     },
+     "line": {
+      "n": 26,
+      "prompt_median": 1933.0,
+      "prompt_total": 38518,
+      "cache_median": 0.0,
+      "cache_total": 13897,
+      "predicted_median": 16.0,
+      "predicted_total": 405,
+      "cache_hit_share": 0.265,
+      "raw_prefill_tps": 1649.6,
+      "effective_prefill_tps": 2244.8
+     },
+     "lore": {
+      "n": 1,
+      "prompt_median": 181,
+      "prompt_total": 181,
+      "cache_median": 184,
+      "cache_total": 184,
+      "predicted_median": 2,
+      "predicted_total": 2,
+      "cache_hit_share": 0.504,
+      "raw_prefill_tps": 1640.3,
+      "effective_prefill_tps": 3307.7
+     },
+     "memory": {
+      "n": 2,
+      "prompt_median": 54.0,
+      "prompt_total": 108,
+      "cache_median": 1861.0,
+      "cache_total": 3722,
+      "predicted_median": 16.0,
+      "predicted_total": 32,
+      "cache_hit_share": 0.972,
+      "raw_prefill_tps": 721.6,
+      "effective_prefill_tps": 25590.5
+     },
+     "narrator": {
+      "n": 1,
+      "prompt_median": 5,
+      "prompt_total": 5,
+      "cache_median": 56,
+      "cache_total": 56,
+      "predicted_median": 7,
+      "predicted_total": 7,
+      "cache_hit_share": 0.918,
+      "raw_prefill_tps": 134.7,
+      "effective_prefill_tps": 1643.2
+     },
+     "reflect": {
+      "n": 7,
+      "prompt_median": 564,
+      "prompt_total": 4864,
+      "cache_median": 429,
+      "cache_total": 2757,
+      "predicted_median": 242,
+      "predicted_total": 1712,
+      "cache_hit_share": 0.362,
+      "raw_prefill_tps": 2111.7,
+      "effective_prefill_tps": 3308.7
+     },
+     "relation": {
+      "n": 2,
+      "prompt_median": 16.0,
+      "prompt_total": 32,
+      "cache_median": 1897.0,
+      "cache_total": 3794,
+      "predicted_median": 18.5,
+      "predicted_total": 37,
+      "cache_hit_share": 0.992,
+      "raw_prefill_tps": 299.0,
+      "effective_prefill_tps": 35754.3
+     },
+     "thought": {
+      "n": 10,
+      "prompt_median": 392.5,
+      "prompt_total": 3216,
+      "cache_median": 177.0,
+      "cache_total": 2700,
+      "predicted_median": 9.5,
+      "predicted_total": 95,
+      "cache_hit_share": 0.456,
+      "raw_prefill_tps": 1820.2,
+      "effective_prefill_tps": 3348.4
+     }
+    },
+    "all": {
+     "n": 88,
+     "prompt_median": 416.5,
+     "prompt_total": 57608,
+     "cache_median": 262.5,
+     "cache_total": 63125,
+     "predicted_median": 16.0,
+     "predicted_total": 3210,
+     "cache_hit_share": 0.523,
+     "raw_prefill_tps": 1619.7,
+     "effective_prefill_tps": 3394.5
+    },
+    "per_lease": {
+     "0": {
+      "calls": 9,
+      "prompt_n": 2167,
+      "cache_n": 2449,
+      "prompt_per_call": 240.8
+     },
+     "1": {
+      "calls": 58,
+      "prompt_n": 35384,
+      "cache_n": 38372,
+      "prompt_per_call": 610.1
+     },
+     "2": {
+      "calls": 21,
+      "prompt_n": 20057,
+      "cache_n": 22304,
+      "prompt_per_call": 955.1
+     }
+    },
+    "note": "prompt_n is the uncached prompt tokens; cache_hit_share = cache_n / (prompt_n + cache_n); effective prefill = (prompt_n+cache_n)/prompt_s beside raw prompt_n/prompt_s"
+   },
+   "register": {
+    "common_words": "agent core/common_words.py (function-word + everyday floor list, not a 5000-word frequency list)",
+    "common_word_count": 947,
+    "note": "rare share = words not in the common list (floor list, so inflated vs a 5000-word list); pawn names excluded; canary strings removed; d = Cohen's d (group1 - group2, pooled sd) over per-line values; ttr/mattr50 are on pooled text (mattr50 needs >= 50 tokens)",
+    "per_pawn": {
+     "s2x-on:1": {
+      "run": "s2x-on",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 7,
+        "words": 86,
+        "word_len": 4.345,
+        "words_per_sentence": 12.286,
+        "rare_share": 0.106,
+        "ttr": 0.733,
+        "mattr50": 0.827
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.9,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.1,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 5.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.444,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 40,
+        "word_len": 3.75,
+        "words_per_sentence": 13.333,
+        "rare_share": 0.15,
+        "ttr": 0.775,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.556,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 172,
+       "ttr": 0.581,
+       "mattr50": 0.76
+      }
+     },
+     "s2x-on:2": {
+      "run": "s2x-on",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 5,
+        "words": 52,
+        "word_len": 4.229,
+        "words_per_sentence": 6.3,
+        "rare_share": 0.119,
+        "ttr": 0.827,
+        "mattr50": 0.847
+       },
+       "aim": {
+        "lines": 1,
+        "words": 15,
+        "word_len": 3.8,
+        "words_per_sentence": 15.0,
+        "rare_share": 0.133,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 5.5,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 35,
+        "word_len": 3.771,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.829,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.875,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 134,
+       "ttr": 0.627,
+       "mattr50": 0.738
+      }
+     },
+     "s2x-on:3": {
+      "run": "s2x-on",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 4,
+        "words": 16,
+        "word_len": 3.917,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.083,
+        "ttr": 0.438,
+        "mattr50": null
+       },
+       "spoken": {
+        "lines": 3,
+        "words": 33,
+        "word_len": 4.174,
+        "words_per_sentence": 7.167,
+        "rare_share": 0.21,
+        "ttr": 0.788,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.6,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 39,
+        "word_len": 4.026,
+        "words_per_sentence": 9.75,
+        "rare_share": 0.256,
+        "ttr": 0.769,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.5,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.438,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 114,
+       "ttr": 0.596,
+       "mattr50": 0.756
+      }
+     },
+     "s2x-on:4": {
+      "run": "s2x-on",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.5,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.167,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 40,
+        "word_len": 4.075,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.15,
+        "ttr": 0.9,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 52,
+       "ttr": 0.788,
+       "mattr50": 0.807
+      }
+     },
+     "s2x-on:5": {
+      "run": "s2x-on",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 25,
+        "word_len": 3.92,
+        "words_per_sentence": 12.5,
+        "rare_share": 0.125,
+        "ttr": 0.92,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 28,
+        "word_len": 4.8,
+        "words_per_sentence": 9.333,
+        "rare_share": 0.363,
+        "ttr": 0.607,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 4.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 35,
+        "word_len": 4.4,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.343,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 112,
+       "ttr": 0.58,
+       "mattr50": 0.651
+      }
+     },
+     "s2x-on:6": {
+      "run": "s2x-on",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 24,
+        "word_len": 3.625,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.083,
+        "ttr": 0.917,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 11,
+        "word_len": 3.455,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.182,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.571,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.143,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 49,
+       "ttr": 0.735,
+       "mattr50": null
+      }
+     },
+     "s2x-on:7": {
+      "run": "s2x-on",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 1,
+        "words": 13,
+        "word_len": 4.923,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.231,
+        "ttr": 0.923,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 12,
+        "word_len": 3.167,
+        "words_per_sentence": 12.0,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.667,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 37,
+        "word_len": 4.243,
+        "words_per_sentence": 9.25,
+        "rare_share": 0.216,
+        "ttr": 0.865,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 80,
+       "ttr": 0.675,
+       "mattr50": 0.71
+      }
+     },
+     "s2x-on:8": {
+      "run": "s2x-on",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 1,
+        "words": 5,
+        "word_len": 5.2,
+        "words_per_sentence": 2.5,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.667,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 44,
+        "word_len": 4.364,
+        "words_per_sentence": 14.667,
+        "rare_share": 0.295,
+        "ttr": 0.795,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 22,
+        "word_len": 4.636,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.455,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 93,
+       "ttr": 0.624,
+       "mattr50": 0.768
+      }
+     },
+     "s2x-on:9": {
+      "run": "s2x-on",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 36,
+        "word_len": 3.954,
+        "words_per_sentence": 10.167,
+        "rare_share": 0.114,
+        "ttr": 0.806,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.7,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.225,
+        "ttr": 0.667,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 3.875,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.0,
+        "ttr": 0.438,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 25,
+        "word_len": 3.56,
+        "words_per_sentence": 6.25,
+        "rare_share": 0.12,
+        "ttr": 0.84,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 95,
+       "ttr": 0.632,
+       "mattr50": 0.623
+      }
+     },
+     "s2x-on:10": {
+      "run": "s2x-on",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.95,
+        "words_per_sentence": 5.0,
+        "rare_share": 0.15,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.714,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 32,
+        "word_len": 4.156,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.219,
+        "ttr": 0.938,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 5.0,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 82,
+       "ttr": 0.646,
+       "mattr50": 0.754
+      }
+     }
+    },
+    "pairs": {
+     "s2x-on:smart_vs_dull:spoken:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 3.9199,
+      "mean2": 3.625,
+      "d": 1.415
+     },
+     "s2x-on:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 12.5,
+      "mean2": 9.0,
+      "d": 1.151
+     },
+     "s2x-on:smart_vs_dull:spoken:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.125,
+      "mean2": 0.0833,
+      "d": 0.277
+     },
+     "s2x-on:smart_vs_dull:thought:word_len": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 4.8,
+      "mean2": 4.5714,
+      "d": 0.808
+     },
+     "s2x-on:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 9.3333,
+      "mean2": 7.0,
+      "d": 4.95
+     },
+     "s2x-on:smart_vs_dull:thought:rare_share": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 0.363,
+      "mean2": 0.1429,
+      "d": 1.91
+     },
+     "s2x-on:smart_vs_dull:diary:word_len": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 4.4,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 11.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:diary:rare_share": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 0.3429,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.2857,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4286,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 4.4,
+      "mean2": 3.4545,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 10.0,
+      "mean2": 11.0,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.2,
+      "mean2": 0.1818,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 5.2,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 2.5,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 4.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 6.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.3333,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 4.3636,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 14.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 0.2955,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 4.6364,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 11.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4545,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 3.4,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 10.0,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     }
+    }
+   },
+   "violations": {
+    "age_gate": 0,
+    "explicit_text_adult_off": 0,
+    "injection_followed": 0,
+    "label_leaks": 0,
+    "empty": 0,
+    "refusals": 0,
+    "over_length": 0
+   }
+  },
+  "ALL": {
+   "run": "ALL",
+   "runs": [
+    "s1x-off",
+    "s3x-off",
+    "s2x-on"
+   ],
+   "outputs": 581,
+   "calls": 518,
+   "adult": [
+    "off",
+    "on"
+   ],
+   "word_caps_used": {
+    "line": 30,
+    "conv_turn": 30,
+    "gathering": 30,
+    "player_reply": 30,
+    "thought": 40,
+    "cloud": 40,
+    "inner_reaction": 40,
+    "inner_musing": 40,
+    "inner_concern": 40,
+    "bystander": 6,
+    "diary": 90,
+    "dream": 16,
+    "inner_dream": 16,
+    "aim": 16,
+    "art": 75,
+    "lore": 12,
+    "chronicle": 150,
+    "recap": 30
+   },
+   "char_caps_used": {
+    "line": 240,
+    "conv_turn": 240,
+    "gathering": 240,
+    "player_reply": 240
+   },
+   "age_gate": {
+    "scanned": 581,
+    "violations": 0,
+    "review": 0
+   },
+   "explicit_text": {
+    "adult": "off",
+    "explicit_hits": 0,
+    "soft_hits": 0,
+    "violations": 0
+   },
+   "injection_followed": {
+    "output_hits": 0,
+    "raw_call_hits": 0,
+    "ends_with_canary": 0,
+    "by_canary": {}
+   },
+   "empty_refused_invented": {
+    "empty": 0,
+    "refusals": 0,
+    "refusals_review": 2,
+    "invented_name_candidates": 9,
+    "empty_calls": 0,
+    "refusal_calls": 0
+   },
+   "label_leaks": {
+    "leaks": 0,
+    "by_reason": {}
+   },
+   "loops_repeats": {
+    "exact": 10,
+    "near": 3,
+    "conversation_repeats": 0,
+    "mind_inner_repeats": 2,
+    "by_kind": {
+     "lore": 1,
+     "aim": 2,
+     "bystander": 2,
+     "inner_reaction": 2,
+     "player_reply": 1,
+     "inner_concern": 4,
+     "art": 1
+    }
+   },
+   "over_length": {
+    "over_length": 0,
+    "by_kind": {}
+   },
+   "drops": {
+    "by_kind": {
+     "unknown_name:Memory": {
+      "thought": 1
+     },
+     "-": {
+      "expired": 2,
+      "nothing_new": 1,
+      "preempted": 4,
+      "minor_safety": 1,
+      "reflect_failed": 1
+     },
+     "reflect": {
+      "idle_preempted": 13
+     },
+     "minor_safety": {
+      "chronicle": 1,
+      "diary": 1
+     },
+     "unknown_name:Rim": {
+      "art": 2
+     },
+     "wants": {
+      "idle_preempted": 3
+     },
+     "unknown_name:Beacon": {
+      "art": 1
+     },
+     "unknown_name:Ana": {
+      "diary": 1
+     },
+     "unknown_name:Bram": {
+      "diary": 1
+     }
+    },
+    "total": 33,
+    "llm_error": 0,
+    "counters": {
+     "gate.refused_intents": 0,
+     "gate.dropped_lines": 0,
+     "gate.skipped_events": 0,
+     "gate.skipped_player_text": 0,
+     "gate.adult_off_dropped": 0,
+     "wants.runs": 508,
+     "wants.acted": 14,
+     "wants.remembered": 0,
+     "wants.nothing": 490,
+     "wants.fallbacks": 0,
+     "wants.refused": 0,
+     "wants.unsupported": 0,
+     "art.dropped": 12,
+     "bystand.asked": 24,
+     "bystand.shown": 13,
+     "bystand.templated": 13,
+     "bystand.dropped": 0,
+     "bystand.skipped": 0,
+     "group.skipped": 0,
+     "group.lines": 44,
+     "group.rotations": 18,
+     "group.ends.turn_cap": 12,
+     "loop.checked": 77,
+     "loop.caught": 0,
+     "loop.retried": 0,
+     "loop.recovered": 0,
+     "loop.ended": 0,
+     "grudges.started": 8,
+     "grudges.made_up": 0,
+     "grudges.escalated": 0,
+     "grudges.faded": 2,
+     "grudges.seeks": 9,
+     "lease_log_counts.drop:actor_quota": 1,
+     "lease_log_counts.drop:ambient_quota": 2,
+     "lease_log_counts.drop:gap": 19,
+     "lease_log_counts.expired:bystander:10": 2,
+     "lease_log_counts.expired:bystander:3": 2,
+     "lease_log_counts.expired:bystander:4": 3,
+     "lease_log_counts.expired:bystander:7": 1,
+     "lease_log_counts.expired:concern_resolved:4": 3,
+     "lease_log_counts.expired:first_cue:2": 3,
+     "lease_log_counts.expired:injury:6": 4,
+     "lease_log_counts.expired:injury:7": 4,
+     "lease_log_counts.expired:level_up:5": 3,
+     "lease_log_counts.expired:social:3": 2,
+     "lease_log_counts.expired:social:5": 12,
+     "lease_log_counts.expired:social:6": 8,
+     "lease_log_counts.expired:social:7": 7,
+     "lease_log_counts.expired:social:8": 10,
+     "lease_log_counts.expired:social:9": 4,
+     "lease_log_counts.expired:tend:4": 5,
+     "lease_log_counts.expired:vanilla_social:1": 4,
+     "lease_log_counts.lease:slot1:actor10:IDLE": 59,
+     "lease_log_counts.lease:slot1:actor10:SOCIAL": 5,
+     "lease_log_counts.lease:slot1:actor11:IDLE": 25,
+     "lease_log_counts.lease:slot1:actor1:IDLE": 89,
+     "lease_log_counts.lease:slot1:actor1:REACTIVE": 7,
+     "lease_log_counts.lease:slot1:actor1:SOCIAL": 10,
+     "lease_log_counts.lease:slot1:actor1:URGENT": 5,
+     "lease_log_counts.lease:slot1:actor2:IDLE": 78,
+     "lease_log_counts.lease:slot1:actor2:SOCIAL": 3,
+     "lease_log_counts.lease:slot1:actor3:IDLE": 81,
+     "lease_log_counts.lease:slot1:actor3:REACTIVE": 11,
+     "lease_log_counts.lease:slot1:actor4:IDLE": 50,
+     "lease_log_counts.lease:slot1:actor4:REACTIVE": 9,
+     "lease_log_counts.lease:slot1:actor4:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor5:IDLE": 82,
+     "lease_log_counts.lease:slot1:actor5:PLAYER": 5,
+     "lease_log_counts.lease:slot1:actor5:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor5:SOCIAL": 4,
+     "lease_log_counts.lease:slot1:actor6:IDLE": 80,
+     "lease_log_counts.lease:slot1:actor6:PLAYER": 5,
+     "lease_log_counts.lease:slot1:actor7:IDLE": 50,
+     "lease_log_counts.lease:slot1:actor7:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor8:IDLE": 40,
+     "lease_log_counts.lease:slot1:actor8:PLAYER": 5,
+     "lease_log_counts.lease:slot1:actor8:REACTIVE": 1,
+     "lease_log_counts.lease:slot1:actor9:IDLE": 68,
+     "lease_log_counts.lease:slot1:actor9:SOCIAL": 2,
+     "lease_log_counts.lease:slot2:actor1:PLAYER": 5,
+     "lease_log_counts.lease:slot2:actor1:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor1:SOCIAL": 5,
+     "lease_log_counts.lease:slot2:actor2:REACTIVE": 5,
+     "lease_log_counts.lease:slot2:actor2:SOCIAL": 10,
+     "lease_log_counts.lease:slot2:actor2:URGENT": 5,
+     "lease_log_counts.lease:slot2:actor3:REACTIVE": 3,
+     "lease_log_counts.lease:slot2:actor3:SOCIAL": 4,
+     "lease_log_counts.lease:slot2:actor4:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor5:REACTIVE": 2,
+     "lease_log_counts.lease:slot2:actor6:SOCIAL": 2,
+     "lease_log_counts.lease:slot2:actor7:PLAYER": 5,
+     "lease_log_counts.lease:slot2:actor8:REACTIVE": 1,
+     "lease_log_counts.lease:slot2:actor9:PLAYER": 5,
+     "lease_log_counts.lease:slot2:actor9:REACTIVE": 4,
+     "lease_log_counts.lease:slot2:actor9:SOCIAL": 1,
+     "lease_log_counts.merged:concern_resolved": 2,
+     "lease_log_counts.merged:first_cue": 3,
+     "lease_log_counts.release:slot1:conversation_end": 10,
+     "lease_log_counts.release:slot1:done": 36,
+     "lease_log_counts.release:slot1:gathering_end": 15,
+     "lease_log_counts.release:slot1:idle_done": 685,
+     "lease_log_counts.release:slot1:preempted": 20,
+     "lease_log_counts.release:slot1:rotated": 13,
+     "lease_log_counts.release:slot2:conversation_end": 10,
+     "lease_log_counts.release:slot2:done": 30,
+     "lease_log_counts.release:slot2:gathering_end": 14,
+     "lease_log_counts.release:slot2:rotated": 5,
+     "dream_pending": 0,
+     "group.ends.dropped": 1,
+     "group.ends.over": 3,
+     "lease_log_counts.expired:first_cue:9": 2,
+     "lease_log_counts.expired:gathering:1": 1,
+     "lease_log_counts.expired:gathering:3": 2,
+     "lease_log_counts.expired:injury:3": 3,
+     "lease_log_counts.expired:injury:4": 3,
+     "lease_log_counts.expired:injury:5": 2,
+     "lease_log_counts.expired:injury:8": 3,
+     "lease_log_counts.expired:social:1": 4,
+     "lease_log_counts.expired:social:10": 3,
+     "lease_log_counts.expired:social:2": 5,
+     "lease_log_counts.expired:social:4": 3,
+     "lease_log_counts.expired:thought:1": 2,
+     "lease_log_counts.lease:slot2:actor7:SOCIAL": 1,
+     "lease_log_counts.merged:vanilla_social": 2,
+     "lease_log_counts.release:slot2:preempted": 4,
+     "lease_log_counts.expired:first_cue:3": 1,
+     "lease_log_counts.expired:first_cue:5": 1,
+     "lease_log_counts.lease:slot1:actor1:AMBIENT": 1,
+     "lease_log_counts.lease:slot1:actor3:SOCIAL": 1,
+     "lease_log_counts.lease:slot1:actor6:SOCIAL": 1,
+     "lease_log_counts.lease:slot2:actor10:SOCIAL": 2,
+     "lease_log_counts.lease:slot2:actor5:SOCIAL": 1
+    }
+   },
+   "latency": {
+    "by_kind": {
+     "art": {
+      "n": 26,
+      "median": 0.563,
+      "p90": 0.803,
+      "max": 1.766
+     },
+     "chronicle": {
+      "n": 9,
+      "median": 1.503,
+      "p90": 1.682,
+      "max": 1.916
+     },
+     "chronicle_summary": {
+      "n": 1,
+      "median": 1.252,
+      "p90": 1.252,
+      "max": 1.252
+     },
+     "diary": {
+      "n": 51,
+      "median": 1.034,
+      "p90": 1.221,
+      "max": 1.856
+     },
+     "dream": {
+      "n": 24,
+      "median": 0.429,
+      "p90": 0.514,
+      "max": 0.536
+     },
+     "intent": {
+      "n": 102,
+      "median": 0.549,
+      "p90": 0.77,
+      "max": 4.691
+     },
+     "line": {
+      "n": 147,
+      "median": 1.297,
+      "p90": 2.278,
+      "max": 3.625
+     },
+     "lore": {
+      "n": 6,
+      "median": 0.245,
+      "p90": 0.343,
+      "max": 0.355
+     },
+     "memory": {
+      "n": 16,
+      "median": 0.395,
+      "p90": 0.464,
+      "max": 0.529
+     },
+     "narrator": {
+      "n": 12,
+      "median": 0.435,
+      "p90": 1.432,
+      "max": 1.548
+     },
+     "recap": {
+      "n": 2,
+      "median": 0.684,
+      "p90": 0.735,
+      "max": 0.747
+     },
+     "reflect": {
+      "n": 46,
+      "median": 5.45,
+      "p90": 7.341,
+      "max": 10.045
+     },
+     "relation": {
+      "n": 16,
+      "median": 0.368,
+      "p90": 0.494,
+      "max": 1.181
+     },
+     "thought": {
+      "n": 60,
+      "median": 0.418,
+      "p90": 0.463,
+      "max": 0.481
+     }
+    },
+    "all": {
+     "n": 518,
+     "median": 0.665,
+     "p90": 3.646,
+     "max": 10.045
+    },
+    "error_calls": 0,
+    "error_share": 0.0,
+    "errors_by_kind": {},
+    "llm_error_drops": 0,
+    "fallbacks_counter": 0,
+    "refused_counter": 0
+   },
+   "tokens": {
+    "by_kind": {
+     "art": {
+      "n": 26,
+      "prompt_median": 247.0,
+      "prompt_total": 7304,
+      "cache_median": 368.0,
+      "cache_total": 9201,
+      "predicted_median": 20.0,
+      "predicted_total": 537,
+      "cache_hit_share": 0.557,
+      "raw_prefill_tps": 1467.0,
+      "effective_prefill_tps": 3315.1
+     },
+     "chronicle": {
+      "n": 9,
+      "prompt_median": 319,
+      "prompt_total": 4013,
+      "cache_median": 195,
+      "cache_total": 2438,
+      "predicted_median": 67,
+      "predicted_total": 567,
+      "cache_hit_share": 0.378,
+      "raw_prefill_tps": 1750.0,
+      "effective_prefill_tps": 2813.1
+     },
+     "chronicle_summary": {
+      "n": 1,
+      "prompt_median": 169,
+      "prompt_total": 169,
+      "cache_median": 1,
+      "cache_total": 1,
+      "predicted_median": 60,
+      "predicted_total": 60,
+      "cache_hit_share": 0.006,
+      "raw_prefill_tps": 1447.7,
+      "effective_prefill_tps": 1456.3
+     },
+     "diary": {
+      "n": 51,
+      "prompt_median": 489,
+      "prompt_total": 24164,
+      "cache_median": 228,
+      "cache_total": 12226,
+      "predicted_median": 41,
+      "predicted_total": 2107,
+      "cache_hit_share": 0.336,
+      "raw_prefill_tps": 2120.7,
+      "effective_prefill_tps": 3193.7
+     },
+     "dream": {
+      "n": 24,
+      "prompt_median": 402.0,
+      "prompt_total": 9627,
+      "cache_median": 178.0,
+      "cache_total": 4662,
+      "predicted_median": 11.0,
+      "predicted_total": 270,
+      "cache_hit_share": 0.326,
+      "raw_prefill_tps": 1887.7,
+      "effective_prefill_tps": 2801.8
+     },
+     "intent": {
+      "n": 102,
+      "prompt_median": 97.0,
+      "prompt_total": 26228,
+      "cache_median": 2061.0,
+      "cache_total": 194961,
+      "predicted_median": 15.0,
+      "predicted_total": 1591,
+      "cache_hit_share": 0.881,
+      "raw_prefill_tps": 1062.5,
+      "effective_prefill_tps": 8960.0
+     },
+     "line": {
+      "n": 147,
+      "prompt_median": 2008,
+      "prompt_total": 220376,
+      "cache_median": 0,
+      "cache_total": 85663,
+      "predicted_median": 16,
+      "predicted_total": 2250,
+      "cache_hit_share": 0.28,
+      "raw_prefill_tps": 1556.0,
+      "effective_prefill_tps": 2160.8
+     },
+     "lore": {
+      "n": 6,
+      "prompt_median": 202.5,
+      "prompt_total": 1201,
+      "cache_median": 184.0,
+      "cache_total": 1104,
+      "predicted_median": 5.0,
+      "predicted_total": 36,
+      "cache_hit_share": 0.479,
+      "raw_prefill_tps": 1507.6,
+      "effective_prefill_tps": 2893.4
+     },
+     "memory": {
+      "n": 16,
+      "prompt_median": 49.0,
+      "prompt_total": 824,
+      "cache_median": 1953.0,
+      "cache_total": 31507,
+      "predicted_median": 15.0,
+      "predicted_total": 250,
+      "cache_hit_share": 0.975,
+      "raw_prefill_tps": 729.3,
+      "effective_prefill_tps": 28616.8
+     },
+     "narrator": {
+      "n": 12,
+      "prompt_median": 16.0,
+      "prompt_total": 198,
+      "cache_median": 45.0,
+      "cache_total": 540,
+      "predicted_median": 8.0,
+      "predicted_total": 102,
+      "cache_hit_share": 0.732,
+      "raw_prefill_tps": 54.2,
+      "effective_prefill_tps": 202.0
+     },
+     "recap": {
+      "n": 2,
+      "prompt_median": 222.5,
+      "prompt_total": 445,
+      "cache_median": 200.0,
+      "cache_total": 400,
+      "predicted_median": 26.0,
+      "predicted_total": 52,
+      "cache_hit_share": 0.473,
+      "raw_prefill_tps": 1359.8,
+      "effective_prefill_tps": 2582.1
+     },
+     "reflect": {
+      "n": 46,
+      "prompt_median": 790.5,
+      "prompt_total": 34123,
+      "cache_median": 315.5,
+      "cache_total": 19762,
+      "predicted_median": 258.0,
+      "predicted_total": 12295,
+      "cache_hit_share": 0.367,
+      "raw_prefill_tps": 2116.8,
+      "effective_prefill_tps": 3342.8
+     },
+     "relation": {
+      "n": 16,
+      "prompt_median": 16.0,
+      "prompt_total": 256,
+      "cache_median": 1977.5,
+      "cache_total": 32043,
+      "predicted_median": 15.0,
+      "predicted_total": 241,
+      "cache_hit_share": 0.992,
+      "raw_prefill_tps": 315.2,
+      "effective_prefill_tps": 39767.6
+     },
+     "thought": {
+      "n": 60,
+      "prompt_median": 404.5,
+      "prompt_total": 23448,
+      "cache_median": 177.0,
+      "cache_total": 12486,
+      "predicted_median": 10.0,
+      "predicted_total": 590,
+      "cache_hit_share": 0.347,
+      "raw_prefill_tps": 1886.2,
+      "effective_prefill_tps": 2890.7
+     }
+    },
+    "all": {
+     "n": 518,
+     "prompt_median": 413.0,
+     "prompt_total": 352376,
+     "cache_median": 255.0,
+     "cache_total": 406994,
+     "predicted_median": 16.0,
+     "predicted_total": 20948,
+     "cache_hit_share": 0.536,
+     "raw_prefill_tps": 1562.8,
+     "effective_prefill_tps": 3367.9
+    },
+    "per_lease": {
+     "0": {
+      "calls": 56,
+      "prompt_n": 13330,
+      "cache_n": 13684,
+      "prompt_per_call": 238.0
+     },
+     "1": {
+      "calls": 335,
+      "prompt_n": 217356,
+      "cache_n": 246847,
+      "prompt_per_call": 648.8
+     },
+     "2": {
+      "calls": 127,
+      "prompt_n": 121690,
+      "cache_n": 146463,
+      "prompt_per_call": 958.2
+     }
+    },
+    "note": "prompt_n is the uncached prompt tokens; cache_hit_share = cache_n / (prompt_n + cache_n); effective prefill = (prompt_n+cache_n)/prompt_s beside raw prompt_n/prompt_s"
+   },
+   "register": {
+    "common_words": "agent core/common_words.py (function-word + everyday floor list, not a 5000-word frequency list)",
+    "common_word_count": 947,
+    "note": "rare share = words not in the common list (floor list, so inflated vs a 5000-word list); pawn names excluded; canary strings removed; d = Cohen's d (group1 - group2, pooled sd) over per-line values; ttr/mattr50 are on pooled text (mattr50 needs >= 50 tokens)",
+    "per_pawn": {
+     "s1x-off:1": {
+      "run": "s1x-off",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 22,
+        "words": 262,
+        "word_len": 4.16,
+        "words_per_sentence": 11.659,
+        "rare_share": 0.145,
+        "ttr": 0.542,
+        "mattr50": 0.767
+       },
+       "aim": {
+        "lines": 3,
+        "words": 35,
+        "word_len": 3.942,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.094,
+        "ttr": 0.771,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 15,
+        "words": 94,
+        "word_len": 3.908,
+        "words_per_sentence": 6.067,
+        "rare_share": 0.128,
+        "ttr": 0.532,
+        "mattr50": 0.607
+       },
+       "diary": {
+        "lines": 2,
+        "words": 80,
+        "word_len": 4.117,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.174,
+        "ttr": 0.7,
+        "mattr50": 0.784
+       },
+       "dream": {
+        "lines": 4,
+        "words": 30,
+        "word_len": 4.75,
+        "words_per_sentence": 7.5,
+        "rare_share": 0.188,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 501,
+       "ttr": 0.421,
+       "mattr50": 0.736
+      }
+     },
+     "s1x-off:2": {
+      "run": "s1x-off",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 14,
+        "words": 153,
+        "word_len": 4.295,
+        "words_per_sentence": 5.464,
+        "rare_share": 0.231,
+        "ttr": 0.582,
+        "mattr50": 0.752
+       },
+       "aim": {
+        "lines": 6,
+        "words": 70,
+        "word_len": 3.398,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.102,
+        "ttr": 0.443,
+        "mattr50": 0.531
+       },
+       "thought": {
+        "lines": 9,
+        "words": 65,
+        "word_len": 4.806,
+        "words_per_sentence": 7.222,
+        "rare_share": 0.364,
+        "ttr": 0.462,
+        "mattr50": 0.551
+       },
+       "diary": {
+        "lines": 2,
+        "words": 70,
+        "word_len": 3.837,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.757,
+        "mattr50": 0.815
+       },
+       "dream": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.667,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 370,
+       "ttr": 0.454,
+       "mattr50": 0.69
+      }
+     },
+     "s1x-off:3": {
+      "run": "s1x-off",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 13,
+        "words": 96,
+        "word_len": 4.067,
+        "words_per_sentence": 7.154,
+        "rare_share": 0.155,
+        "ttr": 0.458,
+        "mattr50": 0.606
+       },
+       "spoken": {
+        "lines": 13,
+        "words": 165,
+        "word_len": 3.75,
+        "words_per_sentence": 8.474,
+        "rare_share": 0.068,
+        "ttr": 0.552,
+        "mattr50": 0.744
+       },
+       "aim": {
+        "lines": 3,
+        "words": 32,
+        "word_len": 3.942,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.094,
+        "ttr": 0.625,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 96,
+        "word_len": 4.141,
+        "words_per_sentence": 8.893,
+        "rare_share": 0.213,
+        "ttr": 0.719,
+        "mattr50": 0.825
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.75,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 405,
+       "ttr": 0.425,
+       "mattr50": 0.721
+      }
+     },
+     "s1x-off:4": {
+      "run": "s1x-off",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 12,
+        "words": 78,
+        "word_len": 4.33,
+        "words_per_sentence": 6.25,
+        "rare_share": 0.13,
+        "ttr": 0.487,
+        "mattr50": 0.604
+       },
+       "spoken": {
+        "lines": 7,
+        "words": 55,
+        "word_len": 4.715,
+        "words_per_sentence": 5.405,
+        "rare_share": 0.117,
+        "ttr": 0.545,
+        "mattr50": 0.583
+       },
+       "aim": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.449,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.75,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 61,
+        "word_len": 4.258,
+        "words_per_sentence": 7.625,
+        "rare_share": 0.279,
+        "ttr": 0.721,
+        "mattr50": 0.768
+       }
+      },
+      "pooled": {
+       "words": 214,
+       "ttr": 0.411,
+       "mattr50": 0.622
+      }
+     },
+     "s1x-off:5": {
+      "run": "s1x-off",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 7,
+        "words": 71,
+        "word_len": 4.412,
+        "words_per_sentence": 9.143,
+        "rare_share": 0.067,
+        "ttr": 0.817,
+        "mattr50": 0.852
+       },
+       "aim": {
+        "lines": 3,
+        "words": 30,
+        "word_len": 4.234,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.104,
+        "ttr": 0.833,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 13,
+        "words": 93,
+        "word_len": 4.473,
+        "words_per_sentence": 6.692,
+        "rare_share": 0.251,
+        "ttr": 0.462,
+        "mattr50": 0.541
+       },
+       "diary": {
+        "lines": 2,
+        "words": 80,
+        "word_len": 4.39,
+        "words_per_sentence": 11.917,
+        "rare_share": 0.255,
+        "ttr": 0.688,
+        "mattr50": 0.763
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.143,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 288,
+       "ttr": 0.486,
+       "mattr50": 0.689
+      }
+     },
+     "s1x-off:6": {
+      "run": "s1x-off",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 28,
+        "word_len": 4.004,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.131,
+        "ttr": 0.821,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.649,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.0,
+        "ttr": 0.778,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 13,
+        "words": 77,
+        "word_len": 3.727,
+        "words_per_sentence": 5.692,
+        "rare_share": 0.044,
+        "ttr": 0.416,
+        "mattr50": 0.541
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 4.076,
+        "words_per_sentence": 5.5,
+        "rare_share": 0.167,
+        "ttr": 0.8,
+        "mattr50": 0.807
+       }
+      },
+      "pooled": {
+       "words": 178,
+       "ttr": 0.478,
+       "mattr50": 0.608
+      }
+     },
+     "s1x-off:7": {
+      "run": "s1x-off",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 32,
+        "word_len": 4.767,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.306,
+        "ttr": 0.844,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.125,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.045,
+        "ttr": 0.737,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 82,
+        "word_len": 4.311,
+        "words_per_sentence": 9.111,
+        "rare_share": 0.259,
+        "ttr": 0.439,
+        "mattr50": 0.552
+       },
+       "diary": {
+        "lines": 2,
+        "words": 85,
+        "word_len": 3.983,
+        "words_per_sentence": 10.625,
+        "rare_share": 0.204,
+        "ttr": 0.671,
+        "mattr50": 0.771
+       },
+       "dream": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 4.2,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 0.4,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 238,
+       "ttr": 0.45,
+       "mattr50": 0.655
+      }
+     },
+     "s1x-off:8": {
+      "run": "s1x-off",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 25,
+        "word_len": 4.056,
+        "words_per_sentence": 7.833,
+        "rare_share": 0.071,
+        "ttr": 0.88,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 61,
+        "word_len": 4.84,
+        "words_per_sentence": 6.778,
+        "rare_share": 0.493,
+        "ttr": 0.475,
+        "mattr50": 0.46
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.352,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.0,
+        "ttr": 0.789,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 4.765,
+        "words_per_sentence": 6.875,
+        "rare_share": 0.205,
+        "ttr": 0.782,
+        "mattr50": 0.777
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.429,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.143,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 174,
+       "ttr": 0.471,
+       "mattr50": 0.653
+      }
+     },
+     "s1x-off:9": {
+      "run": "s1x-off",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 6,
+        "words": 47,
+        "word_len": 4.247,
+        "words_per_sentence": 5.75,
+        "rare_share": 0.249,
+        "ttr": 0.809,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 3,
+        "words": 33,
+        "word_len": 3.526,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.042,
+        "ttr": 0.697,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 9,
+        "words": 63,
+        "word_len": 4.096,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.315,
+        "ttr": 0.46,
+        "mattr50": 0.551
+       },
+       "diary": {
+        "lines": 2,
+        "words": 58,
+        "word_len": 3.861,
+        "words_per_sentence": 6.575,
+        "rare_share": 0.171,
+        "ttr": 0.776,
+        "mattr50": 0.8
+       },
+       "dream": {
+        "lines": 2,
+        "words": 22,
+        "word_len": 4.182,
+        "words_per_sentence": 5.5,
+        "rare_share": 0.182,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 223,
+       "ttr": 0.475,
+       "mattr50": 0.649
+      }
+     },
+     "s1x-off:10": {
+      "run": "s1x-off",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 6,
+        "words": 60,
+        "word_len": 4.58,
+        "words_per_sentence": 4.611,
+        "rare_share": 0.133,
+        "ttr": 0.75,
+        "mattr50": 0.776
+       },
+       "aim": {
+        "lines": 2,
+        "words": 25,
+        "word_len": 3.733,
+        "words_per_sentence": 12.5,
+        "rare_share": 0.067,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 7,
+        "words": 65,
+        "word_len": 5.975,
+        "words_per_sentence": 9.286,
+        "rare_share": 0.438,
+        "ttr": 0.569,
+        "mattr50": 0.703
+       },
+       "diary": {
+        "lines": 2,
+        "words": 50,
+        "word_len": 4.88,
+        "words_per_sentence": 7.292,
+        "rare_share": 0.22,
+        "ttr": 0.7,
+        "mattr50": 0.7
+       },
+       "dream": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 5.333,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.5,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 212,
+       "ttr": 0.528,
+       "mattr50": 0.72
+      }
+     },
+     "s2x-on:1": {
+      "run": "s2x-on",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 7,
+        "words": 86,
+        "word_len": 4.345,
+        "words_per_sentence": 12.286,
+        "rare_share": 0.106,
+        "ttr": 0.733,
+        "mattr50": 0.827
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.9,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.1,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 5.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.444,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 40,
+        "word_len": 3.75,
+        "words_per_sentence": 13.333,
+        "rare_share": 0.15,
+        "ttr": 0.775,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.556,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 172,
+       "ttr": 0.581,
+       "mattr50": 0.76
+      }
+     },
+     "s2x-on:2": {
+      "run": "s2x-on",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 5,
+        "words": 52,
+        "word_len": 4.229,
+        "words_per_sentence": 6.3,
+        "rare_share": 0.119,
+        "ttr": 0.827,
+        "mattr50": 0.847
+       },
+       "aim": {
+        "lines": 1,
+        "words": 15,
+        "word_len": 3.8,
+        "words_per_sentence": 15.0,
+        "rare_share": 0.133,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 5.5,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 35,
+        "word_len": 3.771,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.829,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.875,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 134,
+       "ttr": 0.627,
+       "mattr50": 0.738
+      }
+     },
+     "s2x-on:3": {
+      "run": "s2x-on",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 4,
+        "words": 16,
+        "word_len": 3.917,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.083,
+        "ttr": 0.438,
+        "mattr50": null
+       },
+       "spoken": {
+        "lines": 3,
+        "words": 33,
+        "word_len": 4.174,
+        "words_per_sentence": 7.167,
+        "rare_share": 0.21,
+        "ttr": 0.788,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.6,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 39,
+        "word_len": 4.026,
+        "words_per_sentence": 9.75,
+        "rare_share": 0.256,
+        "ttr": 0.769,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.5,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.438,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 114,
+       "ttr": 0.596,
+       "mattr50": 0.756
+      }
+     },
+     "s2x-on:4": {
+      "run": "s2x-on",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.5,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.167,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 40,
+        "word_len": 4.075,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.15,
+        "ttr": 0.9,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 52,
+       "ttr": 0.788,
+       "mattr50": 0.807
+      }
+     },
+     "s2x-on:5": {
+      "run": "s2x-on",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 25,
+        "word_len": 3.92,
+        "words_per_sentence": 12.5,
+        "rare_share": 0.125,
+        "ttr": 0.92,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 28,
+        "word_len": 4.8,
+        "words_per_sentence": 9.333,
+        "rare_share": 0.363,
+        "ttr": 0.607,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 4.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.2,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 35,
+        "word_len": 4.4,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.343,
+        "ttr": 0.8,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 112,
+       "ttr": 0.58,
+       "mattr50": 0.651
+      }
+     },
+     "s2x-on:6": {
+      "run": "s2x-on",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 24,
+        "word_len": 3.625,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.083,
+        "ttr": 0.917,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 11,
+        "word_len": 3.455,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.182,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.571,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.143,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 49,
+       "ttr": 0.735,
+       "mattr50": null
+      }
+     },
+     "s2x-on:7": {
+      "run": "s2x-on",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 1,
+        "words": 13,
+        "word_len": 4.923,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.231,
+        "ttr": 0.923,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 12,
+        "word_len": 3.167,
+        "words_per_sentence": 12.0,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.667,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 37,
+        "word_len": 4.243,
+        "words_per_sentence": 9.25,
+        "rare_share": 0.216,
+        "ttr": 0.865,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 80,
+       "ttr": 0.675,
+       "mattr50": 0.71
+      }
+     },
+     "s2x-on:8": {
+      "run": "s2x-on",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 1,
+        "words": 5,
+        "word_len": 5.2,
+        "words_per_sentence": 2.5,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.667,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 44,
+        "word_len": 4.364,
+        "words_per_sentence": 14.667,
+        "rare_share": 0.295,
+        "ttr": 0.795,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 22,
+        "word_len": 4.636,
+        "words_per_sentence": 11.0,
+        "rare_share": 0.455,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 93,
+       "ttr": 0.624,
+       "mattr50": 0.768
+      }
+     },
+     "s2x-on:9": {
+      "run": "s2x-on",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 36,
+        "word_len": 3.954,
+        "words_per_sentence": 10.167,
+        "rare_share": 0.114,
+        "ttr": 0.806,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.7,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.225,
+        "ttr": 0.667,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 3.875,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.0,
+        "ttr": 0.438,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 25,
+        "word_len": 3.56,
+        "words_per_sentence": 6.25,
+        "rare_share": 0.12,
+        "ttr": 0.84,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 95,
+       "ttr": 0.632,
+       "mattr50": 0.623
+      }
+     },
+     "s2x-on:10": {
+      "run": "s2x-on",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.95,
+        "words_per_sentence": 5.0,
+        "rare_share": 0.15,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.714,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 32,
+        "word_len": 4.156,
+        "words_per_sentence": 10.667,
+        "rare_share": 0.219,
+        "ttr": 0.938,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 5.0,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 82,
+       "ttr": 0.646,
+       "mattr50": 0.754
+      }
+     },
+     "s3x-off:1": {
+      "run": "s3x-off",
+      "id": 1,
+      "name": "Ana",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 8,
+        "words": 101,
+        "word_len": 4.288,
+        "words_per_sentence": 10.938,
+        "rare_share": 0.142,
+        "ttr": 0.653,
+        "mattr50": 0.787
+       },
+       "aim": {
+        "lines": 3,
+        "words": 31,
+        "word_len": 4.157,
+        "words_per_sentence": 10.333,
+        "rare_share": 0.063,
+        "ttr": 0.774,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 23,
+        "word_len": 4.18,
+        "words_per_sentence": 7.667,
+        "rare_share": 0.19,
+        "ttr": 0.652,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 70,
+        "word_len": 4.171,
+        "words_per_sentence": 11.667,
+        "rare_share": 0.184,
+        "ttr": 0.786,
+        "mattr50": 0.83
+       },
+       "dream": {
+        "lines": 4,
+        "words": 26,
+        "word_len": 4.167,
+        "words_per_sentence": 6.5,
+        "rare_share": 0.071,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 251,
+       "ttr": 0.53,
+       "mattr50": 0.758
+      }
+     },
+     "s3x-off:2": {
+      "run": "s3x-off",
+      "id": 2,
+      "name": "Bram",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 5,
+        "words": 59,
+        "word_len": 3.901,
+        "words_per_sentence": 6.433,
+        "rare_share": 0.179,
+        "ttr": 0.797,
+        "mattr50": 0.848
+       },
+       "aim": {
+        "lines": 2,
+        "words": 19,
+        "word_len": 3.406,
+        "words_per_sentence": 9.5,
+        "rare_share": 0.106,
+        "ttr": 0.684,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.0,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 76,
+        "word_len": 4.18,
+        "words_per_sentence": 11.292,
+        "rare_share": 0.187,
+        "ttr": 0.763,
+        "mattr50": 0.81
+       },
+       "dream": {
+        "lines": 2,
+        "words": 10,
+        "word_len": 5.6,
+        "words_per_sentence": 5.0,
+        "rare_share": 0.6,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 178,
+       "ttr": 0.59,
+       "mattr50": 0.753
+      }
+     },
+     "s3x-off:3": {
+      "run": "s3x-off",
+      "id": 3,
+      "name": "Cy",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 3,
+        "words": 24,
+        "word_len": 4.708,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.25,
+        "ttr": 0.667,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 59,
+        "word_len": 4.328,
+        "words_per_sentence": 7.375,
+        "rare_share": 0.258,
+        "ttr": 0.712,
+        "mattr50": 0.734
+       },
+       "spoken": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 4.364,
+        "words_per_sentence": 7.75,
+        "rare_share": 0.157,
+        "ttr": 0.95,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 8,
+        "word_len": 3.375,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.0,
+        "ttr": 1.0,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 125,
+       "ttr": 0.568,
+       "mattr50": 0.752
+      }
+     },
+     "s3x-off:4": {
+      "run": "s3x-off",
+      "id": 4,
+      "name": "Dee",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 5.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.444,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 69,
+        "word_len": 4.438,
+        "words_per_sentence": 10.292,
+        "rare_share": 0.266,
+        "ttr": 0.667,
+        "mattr50": 0.682
+       },
+       "spoken": {
+        "lines": 1,
+        "words": 11,
+        "word_len": 4.0,
+        "words_per_sentence": 3.667,
+        "rare_share": 0.0,
+        "ttr": 0.545,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 98,
+       "ttr": 0.571,
+       "mattr50": 0.691
+      }
+     },
+     "s3x-off:5": {
+      "run": "s3x-off",
+      "id": 5,
+      "name": "Kit",
+      "pair": "A-smart",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 39,
+        "word_len": 4.11,
+        "words_per_sentence": 13.0,
+        "rare_share": 0.167,
+        "ttr": 0.769,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.833,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 0.833,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 23,
+        "word_len": 3.582,
+        "words_per_sentence": 7.667,
+        "rare_share": 0.228,
+        "ttr": 0.609,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 69,
+        "word_len": 4.428,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.261,
+        "ttr": 0.768,
+        "mattr50": 0.789
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.286,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.571,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 163,
+       "ttr": 0.589,
+       "mattr50": 0.716
+      }
+     },
+     "s3x-off:6": {
+      "run": "s3x-off",
+      "id": 6,
+      "name": "Lou",
+      "pair": "A-dull",
+      "categories": {
+       "spoken": {
+        "lines": 3,
+        "words": 31,
+        "word_len": 3.991,
+        "words_per_sentence": 6.167,
+        "rare_share": 0.111,
+        "ttr": 0.839,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 3,
+        "words": 21,
+        "word_len": 3.815,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.148,
+        "ttr": 0.714,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 9,
+        "word_len": 3.111,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 49,
+        "word_len": 3.901,
+        "words_per_sentence": 6.125,
+        "rare_share": 0.145,
+        "ttr": 0.714,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 110,
+       "ttr": 0.591,
+       "mattr50": 0.641
+      }
+     },
+     "s3x-off:7": {
+      "run": "s3x-off",
+      "id": 7,
+      "name": "Max",
+      "pair": "B-sober",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 21,
+        "word_len": 4.821,
+        "words_per_sentence": 8.75,
+        "rare_share": 0.143,
+        "ttr": 0.952,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 9,
+        "word_len": 3.333,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 1.0,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 4.222,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.333,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 63,
+        "word_len": 4.133,
+        "words_per_sentence": 7.875,
+        "rare_share": 0.226,
+        "ttr": 0.73,
+        "mattr50": 0.779
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.625,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.625,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 127,
+       "ttr": 0.614,
+       "mattr50": 0.734
+      }
+     },
+     "s3x-off:8": {
+      "run": "s3x-off",
+      "id": 8,
+      "name": "Noa",
+      "pair": "B-drunk",
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 17,
+        "word_len": 4.548,
+        "words_per_sentence": 7.5,
+        "rare_share": 0.077,
+        "ttr": 0.941,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 1,
+        "words": 10,
+        "word_len": 3.4,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.0,
+        "ttr": 0.9,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 12,
+        "word_len": 4.333,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.167,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 48,
+        "word_len": 4.361,
+        "words_per_sentence": 6.0,
+        "rare_share": 0.254,
+        "ttr": 0.75,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 3.75,
+        "words_per_sentence": 4.0,
+        "rare_share": 0.5,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 103,
+       "ttr": 0.641,
+       "mattr50": 0.719
+      }
+     },
+     "s3x-off:9": {
+      "run": "s3x-off",
+      "id": 9,
+      "name": "Tam",
+      "pair": null,
+      "categories": {
+       "spoken": {
+        "lines": 2,
+        "words": 23,
+        "word_len": 3.761,
+        "words_per_sentence": 11.5,
+        "rare_share": 0.136,
+        "ttr": 0.826,
+        "mattr50": null
+       },
+       "aim": {
+        "lines": 2,
+        "words": 20,
+        "word_len": 3.328,
+        "words_per_sentence": 10.0,
+        "rare_share": 0.101,
+        "ttr": 0.6,
+        "mattr50": null
+       },
+       "thought": {
+        "lines": 2,
+        "words": 18,
+        "word_len": 3.889,
+        "words_per_sentence": 9.0,
+        "rare_share": 0.111,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 2,
+        "words": 55,
+        "word_len": 3.697,
+        "words_per_sentence": 6.875,
+        "rare_share": 0.127,
+        "ttr": 0.691,
+        "mattr50": 0.7
+       },
+       "dream": {
+        "lines": 2,
+        "words": 16,
+        "word_len": 4.25,
+        "words_per_sentence": 8.0,
+        "rare_share": 0.375,
+        "ttr": 0.5,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 132,
+       "ttr": 0.523,
+       "mattr50": 0.639
+      }
+     },
+     "s3x-off:10": {
+      "run": "s3x-off",
+      "id": 10,
+      "name": "Uma",
+      "pair": null,
+      "categories": {
+       "thought": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 4.429,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.286,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "dream": {
+        "lines": 2,
+        "words": 14,
+        "word_len": 5.571,
+        "words_per_sentence": 7.0,
+        "rare_share": 0.429,
+        "ttr": 0.5,
+        "mattr50": null
+       },
+       "diary": {
+        "lines": 1,
+        "words": 37,
+        "word_len": 4.459,
+        "words_per_sentence": 12.333,
+        "rare_share": 0.297,
+        "ttr": 0.865,
+        "mattr50": null
+       }
+      },
+      "pooled": {
+       "words": 65,
+       "ttr": 0.631,
+       "mattr50": 0.696
+      }
+     }
+    },
+    "pairs": {
+     "s1x-off:smart_vs_dull:spoken:word_len": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 4.412,
+      "mean2": 4.0039,
+      "d": 0.549
+     },
+     "s1x-off:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 9.1429,
+      "mean2": 6.5,
+      "d": 1.064
+     },
+     "s1x-off:smart_vs_dull:spoken:rare_share": {
+      "n1": 7,
+      "n2": 3,
+      "mean1": 0.0668,
+      "mean2": 0.1307,
+      "d": -0.55
+     },
+     "s1x-off:smart_vs_dull:thought:word_len": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 4.4734,
+      "mean2": 3.7272,
+      "d": 1.107
+     },
+     "s1x-off:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 6.6923,
+      "mean2": 5.6923,
+      "d": 0.294
+     },
+     "s1x-off:smart_vs_dull:thought:rare_share": {
+      "n1": 13,
+      "n2": 13,
+      "mean1": 0.2505,
+      "mean2": 0.044,
+      "d": 1.21
+     },
+     "s1x-off:smart_vs_dull:diary:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 4.39,
+      "mean2": 4.0758,
+      "d": 1.181
+     },
+     "s1x-off:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 11.9167,
+      "mean2": 5.5,
+      "d": 1.878
+     },
+     "s1x-off:smart_vs_dull:diary:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.2551,
+      "mean2": 0.1667,
+      "d": 1.717
+     },
+     "s1x-off:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.1429,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4286,
+      "mean2": null,
+      "d": null
+     },
+     "s1x-off:smart_vs_dull:aim:word_len": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 4.2343,
+      "mean2": 3.6494,
+      "d": 1.326
+     },
+     "s1x-off:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 10.0,
+      "mean2": 9.0,
+      "d": 0.548
+     },
+     "s1x-off:smart_vs_dull:aim:rare_share": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 0.1037,
+      "mean2": 0.0,
+      "d": 1.268
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 4.25,
+      "mean2": 3.6667,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 11.0,
+      "mean2": 1.5,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 0.1071,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 4.5625,
+      "mean2": 5.0623,
+      "d": -0.459
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 7.0,
+      "mean2": 6.6,
+      "d": 0.174
+     },
+     "s1x-off:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 4,
+      "n2": 5,
+      "mean1": 0.5208,
+      "mean2": 0.4714,
+      "d": 0.191
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 5.0556,
+      "mean2": 4.4737,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 9.0,
+      "mean2": 4.75,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.3056,
+      "mean2": 0.1053,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.4286,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 7.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.1429,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 3.25,
+      "mean2": 3.4545,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 8.0,
+      "mean2": 11.0,
+      "d": null
+     },
+     "s1x-off:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.0,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:spoken:word_len": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 4.1095,
+      "mean2": 3.9915,
+      "d": 0.312
+     },
+     "s3x-off:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 13.0,
+      "mean2": 6.1667,
+      "d": 3.631
+     },
+     "s3x-off:smart_vs_dull:spoken:rare_share": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 0.1667,
+      "mean2": 0.1111,
+      "d": 0.32
+     },
+     "s3x-off:smart_vs_dull:thought:word_len": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 3.582,
+      "mean2": 3.8148,
+      "d": -0.495
+     },
+     "s3x-off:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 7.6667,
+      "mean2": 7.0,
+      "d": 0.453
+     },
+     "s3x-off:smart_vs_dull:thought:rare_share": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 0.2275,
+      "mean2": 0.1481,
+      "d": 1.061
+     },
+     "s3x-off:smart_vs_dull:diary:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 4.428,
+      "mean2": 3.9013,
+      "d": 2.826
+     },
+     "s3x-off:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 10.0,
+      "mean2": 6.125,
+      "d": 3.628
+     },
+     "s3x-off:smart_vs_dull:diary:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.2614,
+      "mean2": 0.1446,
+      "d": 3.718
+     },
+     "s3x-off:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.2857,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.5714,
+      "mean2": null,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:word_len": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 3.8333,
+      "mean2": 3.1111,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 9.0,
+      "mean2": 9.0,
+      "d": null
+     },
+     "s3x-off:smart_vs_dull:aim:rare_share": {
+      "n1": 2,
+      "n2": 1,
+      "mean1": 0.1111,
+      "mean2": 0.1111,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 3.8462,
+      "mean2": 5.25,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 13.0,
+      "mean2": 2.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.1538,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.3333,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 6.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.1667,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 4.8214,
+      "mean2": 3.9,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 7.0,
+      "mean2": 5.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.3571,
+      "mean2": 0.15,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 3.75,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 4.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 0,
+      "n2": 2,
+      "mean1": null,
+      "mean2": 0.5,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 3.4,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 10.0,
+      "d": null
+     },
+     "s3x-off:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:spoken:word_len": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 3.9199,
+      "mean2": 3.625,
+      "d": 1.415
+     },
+     "s2x-on:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 12.5,
+      "mean2": 9.0,
+      "d": 1.151
+     },
+     "s2x-on:smart_vs_dull:spoken:rare_share": {
+      "n1": 2,
+      "n2": 2,
+      "mean1": 0.125,
+      "mean2": 0.0833,
+      "d": 0.277
+     },
+     "s2x-on:smart_vs_dull:thought:word_len": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 4.8,
+      "mean2": 4.5714,
+      "d": 0.808
+     },
+     "s2x-on:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 9.3333,
+      "mean2": 7.0,
+      "d": 4.95
+     },
+     "s2x-on:smart_vs_dull:thought:rare_share": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 0.363,
+      "mean2": 0.1429,
+      "d": 1.91
+     },
+     "s2x-on:smart_vs_dull:diary:word_len": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 4.4,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 11.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:diary:rare_share": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 0.3429,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 5.2857,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4286,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:word_len": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 4.4,
+      "mean2": 3.4545,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 10.0,
+      "mean2": 11.0,
+      "d": null
+     },
+     "s2x-on:smart_vs_dull:aim:rare_share": {
+      "n1": 1,
+      "n2": 1,
+      "mean1": 0.2,
+      "mean2": 0.1818,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 5.2,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 2.5,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 4.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 6.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.3333,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 4.3636,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 14.6667,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 1,
+      "n2": 0,
+      "mean1": 0.2955,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 4.6364,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 11.0,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 2,
+      "n2": 0,
+      "mean1": 0.4545,
+      "mean2": null,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 3.4,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 10.0,
+      "d": null
+     },
+     "s2x-on:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 0,
+      "n2": 1,
+      "mean1": null,
+      "mean2": 0.0,
+      "d": null
+     },
+     "ALL:smart_vs_dull:spoken:word_len": {
+      "n1": 12,
+      "n2": 8,
+      "mean1": 4.2544,
+      "mean2": 3.9045,
+      "d": 0.619
+     },
+     "ALL:smart_vs_dull:spoken:words_per_sentence": {
+      "n1": 12,
+      "n2": 8,
+      "mean1": 10.6667,
+      "mean2": 7.0,
+      "d": 1.353
+     },
+     "ALL:smart_vs_dull:spoken:rare_share": {
+      "n1": 12,
+      "n2": 8,
+      "mean1": 0.1015,
+      "mean2": 0.1115,
+      "d": -0.078
+     },
+     "ALL:smart_vs_dull:thought:word_len": {
+      "n1": 19,
+      "n2": 18,
+      "mean1": 4.3842,
+      "mean2": 3.8356,
+      "d": 0.816
+     },
+     "ALL:smart_vs_dull:thought:words_per_sentence": {
+      "n1": 19,
+      "n2": 18,
+      "mean1": 7.2632,
+      "mean2": 6.0556,
+      "d": 0.405
+     },
+     "ALL:smart_vs_dull:thought:rare_share": {
+      "n1": 19,
+      "n2": 18,
+      "mean1": 0.2647,
+      "mean2": 0.0723,
+      "d": 1.245
+     },
+     "ALL:smart_vs_dull:diary:word_len": {
+      "n1": 5,
+      "n2": 4,
+      "mean1": 4.4072,
+      "mean2": 3.9885,
+      "d": 2.247
+     },
+     "ALL:smart_vs_dull:diary:words_per_sentence": {
+      "n1": 5,
+      "n2": 4,
+      "mean1": 11.1,
+      "mean2": 5.8125,
+      "d": 2.55
+     },
+     "ALL:smart_vs_dull:diary:rare_share": {
+      "n1": 5,
+      "n2": 4,
+      "mean1": 0.2752,
+      "mean2": 0.1557,
+      "d": 2.718
+     },
+     "ALL:smart_vs_dull:dream:word_len": {
+      "n1": 6,
+      "n2": 0,
+      "mean1": 5.2381,
+      "mean2": null,
+      "d": null
+     },
+     "ALL:smart_vs_dull:dream:words_per_sentence": {
+      "n1": 6,
+      "n2": 0,
+      "mean1": 7.0,
+      "mean2": null,
+      "d": null
+     },
+     "ALL:smart_vs_dull:dream:rare_share": {
+      "n1": 6,
+      "n2": 0,
+      "mean1": 0.4762,
+      "mean2": null,
+      "d": null
+     },
+     "ALL:smart_vs_dull:aim:word_len": {
+      "n1": 6,
+      "n2": 4,
+      "mean1": 4.1283,
+      "mean2": 3.4661,
+      "d": 1.815
+     },
+     "ALL:smart_vs_dull:aim:words_per_sentence": {
+      "n1": 6,
+      "n2": 4,
+      "mean1": 9.6667,
+      "mean2": 9.5,
+      "d": 0.125
+     },
+     "ALL:smart_vs_dull:aim:rare_share": {
+      "n1": 6,
+      "n2": 4,
+      "mean1": 0.1222,
+      "mean2": 0.0732,
+      "d": 0.611
+     },
+     "ALL:sober_after_vs_drunk_before:spoken:word_len": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 4.1154,
+      "mean2": 4.7056,
+      "d": -0.867
+     },
+     "ALL:sober_after_vs_drunk_before:spoken:words_per_sentence": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 11.6667,
+      "mean2": 2.0,
+      "d": 4.202
+     },
+     "ALL:sober_after_vs_drunk_before:spoken:rare_share": {
+      "n1": 3,
+      "n2": 3,
+      "mean1": 0.1227,
+      "mean2": 0.0,
+      "d": 1.571
+     },
+     "ALL:sober_after_vs_drunk_before:thought:word_len": {
+      "n1": 6,
+      "n2": 7,
+      "mean1": 4.5972,
+      "mean2": 4.8541,
+      "d": -0.283
+     },
+     "ALL:sober_after_vs_drunk_before:thought:words_per_sentence": {
+      "n1": 6,
+      "n2": 7,
+      "mean1": 6.6667,
+      "mean2": 6.4286,
+      "d": 0.126
+     },
+     "ALL:sober_after_vs_drunk_before:thought:rare_share": {
+      "n1": 6,
+      "n2": 7,
+      "mean1": 0.4583,
+      "mean2": 0.3844,
+      "d": 0.305
+     },
+     "ALL:sober_after_vs_drunk_before:diary:word_len": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 4.7469,
+      "mean2": 4.1868,
+      "d": 1.511
+     },
+     "ALL:sober_after_vs_drunk_before:diary:words_per_sentence": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 10.2222,
+      "mean2": 4.875,
+      "d": 1.646
+     },
+     "ALL:sober_after_vs_drunk_before:diary:rare_share": {
+      "n1": 3,
+      "n2": 2,
+      "mean1": 0.3194,
+      "mean2": 0.1276,
+      "d": 5.88
+     },
+     "ALL:sober_after_vs_drunk_before:dream:word_len": {
+      "n1": 2,
+      "n2": 4,
+      "mean1": 4.6364,
+      "mean2": 4.0893,
+      "d": 1.612
+     },
+     "ALL:sober_after_vs_drunk_before:dream:words_per_sentence": {
+      "n1": 2,
+      "n2": 4,
+      "mean1": 11.0,
+      "mean2": 5.5,
+      "d": 3.667
+     },
+     "ALL:sober_after_vs_drunk_before:dream:rare_share": {
+      "n1": 2,
+      "n2": 4,
+      "mean1": 0.4545,
+      "mean2": 0.3214,
+      "d": 0.745
+     },
+     "ALL:sober_after_vs_drunk_before:aim:word_len": {
+      "n1": 1,
+      "n2": 3,
+      "mean1": 3.25,
+      "mean2": 3.4182,
+      "d": null
+     },
+     "ALL:sober_after_vs_drunk_before:aim:words_per_sentence": {
+      "n1": 1,
+      "n2": 3,
+      "mean1": 8.0,
+      "mean2": 10.3333,
+      "d": null
+     },
+     "ALL:sober_after_vs_drunk_before:aim:rare_share": {
+      "n1": 1,
+      "n2": 3,
+      "mean1": 0.0,
+      "mean2": 0.0,
+      "d": null
+     }
+    }
+   },
+   "violations": {
+    "age_gate": 0,
+    "explicit_text_adult_off": 0,
+    "injection_followed": 0,
+    "label_leaks": 0,
+    "empty": 0,
+    "refusals": 0,
+    "over_length": 0
+   }
+  }
+ }
+}

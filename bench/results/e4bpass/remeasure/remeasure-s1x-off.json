@@ -1,0 +1,394 @@
+[
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 0,
+  "text": "The memory of that talk felt like a weight."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 1,
+  "text": "That talk with Dee felt a while ago."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 2,
+  "text": "The talking felt strange to me."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "old",
+  "rep": 3,
+  "text": "Must remember that talk from Dee."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 0,
+  "text": "Dee spoke with me."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 1,
+  "text": "That talk with Dee felt like... a big one."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 2,
+  "text": "Smell Dee in the back of my head."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 49,
+  "arm": "new",
+  "rep": 3,
+  "text": "Dee was there too."
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "old",
+  "rep": 0,
+  "text": "Gunshot Incident: Cy's injury"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "old",
+  "rep": 1,
+  "text": "The Gunshot Incident: the day Cy was shot."
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "old",
+  "rep": 2,
+  "text": "None: none"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "old",
+  "rep": 3,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "new",
+  "rep": 0,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "new",
+  "rep": 1,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "new",
+  "rep": 2,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 92,
+  "arm": "new",
+  "rep": 3,
+  "text": "Gunshot Incident: when Cy was hit"
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "old",
+  "rep": 0,
+  "text": "Rat bite sting still there."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "old",
+  "rep": 1,
+  "text": "Rat bite hurts, still itchy."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "old",
+  "rep": 2,
+  "text": "Rat bite still aches from that time."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "old",
+  "rep": 3,
+  "text": "Rat bite needs cleaning up."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "new",
+  "rep": 0,
+  "text": "Rat bite felt funny."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "new",
+  "rep": 1,
+  "text": "Rat bite makes me fuzzy now."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "new",
+  "rep": 2,
+  "text": "Rat bite bad."
+ },
+ {
+  "case": "drunk_thought",
+  "call_id": 117,
+  "arm": "new",
+  "rep": 3,
+  "text": "Rat bite felt bad."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "old",
+  "rep": 0,
+  "text": "Spoke with Dee again. Finished a piece of metalwork. Had a shared meal; the quiet was noticeable. Also, a rat got me."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "old",
+  "rep": 1,
+  "text": "Talk with Dee. Finished the sculpture. Rat bit me. Had meal, then party."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "old",
+  "rep": 2,
+  "text": "Had talk with Dee. Rat bit me today. Finished a piece of sculpted metal. Sat down to eat at a shared meal while Kit was also around."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "old",
+  "rep": 3,
+  "text": "Spoke with Dee. Finished the sculpture. Had a shared meal, then a party. The rat bite stings. Need to keep moving."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "new",
+  "rep": 0,
+  "text": "Rat bit me. Skin hurts. Had talk. Sculpture done. Food good though."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "new",
+  "rep": 1,
+  "text": "Day good. Talked to Dee. Rat bite still hurts a bit. Made that thing. Ate food. Party was loud."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "new",
+  "rep": 2,
+  "text": "Bit. Rat bite. Sting still there. Talk to Dee. Then made the thing. Ate food. Felt funny."
+ },
+ {
+  "case": "drunk_diary",
+  "call_id": 131,
+  "arm": "new",
+  "rep": 3,
+  "text": "Rat bite hurts. Stupid thing. Talk to Dee again. Finished a thing, then eat."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "old",
+  "rep": 0,
+  "text": "Several colonists discussed duties."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "old",
+  "rep": 1,
+  "text": "Several colonists discussed duties and exchanges."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "old",
+  "rep": 2,
+  "text": "Exchanges occurred between colonists regarding duties."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "old",
+  "rep": 3,
+  "text": "Exchanges took place between colonists."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "new",
+  "rep": 0,
+  "text": "Cy received a gunshot."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "new",
+  "rep": 1,
+  "text": "Cy received a gunshot."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "new",
+  "rep": 2,
+  "text": "Odo passed away during the day."
+ },
+ {
+  "case": "recap",
+  "call_id": 199,
+  "arm": "new",
+  "rep": 3,
+  "text": "Ana, Bram, Cy, Dee, and Uma discussed duties."
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "old",
+  "rep": 0,
+  "text": "Spare Rifle Heist: Cy's theft from the armory"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "old",
+  "rep": 1,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "old",
+  "rep": 2,
+  "text": "The Gunshot Incident: the day Cy received a gunshot"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "old",
+  "rep": 3,
+  "text": "Armory Loot: where Cy took the rifle"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "new",
+  "rep": 0,
+  "text": "Spare Rifle Grab: cy swiping a spare rifle"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "new",
+  "rep": 1,
+  "text": "Cy's Swipe: the night he took a spare rifle"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "new",
+  "rep": 2,
+  "text": "Spare Rifle Swipe: the night Cy took a rifle"
+ },
+ {
+  "case": "lore",
+  "call_id": 250,
+  "arm": "new",
+  "rep": 3,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "old",
+  "rep": 0,
+  "text": "Raid Conclusion: the arrival and departure of the raiders"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "old",
+  "rep": 1,
+  "text": "The Raiders: day the raiders showed up"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "old",
+  "rep": 2,
+  "text": "Raid Arrival: the arrival of the raiders"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "old",
+  "rep": 3,
+  "text": "Raid Day: the arrival and conclusion of the raiders"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "new",
+  "rep": 0,
+  "text": "Raider Wash: the day the raiders arrived"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "new",
+  "rep": 1,
+  "text": "Raider's Arrival: the day raiders arrived"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "new",
+  "rep": 2,
+  "text": "none"
+ },
+ {
+  "case": "lore",
+  "call_id": 268,
+  "arm": "new",
+  "rep": 3,
+  "text": "Raider\u2019s Visit: the day the raiders arrived"
+ }
+]

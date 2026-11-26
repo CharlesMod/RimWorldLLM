@@ -113,7 +113,8 @@ class RimWorldAdapter:
         "say; never invent people, places or numbers, never propose or predict events, never address the player.")
     recap_request = (
         "Write exactly 3 lines, one short sentence each, under 20 words, most recent last, the last line ending on "
-        "what is still unresolved. No title, no numbering, no quotes.")
+        "what is still unresolved. Tell the biggest events (deaths, raids, wounds, thefts, weddings, feuds), never small "
+        "talk or chores. No title, no numbering, no quotes.")
     lore_system = (
         "You coin the colony's shared nicknames for the places and events its people talk about, like 'the Long Winter' "
         "or 'the east barracks'. Use only what the chronicle entry says; never invent people, places or numbers. "
@@ -121,7 +122,8 @@ class RimWorldAdapter:
     lore_label = "Colony names"
     lore_request = (
         "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
-        "a 2 to 5 word name, a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
+        "a 2 to 5 word name the colonists would actually say (a nickname, never a label such as an incident or event "
+        "name), a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
         "months the colony ran short of food). Do not reuse a name already in use. Otherwise answer: none.")
     art_system = (
         "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
@@ -395,7 +397,11 @@ class RimWorldAdapter:
         return builders.build_voice_card(snap)
 
     def speech_register(self, snap: dict) -> str | None:
-        return register.effective_words(snap)
+        """The effective register for the inline prompts (thought, diary, dream, bystander); a temporary state is named,
+        so a drunk pawn's thought reads drunk and not merely simple."""
+        states = register.temp_states(snap)
+        words = register.effective_words(snap)
+        return f"right now {'; '.join(t for t, _ in states)}, so {words}" if states else words
 
     def talk_weight(self, snap: dict) -> float:
         return builders.talk_weight(snap)

@@ -127,3 +127,10 @@ def test_recap_ignores_lore_entries(world):
         user = [c for c in w.llm.calls if c["kind"] == "recap"][0]["messages"][1][1]
         assert "Ana dug" in user and "Cy was hurt" in user and "Folly" not in user and "Winter" not in user
     run(go())
+
+
+def test_lore_and_recap_prompts_ask_for_nicknames_and_big_events():
+    from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+    a = RimWorldAdapter()
+    assert "never a label" in a.lore_request
+    assert "biggest events" in a.recap_request and "never small" in a.recap_request

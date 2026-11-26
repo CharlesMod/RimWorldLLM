@@ -1,0 +1,514 @@
+{
+ "summary": {
+  "exchanges": 10,
+  "turns": 40,
+  "turn_drop_rate": 0.05,
+  "complete_exchanges": 0.8,
+  "answers_previous_rate": 0.7632,
+  "writes_other_line_rate": 0.0,
+  "repetition_loop_exchanges": 0,
+  "examples": [
+   {
+    "scene": "sc18",
+    "turns": [
+     [
+      "pip",
+      "Okay so you're scrubbing that pot again... is there anything I can totally help with?"
+     ],
+     [
+      "rook",
+      "Hm. Pots need scrubbing. Go feed the pig slop, Pip."
+     ],
+     [
+      "pip",
+      "Okay so the pig slop is kind of gross, but I guess I'll do it..."
+     ],
+     [
+      "rook",
+      "Hm. Don't track mess on the floor."
+     ]
+    ]
+   },
+   {
+    "scene": "sc19",
+    "turns": [
+     [
+      "moth",
+      "I think, maybe you could pass the thermos, the tea seems to have gotten cold?"
+     ],
+     [
+      "lux",
+      "Naturally, my dear, if the brew possesses such fragility, one must keep a constant vigil over its temperature."
+     ],
+     [
+      "moth",
+      "I think I should probably take a sip first, if it's safe to do so."
+     ],
+     [
+      "lux",
+      "Of course, my dear, sip it before it loses any of its questionable virtues."
+     ]
+    ]
+   },
+   {
+    "scene": "sc20",
+    "turns": [
+     [
+      "ash",
+      "Copy. Muffalo haunch. Place it where I see it."
+     ],
+     [
+      "tuk",
+      "I put good meat here Ash."
+     ],
+     [
+      "ash",
+      "Copy. Keep count. No one is close enough to make it difficult."
+     ],
+     [
+      "tuk",
+      "The desert air cools fast."
+     ]
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "scene": "sc18",
+   "a": "pip",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so you're scrubbing that pot again... is there anything I can totally help with?",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Pots need scrubbing. Go feed the pig slop, Pip.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so the pig slop is kind of gross, but I guess I'll do it...",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. Don't track mess on the floor.",
+     "intent": "slight"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc19",
+   "a": "moth",
+   "b": "lux",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, maybe you could pass the thermos, the tea seems to have gotten cold?",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "lux",
+     "text": "Naturally, my dear, if the brew possesses such fragility, one must keep a constant vigil over its temperature.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think I should probably take a sip first, if it's safe to do so.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "lux",
+     "text": "Of course, my dear, sip it before it loses any of its questionable virtues.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc20",
+   "a": "ash",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Copy. Muffalo haunch. Place it where I see it.",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "I put good meat here Ash.",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Copy. Keep count. No one is close enough to make it difficult.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "The desert air cools fast.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc21",
+   "a": "lux",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "lux",
+     "text": "Naturally, this fifth offering of bovine mediocrity seems rather repetitive, my dear Nate.",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Stew's just stew. Eat it before it turns back to brown water.",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "lux",
+     "text": "One learns to appreciate consistency, though I find the aroma lacking in character this evening.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. It's good food. Stop squinting at the broth.",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc22",
+   "a": "moth",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think maybe those leaves are for the experimental fungi, or perhaps just the dogs.",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I got these for the animals, like they were just hanging out by the shed...",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think they might be suitable for the fungi, maybe?",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so Biscuit smells 'em weird, but they gotta eat something good, right?",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc23",
+   "a": "tuk",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "tuk",
+     "text": "Pip watch. Calf legs good meat.",
+     "intent": "gossip"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so is it always about the meat when you're like skinning 'em?",
+     "intent": "gossip"
+    },
+    {
+     "turn": 2,
+     "speaker": "tuk",
+     "text": "Tuk shows Pip the good meat.",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I guess we just keep eating animals, always, like that?",
+     "intent": "complain"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc24",
+   "a": "ash",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Relax stance. Copy. You need three hundred meters distance for accuracy.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so my arms are totally shaking, I just need to chill like you said...",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Slow breath. Grip loose. Forty meters first. Copy.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so forty meters is way too far for me right now.",
+     "intent": "complain"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc01",
+   "a": "rook",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "rook",
+     "text": "Hm. Rice bag. Down. Get up, Pip.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so Nate you okay like what's wrong...",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "rook",
+     "dropped": "unknown_name:Stove"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Should I help you get up or should I call Ash like he knows how to lift heavy stuff?",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc02",
+   "a": "pip",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so my hand is all gross, like from the wire, this bleeding is totally not cool...",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Stop shaking, Pip. Hand needs a clean wrap.",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so I think I'm just fine, but maybe a bandage wouldn't hurt...",
+     "intent": "comfort"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "Tuck checks the cut. Bleeding runs red. It needs proper wrap.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc03",
+   "a": "moth",
+   "b": "ash",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, maybe the pressure needs to be a bit more, though.",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "ash",
+     "dropped": "unknown_name:Pressure"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, probably maybe just a fraction less pressure on that stitch, is fine?",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "ash",
+     "text": "Pressure acceptable. Monitor seepage.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 1,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  }
+ ]
+}
