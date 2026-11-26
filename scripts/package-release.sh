@@ -146,6 +146,10 @@ WHEEL=$(basename "${wheels[0]}")
 
 # --- 4. engine binaries ---
 TARGETS="linux-amd64 windows-amd64 darwin-arm64 darwin-amd64"
+# Go marks vcs.modified=true for any untracked file; tolerate only the checkout's own .claude/ dir.
+EE_UNTRACKED_OK=0
+if [ -z "$(git -C "$EE_DIR" status --porcelain | grep -vE '^\?\? \.claude/$' || true)" ]; then EE_UNTRACKED_OK=1; fi
+mod_ok() { grep -q 'vcs.modified=false$' <<<"$1" || { [ "$EE_UNTRACKED_OK" = 1 ] && grep -q 'vcs.modified=true$' <<<"$1"; }; }
 engine_bin() { case "$1" in windows-*) echo hermes-engine.exe;; *) echo hermes-engine;; esac; }
 engine_fresh() {
   local t b out
@@ -154,7 +158,7 @@ engine_fresh() {
     [ -f "$b" ] || return 1
     out=$("$GO" version -m "$b" 2>/dev/null) || return 1
     grep -q "vcs.revision=$EE_SHA\$" <<<"$out" || return 1
-    grep -q 'vcs.modified=false$' <<<"$out" || return 1
+    mod_ok "$out" || return 1
   done
 }
 if engine_fresh; then
@@ -255,7 +259,7 @@ grep -q 'Mach-O.*x86_64' <<<"$(ft darwin-amd64)" && pass "darwin-amd64 is Mach-O
 okrev=1
 for t in $TARGETS; do
   o=$("$GO" version -m "$V/Engine/$t/$(engine_bin "$t")")
-  grep -q "vcs.revision=$EE_SHA\$" <<<"$o" && grep -q 'vcs.modified=false$' <<<"$o" || okrev=0
+  grep -q "vcs.revision=$EE_SHA\$" <<<"$o" && mod_ok "$o" || okrev=0
 done
 [ "$okrev" = 1 ] && pass "engine binaries built from easyEngine $EE_SHA, unmodified" || fail "engine vcs info mismatch"
 
