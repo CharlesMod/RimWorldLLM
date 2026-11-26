@@ -32,9 +32,9 @@ Decided with the keeper on 2026-11-25. This is the order of work from here to a 
 | Aliveness: inner monologue, concerns, grudges, gossip, lore, art, dreams, habits, firsts, bystanders, gatherings, director camera, recap | built; tuning needs a play-test |
 | Wants with follow-through (/social_action) | built; in-game unchecked |
 | Speed robustness (2x-4x) | done in simulation; in-game unchecked |
-| Swap the catalog's stock E4B/E2B for the rp builds, measured footprints | to do |
-| Sampler A/B on the GPU, injection re-measure | to do (waits for the GPU) |
-| rp builds of E4B and E2B (QAT, abliterated, vocabulary-pruned) | E2B done (2.12 GB); E4B built (3.65 GB), final evals running |
+| Swap the catalog's stock E4B for the rp build, measured footprints | done (easyEngine 007dfea) |
+| Sampler A/B on the GPU, injection re-measure | done: rp stays official, structured is greedy; planted instructions followed 0 % with the guards |
+| rp builds of E4B and E2B (QAT, abliterated, vocabulary-pruned) | both built; **E4B rp published** (cmod/gemma4-e4b-rp-GGUF) and in the engine catalog (v6); E2B rp unpublished (the fallback stays stock E2B: better voice and tools, more loops) |
 | Final E4B pass over all of the above | last step before publishing |
 | Windows and AMD beta, code signing, Workshop rules for bundled executables | deferred |
 
