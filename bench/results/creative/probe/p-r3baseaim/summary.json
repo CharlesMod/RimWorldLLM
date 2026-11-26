@@ -1,0 +1,21 @@
+{
+ "arm": "r3baseaim",
+ "sets": {},
+ "seed": 7,
+ "reps": 6,
+ "features": {
+  "aim": {
+   "arm": "r3baseaim",
+   "n": 48,
+   "dropped": 1,
+   "latency_median": 1.6196,
+   "latency_p90": 1.7742,
+   "calls_mean": 1.979,
+   "slot_s_mean": 1.6102,
+   "words_mean": 9.91,
+   "share_i_just_want": 0.468,
+   "distinct_aim_share": 0.702,
+   "mean_pairwise_jaccard": 0.1559
+  }
+ }
+}

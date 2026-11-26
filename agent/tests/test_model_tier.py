@@ -132,8 +132,8 @@ def test_art_off_on_small_when_field_false(world):
     assert not w.d.art.jobs and not [c for c in w.llm.calls if c["kind"] == "art"]
 
 
-def test_art_on_for_small_by_default_and_large_when_field_false(world):
-    w = cloud_world(world, "gemma4-e4b")
+def test_art_on_for_small_when_art_small_is_set(world):
+    w = cloud_world(world, "gemma4-e4b", art_small=True)
     art_event(w)
     run(w.d.step()); run(w.d.drain())
     assert w.d.art.jobs or w.fb.art_log or [c for c in w.llm.calls if c["kind"] == "art"]
@@ -144,3 +144,10 @@ def test_art_on_for_large_when_field_false(world):
     art_event(w)
     run(w.d.step()); run(w.d.drain())
     assert w.d.art.jobs or w.fb.art_log or [c for c in w.llm.calls if c["kind"] == "art"]
+
+
+def test_art_off_for_small_by_default(world):
+    w = cloud_world(world, "gemma4-e4b-rp-q40")
+    art_event(w)
+    run(w.d.step()); run(w.d.drain())
+    assert not w.d.art.jobs and not w.fb.art_log and not [c for c in w.llm.calls if c["kind"] == "art"]

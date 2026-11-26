@@ -12,13 +12,19 @@ from hermesvoice_agent.games.rimworld import RimWorldAdapter
 from hermesvoice_agent.games.rimworld.fakes import FakeBridge
 
 
+CLASSIC_CREATIVE = dict(aim_ground=False, creative_ground_for=(), creative_plan_for=(), creative_best_of_for=())
+
+
 def run(coro):
     return asyncio.run(coro)
 
 
 class World:
     def __init__(self, tmp_path):
-        self.cfg = Config(data_dir=tmp_path, thought_enabled=False, bridge_url="http://fake", bridge_token="tok", turn_gap_ticks=0, turn_gap_floor_real_s=0.0)
+        # the creative-round defaults (aim tension, per-kind plan/best-of/grounding) are off here so the older tests keep
+        # pinning the one-call paths; tests/test_creative*.py cover the kept defaults
+        self.cfg = Config(data_dir=tmp_path, thought_enabled=False, bridge_url="http://fake", bridge_token="tok", turn_gap_ticks=0,
+                          turn_gap_floor_real_s=0.0, **CLASSIC_CREATIVE)
         self.fb = FakeBridge("tok")
         self.fb.add_pawn(1, "Ana", traits=[{"def": "Kind", "label": "kind", "degree": 0}])
         self.fb.add_pawn(2, "Bram", traits=[{"def": "Abrasive", "label": "abrasive", "degree": 0}])

@@ -121,7 +121,7 @@ class Config(BaseModel):
     inner_solo_aim: bool = True        # a line with no listener still gets an aim-only call
     small_model_patterns: tuple = ("e2b", "e4b")   # model ids containing any of these count as small (core/model_tier.py)
     inner_cloud_small: bool = True     # contrast clouds on a small model (False = off there; the aim is still made and stored)
-    art_small: bool = True             # art descriptions on a small model (False = off there)
+    art_small: bool = False            # art descriptions on a small model: off (E4B judged 2.9-3.0 after the creative round; keeper rule: below 3.0 -> off below the 26B)
     inner_cloud: bool = True           # sometimes show the aim as a thought cloud after a line
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock
@@ -161,12 +161,12 @@ class Config(BaseModel):
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
     # Creative-boost experiments (each defaults to today's behaviour; A/B measured, kept only when they help)
     creative_ground: bool = False      # richer data in art / recap / lore / eulogy and vow prompts (core/art.py, recap.py, lore.py, group.py)
-    aim_ground: bool = False           # the aim request carries the scene's tension and one subtext kind (core/inner.py)
+    aim_ground: bool = True            # (judge: aims +0.3..+0.6 on E4B) the aim request carries the scene's tension and one subtext kind (core/inner.py)
     creative_plan: bool = False        # a one-line private plan before the piece (core/creative.py)
     creative_best_of: int = 1          # candidates per piece (core/creative.py)
-    creative_ground_for: tuple = ()    # kinds ("art", "lore", "recap", "eulogy", "vow") that get creative_ground; the bool above means all kinds
-    creative_plan_for: tuple = ()      # kinds that get creative_plan
-    creative_best_of_for: tuple = ()   # kinds that get best-of creative_best_of_n candidates
+    creative_ground_for: tuple = ("lore", "recap", "eulogy")    # judged better on E4B (art and vows were not); kinds ("art", "lore", "recap", "eulogy", "vow") that get creative_ground; the bool above means all kinds
+    creative_plan_for: tuple = ("lore", "eulogy")    # kinds that get creative_plan (judged better on E4B)
+    creative_best_of_for: tuple = ("recap",)   # kinds that get best-of creative_best_of_n candidates (recap: once per load)
     creative_best_of_n: int = 4        # candidates for the kinds in creative_best_of_for
     creative_rerank: str = "auto"      # how the best of N is picked: "auto" (rules) or "llm"
     cliche_retry: bool = False         # one retry when the piece holds a stock phrase

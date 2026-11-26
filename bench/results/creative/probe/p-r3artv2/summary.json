@@ -1,0 +1,21 @@
+{
+ "arm": "r3artv2",
+ "sets": {
+  "creative_ground_for": [
+   "art"
+  ]
+ },
+ "seed": 7,
+ "reps": 6,
+ "features": {
+  "art": {
+   "arm": "r3artv2",
+   "n": 48,
+   "dropped": 0,
+   "latency_median": 0.7777,
+   "latency_p90": 0.9122,
+   "calls_mean": 1,
+   "slot_s_mean": 0.7636
+  }
+ }
+}

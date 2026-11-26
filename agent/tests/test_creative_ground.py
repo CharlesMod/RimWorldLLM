@@ -30,10 +30,12 @@ def art_event(w, data):
     return w.fb.add_event("art_created", [(1, "maker")], "Ana finished a sculpture.", [1], 0.2, data=base)
 
 
-def test_config_defaults_keep_today():
+def test_config_defaults_are_the_judged_ones():
     c = Config()
     assert (c.creative_ground, c.aim_ground, c.creative_plan, c.creative_best_of, c.creative_rerank, c.cliche_retry,
-            c.aim_sampler) == (False, False, False, 1, "auto", False, "")
+            c.aim_sampler) == (False, True, False, 1, "auto", False, "")
+    assert c.creative_ground_for == ("lore", "recap", "eulogy") and c.creative_plan_for == ("lore", "eulogy")
+    assert c.creative_best_of_for == ("recap",) and c.art_small is False and c.inner_cloud_small is True
     assert Config(creative_ground=True, creative_best_of=3, aim_sampler="rp").aim_sampler == "rp"
 
 
