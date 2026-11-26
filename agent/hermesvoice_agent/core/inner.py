@@ -36,6 +36,13 @@ def inner_on_day(mind: Mind, day_no: int, day_units: int) -> list[InnerThought]:
     return [t for t in mind.inner if t.game // day_units == day_no]
 
 
+def repeats_recent_aim(mind: Mind, text: str, n: int = 4) -> bool:
+    """True when ``text`` repeats or closely rephrases one of the actor's last ``n`` aims."""
+    from .loopguard import find_repeat
+    prev = [(0, t.text) for t in recent_inner(mind, n, {"aim"})]
+    return bool(prev) and find_repeat(text, 0, prev) is not None
+
+
 def thoughts_text(entries: list[InnerThought]) -> str:
     """Game text of a stream slice, cleaned; the caller wraps it with data_section."""
     return "\n".join(f"- {gd.clean(t.text, 'line')}" for t in entries)

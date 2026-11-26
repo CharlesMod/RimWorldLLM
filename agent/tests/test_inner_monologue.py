@@ -284,14 +284,17 @@ def test_cloud_posts_the_aim_as_surface_and_rate_limits_per_pawn(world):
     w = cloud_world(world)
     say(w)
     assert len(clouds(w)) == 1 and clouds(w)[0]["text"] == AIM and clouds(w)[0]["surface"] == AIM
-    say(w)                                                    # within the gap
+    say(w, aim="I need the wall finished before the cold comes")   # within the gap
     assert len(clouds(w)) == 1
     say(w, aid=2)                                             # another pawn has its own gap
     assert len(clouds(w)) == 2
     w.real += 91
-    say(w)
+    say(w, aim="Maybe Bram will finally thank me for the stew")
     assert len(clouds(w)) == 3
     assert len(w.d.minds[1].inner) == 3 and 1 in w.d.dirty    # every accepted aim joined the stream
+    w.real += 91
+    say(w, aim="Maybe Bram will finally thank me for the stew")    # a repeat: not stored again, no cloud
+    assert len(clouds(w)) == 3 and len(w.d.minds[1].inner) == 3
 
 
 def test_cloud_chance_zero_keeps_the_aim_but_posts_nothing(world):
@@ -416,3 +419,13 @@ def test_master_off_keeps_the_stream_out_of_prompts_even_with_old_entries(world)
         return l.data["prefix"], w.d._inner_kw(w.d.minds[1])
     p, kw = run(go())
     assert "left over" not in p and kw == {}
+
+
+def test_repeated_aim_is_not_stored_twice():
+    from hermesvoice_agent.core import inner
+    from hermesvoice_agent.core.minds import Mind
+    m = Mind(actor_id=1, name="Ana")
+    inner.add_inner(m, "I hope the food tastes good enough to keep us going.", "aim", 10)
+    assert inner.repeats_recent_aim(m, "I hope the food tastes good enough to keep us going.")
+    assert inner.repeats_recent_aim(m, "I hope the food tastes good enough to keep us all going.")
+    assert not inner.repeats_recent_aim(m, "I want Bram to admit he was wrong about the wall.")

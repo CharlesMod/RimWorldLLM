@@ -679,6 +679,8 @@ class Director:
         """A line the game applied: its aim joins the stream and may show as a contrast cloud."""
         if not self.cfg.inner_monologue or not sp.aim:
             return
+        if inner.repeats_recent_aim(self.minds[aid], sp.aim):
+            return      # the same aim again (structured passes are greedy): no duplicate in the stream, no repeat cloud
         inner.add_inner(self.minds[aid], sp.aim, "aim", self.bridge.env.game, self.cfg.inner_stream_keep)
         self.dirty.add(aid)
         if not self.cfg.inner_cloud or (minor and sp.aim_gated) or len(sp.aim) > self.cfg.thought_max_chars:
