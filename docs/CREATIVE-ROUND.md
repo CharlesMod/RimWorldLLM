@@ -146,6 +146,8 @@ on models whose id contains e2b or e4b (`small_model_patterns`), or while the en
 the serving model from the engine's status (`core/model_tier.py`, every 60 s, off the line path). Clouds judged 3.0-3.1 with
 the aim tension: `inner_cloud_small` stays True. Both are config fields the player or keeper can flip.
 
+**Update 2026-11-26:** the keeper turned art back on for small models: `art_small` now defaults to True.
+
 ## Soak before / after
 
 Rich fixture, seed 31, 1x for 1.5 game days, adult content off. Before = main's code (5154462, flags off, before the name

@@ -121,7 +121,7 @@ class Config(BaseModel):
     inner_solo_aim: bool = True        # a line with no listener still gets an aim-only call
     small_model_patterns: tuple = ("e2b", "e4b")   # model ids containing any of these count as small (core/model_tier.py)
     inner_cloud_small: bool = True     # contrast clouds on a small model (False = off there; the aim is still made and stored)
-    art_small: bool = False            # art descriptions on a small model: off (E4B judged 2.9-3.0 after the creative round; keeper rule: below 3.0 -> off below the 26B)
+    art_small: bool = True             # art descriptions on a small model (E4B, starter, E2B fallback): on (keeper 2026-11-26; E4B judged 2.9-3.0 after the creative round)
     inner_cloud: bool = True           # sometimes show the aim as a thought cloud after a line
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock

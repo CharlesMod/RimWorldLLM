@@ -35,7 +35,7 @@ def test_config_defaults_are_the_judged_ones():
     assert (c.creative_ground, c.aim_ground, c.creative_plan, c.creative_best_of, c.creative_rerank, c.cliche_retry,
             c.aim_sampler) == (False, True, False, 1, "auto", False, "")
     assert c.creative_ground_for == ("lore", "recap", "eulogy") and c.creative_plan_for == ("lore", "eulogy")
-    assert c.creative_best_of_for == ("recap",) and c.art_small is False and c.inner_cloud_small is True
+    assert c.creative_best_of_for == ("recap",) and c.art_small is True and c.inner_cloud_small is True
     assert Config(creative_ground=True, creative_best_of=3, aim_sampler="rp").aim_sampler == "rp"
 
 
