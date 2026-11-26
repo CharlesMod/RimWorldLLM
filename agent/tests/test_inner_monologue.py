@@ -63,7 +63,7 @@ def test_parse_intent_delivery_aim_and_garbage():
 
 def test_intent_request_stays_short_and_asks_for_the_aim():
     a, b = intent_request("Bram", DELIVERIES), intent_request("Bram", DELIVERIES, aim=True)
-    assert "privately want or really mean" in b and "about 12 words" in b and "never said aloud" in b
+    assert "privately want or fear beneath the line" in b and "about 12 words" in b and "never said aloud" in b
     assert len(b.split()) - len(a.split()) <= 24
 
 
@@ -260,7 +260,7 @@ def test_aim_only_call_shape():
     r, r_off, llm = run(go())
     assert r[0] == LABELS[0] and r[2] and r_off == (LABELS[0], None, "")
     assert len(llm.calls) == 1 and llm.calls[0]["grammar"] == AIM_ONLY_GRAMMAR
-    assert "privately want or really mean" in llm.calls[0]["messages"][-1][1]
+    assert "privately want or fear beneath the line" in llm.calls[0]["messages"][-1][1]
 
 
 # ---- the contrast cloud -----------------------------------------------------------------------

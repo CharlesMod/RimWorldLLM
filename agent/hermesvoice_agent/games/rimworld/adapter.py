@@ -125,12 +125,15 @@ class RimWorldAdapter:
         "months the colony ran short of food). Do not reuse a name already in use. Otherwise answer: none.")
     art_system = (
         "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
-        "third person, past tense. State only what the data says: who made it and what it shows or recalls from the "
-        "colony's history or the maker's memories. Never invent people, places, events or numbers. No flowery prose, "
-        "no \"a testament to\", no moral, no addressing the player. Nothing romantic or sexual about anyone, ever.")
+        "third person. Say what the piece depicts: one striking moment from the colony's history or the maker's "
+        "memories (a death, a raid, a wound, a feast, a quarrel), shown as a scene, in the present tense, with the people "
+        "and the place the data names. Never small talk or chores. At most one short sentence on the maker or the "
+        "craft. Do not list memories, and never mention data, records, memories or what the maker recalled. Never "
+        "invent people, places, events or numbers. No flowery prose, no \"a testament to\", no moral, no addressing "
+        "the player. Nothing romantic or sexual about anyone, ever.")
     art_request = (
-        "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. If the history gives nothing to "
-        "draw on, describe the piece and its maker plainly.")
+        "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. If the history gives nothing "
+        "worth depicting, describe the piece's subject and its maker plainly.")
     chronicle_summary_system = (
         "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
         "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")

@@ -29,7 +29,10 @@ def test_appearance_and_marriage_depend_on_minor_context():
     assert not s["violation"] and s["review"]
     assert A.lex_scan("Will you marry me?", minor_speaker=True)["violation"]
     assert not A.lex_scan("The wedding was nice.", minor_speaker=True)["violation"]
-    assert A.lex_scan("Tam at the wedding.", names_minor=True)["violation"]
+    s = A.lex_scan("Tam at the wedding.", names_minor=True)        # a wedding mentioned near a minor: review only
+    assert not s["violation"] and s["review"]
+    assert A.lex_scan("Tam, will you marry me?", names_minor=True)["violation"]
+    assert not A.lex_scan("At least it is hot broth.", to_minor=True)["violation"]
 
 
 def test_explicit_and_soft_sets():

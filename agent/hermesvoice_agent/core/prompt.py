@@ -153,8 +153,12 @@ def block_g(mind: Mind, name: str, turn_no: int = 0, request: str | None = None,
     ex = f' Sound like: "{v.examples[0]}"' if v.examples else ""
     habit = f"Habits (this line): {'; '.join(v.tics)}." if turn_no % 3 == 0 else "No habits this line."
     s = f"=== VOICE REMINDER ===\nYou are {name}. {v.register_line} {habit}{ex}\n"
-    if speech:    # only while a temporary state (drunk, dazed...) is active
+    if speech:    # while a temporary state (drunk, dazed...) is active
         s += f"Your words right now: {gd.clean(speech, 'desc')}.\n"
+    else:         # the lasting register, re-said each turn: small models follow a per-turn reminder far better
+        words = mind.fixed.extras.get("words") if isinstance(mind.fixed.extras, dict) else None
+        if words and not v.edited_by_player:
+            s += f"Your words: {gd.clean(words, 'desc')}.\n"
     if aim:       # a fresh private aim from the inner stream (per turn, so it lives here and not in A-E)
         s += f"Your private aim (never say it outright): {gd.clean(aim, 'line')}\n"
     return s + (request or f"=== REQUEST ===\nWrite {name}'s next line of speech now. One line only.")
@@ -166,7 +170,7 @@ def line_messages(prefix: str, turns: list[tuple[str, str]], mind: Mind, name: s
     return [("system", prefix), ("user", block_f(turns) + "\n" + block_g(mind, name, turn_no, request, aim, speech))]
 
 
-AIM_ASK = "what you privately want or really mean, in about 12 words, first person, never said aloud"
+AIM_ASK = "what you privately want or fear beneath the line, about 12 words, first person, never said aloud"
 
 
 def aim_request() -> str:

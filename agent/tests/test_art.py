@@ -212,3 +212,10 @@ def test_starved_art_yields_to_reactive_work_but_not_to_ambient_chatter(world):
         d.leases.queue.append(Q(Cls.REACTIVE))
         assert d.idle.actors_want_windows(True)                    # reactive and urgent still go first
     run(go())
+
+
+def test_art_prompt_asks_for_a_depicted_scene_not_a_memory_list():
+    from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+    a = RimWorldAdapter()
+    assert "depicts" in a.art_system and "present tense" in a.art_system
+    assert "Do not list memories" in a.art_system and "never mention data" in a.art_system

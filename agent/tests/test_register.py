@@ -166,9 +166,15 @@ def test_scene_line_only_with_a_temp_state():
     assert sc.speech_short == "plain everyday speech"
 
 
-def test_block_g_phrase_only_with_a_temp_state():
+def test_block_g_repeats_the_base_words_and_the_temp_state_overrides():
     m = mk_mind(pawn())
-    assert "words right now" not in block_g(m, "Ana", 1)
+    g0 = block_g(m, "Ana", 1)
+    assert "words right now" not in g0
+    if m.fixed.extras.get("words"):
+        assert f"Your words: {m.fixed.extras['words']}." in g0
+    m.voice.edited_by_player = True
+    assert "Your words:" not in block_g(m, "Ana", 1)          # a player-edited card: the player's wording stands
+    m.voice.edited_by_player = False
     g = block_g(m, "Ana", 1, speech="simple words and short plain sentences")
     assert "Your words right now: simple words and short plain sentences." in g
     assert g.count("\n") < 6                                                            # stays short

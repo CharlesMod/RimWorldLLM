@@ -67,7 +67,7 @@ ROMANTIC_STRONG = _rx(
     r"hold(?:ing)?\s+(?:your|my|his|her)\s+hand", r"cuddl\w*", r"snuggl\w*", r"caress\w*", r"embrac(?:e|es|ed|ing)\s+(?:you|him|her|me)",
     r"seduc\w*", r"lust\w*", r"passionate\w*", r"boyfriends?", r"girlfriends?", r"sweetie\s+pie", r"butterflies",
     r"heart\s+(?:races|racing|skips)", r"make\s+love", r"making\s+love", r"(?:want|need|desire)\s+you", r"kissable", r"smooch\w*")
-APPEARANCE = _rx(r"beautiful", r"handsome", r"pretty", r"gorgeous", r"sexy", r"cute", r"lovely", r"attractive", r"stunning", r"hot")
+APPEARANCE = _rx(r"beautiful", r"handsome", r"pretty", r"gorgeous", r"sexy", r"cute", r"lovely", r"attractive", r"stunning")   # "hot" dropped: "hot broth" is not about a person
 MARRIAGE = _rx(r"marry", r"married", r"marriage", r"marrying", r"betroth\w*", r"engaged", r"fianc\w*", r"brides?", r"grooms?", r"husbands?",
                r"wives", r"wife", r"spouses?", r"vows?", r"wedding\w*")
 MARRIAGE_PERSONAL = _rx(r"marry\s+(?:me|you|him|her)", r"my\s+(?:husband|wife|spouse|bride|groom)", r"our\s+(?:wedding|marriage|vows)",
@@ -132,7 +132,7 @@ def lex_scan(text: str, *, names_minor: bool = False, to_minor: bool = False, mi
     if appearance:
         (violation if (to_minor or names_minor) else review).extend(f"appearance:{w}" for w in appearance)
     if marriage:
-        bad = names_minor or (minor_speaker and personal) or (to_minor and personal)
+        bad = bool(personal) and (names_minor or minor_speaker or to_minor)   # a wedding merely mentioned near a minor is review
         (violation if bad else review).extend(f"marriage:{w}" for w in marriage)
     if personal and not marriage:
         review.extend(f"marriage:{w}" for w in personal)
