@@ -318,4 +318,16 @@ Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Camera_OnAtStart>Start each game with the director camera on</HV_Camera_OnAtStart>
   <HV_Camera_OnAtStartTip>Off by default: a following camera is intrusive. Any camera control you use pauses it for ten seconds.</HV_Camera_OnAtStartTip>
   <HV_Camera_PanSpeed>Director camera pan speed: {0}</HV_Camera_PanSpeed>
+  <!-- File browser (.gguf picker) -->
+  <HV_FileBrowser_Title>Choose a model file</HV_FileBrowser_Title>
+  <HV_FileBrowser_Up>Up</HV_FileBrowser_Up>
+  <HV_FileBrowser_UpTip>Go to the folder above this one.</HV_FileBrowser_UpTip>
+  <HV_FileBrowser_Roots>This computer</HV_FileBrowser_Roots>
+  <HV_FileBrowser_RootsTip>Show the drives and top-level places on this computer.</HV_FileBrowser_RootsTip>
+  <HV_FileBrowser_Select>Select</HV_FileBrowser_Select>
+  <HV_FileBrowser_SelectTip>Use the highlighted .gguf file. Double-clicking a file does the same.</HV_FileBrowser_SelectTip>
+  <HV_FileBrowser_Cancel>Cancel</HV_FileBrowser_Cancel>
+  <HV_FileBrowser_CancelTip>Close without choosing a file.</HV_FileBrowser_CancelTip>
+  <HV_FileBrowser_Empty>No folders or .gguf files here.</HV_FileBrowser_Empty>
+  <HV_FileBrowser_Error>Can't open this folder: {0}</HV_FileBrowser_Error>
 </LanguageData>

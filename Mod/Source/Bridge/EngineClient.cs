@@ -72,6 +72,82 @@ namespace HermesVoice.Bridge
         /// <summary>starter_downloading, target_downloading, target_retrying, target_no_space, swapping, starter_serving, target_serving.</summary>
         [JsonProperty("model_stage")] public string ModelStage;
         [JsonProperty("upgrade")] public EngineUpgrade Upgrade;
+        /// <summary>The custom GGUF file in use (or remembered), null when none.</summary>
+        [JsonProperty("custom")] public EngineCustom Custom;
+        /// <summary>Human name of the serving model.</summary>
+        [JsonProperty("model_name")] public string ModelName;
+        /// <summary>The model kept on disk after a switch, null when none.</summary>
+        [JsonProperty("previous")] public EnginePrevious Previous;
+    }
+
+    public sealed class EngineCustom
+    {
+        [JsonProperty("path")] public string Path;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("size")] public long Size;
+        [JsonProperty("missing")] public bool Missing;
+    }
+
+    public sealed class EnginePrevious
+    {
+        [JsonProperty("id")] public string Id;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("file")] public string File;
+        [JsonProperty("bytes")] public long Bytes;
+    }
+
+    /// <summary>Verdict of POST custom/check (and plan.custom) for one GGUF file.</summary>
+    public sealed class CustomCheck
+    {
+        [JsonProperty("ok")] public bool Ok;
+        [JsonProperty("error")] public string Error;
+        [JsonProperty("path")] public string Path;
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("size")] public long Size;
+        [JsonProperty("arch")] public string Arch;
+        [JsonProperty("params")] public long Params;
+        [JsonProperty("ctx_train")] public int CtxTrain;
+        [JsonProperty("quant")] public string Quant;
+        [JsonProperty("moe")] public bool Moe;
+        [JsonProperty("known")] public bool Known;
+        [JsonProperty("estimated")] public bool Estimated;
+        [JsonProperty("fits")] public string Fits;        // yes | tight | no
+        [JsonProperty("why")] public string Why;
+        [JsonProperty("shape")] public EngineShape Shape;
+        [JsonProperty("est_vram_mib")] public int EstVramMib;
+        [JsonProperty("est_ram_mib")] public int EstRamMib;
+        [JsonProperty("est_decode_tps")] public double EstDecodeTps;
+        [JsonProperty("chat_template")] public bool ChatTemplate;
+    }
+
+    public sealed class EngineStoragePart
+    {
+        [JsonProperty("name")] public string Name;        // models | backends | runtime | downloads | logs
+        [JsonProperty("path")] public string Path;
+        [JsonProperty("bytes")] public long Bytes;
+    }
+
+    public sealed class EngineStorageModel
+    {
+        [JsonProperty("file")] public string File;
+        [JsonProperty("id")] public string Id;            // "" when not a catalog model
+        [JsonProperty("bytes")] public long Bytes;
+        [JsonProperty("in_use")] public bool InUse;
+        [JsonProperty("partial")] public bool Partial;
+    }
+
+    public sealed class EngineStorage
+    {
+        [JsonProperty("data_dir")] public string DataDir;
+        [JsonProperty("total_bytes")] public long TotalBytes;
+        [JsonProperty("free_bytes")] public long FreeBytes;   // -1 unknown
+        [JsonProperty("parts")] public List<EngineStoragePart> Parts;
+        [JsonProperty("models")] public List<EngineStorageModel> Models;
+    }
+
+    public sealed class DeleteModelResult
+    {
+        [JsonProperty("freed_bytes")] public long FreedBytes;
     }
 
     /// <summary>The background download of the chosen model while a starter model serves (engine ENGINE.md §7a).</summary>
@@ -125,6 +201,8 @@ namespace HermesVoice.Bridge
         /// <summary>True for a model kept as a last resort; the UI warns about it.</summary>
         [JsonProperty("fallback")] public bool Fallback;
         [JsonProperty("fallback_note")] public string FallbackNote;
+        /// <summary>Bytes still to download for this model (0 if installed).</summary>
+        [JsonProperty("disk_need_bytes")] public long DiskNeedBytes;
     }
 
     public sealed class EnginePlan
@@ -132,6 +210,9 @@ namespace HermesVoice.Bridge
         [JsonProperty("recommended")] public string Recommended;
         [JsonProperty("models")] public List<EnginePlanModel> Models;
         [JsonProperty("backend")] public string Backend;
+        /// <summary>Verdict of the current custom file, null when none.</summary>
+        [JsonProperty("custom")] public CustomCheck Custom;
+        [JsonProperty("disk_free_bytes")] public long DiskFreeBytes;
     }
 
     public sealed class EngineTestResult
@@ -200,6 +281,8 @@ namespace HermesVoice.Bridge
 
         public string BaseUrl { get; private set; }
         public int ShortTimeoutMs = 3000;      // status, plan, cancel, attach...
+        public int CheckTimeoutMs = 10000;     // custom/check (reads a GGUF header)
+        public int StorageTimeoutMs = 5000;    // storage (directory walk)
         public int LongTimeoutMs = 60000;      // test (an 8-token chat), import (hash a big file)
 
         public EngineClient(string baseUrl) { BaseUrl = (baseUrl ?? "").TrimEnd('/'); }
@@ -227,6 +310,19 @@ namespace HermesVoice.Bridge
         public Task<EngineResult<JObject>> PutSettingsAsync(EngineSettings s) { return Send<JObject>("PUT", "settings", JObject.FromObject(s), ShortTimeoutMs); }
         public Task<EngineResult<EngineTestResult>> TestAsync() { return Send<EngineTestResult>("POST", "test", null, LongTimeoutMs); }
         public Task<EngineResult<JObject>> AttachAsync(int pid) { return Send<JObject>("POST", "attach", new JObject { ["pid"] = pid }, ShortTimeoutMs); }
+        public Task<EngineResult<CustomCheck>> CheckCustomAsync(string path) { return Send<CustomCheck>("POST", "custom/check", new JObject { ["path"] = path }, CheckTimeoutMs); }
+        public Task<EngineResult<JObject>> UseCustomAsync(string path) { return Send<JObject>("POST", "custom/use", new JObject { ["path"] = path }, ShortTimeoutMs); }
+        public Task<EngineResult<JObject>> ClearCustomAsync() { return Send<JObject>("POST", "custom/clear", null, ShortTimeoutMs); }
+        public Task<EngineResult<EngineStorage>> GetStorageAsync(bool refresh = false) { return Send<EngineStorage>("GET", refresh ? "storage?refresh=1" : "storage", null, StorageTimeoutMs); }
+        public Task<EngineResult<JObject>> RemoveDownloadsAsync() { return Send<JObject>("POST", "remove-downloads", new JObject { ["confirm"] = true }, ShortTimeoutMs); }
+        /// <summary>Deletes one downloaded model file; <paramref name="id"/> (catalog id) or <paramref name="file"/>, only the non-empty one is sent (id wins).</summary>
+        public Task<EngineResult<DeleteModelResult>> DeleteModelAsync(string id, string file = null)
+        {
+            var o = new JObject();
+            if (!string.IsNullOrEmpty(id)) o["id"] = id;
+            else if (!string.IsNullOrEmpty(file)) o["file"] = file;
+            return Send<DeleteModelResult>("POST", "delete-model", o, ShortTimeoutMs);
+        }
         public Task<EngineResult<string>> GetLogsAsync(string name, int tail = 200)
         {
             return Send<string>("GET", "logs?name=" + Uri.EscapeDataString(name ?? "engine") + "&tail=" + tail, null, ShortTimeoutMs);
