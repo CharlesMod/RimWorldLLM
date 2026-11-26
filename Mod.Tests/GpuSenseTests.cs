@@ -28,6 +28,18 @@ namespace HermesVoice.Tests
 
         static GpuSummary Parse(string json) { return JsonConvert.DeserializeObject<EngineStatus>(json).Gpu; }
 
+        // Captured live from the engine on DESKTOP (Optimus laptop, 2026-11-26): the game said it
+        // renders on the Iris Xe while a stand-in held 1 GB on the 3050.
+        const string Desktop = "{\"gpu\": {\"adapters\": [{\"index\": 0, \"vendor\": \"nvidia\", \"vendor_id\": 4318, \"name\": \"NVIDIA GeForce RTX 3050 Laptop GPU\", \"dedicated_mib\": 3965, \"shared_mib\": 16226, \"used_mib\": 1035, \"integrated\": false, \"luid\": \"0x00000000_0x000127EF\", \"pci\": \"0000:01:00.0\", \"uuid\": \"GPU-c4ae8d0c-0952-f9a9-4b43-e71674010fff\", \"source\": \"dxgi\"}, {\"index\": 1, \"vendor\": \"intel\", \"vendor_id\": 32902, \"name\": \"Intel(R) Iris(R) Xe Graphics\", \"dedicated_mib\": 128, \"shared_mib\": 16226, \"used_mib\": 0, \"integrated\": true, \"luid\": \"0x00000000_0x0001238A\", \"source\": \"dxgi\"}], \"engine_adapter\": 0, \"host_adapter\": 1, \"host_integrated\": \"yes\", \"reserve\": {\"others_mib\": 1035, \"others_basis\": \"processes\", \"host_mib\": 0, \"host_basis\": \"other-adapter\", \"margin_mib\": 512, \"total_mib\": 4096}, \"free_for_model_mib\": 2549, \"others_note\": \"Other apps are using 1.0 GB of your graphics card\", \"processes\": [{\"pid\": 4, \"name\": \"\", \"adapter\": 0, \"dedicated_mib\": 3, \"shared_mib\": 0, \"kind\": \"\"}, {\"pid\": 12844, \"name\": \"fakehost.exe\", \"adapter\": 0, \"dedicated_mib\": 1031, \"shared_mib\": 62, \"kind\": \"graphics\"}, {\"pid\": 1616, \"name\": \"csrss.exe\", \"adapter\": 1, \"dedicated_mib\": 0, \"shared_mib\": 18, \"kind\": \"\"}], \"sources\": {\"dxgi\": \"ok\", \"nvidia-smi\": \"ok\", \"pdh\": \"ok\"}}}";
+
+        [Fact]
+        public void LiveDesktopReport()
+        {
+            var line = GpuLine.Format(Parse(Desktop), T);
+            Assert.StartsWith("Game on Intel Iris Xe · RTX 3050: 2.5 GB free for the model", line);
+            Assert.Contains("Other apps are using 1.0 GB of your graphics card", line);
+        }
+
         [Fact]
         public void HostOnOtherAdapter()
         {
