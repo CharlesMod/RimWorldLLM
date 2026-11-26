@@ -137,7 +137,7 @@ def test_mod_refusal_is_not_an_error(world):
 def test_messages_are_short():
     m = rc.messages(RimWorldAdapter(), ENTRIES)
     words = sum(len(t.split()) for _, t in m)
-    assert words < 260
+    assert words < 330          # the minor rule rides on the system prompt
 
 
 def test_late_connect_recaps_when_the_mod_says_open(world):

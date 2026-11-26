@@ -35,7 +35,7 @@ from .lease import REQUEST_EXPIRY, Cls, Lease, LeaseManager, Now, QuotaTracker, 
 from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
-from . import dreams, inner
+from . import dreams, inner, sampler_route
 from . import speech as speechmod
 from .dreams import DreamBook
 from .prompt import build_prefix
@@ -607,7 +607,7 @@ class Director:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                   turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
                                   labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens,
-                                  speech=lease.data.get("speech"), **self._inner_kw(mind))
+                                  speech=lease.data.get("speech"), **self._inner_kw(mind, listener))
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -667,13 +667,36 @@ class Director:
         self.shout_until[aid] = now + self.cfg.shout_gap_real_s
         return "shout"
 
-    def _inner_kw(self, mind: Mind) -> dict:
-        """speak() arguments for the inner monologue: empty when the master switch is off (today's calls, byte for byte)."""
+    def _inner_kw(self, mind: Mind, listener: int | None = None) -> dict:
+        """speak() arguments for the inner monologue: empty when the master switch is off (today's calls, byte for byte).
+        aim_ground adds the scene's tension to the aim request; aim_sampler routes that call to a named sampler."""
         if not self.cfg.inner_monologue:
             return {}
         window = int(self.cfg.inner_aim_fresh_days * self.day)
-        return {"aim": True, "solo_aim": self.cfg.inner_solo_aim,
-                "fresh_aim": inner.fresh_aim(mind, self.bridge.env.game, window)}
+        kw = {"aim": True, "solo_aim": self.cfg.inner_solo_aim,
+              "fresh_aim": inner.fresh_aim(mind, self.bridge.env.game, window)}
+        if self.cfg.aim_ground:
+            aid = mind.actor_id
+            hour = self.bridge.env.game // max(1, self.day // 24)
+            kind = inner.subtext_kind(aid, self.line_count.get(aid, 0), hour)
+            kw["aim_extra"] = inner.aim_tension(mind, aid, listener, self.names.get(listener) if listener is not None else None, kind)
+            kw["drop_just_want"] = True
+        if self.cfg.aim_sampler:
+            routed = self._aim_llm()
+            if routed is not None:
+                kw["intent_llm"] = routed
+        return kw
+
+    def _aim_llm(self):
+        """The client for the aim-carrying intent pass (cfg.aim_sampler), or None to use self.llm."""
+        name = self.cfg.aim_sampler
+        if not name:
+            return None
+        cached = getattr(self, "_aim_llm_cache", None)
+        if cached is None or cached[0] != name or cached[1] is not self.llm:
+            cached = (name, self.llm, sampler_route.route(self.llm, name))
+            self._aim_llm_cache = cached
+        return cached[2]
 
     async def _inner_after_say(self, aid: int, sp: Spoken, minor: bool) -> None:
         """A line the game applied: its aim joins the stream and may show as a contrast cloud."""
@@ -868,7 +891,7 @@ class Director:
                                   listener_name=self.names[lis], labels=self.labels_for(ctxs[sp_id].minor_involved),
                                   max_tokens=self.cfg.llm.line_max_tokens,
                                   check=check, retries=self.cfg.repeat_retries, on_check=on_check,
-                                  speech=li.data.get("speech"), **self._inner_kw(self.minds[sp_id]))
+                                  speech=li.data.get("speech"), **self._inner_kw(self.minds[sp_id], lis))
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))

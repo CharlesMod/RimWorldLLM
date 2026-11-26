@@ -11,7 +11,9 @@ import re
 from typing import TYPE_CHECKING
 
 from . import agegate
+from . import creative
 from . import gamedata as gd
+from . import grounding
 from .bridge import BridgeError
 from .llm import LLMError
 from .sanitize import prompt_cap_words, sanitize_prose
@@ -32,12 +34,27 @@ _LEAD = re.compile(r"^\s*(?:[-*•>]+|\d+[.)])\s*")
 _SENT = re.compile(r"(?<=[.!?])\s+")
 
 
-def messages(adapter, entries: list[dict], day_label=lambda e: int(e.get("day", 0)) + 1) -> list[tuple[str, str]]:
-    """System + user messages for the recap call. Every chronicle text is cleaned and wrapped as game data."""
-    body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}"
-                     for e in entries[-USE_ENTRIES:])
-    user = f"=== CHRONICLE (oldest first) ===\n{gd.data_section('chronicle', body)}=== REQUEST ===\n{adapter.recap_request}"
-    return [("system", adapter.recap_system + "\n\n" + gd.DATA_RULE), ("user", user)]
+RANK_WINDOW = 12         # creative_ground: the last this-many entries are ranked
+RANK_TOP = 4             # ... and the top ones go in, biggest first
+GROUND_REQUEST = ("Write exactly 3 lines, one short sentence each, under 20 words. The entries are listed biggest first: "
+                  "lead with the biggest event, name who it happened to and what changed, then the next ones, and end on "
+                  "what is still unresolved. No title, no numbering, no quotes.")
+
+
+def messages(adapter, entries: list[dict], day_label=lambda e: int(e.get("day", 0)) + 1,
+             ground: bool = False) -> list[tuple[str, str]]:
+    """System + user messages for the recap call. Every chronicle text is cleaned and wrapped as game data.
+    ``ground`` (creative_ground) ranks the last RANK_WINDOW entries by importance and lists the top ones biggest first."""
+    if ground:
+        top = grounding.rank_entries(adapter, entries, RANK_WINDOW, RANK_TOP)
+        body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}" for e in top)
+        user = (f"=== CHRONICLE (biggest first) ===\n{gd.data_section('chronicle', body)}"
+                f"=== REQUEST ===\n{getattr(adapter, 'recap_request_ground', GROUND_REQUEST)}")
+    else:
+        body = "\n".join(f"Day {day_label(e)}: {gd.clean(e.get('text', ''), 'event', max_len=320)}"
+                         for e in entries[-USE_ENTRIES:])
+        user = f"=== CHRONICLE (oldest first) ===\n{gd.data_section('chronicle', body)}=== REQUEST ===\n{adapter.recap_request}"
+    return [("system", adapter.recap_system + "\n\n" + gd.DATA_RULE + "\n" + agegate.MINOR_RULE), ("user", user)]
 
 
 def parse_lines(raw: str) -> list[str]:
@@ -64,19 +81,36 @@ def fallback_lines(entries: list[dict], minor_names: set[str] | None = None) -> 
 async def build(d: "Director", entries: list[dict]) -> list[str]:
     """The recap lines (1 to 3), from the model when it gives usable lines, else from the chronicle itself."""
     minors = d.minor_tokens()
-    msgs = messages(d.adapter, entries)
+    msgs = messages(d.adapter, entries, ground=bool(getattr(d.cfg, "creative_ground", False)))
     allnames = set().union(*d.name_tokens.values()) if d.name_tokens else set()
-    lines: list[str] = []
-    try:
-        c = await d.llm.complete(msgs, slot=d.cfg.narrator_slot, kind="recap", max_tokens=MAX_TOKENS, stop=[],
+    pw = prompt_cap_words(msgs[1][1])
+
+    async def write(note: str) -> str | None:
+        m = msgs if not note else msgs[:-1] + [(msgs[-1][0], msgs[-1][1].rstrip("\n") + "\n" + note)]
+        c = await d.llm.complete(m, slot=d.cfg.narrator_slot, kind="recap", max_tokens=MAX_TOKENS, stop=[],
                                  temperature=0.7)
-        pw = prompt_cap_words(msgs[1][1])
+        got = []
         for raw in parse_lines(c.text):
             s = sanitize_prose(raw, known_names=allnames, all_names=allnames, prompt_words=pw,
                                common_words=set(d.adapter.common_words), min_words=3, max_words=30,
                                minor_names=minors)
             if s.ok:
-                lines.append(gd._cut(s.text, LINE_CHARS))
+                got.append(gd._cut(s.text, LINE_CHARS))
+        return "\n".join(got) if len(got) >= 2 else None
+
+    async def plan() -> str | None:
+        pm = msgs[:-1] + [(msgs[-1][0], msgs[-1][1].split("=== REQUEST ===")[0] + "=== REQUEST ===\n" + grounding.PLAN_ASK)]
+        c = await d.llm.complete(pm, slot=d.cfg.narrator_slot, kind="recap", max_tokens=grounding.PLAN_TOKENS,
+                                 stop=["\n"], temperature=0.7)
+        return c.text
+
+    lines: list[str] = []
+    try:
+        text, _ = await creative.compose(d, kind="recap", slot=d.cfg.narrator_slot, actor=None,
+                                         facts=msgs[1][1].split("=== REQUEST ===")[0], names=set(),
+                                         write=write, plan=plan,
+                                         should_yield=lambda: grounding.other_reactive_waiting(d, None))
+        lines = text.splitlines() if text else []
     except LLMError as ex:
         log.info("recap call failed: %s", ex)
     if len(lines) < 2:

@@ -314,7 +314,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   as an actor with role `target`; the target is a witness-style participant, not a second subject.
 - `art_created` fires when a colonist or slave finishes a piece of art (not spawned, traded or
   reinstalled art). `data`: `thing_id` (use with `POST /art`), `def_label`, `quality`, `title`,
-  `description` (the game's own tale text, game text, at most 400 characters). The maker has role
+  `description` (the game's own tale text, game text, at most 400 characters), `material` (the stuff label, `""` when none) and, when the art depicts a tale, `tale`: `{def, summary (at most 200 characters), day (game day it happened, may be absent), pawns (up to 3 names)}` (all game text; `tale` is left out when there is none or it cannot be read). The maker has role
   `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
   one game hour per maker.
 - `sleep_start` fires when a colonist falls asleep in a bed (not downed, not anesthetized; a colonist first seen already asleep,

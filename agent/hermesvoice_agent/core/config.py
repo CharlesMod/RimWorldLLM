@@ -156,6 +156,14 @@ class Config(BaseModel):
     group_turns: list[int] = [5, 4, 2, 0]   # meal/party turn cap at 1x, 2x, 3x, 4x (0 = no scene; ceremonies keep at least their lead)
     eulogy_max_tokens: int = 70        # the lead's line at a funeral
     repeat_own_recent: int = 5         # the speaker's own last lines (across conversations) kept for the check
+    # Creative-boost experiments (each defaults to today's behaviour; A/B measured, kept only when they help)
+    creative_ground: bool = False      # richer data in art / recap / lore / eulogy and vow prompts (core/art.py, recap.py, lore.py, group.py)
+    aim_ground: bool = False           # the aim request carries the scene's tension and one subtext kind (core/inner.py)
+    creative_plan: bool = False        # a one-line private plan before the piece (core/creative.py)
+    creative_best_of: int = 1          # candidates per piece (core/creative.py)
+    creative_rerank: str = "auto"      # how the best of N is picked: "auto" (rules) or "llm"
+    cliche_retry: bool = False         # one retry when the piece holds a stock phrase
+    aim_sampler: str = ""              # non-empty: the aim-carrying intent pass asks the engine for this sampler profile
 
     @property
     def actor_slots(self) -> list[int]:

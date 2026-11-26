@@ -23,7 +23,9 @@ from .conversation import Turn
 from .lease import REQUEST_EXPIRY, Cls, Lease, Now, WorkItem
 from .memory import keywords
 from .minds import Memory
-from .passes import Dropped, speak
+from . import creative, grounding
+from .passes import Dropped, Spoken, speak
+from .prompt import line_messages
 
 log = logging.getLogger("hermesvoice")
 
@@ -218,6 +220,78 @@ def request(g: Gathering, me: int) -> tuple[str, int | None]:
     return ("=== REQUEST ===\nReact to what was just said: add a detail, laugh, or answer. One short line.", None)
 
 
+# ---- creative turns: the eulogy and the vows -------------------------------------------------------------
+def ceremony_turn(g: Gathering, sp: int) -> bool:
+    """The turns that are written pieces: the lead's eulogy and each of the couple's vows."""
+    return ((g.kind == "funeral" and sp == g.lead and not g.turns)
+            or (g.kind == "wedding" and sp in g.couple and len(g.turns) < len(g.couple)))
+
+
+async def details(d, g: Gathering, me: int) -> str:
+    """creative_ground: concrete details about the person the speech is about, as a data section ("" when none).
+    Deceased: traits, background, a memory the speaker has of them, how they died. Couple: traits of both and what
+    they share. Game text, cleaned."""
+    mind = d.minds.get(me)
+    lines: list[str] = []
+    if g.kind == "funeral" and g.deceased:
+        name = gd.name(g.deceased, "the one who died")
+        did = next((i for i, n in d.names.items() if n == g.deceased), None)
+        if did is not None:
+            lines += [f"{name}: {x}" for x in grounding.card_lines(await grounding.actor_card(d, did))
+                      if not x.startswith("Mood")]
+        tok = grounding.tokens_of([g.deceased])
+        if mind is not None:
+            mine = [m for m in mind.memories if (did is not None and did in m.people) or grounding.mentions(m.text, tok)]
+            for m in mine[-2:]:
+                lines.append(f"A memory you have of {name}: {gd.clean(m.text, 'event', max_len=200)}")
+        news = [e.text for e in d.chronicle.state.recent if grounding.mentions(e.text, tok)][-2:]
+        for t in news:
+            lines.append(f"What the record says: {gd.clean(t, 'event', max_len=220)}")
+    elif g.kind == "wedding" and me in g.couple and len(g.couple) == 2:
+        other = g.couple[1 - g.couple.index(me)]
+        oname = gd.name(g.names.get(other, ""), "your partner")
+        for who, nm in ((me, "You"), (other, oname)):
+            lines += [f"{nm}: {x}" for x in grounding.card_lines(await grounding.actor_card(d, who))
+                      if not x.startswith("Mood")]
+        if mind is not None:
+            for m in [m for m in mind.memories if other in m.people and m.visibility != "private"][-2:]:
+                lines.append(f"Something you share with {oname}: {gd.clean(m.text, 'event', max_len=200)}")
+    if not lines:
+        return ""
+    return f"=== ABOUT THEM ===\n{gd.data_section('about', chr(10).join(lines))}"
+
+
+async def _compose_turn(d, g: Gathering, sp: int, mind, lease, req: str, say):
+    """One eulogy or vow through creative.compose. With every flag off it is one call to ``say(req)``, as before."""
+    base = req
+    if getattr(d.cfg, "creative_ground", False):
+        base = (await details(d, g, sp)) + req
+    results: list = []
+
+    def with_note(note: str) -> str:
+        return base if not note else base.rstrip("\n") + "\n" + note
+
+    async def write(note: str) -> str | None:
+        r = await say(with_note(note))
+        results.append(r)
+        return r.text if isinstance(r, Spoken) else None
+
+    async def plan() -> str | None:
+        msgs = line_messages(lease.data["prefix"], [(t.name, t.text) for t in g.turns], mind, g.names[sp], len(g.turns),
+                             base.split("=== REQUEST ===")[0] + "=== REQUEST ===\n" + grounding.PLAN_ASK)
+        c = await d.llm.complete(msgs, slot=lease.slot, kind="line", max_tokens=grounding.PLAN_TOKENS, stop=["\n"],
+                                 actor=sp)
+        return c.text
+
+    text, _ = await creative.compose(d, kind="eulogy" if g.kind == "funeral" else "vow", slot=lease.slot, actor=sp,
+                                     facts=base.split("=== REQUEST ===")[0], names=set(), write=write, plan=plan,
+                                     should_yield=lambda: grounding.other_reactive_waiting(d, sp))
+    for r in reversed(results):
+        if isinstance(r, Spoken) and r.text == text:
+            return r
+    return results[-1] if results else Dropped("no_candidate")
+
+
 def template_memory(g: Gathering, me: int) -> str:
     n = g.names
     first = g.turns[0] if g.turns else None
@@ -374,12 +448,19 @@ async def run(d, item: WorkItem, lease0: Lease) -> None:
             req, mt = request(g, sp)
             lease.generating = True
             check, on_check = d._repeat_check(g, sp)
-            res = await speak(d.llm, slot=lease.slot, mind=mind, name=g.names[sp], prefix=lease.data["prefix"],
-                              turns=[(t.name, t.text) for t in g.turns], turn_no=len(g.turns), ctx=ctx,
-                              listener_name=None, labels=d.labels_for(ctx.minor_involved),
-                              max_tokens=d.cfg.eulogy_max_tokens if (g.kind == "funeral" and sp == g.lead and not g.turns) else d.cfg.llm.line_max_tokens,
-                              request=req, check=check, retries=d.cfg.repeat_retries, on_check=on_check,
-                              speech=lease.data.get("speech"))
+            max_tok = d.cfg.eulogy_max_tokens if (g.kind == "funeral" and sp == g.lead and not g.turns) else d.cfg.llm.line_max_tokens
+
+            async def say(request: str, mind=mind, sp=sp, lease=lease, ctx=ctx, check=check, on_check=on_check, max_tok=max_tok):
+                return await speak(d.llm, slot=lease.slot, mind=mind, name=g.names[sp], prefix=lease.data["prefix"],
+                                   turns=[(t.name, t.text) for t in g.turns], turn_no=len(g.turns), ctx=ctx,
+                                   listener_name=None, labels=d.labels_for(ctx.minor_involved),
+                                   max_tokens=max_tok, request=request, check=check, retries=d.cfg.repeat_retries,
+                                   on_check=on_check, speech=lease.data.get("speech"))
+
+            if ceremony_turn(g, sp):
+                res = await _compose_turn(d, g, sp, mind, lease, req, say)
+            else:
+                res = await say(req)
             lease.generating = False
             if isinstance(res, Dropped):
                 d.dropped.append((sp, res.reason))

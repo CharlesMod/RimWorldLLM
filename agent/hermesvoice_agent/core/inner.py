@@ -91,3 +91,50 @@ class CloudGate:
             return False
         self.last[aid] = play_now
         return True
+
+
+# ---- aim_ground: the scene's tension for the aim request -------------------------------------------------
+SUBTEXT_KINDS = ("fear", "want", "secret", "judgment")
+_SUBTEXT_TEXT = {
+    "fear": "what you fear from this person or this moment",
+    "want": "what you want from them",
+    "secret": "something you are not saying",
+    "judgment": "a private judgment of them",
+}
+AIM_RULE_TEXT = ("The aim must complicate the spoken line, never restate it, and never open with \"I just want\".")
+
+
+def subtext_kind(speaker: int, count: int, hour: int) -> str:
+    """One subtext kind per (speaker, lease count, game hour): deterministic, and different people in the same moment
+    draw different kinds even with greedy decoding."""
+    import hashlib
+    h = int(hashlib.sha1(f"subtext:{speaker}:{count}:{hour}".encode()).hexdigest(), 16)
+    return SUBTEXT_KINDS[h % len(SUBTEXT_KINDS)]
+
+
+def _mood_of(opinion: int | None) -> str:
+    if opinion is None:
+        return "you hardly know where you stand with them"
+    if opinion >= 30:
+        return "you like them and they likely like you"
+    if opinion <= -30:
+        return "you and they have a grudge or dislike between you"
+    return "you are neither close nor at odds"
+
+
+def aim_tension(mind: Mind, speaker: int, listener: int | None, listener_name: str | None, kind: str) -> str:
+    """The extra words for the aim request (about 50 words at most): where the speaker stands with the listener, one
+    subtext kind, and the rule. The content of a private memory is never put here, only that something is kept back."""
+    parts = []
+    if listener is not None and listener_name:
+        rel = mind.relations.get(str(listener))
+        parts.append(f"Scene tension: {_mood_of(rel.opinion if rel else None)}.")
+        shared = [m for m in mind.memories if listener in m.people and m.visibility != "private"]
+        if shared:
+            t = gd.clean(shared[-1].text, "line", max_len=70)
+            parts.append(f"A shared memory: {t}")
+        if any(listener in m.people and m.visibility == "private" for m in mind.memories):
+            parts.append("You are keeping something from them.")
+    parts.append(f"Subtext of this aim: {_SUBTEXT_TEXT[kind]}.")
+    parts.append(AIM_RULE_TEXT)
+    return " ".join(parts)

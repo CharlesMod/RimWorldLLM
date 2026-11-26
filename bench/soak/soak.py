@@ -12,6 +12,7 @@ import copy
 import json
 import math
 import random
+import re
 import sys
 import tempfile
 import time
@@ -24,6 +25,9 @@ for p in HERE.parents:                      # find <repo>/agent whatever the wor
         break
 
 import httpx  # noqa: E402
+
+sys.path.insert(0, str(HERE.parent))
+import fixture_rich  # noqa: E402
 
 from hermesvoice_agent.core.bridge import BridgeClient  # noqa: E402
 from hermesvoice_agent.core.calllog import CallLog  # noqa: E402
@@ -438,7 +442,52 @@ def classify(col: Collector, d: Director, fb: FakeBridge, tabulate_ages) -> list
         kind = {"aim": "aim", "reaction": "inner_reaction", "concern": "inner_concern", "dream": "inner_dream", "musing": "inner_musing"}.get(k, f"inner_{k}")
         put(kind, r["actor"], r["text"], "mind.inner", r, game=r.get("game"))
     out.sort(key=lambda o: o["ts"])
-    return out
+    return merge_duplicates(out)
+
+
+# Kinds that the game logs twice for one piece of text (the mind's inner stream and the thought/lore log); lower index = primary.
+MERGE_ORDER = ["dream", "thought", "bystander", "cloud", "lore", "aim", "inner_dream", "inner_musing", "inner_reaction", "inner_concern"]
+_PUNCT = re.compile(r"[^a-z0-9 ]+")
+
+
+def _norm(t: str) -> str:
+    return " ".join(_PUNCT.sub(" ", (t or "").lower()).split())
+
+
+def merge_duplicates(out: list[dict]) -> list[dict]:
+    """One record per piece of text: when the same actor's same text (case/punctuation-insensitive, or one wholly containing the
+    other for the logged-twice kinds) appears under two kinds, keep the primary kind and list the others in `also`."""
+    def rank(o):
+        return MERGE_ORDER.index(o["kind"]) if o["kind"] in MERGE_ORDER else -1
+
+    keep: list[dict] = []
+    for o in out:
+        if o["kind"] not in MERGE_ORDER:
+            keep.append(o)
+            continue
+        n = _norm(o["text"])
+        hit = None
+        for k in keep:
+            if k["kind"] not in MERGE_ORDER or k["actor"] != o["actor"]:
+                continue
+            m = _norm(k["text"])
+            same = k["kind"] == o["kind"]
+            if same and o["kind"] != "lore" and k["text"] != o["text"]:
+                continue          # two different texts of one kind stay two records (lore name and referent are one piece)
+            if (m == n and not same) or (len(min(m, n, key=len)) >= 12 and (m in n or n in m) and (not same or o["kind"] == "lore")):
+                hit = k
+                break
+        if hit is None:
+            keep.append(o)
+            continue
+        if rank(o) < rank(hit):                       # the new one is the primary: swap contents
+            keep[keep.index(hit)] = o
+            o["also"] = sorted(set(hit.get("also", [])) | ({hit["kind"]} - {o["kind"]}))
+        elif o["kind"] != hit["kind"]:
+            hit["also"] = sorted(set(hit.get("also", [])) | {o["kind"]})
+        elif len(o["text"]) > len(hit["text"]):        # lore: keep the fuller of the two texts
+            hit["text"] = o["text"]
+    return keep
 
 
 # ---------------------------------------------------------------- main run
@@ -451,14 +500,15 @@ async def run(args) -> int:
     fb = FakeBridge("tok")
     fb.tick = 0
     fb.speed = args.speed
-    table = build_colony(fb, rng)
+    rich = args.fixture == "rich"
+    table = (fixture_rich.build_colony if rich else build_colony)(fb, rng)
     fb.config.update({"adult_content": args.adult == "on", "recap": True, "recap_open": True, "wants_enabled": True,
                       "pause_ambient_at_speed": args.pause_ambient_at})
     ndays = max(1, math.ceil(args.days))
     total = int(args.days * DAY)
     death_day = 0
     wedding_day = 1 if ndays > 1 else 0
-    script = build_script(ndays, fb.art_things, death_day, wedding_day)
+    script = (fixture_rich.build_script if rich else build_script)(ndays, fb.art_things, death_day, wedding_day)
     script = [s for s in script if s["tick"] <= total]
 
     tmp = tempfile.TemporaryDirectory(prefix="soak-agent-", dir=str(out_dir))
@@ -521,7 +571,7 @@ async def run(args) -> int:
                     e = fb.add_event(s["type"], s["actors"], s["summary"], s["witnesses"], s["severity"], s["ledger_id"], dict(s["data"]))
                     fired.append({"tick": fb.tick, "type": s["type"], "summary": s["summary"], "actors": s["actors"], "data": s["data"]})
             # drunk pawn sobers at half the run
-            if state["sober_at"] is None and fb.tick >= total // 2:
+            if not rich and state["sober_at"] is None and fb.tick >= total // 2:
                 fb.pawns[8]["health"]["conditions"] = []
                 state["sober_at"] = fb.tick
                 fired.append({"tick": fb.tick, "type": "act", "summary": "Noa (drunk) sobers up"})
@@ -592,7 +642,8 @@ async def run(args) -> int:
             "run": args.run, "args": vars(args), "real_s": round(real_s, 1), "final_tick": fb.tick, "total_ticks": total,
             "game_days_done": round(fb.tick / DAY, 2), "pawns": [{**v, "register_line": (reg or {}).get(k) if isinstance(reg, dict) else None,
                                                                     "current_age_for_gate": ages(k)} for k, v in table.items()],
-            "pairs": {"A": {"smart": 5, "dull": 6}, "B": {"sober": 7, "drunk": 8, "drunk_sober_at_tick": state["sober_at"]}},
+            "fixture": args.fixture,
+            "pairs": ({} if rich else {"A": {"smart": 5, "dull": 6}, "B": {"sober": 7, "drunk": 8, "drunk_sober_at_tick": state["sober_at"]}}),
             "canaries": CANARIES, "canary_hits": hits, "events_sent": fired, "event_count": len(fired),
             "reload_at_tick": state["reload_at"], "reload_skipped": state["reload_skipped"],
             "gate_stats": safe(d.gate_stats), "output_counts": counts, "calls": llm.n, "call_errors": llm.errors, "calls_by_kind": calls_by_kind,
@@ -614,6 +665,8 @@ def main(argv=None) -> int:
     ap.add_argument("--url", default=None, help="OpenAI-compatible endpoint (e.g. http://127.0.0.1:47480)")
     ap.add_argument("--fake", action="store_true", help="use the FakeLLM instead of --url")
     ap.add_argument("--model", default="")
+    ap.add_argument("--fixture", choices=["rich", "classic"], default="rich",
+                    help="rich = varied 9-pawn colony with a story and distinct art tales (default); classic = the old 11-pawn register-pair colony")
     ap.add_argument("--speed", type=int, choices=[1, 2, 3, 4], default=3)
     ap.add_argument("--days", type=float, default=2.0)
     ap.add_argument("--adult", choices=["off", "on"], default="off")

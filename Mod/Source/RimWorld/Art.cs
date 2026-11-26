@@ -32,6 +32,35 @@ namespace HermesVoice
             return art != null && art.Active ? art : null;
         }
 
+        /// <summary>The tale the art depicts as a JSON object, or null when none or unreadable (private TaleReference.tale read by reflection).</summary>
+        public static JObject TaleObject(CompArt art)
+        {
+            try
+            {
+                var tref = art.TaleRef;
+                if (tref == null || tref.IsNullTale) return null;
+                var tale = AccessTools.Field(typeof(TaleReference), "tale").GetValue(tref) as Tale;
+                if (tale == null) return null;
+                var pawns = new System.Collections.Generic.List<string>();
+                var single = tale as Tale_SinglePawn;
+                var dbl = tale as Tale_DoublePawn;
+                if (single != null) AddName(pawns, single.pawnData);
+                if (dbl != null) { AddName(pawns, dbl.firstPawnData); AddName(pawns, dbl.secondPawnData); }
+                int day = GenDate.DaysPassed - tale.AgeTicks / GenDate.TicksPerDay;
+                string summary = "";
+                try { summary = tale.ShortSummary; } catch (Exception) { }
+                return ArtText.Tale(tale.def == null ? "" : tale.def.label, summary, day, pawns);
+            }
+            catch (Exception) { return null; }
+        }
+
+        static void AddName(System.Collections.Generic.List<string> l, TaleData_Pawn d)
+        {
+            if (d == null) return;
+            string n = d.pawn != null ? d.pawn.LabelShort : (d.name != null ? d.name.ToStringShort : null);
+            if (!string.IsNullOrEmpty(n)) l.Add(n);
+        }
+
         public static string QualityLabel(Thing t)
         {
             QualityCategory q;
@@ -84,6 +113,9 @@ namespace HermesVoice
                 tale = Strip(tale).Trim();
                 if (tale.Length > ArtSupport.MaxTaleChars) tale = tale.Substring(0, ArtSupport.MaxTaleChars);
                 string quality = ArtSupport.QualityLabel(thing);
+                string material = "";
+                try { material = ArtText.Material(thing.Stuff == null ? "" : thing.Stuff.label); } catch (Exception) { }
+                JObject taleObj = ArtSupport.TaleObject(__instance);
                 var spec = new EventSpec
                 {
                     Type = "art_created", Map = pawn.MapHeld, At = pawn.PositionHeld, Severity = 0.2f,
@@ -91,9 +123,10 @@ namespace HermesVoice
                     Data = new JObject
                     {
                         ["thing_id"] = thing.thingIDNumber, ["def_label"] = thing.def.label, ["quality"] = quality,
-                        ["title"] = title, ["description"] = tale
+                        ["title"] = title, ["description"] = tale, ["material"] = material
                     }
                 };
+                if (taleObj != null) spec.Data["tale"] = taleObj;
                 spec.Involve(pawn, "maker");
                 EventGate.Emit(EventKind.Art, pawn, spec);
             });

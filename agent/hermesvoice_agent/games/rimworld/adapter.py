@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from ...core import agegate
+from ...core import gamedata as gd
 from ...core.adapter import NameInfo, ProtocolNames
 from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
@@ -136,6 +137,55 @@ class RimWorldAdapter:
     art_request = (
         "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. If the history gives nothing "
         "worth depicting, describe the piece's subject and its maker plainly.")
+    # ---- creative_ground wording (core/art.py, recap.py, lore.py, group.py read these with getattr) -------------
+    art_request_ground = (
+        "Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. Say what the piece depicts as the "
+        "data gives it: who is in it, where, the weather if it says, and how it ended. Name the material it is made of. "
+        "Let the maker's manner (their traits and mood) show in how it is treated, never as a list. Use only people and "
+        "events the data names. If the data names no scene, describe the piece's subject and its maker plainly.")
+    recap_request_ground = (
+        "Write exactly 3 lines, one short sentence each, under 20 words. The chronicle entries are listed biggest first: "
+        "lead with the biggest event, name who it happened to and what changed because of it, then the next ones, and "
+        "end on what is still unresolved. Never small talk or chores. No title, no numbering, no quotes.")
+    lore_request_ground = (
+        "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
+        "a 2 to 5 word name built from one concrete thing in the list of referents (a person, place, animal, enemy or "
+        "item), the way colonists would nickname it, never a label such as an incident or event name, a colon, then "
+        "what it refers to in under 10 words. Do not reuse a name already in use. Otherwise answer: none.")
+    # (pattern, weight): what makes a chronicle entry worth a recap line (core/recap.py ranks by the sum of matches)
+    recap_importance = (
+        (r"\b(?:died|dies|dead|death|killed|slain|funeral|buried|executed)\b", 10),
+        (r"\b(?:raid|raiders?|attack\w*|ambush\w*|siege|invad\w*|infestation|mech)\b", 8),
+        (r"\b(?:married|wedding|engaged|wed)\b", 6),
+        (r"\b(?:born|birth|newborn)\b", 6),
+        (r"\b(?:wounded|injur\w*|shot|bleeding|downed|lost an? \w+|infect\w*|plague|sick)\b", 5),
+        (r"\b(?:fight\w*|feud|brawl|quarrel\w*|insult\w*|grudge|argu\w*|snapped|berserk|mental break)\b", 5),
+        (r"\b(?:stole|stolen|theft|thief|looted)\b", 5),
+    )
+
+    def creative_card(self, snap: dict) -> dict:
+        """Cleaned facts about one character for creative prompts: trait labels, backstory title, how they feel now."""
+        traits = [gd.clean(builders._trait_labels({"traits": [t]})[0], "label") for t in snap.get("traits", [])][:5]
+        bs = snap.get("backstory")
+        title = ""
+        if isinstance(bs, dict):
+            for k in ("adult", "child"):
+                v = bs.get(k)
+                if isinstance(v, dict) and v.get("title"):
+                    title = gd.clean(v["title"], "label")
+                    break
+        elif isinstance(bs, str):
+            title = gd.clean(bs, "label")
+        needs = snap.get("needs") or {}
+        mood = ""
+        m = needs.get("mood")
+        if isinstance(m, (int, float)) and not isinstance(m, bool):
+            m = float(m) if float(m) <= 1 else float(m) / 100
+            mood = "very low" if m < 0.2 else "low" if m < 0.4 else "middling" if m < 0.65 else "good" if m < 0.85 else "high"
+        ths = [gd.clean(t.get("label", ""), "label") for t in (snap.get("mood") or {}).get("thoughts", [])[:2]
+               if isinstance(t, dict) and t.get("label")]
+        return {"traits": [t for t in traits if t], "backstory_title": title, "mood": mood, "mood_thoughts": ths}
+
     chronicle_summary_system = (
         "You keep the running summary of a RimWorld colony's chronicle. Third person, past tense, compact. "
         "Keep deaths, raids, quarrels and anything still unresolved; let small things go.")

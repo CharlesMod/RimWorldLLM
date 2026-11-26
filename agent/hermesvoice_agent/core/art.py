@@ -9,11 +9,13 @@ data sections; the system prompt carries the data rule. The text is sanitised an
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from . import agegate
+from . import creative
 from . import gamedata as gd
+from . import grounding
 from . import memory
 from .llm import LLMError
 from .sanitize import prompt_cap_words, sanitize_prose
@@ -42,6 +44,11 @@ class ArtJob:
     quality: str = ""
     title: str = ""
     tale: str = ""
+    material: str = ""         # the stuff it is made of (game text)
+    tale_def: str = ""         # the depicted tale: its def, summary, game day and the people in it (all game text)
+    tale_summary: str = ""
+    tale_day: int | None = None
+    tale_people: list = field(default_factory=list)
 
 
 class ArtQueue:
@@ -64,7 +71,18 @@ class ArtQueue:
             return None
         job = ArtJob(thing=thing, maker=maker, game=int(e.get("game", game)), label=str(data.get("def_label", "")),
                      quality=str(data.get("quality", "")), title=str(data.get("title", "")),
-                     tale=str(data.get("description", "")))
+                     tale=str(data.get("description", "")), material=str(data.get("material") or ""))
+        tale = data.get("tale")
+        if isinstance(tale, dict):
+            job.tale_def = str(tale.get("def") or "")
+            job.tale_summary = str(tale.get("summary") or "")
+            try:
+                job.tale_day = int(tale["day"]) if tale.get("day") is not None else None
+            except (TypeError, ValueError):
+                job.tale_day = None
+            # the people in the tale: the one list-valued field (the game names its key; core does not)
+            lists = [v for k, v in tale.items() if k not in ("def", "summary", "day") and isinstance(v, list)]
+            job.tale_people = [str(x) for x in lists[0]][:3] if lists else []
         self.jobs = [j for j in self.jobs if j.thing != thing] + [job]
         if len(self.jobs) > MAX_QUEUE:
             self.dropped += len(self.jobs) - MAX_QUEUE
@@ -103,8 +121,12 @@ def enabled(d: "Director") -> bool:
                 and d.bridge_cfg.get("events", {}).get("art") is not False)
 
 
-def art_messages(d: "Director", job: ArtJob) -> tuple[list[tuple[str, str]], list]:
-    """(messages, the maker memories used)."""
+def art_messages(d: "Director", job: ArtJob, card: dict | None = None,
+                 request: str | None = None) -> tuple[list[tuple[str, str]], list]:
+    """(messages, the maker memories used). With creative_ground the data is richer (see ``_ground_messages``);
+    ``card`` is the maker's traits and mood from grounding.actor_card (None: none known)."""
+    if getattr(d.cfg, "creative_ground", False):
+        return _ground_messages(d, job, card or {}, request)
     now = d.bridge.env.game
     maker = d.names.get(job.maker, "Someone")
     mind = d.minds.get(job.maker)
@@ -124,26 +146,102 @@ def art_messages(d: "Director", job: ArtJob) -> tuple[list[tuple[str, str]], lis
     user = (f"=== THE ARTWORK ===\n{gd.data_section('artwork', chr(10).join(facts))}"
             f"=== RECENT HISTORY ===\n{gd.data_section('history', hist)}"
             f"=== WHAT THE MAKER REMEMBERS ===\n{gd.data_section('memories', mem)}"
-            f"=== REQUEST ===\n{getattr(d.adapter, "art_request", ART_REQUEST)}")
+            f"=== REQUEST ===\n{request or getattr(d.adapter, "art_request", ART_REQUEST)}")
     system = getattr(d.adapter, "art_system", ART_SYSTEM)
     return [("system", system + "\n\n" + gd.DATA_RULE + "\n" + agegate.MINOR_RULE), ("user", user)], mems
 
 
+GROUND_REQUEST = ("Write the description: 2 or 3 plain sentences, under 55 words, one paragraph. Say what the piece "
+                  "depicts as the data gives it (who, where, how it ended), name its material, and let the maker's manner "
+                  "show in the treatment. Use only people and events the data names.")
+
+
+def _ground_messages(d: "Director", job: ArtJob, card: dict, request: str | None) -> tuple[list[tuple[str, str]], list]:
+    now = d.bridge.env.game
+    maker = d.names.get(job.maker, "Someone")
+    mind = d.minds.get(job.maker)
+    people = [gd.name(p) for p in job.tale_people if p]
+    tokens = grounding.tokens_of([maker, *people])
+    tale_kw = {w for w in memory.keywords(job.tale_summary)} if job.tale_summary else set()
+    facts = [f"Maker: {gd.name(maker)}", f"Item: {gd.clean(job.label, 'label') or 'artwork'}"]
+    if job.quality:
+        facts.append(f"Quality: {gd.clean(job.quality, 'label')}")
+    if job.title:
+        facts.append(f"Title: {gd.clean(job.title, 'name')}")
+    if job.material:
+        facts.append(f"Material: {gd.clean(job.material, 'label')}")
+    if job.tale:
+        facts.append(f"The game's own text for it: {gd.clean(job.tale, 'desc')}")
+    if job.tale_summary:
+        facts.append(f"The event it depicts: {gd.clean(job.tale_summary, 'desc', max_len=200)}")
+    if people:
+        facts.append("People in it: " + ", ".join(people))
+    if job.tale_day is not None and d.day:
+        ago = now // d.day - job.tale_day
+        if ago >= 0:
+            facts.append("It happened " + ("today" if ago == 0 else "1 day ago" if ago == 1 else f"{ago} days ago"))
+    mems = []
+    if mind is not None:
+        ms = [m for m in memory.weight_sorted(mind, now, d.day) if m.visibility != "private"]
+        hit = [m for m in ms if grounding.mentions(m.text, tokens) or (tale_kw and tale_kw & memory.keywords(m.text))]
+        mems = (hit or ms)[:MAX_MEMORIES]
+    recent = [e.text for e in d.chronicle.state.recent]
+    ent = [t for t in recent if grounding.mentions(t, tokens) or (tale_kw and tale_kw & memory.keywords(t))][-MAX_CHRONICLE:]
+    ent = ent or recent[-MAX_CHRONICLE:]
+    hist = "\n".join(f"- {gd.clean(t, 'event', max_len=200)}" for t in ent) or "- (nothing written yet)"
+    mem = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems) or "- (nothing in particular)"
+    who = grounding.card_lines(card)
+    maker_sec = (f"=== THE MAKER ===\n{gd.data_section('maker', chr(10).join(who))}" if who else "")
+    user = (f"=== THE ARTWORK ===\n{gd.data_section('artwork', chr(10).join(facts))}"
+            f"{maker_sec}"
+            f"=== HISTORY THAT TOUCHES IT ===\n{gd.data_section('history', hist)}"
+            f"=== WHAT THE MAKER REMEMBERS ===\n{gd.data_section('memories', mem)}"
+            f"=== REQUEST ===\n{request or getattr(d.adapter, 'art_request_ground', GROUND_REQUEST)}")
+    system = getattr(d.adapter, "art_system", ART_SYSTEM)
+    return [("system", system + "\n\n" + gd.DATA_RULE + "\n" + agegate.MINOR_RULE), ("user", user)], mems
+
+
+def _with_note(msgs: list[tuple[str, str]], note: str) -> list[tuple[str, str]]:
+    """The request with a creative note (a plan, phrases to avoid) added at its end; unchanged for an empty note."""
+    if not note:
+        return msgs
+    return msgs[:-1] + [(msgs[-1][0], msgs[-1][1].rstrip("\n") + "\n" + note)]
+
+
 async def write_art(d: "Director", job: ArtJob, slot: int) -> tuple[str | None, str]:
     """(text, reason): the sanitised description, or None and why it was dropped. LLMError is not caught here."""
-    msgs, mems = art_messages(d, job)
-    c = await d.llm.complete(msgs, slot=slot, kind="art", max_tokens=d.cfg.art_max_tokens, stop=[],
-                             temperature=0.7, actor=job.maker)
+    ground = bool(getattr(d.cfg, "creative_ground", False))
+    card = await grounding.actor_card(d, job.maker) if ground else None
+    msgs, mems = art_messages(d, job, card)
     toks = d.name_tokens
     allnames = set().union(*toks.values()) if toks else set()
     known = set(toks.get(job.maker, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
     minor = d.is_minor(job.maker)
-    s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(msgs[1][1]),
-                       common_words=set(d.adapter.common_words), speaker_names=toks.get(job.maker, set()),
-                       min_words=5, max_words=75, involves_minor=minor, minor_names=d.minor_tokens())
-    if not s.ok:
-        return None, s.reason or "sanitize"
-    if agegate.violation(s.text, involves_minor=minor, minor_names=d.minor_tokens()):
-        d.gate.skipped_events += 1
-        return None, "agegate"
-    return s.text, ""
+    why = ["sanitize"]
+
+    async def write(note: str) -> str | None:
+        m = _with_note(msgs, note)
+        c = await d.llm.complete(m, slot=slot, kind="art", max_tokens=d.cfg.art_max_tokens, stop=[],
+                                 temperature=0.7, actor=job.maker)
+        s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(m[1][1]),
+                           common_words=set(d.adapter.common_words), speaker_names=toks.get(job.maker, set()),
+                           min_words=5, max_words=75, involves_minor=minor, minor_names=d.minor_tokens())
+        if not s.ok:
+            why[0] = s.reason or "sanitize"
+            return None
+        if agegate.violation(s.text, involves_minor=minor, minor_names=d.minor_tokens()):
+            d.gate.skipped_events += 1
+            why[0] = "agegate"
+            return None
+        return s.text
+
+    async def plan() -> str | None:
+        pm = msgs[:-1] + [(msgs[-1][0], msgs[-1][1].split("=== REQUEST ===")[0] + "=== REQUEST ===\n" + grounding.PLAN_ASK)]
+        c = await d.llm.complete(pm, slot=slot, kind="art", max_tokens=grounding.PLAN_TOKENS, stop=["\n"],
+                                 temperature=0.7, actor=job.maker)
+        return c.text
+
+    facts = msgs[1][1].split("=== REQUEST ===")[0]
+    text, _ = await creative.compose(d, kind="art", slot=slot, actor=job.maker, facts=facts, names=known,
+                                     write=write, plan=plan, should_yield=lambda: grounding.idle_should_yield(d))
+    return (text, "") if text else (None, why[0])

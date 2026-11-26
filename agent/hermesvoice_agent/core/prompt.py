@@ -173,17 +173,22 @@ def line_messages(prefix: str, turns: list[tuple[str, str]], mind: Mind, name: s
 AIM_ASK = "what you privately want or fear beneath the line, about 12 words, first person, never said aloud"
 
 
-def aim_request() -> str:
-    """The aim-only call (a line with no listener)."""
-    return f"=== INTENT ===\nAbout the line you just spoke: {AIM_ASK}. Those words only."
+def _extra(aim_extra: str | None) -> str:
+    return f" {aim_extra.strip()}" if aim_extra and aim_extra.strip() else ""
 
 
-def intent_request(listener_name: str | None, deliveries: list[str] | None = None, aim: bool = False) -> str:
+def aim_request(aim_extra: str | None = None) -> str:
+    """The aim-only call (a line with no listener). ``aim_extra`` (aim_ground) adds the scene's tension."""
+    return f"=== INTENT ===\nAbout the line you just spoke: {AIM_ASK}.{_extra(aim_extra)} Those words only."
+
+
+def intent_request(listener_name: str | None, deliveries: list[str] | None = None, aim: bool = False,
+                   aim_extra: str | None = None) -> str:
     to = f" to {listener_name}" if listener_name else ""
     if deliveries and aim:
         return (f"=== INTENT ===\nLabel the line you just spoke{to} with one social label from the list, then how you "
                 f"said it ({', '.join(deliveries)}), then {AIM_ASK}. Say shout only if you really raised your voice; "
-                "whisper only if you kept it low. Most lines are normal. Label, delivery and aim only.")
+                f"whisper only if you kept it low. Most lines are normal.{_extra(aim_extra)} Label, delivery and aim only.")
     if deliveries:
         return (f"=== INTENT ===\nLabel the line you just spoke{to} with one social label from the list, then how you "
                 f"said it ({', '.join(deliveries)}). Say shout only if you really raised your voice; whisper only if "
@@ -192,10 +197,10 @@ def intent_request(listener_name: str | None, deliveries: list[str] | None = Non
 
 
 def intent_messages(line_msgs: list[tuple[str, str]], line: str, listener_name: str | None,
-                    deliveries: list[str] | None = None, aim: bool = False):
+                    deliveries: list[str] | None = None, aim: bool = False, aim_extra: str | None = None):
     """Same system+user prefix as the line pass (cache hit), then the line, then the label request."""
-    return line_msgs + [("assistant", line), ("user", intent_request(listener_name, deliveries, aim))]
+    return line_msgs + [("assistant", line), ("user", intent_request(listener_name, deliveries, aim, aim_extra))]
 
 
-def aim_messages(line_msgs: list[tuple[str, str]], line: str):
-    return line_msgs + [("assistant", line), ("user", aim_request())]
+def aim_messages(line_msgs: list[tuple[str, str]], line: str, aim_extra: str | None = None):
+    return line_msgs + [("assistant", line), ("user", aim_request(aim_extra))]

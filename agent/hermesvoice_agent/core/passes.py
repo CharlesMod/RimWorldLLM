@@ -2,6 +2,7 @@
 GBNF-constrained intent in the same slot. A failed line is dropped, never shown."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Callable
 
@@ -11,6 +12,9 @@ from .inner import AIM_EXTRA_TOKENS, sanitize_aim
 from .prompt import (AIM_ONLY_GRAMMAR, DELIVERIES, aim_messages, grammar_for, intent_messages,
                      line_messages)
 from .sanitize import Sanitized, sanitize_line
+
+
+JUST_WANT = re.compile(r"^\W*i\s+just\s+want", re.I)
 
 
 @dataclass
@@ -89,7 +93,7 @@ def parse_intent_aim(text: str, labels: list[str]) -> tuple[str, str | None, str
 
 async def intent_pass_aim(llm: LLMClient, *, slot: int, msgs: Messages, line: str, listener_name: str | None,
                           labels: list[str], actor: int | None = None, aim: bool = False,
-                          solo_aim: bool = True) -> tuple[str, str | None, str]:
+                          solo_aim: bool = True, aim_extra: str | None = None) -> tuple[str, str | None, str]:
     """The intent pass, optionally with the private aim in the same call (aim=True). Returns (label, delivery, raw aim);
     the raw aim is "" when off or not asked. With no listener there is no call, unless aim and solo_aim: then an
     aim-only call (root ::= aim)."""
@@ -97,13 +101,13 @@ async def intent_pass_aim(llm: LLMClient, *, slot: int, msgs: Messages, line: st
         if not (aim and solo_aim):
             return labels[0], None, ""
         try:
-            c = await llm.complete(aim_messages(msgs, line), slot=slot, kind="intent", max_tokens=AIM_EXTRA_TOKENS + 4,
+            c = await llm.complete(aim_messages(msgs, line, aim_extra if aim else None), slot=slot, kind="intent", max_tokens=AIM_EXTRA_TOKENS + 4,
                                    stop=[], grammar=AIM_ONLY_GRAMMAR, temperature=0.0, actor=actor)
         except LLMError:
             return labels[0], None, ""
         return labels[0], None, c.text
     try:
-        c = await llm.complete(intent_messages(msgs, line, listener_name, DELIVERIES, aim), slot=slot, kind="intent",
+        c = await llm.complete(intent_messages(msgs, line, listener_name, DELIVERIES, aim, aim_extra if aim else None), slot=slot, kind="intent",
                                max_tokens=8 + (AIM_EXTRA_TOKENS if aim else 0), stop=[],
                                grammar=grammar_for(labels, DELIVERIES, aim), temperature=0.0, actor=actor)
     except LLMError:
@@ -128,7 +132,8 @@ async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str
                 request: str | None = None, aim: bool = False, solo_aim: bool = True, fresh_aim: str | None = None,
                 check: Callable[[str], tuple[str, str] | None] | None = None,
                 retries: int = 0, on_check: Callable[[dict], None] | None = None,
-                speech: str | None = None) -> Spoken | Dropped:
+                speech: str | None = None, aim_extra: str | None = None, intent_llm: LLMClient | None = None,
+                drop_just_want: bool = False) -> Spoken | Dropped:
     """A line, then its intent. ``check(text)`` is a further validation of a sanitised line: it returns None when
     the line is fine, or (reason code, request text for the retry). A refused line is retried up to ``retries``
     times with that request, then the result is Dropped(reason code). ``on_check`` gets one event per check."""
@@ -150,7 +155,12 @@ async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str
                                   speech=speech)
     if not s.ok:
         return Dropped(s.reason)
-    intent, delivery, raw_aim = await intent_pass_aim(llm, slot=slot, msgs=msgs, line=s.text, listener_name=listener_name,
-                                                      labels=labels, actor=mind.actor_id, aim=aim, solo_aim=solo_aim)
+    # aim_ground: the intent pass may go through another client (aim_sampler) and carry the scene's tension
+    intent, delivery, raw_aim = await intent_pass_aim(intent_llm if (aim and intent_llm is not None) else llm, slot=slot,
+                                                      msgs=msgs, line=s.text, listener_name=listener_name,
+                                                      labels=labels, actor=mind.actor_id, aim=aim, solo_aim=solo_aim,
+                                                      aim_extra=aim_extra)
     aim_text, gated = sanitize_aim(raw_aim, ctx)
+    if drop_just_want and aim_text and JUST_WANT.match(aim_text):
+        aim_text = None                                   # a dropped aim never drops the line
     return Spoken(s.text, intent, delivery, aim_text, gated)
