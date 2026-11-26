@@ -80,11 +80,12 @@ namespace HermesVoice
             _launching = true;
             string bridgeJson = BridgeInfo.PathIn(GenFilePaths.ConfigFolderPath);
             int pid = Process.GetCurrentProcess().Id;
+            var hostCard = ReadHostAdapter();   // Unity calls stay on the game thread
             Task.Run(async () =>
             {
                 try
                 {
-                    var r = await EngineLauncher.EnsureRunningAsync(new LaunchOptions { ModRoot = root, BridgeJsonPath = bridgeJson, Pid = pid }).ConfigureAwait(false);
+                    var r = await EngineLauncher.EnsureRunningAsync(new LaunchOptions { ModRoot = root, BridgeJsonPath = bridgeJson, Pid = pid, HostAdapter = hostCard }).ConfigureAwait(false);
                     _launch = r;
                     if (r.Outcome == LaunchOutcome.NoBinary || r.Outcome == LaunchOutcome.SpawnFailed)
                         Log.Warning("[HermesVoice] Engine: " + r.Error);
@@ -101,6 +102,20 @@ namespace HermesVoice
                 catch (Exception e) { Log.Warning("[HermesVoice] Engine launch failed: " + e.Message); }
                 finally { _launching = false; }
             });
+        }
+
+        /// <summary>The card the game renders on, from Unity. Game thread only; never throws.</summary>
+        static HostAdapterInfo ReadHostAdapter()
+        {
+            try { return new HostAdapterInfo(SystemInfo.graphicsDeviceName, SystemInfo.graphicsDeviceVendorID, SystemInfo.graphicsMemorySize); }
+            catch { return null; }
+        }
+
+        /// <summary>The "Game on X · Y: N GB free for the model" line, or null (older engine, no data).</summary>
+        public static string GpuLine()
+        {
+            var st = _status;
+            return st == null ? null : Bridge.GpuLine.Format(st.Gpu, (k, a) => UiUtil.T(k, a));
         }
 
         /// <summary>Tells the engine whether to serve its own model (local) or the player's endpoint (external).</summary>
@@ -328,7 +343,56 @@ namespace HermesVoice
         public static void ClearCustom() { BusyAct(c => c.ClearCustomAsync()); }
         public static void DeleteModel(string file) { BusyAct(c => c.DeleteModelAsync(null, file), RefreshStorage); }
         public static void DeleteModelById(string id) { BusyAct(c => c.DeleteModelAsync(id), RefreshStorage); }
-        public static void RemoveDownloads() { BusyAct(c => c.RemoveDownloadsAsync(), () => { _storage = null; RefreshStorage(); }); }
+        public static void RemoveDownloads() { RemoveEverything(false); }
+
+        static volatile string _removeNote;
+        /// <summary>What happened to the agent's memory and logs after the last "remove everything" (null when nothing to say).</summary>
+        public static string RemoveNote { get { return _removeNote; } }
+
+        /// <summary>Removes the downloads and, when <paramref name="alsoMemory"/>, the agent's memory and logs once the engine has stopped the agent.</summary>
+        public static void RemoveEverything(bool alsoMemory)
+        {
+            _removeNote = null;
+            var plat = EnginePlatform.Detect();
+            var where = AgentDataDir.ResolveHere(plat);
+            BusyAct(c => c.RemoveDownloadsAsync(), () =>
+            {
+                _storage = null; RefreshStorage();
+                if (alsoMemory) Task.Run(() => RemoveAgentMemoryAfterJob(where, plat));
+            });
+        }
+
+        static async Task RemoveAgentMemoryAfterJob(AgentDataDir.Resolved where, EnginePlatform plat)
+        {
+            try
+            {
+                var c = _client;
+                if (c == null) { _removeNote = UiUtil.T("HV_Storage_MemorySkippedEngine"); return; }
+                var clock = Stopwatch.StartNew();
+                bool saw = false, ok = false;
+                while (clock.ElapsedMilliseconds < 120000)
+                {
+                    var r = await c.GetStatusAsync().ConfigureAwait(false);
+                    if (r.Ok && r.Value != null)
+                    {
+                        if (r.Value.Phase == "removing") saw = true;
+                        string ap = r.Value.Agent != null ? r.Value.Agent.Phase : null;
+                        if (AgentDataDir.RemovalFinished(r.Value.Phase, ap, saw, clock.ElapsedMilliseconds)) { ok = true; break; }
+                    }
+                    await Task.Delay(500).ConfigureAwait(false);
+                }
+                if (!ok) { _removeNote = UiUtil.T("HV_Storage_MemorySkippedAgent"); return; }
+                string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var guard = new[] { home, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("XDG_DATA_HOME"),
+                    Path.Combine(home, ".local", "share"), Path.Combine(home, "AppData", "Local"),
+                    EngineClient.DataDir(plat.Os, n => Environment.GetEnvironmentVariable(n), home) };
+                var d = AgentDataDir.Delete(where, where.Path, guard);
+                if (d.Outcome == AgentDataDir.DeleteOutcome.Deleted) _removeNote = UiUtil.T("HV_Storage_MemoryDeleted", Window_EngineSetup.Bytes(d.FreedBytes));
+                else if (d.Outcome == AgentDataDir.DeleteOutcome.NothingThere) _removeNote = UiUtil.T("HV_Storage_MemoryNone");
+                else { _removeNote = UiUtil.T("HV_Storage_MemoryRefused", where.Path, d.Reason); Log.Warning("[HermesVoice] Agent memory not deleted: " + d.Reason); }
+            }
+            catch (Exception e) { _removeNote = UiUtil.T("HV_Storage_MemoryRefused", where != null ? where.Path : "", e.Message); }
+        }
 
         /// <summary>The model name to show: the engine's human name, the custom file's name, or the model id.</summary>
         public static string ModelLabel()

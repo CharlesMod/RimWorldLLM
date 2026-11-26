@@ -77,6 +77,8 @@ namespace HermesVoice
             GUI.color = c;
             Widgets.Label(new Rect(row.x + 24f, row.y + 2f, row.width - 24f, 24f), EngineManager.StatusLine());
             GUI.color = Color.white;
+            string gpuLine = EngineManager.GpuLine();
+            if (gpuLine != null) Dim(l, gpuLine);
 
             var st = EngineManager.Status;
             string fbLine = EngineManager.FallbackLine();

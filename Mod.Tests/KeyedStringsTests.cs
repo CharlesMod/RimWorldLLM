@@ -45,6 +45,7 @@ namespace HermesVoice.Tests
             foreach (var s in new[] { "off", "light", "normal" }) wanted.Add("HV_Effects_" + s);
             foreach (var s in new[] { "effects_off", "no_intent", "no_effect", "no_listener", "not_negative", "no_about", "pair_cap", "stack_full", "vanilla_interaction" }) wanted.Add("HV_Refused_" + s);
             foreach (var s in Bridge.EntryKinds.Wording) wanted.Add("HV_LogEffect_" + s);
+            foreach (var k in new[] { Bridge.GpuLine.KeyHostAndModel, Bridge.GpuLine.KeyModelOnly, Bridge.GpuLine.KeyShared, Bridge.GpuLine.KeyCpu }) wanted.Add(k);
             var gone = wanted.Where(k => !keys.Contains(k)).ToList();
             Assert.True(gone.Count == 0, string.Join(", ", gone));
         }
@@ -56,7 +57,7 @@ namespace HermesVoice.Tests
             var names = doc.Root.Elements().Select(e => e.Name.LocalName).ToList();
             Assert.Equal(names.Count, names.Distinct().Count());
             string all = string.Join("\n", Sources().Select(File.ReadAllText));
-            var dynamicPrefixes = new[] { "HV_Probe_", "HV_Section_", "HV_Effects_", "HV_Refused_", "HV_LogEffect_" };
+            var dynamicPrefixes = new[] { "HV_Probe_", "HV_Section_", "HV_Effects_", "HV_Refused_", "HV_LogEffect_", "HV_Gpu_" };
             var unused = names.Where(n => !dynamicPrefixes.Any(p => n.StartsWith(p)) && all.IndexOf("\"" + n + "\"", StringComparison.Ordinal) < 0).ToList();
             Assert.Empty(unused);
         }

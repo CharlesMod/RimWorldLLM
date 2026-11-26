@@ -297,5 +297,17 @@ namespace HermesVoice.Tests
                 Assert.True(File.Exists(Path.Combine(outside, "logs", "l.txt")));
             }
         }
+
+        [Fact]
+        public void RemovalFinishedWaitsForJobAndAgent()
+        {
+            Assert.False(AgentDataDir.RemovalFinished("removing", "stopped", true, 9000));
+            Assert.False(AgentDataDir.RemovalFinished("not_installed", "stopped", false, 1000));   // job may not have started
+            Assert.True(AgentDataDir.RemovalFinished("not_installed", "stopped", false, 3500));
+            Assert.True(AgentDataDir.RemovalFinished("not_installed", "not_installed", true, 100));
+            Assert.True(AgentDataDir.RemovalFinished("not_installed", null, true, 100));
+            Assert.False(AgentDataDir.RemovalFinished("not_installed", "running", true, 100));
+            Assert.False(AgentDataDir.RemovalFinished("not_installed", "restarting", true, 100));
+        }
     }
 }

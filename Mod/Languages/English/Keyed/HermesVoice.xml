@@ -413,9 +413,20 @@ Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Tip_RemoveAll>Stops the engine and deletes everything it downloaded. Your settings stay.</HV_Tip_RemoveAll>
   <HV_Storage_RemoveConfirm>This stops the engine and deletes the downloaded models, the engine runtime and unfinished downloads. {0} of disk space comes back.
 
-Your HermesVoice settings are kept, and so is any GGUF file you chose yourself. Afterwards, Set up starts over from the beginning.
-
-Continue?</HV_Storage_RemoveConfirm>
+Your HermesVoice settings are kept, and so is any GGUF file you chose yourself. Afterwards, Set up starts over from the beginning.</HV_Storage_RemoveConfirm>
+  <HV_Storage_RemoveTitle>Remove everything HermesVoice stored</HV_Storage_RemoveTitle>
+  <HV_Storage_RemoveMemory>Also delete HermesVoice's memory and logs ({0})</HV_Storage_RemoveMemory>
+  <HV_Tip_RemoveMemory>The agent's own folder: what colonists remember and its logs. Leave this off to keep them for a later reinstall.</HV_Tip_RemoveMemory>
+  <HV_Storage_RemoveGo>Remove</HV_Storage_RemoveGo>
+  <HV_Storage_MemoryDeleted>HermesVoice's memory and logs were deleted ({0}).</HV_Storage_MemoryDeleted>
+  <HV_Storage_MemoryNone>HermesVoice had no memory or logs to delete.</HV_Storage_MemoryNone>
+  <HV_Storage_MemorySkippedAgent>HermesVoice's memory and logs were not deleted: the agent was still running. Try again once it has stopped.</HV_Storage_MemorySkippedAgent>
+  <HV_Storage_MemorySkippedEngine>HermesVoice's memory and logs were not deleted: the engine stopped answering.</HV_Storage_MemorySkippedEngine>
+  <HV_Storage_MemoryRefused>HermesVoice's memory and logs in {0} were not deleted: {1}</HV_Storage_MemoryRefused>
+  <HV_Gpu_HostAndModel>Game on {0} · {1}: {2} free for the model</HV_Gpu_HostAndModel>
+  <HV_Gpu_ModelOnly>{0}: {1} free for the model</HV_Gpu_ModelOnly>
+  <HV_Gpu_Shared>Game and model share {0}: {1} free for the model</HV_Gpu_Shared>
+  <HV_Gpu_Cpu>No graphics card in use: the model runs on the processor</HV_Gpu_Cpu>
   <HV_Adv_Help>For people running their own agent or tools. Most players never need this tab.</HV_Adv_Help>
   <HV_Adv_OpenWarning>Anyone on your network can read colony state and make colonists speak. Set a shared token below, or bind to 127.0.0.1.</HV_Adv_OpenWarning>
   <HV_Tip_Port>The port the in-game bridge listens on. Change it only if another program already uses 9765.</HV_Tip_Port>

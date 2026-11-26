@@ -165,6 +165,8 @@ namespace HermesVoice
             Widgets.Label(new Rect(row.x + 24f, row.y + 3f, row.width - 24f, 26f), EngineManager.StatusLine());
             GUI.color = Color.white;
             Tip(l, y0, UiUtil.T("HV_Tip_StatusCard"));
+            string gpuLine = EngineManager.GpuLine();
+            if (gpuLine != null) { GUI.color = Color.gray; l.Label(gpuLine); GUI.color = Color.white; }
             if (EngineManager.CustomActive)
             {
                 var cu = st.Custom;
@@ -456,10 +458,9 @@ namespace HermesVoice
             l.GapLine();
             Note(l, UiUtil.T("HV_Storage_YourFileNote"));
             if (Button(l, "HV_Storage_RemoveAll", "HV_Tip_RemoveAll", !EngineManager.CustomBusy))
-            {
-                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(UiUtil.T("HV_Storage_RemoveConfirm", Window_EngineSetup.Bytes(RemovableBytes(st))),
-                    () => EngineManager.RemoveDownloads(), true));
-            }
+                Find.WindowStack.Add(new Window_RemoveAll(RemovableBytes(st)));
+            string removeNote = EngineManager.RemoveNote;
+            if (removeNote != null) Note(l, removeNote);
         }
 
         public static void OpenFolder(string dir)

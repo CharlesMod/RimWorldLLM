@@ -9,6 +9,19 @@ namespace HermesVoice.Bridge
     {
         public const string LeafName = "hermesvoice-agent";
 
+        /// <summary>True when the removal job is over and the agent is down, so its folder may be emptied. <paramref name="sawRemoving"/>: the engine has reported phase "removing" at least once.</summary>
+        public static bool RemovalFinished(string phase, string agentPhase, bool sawRemoving, long elapsedMs)
+        {
+            if (phase == "removing") return false;
+            if (!sawRemoving && elapsedMs < 3000) return false;   // the job may not have started yet
+            return AgentDown(agentPhase);
+        }
+
+        public static bool AgentDown(string agentPhase)
+        {
+            return string.IsNullOrEmpty(agentPhase) || agentPhase == "not_installed" || agentPhase == "stopped" || agentPhase == "error";
+        }
+
         public enum DeleteOutcome { Deleted, NothingThere, Refused }
 
         public sealed class DeleteResult
