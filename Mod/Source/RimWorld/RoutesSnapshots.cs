@@ -182,6 +182,87 @@ namespace HermesVoice
             };
         }
 
+        static string Safe(Func<string> f)
+        {
+            try { return f() ?? ""; } catch (Exception) { return ""; }
+        }
+
+        static JToken BackstoryObj(Pawn p, BackstoryDef b)
+        {
+            if (b == null) return JValue.CreateNull();
+            var o = new JObject { ["title"] = b.title };
+            string d = Safe(() => PawnText.Cap(b.FullDescriptionFor(p).Resolve(), PawnText.BackstoryMax));
+            if (d.Length > 0) o["desc"] = d;
+            return o;
+        }
+
+        static string TraitDesc(Pawn p, Trait t)
+        {
+            return Safe(() => PawnText.Cap(t.CurrentData.description.Formatted(p.Named("PAWN")).AdjustedFor(p).Resolve(), PawnText.TraitMax));
+        }
+
+        static JArray MemesArr(Ideo ideo)
+        {
+            var a = new JArray();
+            foreach (var m in ideo.memes)
+            {
+                var mo = new JObject { ["def"] = m.defName, ["label"] = m.label };
+                string d = Safe(() => PawnText.Cap(m.description, PawnText.MemeMax));
+                if (d.Length > 0) mo["desc"] = d;
+                a.Add(mo);
+            }
+            return a;
+        }
+
+        static IEnumerable<string> PreceptLabels(Ideo ideo)
+        {
+            try
+            {
+                var list = ideo.PreceptsListForReading.Where(x => x.def.visible)
+                    .OrderByDescending(x => x.def.issue != null ? 1 : 0)
+                    .Select(x => x.Label.CapitalizeFirst().ToString());
+                return PawnText.CapList(list, PawnText.MaxPrecepts, 60);
+            }
+            catch (Exception) { return new List<string>(); }
+        }
+
+        static JObject HistoryObj(Pawn p)
+        {
+            try
+            {
+                var tales = Find.TaleManager?.AllTalesListForReading;
+                if (tales == null) return null;
+                var mine = tales.Where(t => t.Concerns(p)).ToList();
+                string arrival = "";
+                foreach (var t in mine)
+                {
+                    string dn = t.def.defName.ToLowerInvariant();
+                    if (dn.Contains("recruit") || dn.Contains("rescue") || dn.Contains("wanderer") || dn.Contains("joined"))
+                    { arrival = PawnText.Cap(t.ShortSummary, PawnText.ArrivalMax); if (arrival.Length > 0) break; }
+                }
+                var notable = mine.OrderByDescending(t => t.def.baseInterest).ThenBy(t => t.AgeTicks)
+                    .Select(t => Safe(() => t.ShortSummary));
+                var list = PawnText.CapList(notable, PawnText.MaxTales, PawnText.TaleMax);
+                if (arrival.Length == 0 && list.Count == 0) return null;
+                var o = new JObject();
+                if (arrival.Length > 0) o["arrival"] = arrival;
+                o["tales"] = new JArray(list);
+                return o;
+            }
+            catch (Exception) { return null; }
+        }
+
+        static string AppearanceLine(Pawn p)
+        {
+            if (p.story == null) return "";
+            var c = p.story.SkinColor;
+            float lum = 0.299f * c.r + 0.587f * c.g + 0.114f * c.b;
+            string skin = lum > 0.8f ? "very light" : lum > 0.6f ? "light" : lum > 0.4f ? "medium" : lum > 0.25f ? "brown" : "dark";
+            var worn = (p.apparel?.WornApparel ?? new List<Apparel>())
+                .OrderByDescending(a => a.TryGetQuality(out QualityCategory q) ? (int)q : (int)QualityCategory.Normal).Select(a => a.def.label);
+            return PawnText.Appearance(p.story.hairDef?.label, skin, worn);
+        }
+
         static JObject PawnSnapshot(Pawn p)
         {
             var o = new JObject();
@@ -193,11 +274,16 @@ namespace HermesVoice
             o["body_type"] = N(p.story?.bodyType?.defName);
             o["backstory"] = new JObject
             {
-                ["child"] = N(p.story?.Childhood?.title),
-                ["adult"] = N(p.story?.Adulthood?.title)
+                ["child"] = BackstoryObj(p, p.story?.Childhood),
+                ["adult"] = BackstoryObj(p, p.story?.Adulthood)
             };
             o["traits"] = new JArray((p.story?.traits?.allTraits ?? new List<Trait>()).Select(t =>
-                new JObject { ["def"] = t.def.defName, ["label"] = t.LabelCap, ["degree"] = t.Degree }));
+            {
+                var to = new JObject { ["def"] = t.def.defName, ["label"] = t.LabelCap, ["degree"] = t.Degree };
+                string d = TraitDesc(p, t);
+                if (d.Length > 0) to["desc"] = d;
+                return to;
+            }));
             o["title"] = N(p.story?.TitleCap);
             o["skills"] = new JArray((p.skills?.skills ?? new List<SkillRecord>()).Select(s => new JObject
             {
@@ -214,7 +300,7 @@ namespace HermesVoice
                 foreach (var h in hs.hediffs)
                 {
                     if (!h.Visible || h is Hediff_MissingPart) continue;
-                    conds.Add(new JObject { ["label"] = h.LabelCap, ["part"] = N(h.Part?.Label), ["severity"] = R(h.Severity), ["tended"] = h.IsTended() });
+                    conds.Add(new JObject { ["def"] = h.def.defName, ["label"] = h.LabelCap, ["part"] = N(h.Part?.Label), ["severity"] = R(h.Severity), ["tended"] = h.IsTended() });
                 }
                 foreach (var m in hs.GetMissingPartsCommonAncestors()) missing.Add(m.Part.Label);
             }
@@ -223,6 +309,7 @@ namespace HermesVoice
                 ["conditions"] = conds, ["missing_parts"] = missing,
                 ["pain"] = R(hs?.PainTotal ?? 0f),
                 ["consciousness"] = R(p.health?.capacities?.GetLevel(PawnCapacityDefOf.Consciousness) ?? 0f),
+                ["talking"] = R(p.health?.capacities?.GetLevel(PawnCapacityDefOf.Talking) ?? 0f),
                 ["downed"] = p.Downed
             };
 
@@ -288,7 +375,8 @@ namespace HermesVoice
                 var role = ideo?.GetRole(p);
                 o["ideo"] = ideo == null ? null : new JObject
                 {
-                    ["name"] = ideo.name, ["memes"] = new JArray(ideo.memes.Select(m => m.label)),
+                    ["name"] = ideo.name, ["memes"] = MemesArr(ideo),
+                    ["precepts"] = new JArray(PreceptLabels(ideo)),
                     ["certainty"] = R(p.ideo.Certainty)
                 };
                 o["ideo_role"] = N(role?.LabelCap);
@@ -296,13 +384,21 @@ namespace HermesVoice
             if (ModsConfig.BiotechActive && p.genes != null)
             {
                 o["xenotype"] = N(p.genes.XenotypeLabel);
-                o["genes"] = new JArray(p.genes.GenesListForReading.Where(g => g.Active).Select(g => g.def.label));
+                o["genes"] = new JArray(p.genes.GenesListForReading.Where(g => g.Active).Select(g =>
+                    new JObject { ["def"] = g.def.defName, ["label"] = g.def.label }));
+                string xd = Safe(() => PawnText.FirstSentence(p.genes.Xenotype?.description, PawnText.XenotypeMax));
+                if (!string.IsNullOrEmpty(xd)) o["xenotype_desc"] = xd;
             }
             if (ModsConfig.RoyaltyActive && p.royalty != null)
             {
                 var t = p.royalty.MostSeniorTitle;
                 o["royal_title"] = N(t?.def?.GetLabelFor(p));
             }
+
+            var hist = HistoryObj(p);
+            if (hist != null) o["history"] = hist;
+            string app = Safe(() => AppearanceLine(p));
+            if (!string.IsNullOrEmpty(app)) o["appearance"] = app;
 
             // other mods' context (hook API)
             var extra = HermesVoiceAPI.CollectContext(p);
