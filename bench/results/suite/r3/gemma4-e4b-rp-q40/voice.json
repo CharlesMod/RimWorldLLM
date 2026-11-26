@@ -1,0 +1,406 @@
+{
+ "summary": {
+  "n": 72,
+  "kept": 69,
+  "pawn_id_acc_mean": 0.9203296703296703,
+  "pawn_id_acc_std": 0.05992538531655447,
+  "chance": 0.167,
+  "slop_rate": 0.0,
+  "slop_lines": [],
+  "dup_lines": 0,
+  "samples": {
+   "rook": [
+    "Hm. Pip, drop that rifle. Blood on the dirt.",
+    "Hm. Moth burned the stew. Get her patched up.",
+    "Hm. More stew for the sick bed."
+   ],
+   "pip": [
+    "Okay so Ash just took a hit, like, can someone call Nate...",
+    "Okay so that's totally bad, did anyone see Tuk run out like that... gossip",
+    "Okay so Ash looks like he's totally fighting something even though he's just... like, in here..."
+   ],
+   "ash": [
+    "Negative. Get behind cover. Hold fire on that last one.",
+    "Negative. Lux moving toward exit. Two feet from wall.",
+    "Moth infection worsening. Two herbal remaining. 40 percent immunity."
+   ],
+   "moth": [
+    "I think... I should probably get to the bench, but maybe I need to help with Tuk first.",
+    "I think... maybe the stove is really hot, I guess.",
+    "I think maybe I should check Tuk's fever again, since I'm here anyway. kind"
+   ],
+   "tuk": [
+    "That soft one bleeding. Needs a clean cut.",
+    "Pip running from fire. That was bad meat for the night.",
+    "He still smells sour. Tuk should burn the rot out of him."
+   ],
+   "lux": [
+    "Naturally, my dear Nate, it seems the poor man has chosen such a dramatic exit for his final performance.",
+    "Naturally, my dear Ash, one might hope that even a simple stove could possess a modicum of restraint.",
+    "Of course, this entire infirmary possesses the aesthetic grace of a particularly mildewed stable. comfort"
+   ]
+  }
+ },
+ "rows": [
+  {
+   "pawn": "rook",
+   "scene": "n01",
+   "text": "Hm. Pip, drop that rifle. Blood on the dirt."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n02",
+   "text": "Hm. Moth burned the stew. Get her patched up."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n03",
+   "text": "Hm. More stew for the sick bed."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n04",
+   "text": "Hm. Bury the meat, Moth. Don't just stare at the scraps."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n05",
+   "text": "Hm. Pip spilled stew in the dirt."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n06",
+   "text": "Hm. Stow that raw meat mess back where the pork belongs."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n07",
+   "text": "Hm. That chair toss, Pip, tastes like rotten stew."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n08",
+   "text": "Hm. Moth. Out in the frost like lost bread."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n09",
+   "text": "Hm. Raiders. Get to the hearth before they hit the stew."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n10",
+   "text": "Hm. That metal smells like scrap stew, Moth."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n11",
+   "text": "Hm. Dirt soup tastes good too."
+  },
+  {
+   "pawn": "rook",
+   "scene": "n12",
+   "text": "Hm. Get the muck down. Eat the kibble or starve."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n01",
+   "text": "Okay so Ash just took a hit, like, can someone call Nate..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n02",
+   "text": "Okay so that's totally bad, did anyone see Tuk run out like that... gossip"
+  },
+  {
+   "pawn": "pip",
+   "scene": "n03",
+   "text": "Okay so Ash looks like he's totally fighting something even though he's just... like, in here..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n04",
+   "text": "Okay so Tuk is staring at that poor thing, I guess."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n05",
+   "text": "Okay so Ash is totally gone... I didn't even see him go down like that..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n06",
+   "text": "Okay so Tuk is totally wild tonight, like just eating everything, huh..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n07",
+   "text": "Okay so Ash is totally having a bad time, like, what's up with him... comfort"
+  },
+  {
+   "pawn": "pip",
+   "scene": "n08",
+   "text": "Okay so Tuk went out in this cold, totally not smart..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n09",
+   "text": "Okay so the fog is getting thick, like it's hiding them, and Ash is already heading for the weapons..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n10",
+   "text": "Okay so the bench feels good, like I finally got it right..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n11",
+   "text": "Okay so this dirt is kinda scratchly but the food is good though, like..."
+  },
+  {
+   "pawn": "pip",
+   "scene": "n12",
+   "text": "Okay so this raw stuff is kinda gross, but it's better than nothing, I guess..."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n01",
+   "text": "Negative. Get behind cover. Hold fire on that last one."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n02",
+   "text": "Negative. Lux moving toward exit. Two feet from wall."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n03",
+   "text": "Moth infection worsening. Two herbal remaining. 40 percent immunity."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n04",
+   "text": "Move the body. One hour, dead, standing there does nothing."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n05",
+   "text": "Two down in the dirt. Check Moth status."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n06",
+   "text": "Negative. That is excessive consumption."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n07",
+   "text": "Copy. Ines. Stand away from wreckage."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n08",
+   "text": "Lux. Seven meters out. He needs jacket."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n09",
+   "text": "Copy. Six hostiles, approaching wall. Hold ground."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n10",
+   "text": ""
+  },
+  {
+   "pawn": "ash",
+   "scene": "n11",
+   "text": "Copy. Dirt surface. No table. Proceed with consumption."
+  },
+  {
+   "pawn": "ash",
+   "scene": "n12",
+   "text": ""
+  },
+  {
+   "pawn": "moth",
+   "scene": "n01",
+   "text": "I think... I should probably get to the bench, but maybe I need to help with Tuk first."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n02",
+   "text": "I think... maybe the stove is really hot, I guess."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n03",
+   "text": "I think maybe I should check Tuk's fever again, since I'm here anyway. kind"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n04",
+   "text": "I think, maybe we should probably get it moved?"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n05",
+   "text": "I think, maybe it's the muffalo, or maybe it's the others."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n06",
+   "text": "I think, maybe we should just let him eat for a bit?"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n07",
+   "text": "I think, that was probably the chair, or maybe the table, not really the game."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n08",
+   "text": "I think, maybe he’s just cold, but he didn't have a proper coat on."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n09",
+   "text": "I think, maybe we should probably just go get inside."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n10",
+   "text": "I think... I mean, the assembly feels more stable now, maybe?"
+  },
+  {
+   "pawn": "moth",
+   "scene": "n11",
+   "text": "I think maybe this dirt is probably not ideal for eating."
+  },
+  {
+   "pawn": "moth",
+   "scene": "n12",
+   "text": "I think this raw jelly is maybe... isn't it a bit sticky?"
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n01",
+   "text": "That soft one bleeding. Needs a clean cut."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n02",
+   "text": "Pip running from fire. That was bad meat for the night."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n03",
+   "text": "He still smells sour. Tuk should burn the rot out of him."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n04",
+   "text": "Pip staring at the meat. Tuk needs to do something for her."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n05",
+   "text": "Lux dead in the dirt. End of this mess."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n06",
+   "text": "Pip eats like the wild things. She needs more meat for the fire."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n07",
+   "text": "Lux breaks stuff. Tuk steps forward."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n08",
+   "text": "Pip needs coat. That cold air will take her inside."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n09",
+   "text": "More dead things. Tuk run."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n10",
+   "text": ""
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n11",
+   "text": "This dirt is fine for eating."
+  },
+  {
+   "pawn": "tuk",
+   "scene": "n12",
+   "text": "More kibble. This jelly is soft meat."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n01",
+   "text": "Naturally, my dear Nate, it seems the poor man has chosen such a dramatic exit for his final performance."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n02",
+   "text": "Naturally, my dear Ash, one might hope that even a simple stove could possess a modicum of restraint."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n03",
+   "text": "Of course, this entire infirmary possesses the aesthetic grace of a particularly mildewed stable. comfort"
+  },
+  {
+   "pawn": "lux",
+   "scene": "n04",
+   "text": "Naturally, this damp soil is hardly conducive to any meaningful aesthetic contemplation."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n05",
+   "text": "Of course, the culmination of this barbaric enterprise is merely a puddle of unfortunate viscera upon the grass."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n06",
+   "text": "Naturally, this raw mutton tastes distinctly less refined than the delicacies I once had served. gossip"
+  },
+  {
+   "pawn": "lux",
+   "scene": "n07",
+   "text": "Naturally, this destruction of furnishings is quite beneath the dignity of a civilized gathering, my dear Rook."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n08",
+   "text": "Naturally, the sight of that wretched brute stumbling into the frost is hardly a spectacle worthy of my considerable talent."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n09",
+   "text": "Naturally, the ambiance has been thoroughly interrupted by six rather graceless intruders this morn."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n10",
+   "text": "Naturally, this bench has proven a rather acceptable surface for my newfound mastery of form, my dear Ash."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n11",
+   "text": "Naturally, one must dine upon the raw earth when the fine furniture remains elusive, my dear Nate."
+  },
+  {
+   "pawn": "lux",
+   "scene": "n12",
+   "text": "Naturally, this gelatinous concoction scarcely merits the consumption of a decent meal."
+  }
+ ]
+}

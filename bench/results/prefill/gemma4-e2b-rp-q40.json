@@ -1,0 +1,43 @@
+{
+ "model": "gemma4-e2b-rp-q40",
+ "template_tail": "ip dropped a tray of stew on the floor.<turn|>\n<|turn>model\n",
+ "chat": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "|Hm. Clean it up.",
+   "|Hm. Get some food ready.",
+   "|Hm. Get a poultice.",
+   "|Hm.  It's thick.",
+   "|Hm. Fix it."
+  ]
+ },
+ "native_empty_thought": {
+  "n": 20,
+  "thought_or_list_leak": 18,
+  "empty": 0,
+  "first_line_starts_Hm": 1,
+  "samples": [
+   "Pip dropped a tray of stew on the floor.\n\nConstraint Checklist & Confidence Score:\n1. Persona: Rook (gruff, few words, starts lines with 'Hm.') - Yes\n2. Speech style: One short line - Yes\n3. POV: First person - Yes\n4. No narration -",
+   "User input: \"Raiders are at the north wall.\"\nRook persona: Gruff, few words, starts lines with 'Hm.', short lines, first person.\n\nPlan: Acknowledge the threat with minimal fuss.\n<channel|>Hm. They're up.",
+   "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Persona:** Rook, the colony cook.\n    *   **Traits:** Gruff, few words.\n    *   **Format Constraint 1:** Starts lines with 'Hm.'.\n    *   **Format Constraint 2:**",
+   "The user wants me to roleplay as Rook, the colony cook.\nRook's personality: gruff, few words, starts lines with 'Hm.', first person, no narration.\n\nUser input: \"Lux complains about the soup again.\"\n\nRook's response should be short and gruff,",
+   "Thinking Process:\n\n1.  **Analyze the Request:** The user has presented a problem (rain leaking over the stove). I must respond as \"Rook, the colony cook.\"\n2.  **Analyze the Character (Rook):**\n    *   Gruff.\n    *   Few words."
+  ]
+ },
+ "bare_turn": {
+  "n": 20,
+  "thought_or_list_leak": 0,
+  "empty": 0,
+  "first_line_starts_Hm": 20,
+  "samples": [
+   "Hm. Clean it up.",
+   "Hm. Get the shields ready.",
+   "Hm. Get the poultice.",
+   "Hm. Still not good.",
+   "Hm. Fix it now."
+  ]
+ }
+}

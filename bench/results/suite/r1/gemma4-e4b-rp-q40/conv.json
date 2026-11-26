@@ -1,0 +1,518 @@
+{
+ "summary": {
+  "exchanges": 10,
+  "turns": 40,
+  "turn_drop_rate": 0.0,
+  "complete_exchanges": 1.0,
+  "answers_previous_rate": 0.825,
+  "writes_other_line_rate": 0.0,
+  "repetition_loop_exchanges": 0,
+  "examples": [
+   {
+    "scene": "sc18",
+    "turns": [
+     [
+      "pip",
+      "Okay so Nate, you're cleaning that pot really good, like, is it going to be totally spotless now... comfort"
+     ],
+     [
+      "rook",
+      "Hm. Stop poking the scrap metal, Pip. Scrape it first. comfort"
+     ],
+     [
+      "pip",
+      "Okay so, it smells good in here, even if nothing's actually cooking right now... gossip"
+     ],
+     [
+      "rook",
+      "Hm. Take the big pot, scrub it harder, see if the burnt bits leave."
+     ]
+    ]
+   },
+   {
+    "scene": "sc19",
+    "turns": [
+     [
+      "moth",
+      "I think, um, maybe you should sit down before I start going on about the sample data."
+     ],
+     [
+      "lux",
+      "Naturally, a moment of repose before one must endure your data-heavy discourse is most appropriate."
+     ],
+     [
+      "moth",
+      "I think, maybe we could just look at the preliminary slides first?"
+     ],
+     [
+      "lux",
+      "Of course, my dear, present the slides before the tedious recitation of raw metrics begins."
+     ]
+    ]
+   },
+   {
+    "scene": "sc20",
+    "turns": [
+     [
+      "ash",
+      "Tuk, one haunch. Drop it. Copy."
+     ],
+     [
+      "tuk",
+      "Here is the good meat. Not enough for two people."
+     ],
+     [
+      "ash",
+      "Negative. Keep it. It is not the job of the watch to carry haunch."
+     ],
+     [
+      "tuk",
+      "Tuk will carry it. It is heavy now."
+     ]
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "scene": "sc18",
+   "a": "pip",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so Nate, you're cleaning that pot really good, like, is it going to be totally spotless now... comfort",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Stop poking the scrap metal, Pip. Scrape it first. comfort",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so, it smells good in here, even if nothing's actually cooking right now... gossip",
+     "intent": "gossip"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. Take the big pot, scrub it harder, see if the burnt bits leave.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc19",
+   "a": "moth",
+   "b": "lux",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, um, maybe you should sit down before I start going on about the sample data.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "lux",
+     "text": "Naturally, a moment of repose before one must endure your data-heavy discourse is most appropriate.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, maybe we could just look at the preliminary slides first?",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "lux",
+     "text": "Of course, my dear, present the slides before the tedious recitation of raw metrics begins.",
+     "intent": "slight"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc20",
+   "a": "ash",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Tuk, one haunch. Drop it. Copy.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Here is the good meat. Not enough for two people.",
+     "intent": "boast"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Negative. Keep it. It is not the job of the watch to carry haunch.",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "Tuk will carry it. It is heavy now.",
+     "intent": "complain"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc21",
+   "a": "lux",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "lux",
+     "text": "Naturally, this same tepid broth offers such meager stimulation.",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Stew's warm. Eat it.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "lux",
+     "text": "Naturally, the repetition of this exact culinary offering tests the limits of my endurance.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Hm. More of the broth.",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    false,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc22",
+   "a": "moth",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, maybe we could look at these herbs, after I finish this sample?",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I brought these herbs from the pen, maybe you can see if they grow well...",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, probably we could start with the one with the green edges.",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "I'm totally gonna feed Biscuit a bit too, he's been waiting for me like forever.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc23",
+   "a": "tuk",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "tuk",
+     "text": "Good meat in the calf's haunch. Stay still, small thing.",
+     "intent": "insult"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so Tuk is really good at that, I don't think the calf's going to go anywhere...",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "tuk",
+     "text": "Sit still. Good meat waits for you when it is ready.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "I wonder if Biscuit wants to come see the butchering, he likes the smells...",
+     "intent": "gossip"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc24",
+   "a": "ash",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Relax grip. One point left on your sight line.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so my hands are just gonna shake, like, I need to get this right... gossip",
+     "intent": "gossip"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Relax the grip. Breathe in at two meters, hold steady.",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so I totally get it, but my arms are just like this...",
+     "intent": "complain"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc01",
+   "a": "rook",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "rook",
+     "text": "Hm. Rice crate. Drop it. Lay down.",
+     "intent": "insult"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so Nate, you look totally wrecked, should I get you something, like...",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "rook",
+     "text": "Hm. Pan. Stop. Just stand there.",
+     "intent": "insult"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "Okay so you're telling me not to move while you're bent over on the floor...",
+     "intent": "slight"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc02",
+   "a": "pip",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so this wire is totally rough, I think I just cut my hand pretty bad...",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Pip, hand bleeds. Stop what you do.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "Okay so it's not like I wanna stop, this wire's just mean...",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "Hold still, Pip. Tuk will tie the wound now.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc03",
+   "a": "moth",
+   "b": "ash",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, maybe this needs to be just a little tighter, though.",
+     "intent": "comfort"
+    },
+    {
+     "turn": 1,
+     "speaker": "ash",
+     "text": "Copy. Three more passes. Do not pull it too tight.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, maybe a stitch less would be safer for the tissue?",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "ash",
+     "text": "Four more passes. Keep the seam tight, Moth.",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  }
+ ]
+}
