@@ -50,7 +50,7 @@ Compatibility
 Source code (MIT license)
 - Mod: https://github.com/CharlesMod/RimWorldLLM
 - Engine: https://github.com/CharlesMod/easyEngine
-The downloaded models carry their own terms (Gemma terms of use).</description>
+The downloaded models carry their own terms (Apache 2.0 with the Gemma terms of use); llama.cpp and uv have their own licenses.</description>
 	<packageId>charless.HermesVoice</packageId>
 	<modVersion>2.1.0</modVersion>
 	<url>https://github.com/CharlesMod/RimWorldLLM</url>
