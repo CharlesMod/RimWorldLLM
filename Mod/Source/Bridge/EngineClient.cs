@@ -78,6 +78,8 @@ namespace HermesVoice.Bridge
         [JsonProperty("model_name")] public string ModelName;
         /// <summary>The model kept on disk after a switch, null when none.</summary>
         [JsonProperty("previous")] public EnginePrevious Previous;
+        /// <summary>Graphics picture and the room left for the model; null from an older engine.</summary>
+        [JsonProperty("gpu")] public GpuSummary Gpu;
     }
 
     public sealed class EngineCustom
@@ -310,6 +312,13 @@ namespace HermesVoice.Bridge
         public Task<EngineResult<JObject>> PutSettingsAsync(EngineSettings s) { return Send<JObject>("PUT", "settings", JObject.FromObject(s), ShortTimeoutMs); }
         public Task<EngineResult<EngineTestResult>> TestAsync() { return Send<EngineTestResult>("POST", "test", null, LongTimeoutMs); }
         public Task<EngineResult<JObject>> AttachAsync(int pid) { return Send<JObject>("POST", "attach", new JObject { ["pid"] = pid }, ShortTimeoutMs); }
+        /// <summary>Tells the engine which process is the game and which card it renders on (POST host; an older engine answers 404, which callers ignore).</summary>
+        public Task<EngineResult<JObject>> PostHostAsync(int pid, HostAdapterInfo adapter, int reserveMib)
+        {
+            var o = new JObject { ["pid"] = pid, ["reserve_mib"] = reserveMib };
+            if (adapter != null && adapter.Known) o["adapter"] = adapter.ToJson();
+            return Send<JObject>("POST", "host", o, ShortTimeoutMs);
+        }
         public Task<EngineResult<CustomCheck>> CheckCustomAsync(string path) { return Send<CustomCheck>("POST", "custom/check", new JObject { ["path"] = path }, CheckTimeoutMs); }
         public Task<EngineResult<JObject>> UseCustomAsync(string path) { return Send<JObject>("POST", "custom/use", new JObject { ["path"] = path }, ShortTimeoutMs); }
         public Task<EngineResult<JObject>> ClearCustomAsync() { return Send<JObject>("POST", "custom/clear", null, ShortTimeoutMs); }

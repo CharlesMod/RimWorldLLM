@@ -126,6 +126,7 @@ namespace HermesVoice.Bridge
         public string ModRoot;                // the mod's root dir (contains Engine/)
         public string BridgeJsonPath;         // full path of bridge.json
         public int Pid;                       // our process id
+        public HostAdapterInfo HostAdapter;   // the card the game renders on, null when unknown
         public EnginePlatform Platform;
         public IProcessStarter Starter = new SystemProcessStarter();
         /// <summary>Finds a running engine, or null. Default: discovery through engine.lock and 47480-47489.</summary>
@@ -164,7 +165,9 @@ namespace HermesVoice.Bridge
         }
 
         /// <summary>The game profile for HermesVoice (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
-        public static JObject BuildProfile(string bridgeJsonPath, string wheelPath)
+        public const int HostReserveEstimateMib = 1500;
+
+        public static JObject BuildProfile(string bridgeJsonPath, string wheelPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
         {
             var o = new JObject
             {
@@ -172,8 +175,10 @@ namespace HermesVoice.Bridge
                 ["slots"] = 3,
                 ["min_slots"] = 1,
                 ["ctx_per_slot"] = new JObject { ["max"] = 65536, ["floor"] = 8192 },
-                ["game_reserve_mib"] = 1500
+                ["game_reserve_mib"] = HostReserveEstimateMib   // the host estimate; the engine measures the game when it can
             };
+            if (hostPid > 0) o["host_pid"] = hostPid;
+            if (hostAdapter != null && hostAdapter.Known) o["host_adapter"] = hostAdapter.ToJson();
             if (wheelPath != null)
             {
                 o["agent"] = new JObject
@@ -188,13 +193,13 @@ namespace HermesVoice.Bridge
             return o;
         }
 
-        public static string WriteProfile(string bridgeJsonPath, string wheelPath)
+        public static string WriteProfile(string bridgeJsonPath, string wheelPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
         {
             string dir = Path.GetDirectoryName(bridgeJsonPath);
             Directory.CreateDirectory(dir);
             string path = Path.Combine(dir, ProfileFileName);
             string tmp = path + ".tmp";
-            File.WriteAllText(tmp, BuildProfile(bridgeJsonPath, wheelPath).ToString(Newtonsoft.Json.Formatting.Indented));
+            File.WriteAllText(tmp, BuildProfile(bridgeJsonPath, wheelPath, hostPid, hostAdapter).ToString(Newtonsoft.Json.Formatting.Indented));
             if (File.Exists(path)) File.Delete(path);
             File.Move(tmp, path);
             return path;
@@ -221,6 +226,13 @@ namespace HermesVoice.Bridge
             return EngineClient.DiscoverAsync(EngineClient.ReadLockPort(Path.Combine(data, "engine.lock")));
         }
 
+        /// <summary>POST /engine/v1/host; an older engine (404) or any failure is ignored.</summary>
+        static async Task PostHostQuietAsync(EngineClient c, LaunchOptions o)
+        {
+            try { await c.PostHostAsync(o.Pid, o.HostAdapter, HostReserveEstimateMib).ConfigureAwait(false); }
+            catch { }
+        }
+
         /// <summary>Attach to a running engine, else spawn one. Never throws.</summary>
         public static async Task<LaunchResult> EnsureRunningAsync(LaunchOptions o)
         {
@@ -237,6 +249,7 @@ namespace HermesVoice.Bridge
                     r.Outcome = LaunchOutcome.Attached;
                     var a = await running.AttachAsync(o.Pid).ConfigureAwait(false);
                     if (!a.Ok) r.AttachError = a.Error;
+                    await PostHostQuietAsync(running, o).ConfigureAwait(false);
                     return r;
                 }
 
@@ -250,7 +263,7 @@ namespace HermesVoice.Bridge
                 }
                 if (plat.IsUnix) MakeExecutable(bin);
 
-                r.ProfilePath = WriteProfile(o.BridgeJsonPath, FindWheel(o.ModRoot));
+                r.ProfilePath = WriteProfile(o.BridgeJsonPath, FindWheel(o.ModRoot), o.Pid, o.HostAdapter);
                 var env = new Dictionary<string, string> { ["HERMESVOICE_BRIDGE_JSON"] = o.BridgeJsonPath };
                 try { o.Starter.Start(bin, ServeArgs(r.ProfilePath, o.Pid), env); }
                 catch (Exception e)
@@ -266,6 +279,7 @@ namespace HermesVoice.Bridge
                     var c = await discover().ConfigureAwait(false);
                     if (c != null) { r.Client = c; break; }
                 }
+                if (r.Client != null) await PostHostQuietAsync(r.Client, o).ConfigureAwait(false);   // refresh once the game is running
                 return r;
             }
             catch (Exception e)
