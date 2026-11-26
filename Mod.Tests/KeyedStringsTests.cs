@@ -41,7 +41,7 @@ namespace HermesVoice.Tests
             var keys = Keys();
             var wanted = new List<string>();
             foreach (ProbeCode c in Enum.GetValues(typeof(ProbeCode))) wanted.Add("HV_Probe_" + c);
-            foreach (var s in new[] { "Connection", "Talk", "Effects", "Events", "Bubbles", "Advanced" }) wanted.Add("HV_Section_" + s);
+            foreach (var s in new[] { "Model", "Colonists", "Display", "Content", "Storage", "Advanced" }) wanted.Add("HV_Section_" + s);
             foreach (var s in new[] { "off", "light", "normal" }) wanted.Add("HV_Effects_" + s);
             foreach (var s in new[] { "effects_off", "no_intent", "no_effect", "no_listener", "not_negative", "no_about", "pair_cap", "stack_full", "vanilla_interaction" }) wanted.Add("HV_Refused_" + s);
             foreach (var s in Bridge.EntryKinds.Wording) wanted.Add("HV_LogEffect_" + s);

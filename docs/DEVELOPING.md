@@ -89,3 +89,7 @@ all of `Textures/`, including `Textures/src/`; the release script ships only `Te
    - **Bridge port** / **bind address** - where the in-mod HTTP server listens
    - **Agent dial-out URL** - where the mod POSTs colony events
    - **Shared token** - used for auth in both directions
+
+## Settings keys and old saves
+
+`HermesVoiceSettings.ExposeData` reads and writes each setting by its field name. The setting `language` was removed (the mod saved and sent it but nothing read it): old settings files that still hold a `<language>` node load fine, because Scribe only looks up the keys the code asks for and ignores the rest. The same holds for any later removal. New in the settings rework: `customGgufPath` (the last path typed or picked under "Use my own GGUF file"; the engine holds the real choice). `GET /config` no longer carries `language`.

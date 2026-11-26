@@ -30,8 +30,6 @@ namespace HermesVoice
         public static MindBook Minds { get { return Runtime.Minds; } }
         static string _sessionToken;
 
-        public const string OpenWarning = "Anyone on your network can read colony state and make pawns speak";
-
         public static int Port { get { return Runtime.Port; } }
         public static string LastError { get { return Runtime.LastError; } }
         public static bool IsRunning { get { return Runtime.IsRunning; } }

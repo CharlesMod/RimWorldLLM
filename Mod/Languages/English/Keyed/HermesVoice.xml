@@ -96,13 +96,12 @@
   <HV_MindNotesConflict>Could not save the notes: {0}</HV_MindNotesConflict>
   <HV_MindNotesRevert>Revert</HV_MindNotesRevert>
   <!-- Settings -->
-  <HV_Section_Connection>Connection</HV_Section_Connection>
-  <HV_Section_Talk>Talk</HV_Section_Talk>
-  <HV_Section_Effects>Effects</HV_Section_Effects>
-  <HV_Section_Events>Events</HV_Section_Events>
-  <HV_Section_Bubbles>Bubbles</HV_Section_Bubbles>
+  <HV_Section_Model>Model</HV_Section_Model>
+  <HV_Section_Colonists>Colonists</HV_Section_Colonists>
+  <HV_Section_Display>Display</HV_Section_Display>
+  <HV_Section_Content>Content</HV_Section_Content>
+  <HV_Section_Storage>Storage</HV_Section_Storage>
   <HV_Section_Advanced>Advanced</HV_Section_Advanced>
-  <HV_Conn_Title>Connection</HV_Conn_Title>
   <HV_Conn_Enabled>HermesVoice enabled</HV_Conn_Enabled>
   <HV_Conn_BridgeRunning>Bridge running on port {0}</HV_Conn_BridgeRunning>
   <HV_Conn_BridgeStopped>Bridge not running</HV_Conn_BridgeStopped>
@@ -123,7 +122,6 @@
   <HV_Conn_RegenConfirm>Click to confirm</HV_Conn_RegenConfirm>
   <HV_Conn_RegenWarn>This restarts the bridge with a new token. A running agent re-reads bridge.json; an agent on another machine needs the new token.</HV_Conn_RegenWarn>
   <HV_Conn_Restart>Restart bridge</HV_Conn_Restart>
-  <HV_Conn_EndpointTitle>Agent endpoint</HV_Conn_EndpointTitle>
   <HV_Conn_EndpointHelp>The OpenAI-compatible LLM the agent talks to. Your endpoint is passed to the HermesVoice engine, which forwards the agent to it; the key is kept in bridge.json and the engine.</HV_Conn_EndpointHelp>
   <HV_Conn_LlmUrl>Base URL (for example http://localhost:4480/v1)</HV_Conn_LlmUrl>
   <HV_Conn_LlmModel>Model</HV_Conn_LlmModel>
@@ -236,7 +234,6 @@
   <HV_Eng_SourceLocalTip>HermesVoice downloads and runs a model that fits your graphics card and memory.</HV_Eng_SourceLocalTip>
   <HV_Eng_SourceOwn>My own endpoint</HV_Eng_SourceOwn>
   <HV_Eng_SourceOwnTip>Use any OpenAI-compatible server you already run (llama.cpp, Ollama, LM Studio, a cloud API).</HV_Eng_SourceOwnTip>
-  <HV_Eng_SetUpButton>Set up / Change model...</HV_Eng_SetUpButton>
   <HV_Eng_LocalNote>The engine picks how many lines can be written at once and how much each can remember, from your free graphics memory. It makes room for the game and grows back when there is room.</HV_Eng_LocalNote>
   <HV_Eng_Launching>Starting the engine...</HV_Eng_Launching>
   <HV_Eng_LaunchError>Engine problem: {0}</HV_Eng_LaunchError>
@@ -330,4 +327,133 @@ Use it anyway?</HV_Fallback_ConfirmText>
   <HV_FileBrowser_CancelTip>Close without choosing a file.</HV_FileBrowser_CancelTip>
   <HV_FileBrowser_Empty>No folders or .gguf files here.</HV_FileBrowser_Empty>
   <HV_FileBrowser_Error>Can't open this folder: {0}</HV_FileBrowser_Error>
+  <!-- Settings rework: tabs, tooltips, storage, own GGUF file -->
+  <HV_Model_Title>Model</HV_Model_Title>
+  <HV_Model_Change>Change model...</HV_Model_Change>
+  <HV_Model_UseOwnFile>Use my own GGUF file...</HV_Model_UseOwnFile>
+  <HV_Tip_Enabled>Turns HermesVoice off or on without removing the mod. Nothing is said while it is off.</HV_Tip_Enabled>
+  <HV_Tip_LlmUrl>The address of an OpenAI-compatible server, for example http://localhost:11434/v1 for Ollama.</HV_Tip_LlmUrl>
+  <HV_Tip_LlmModel>The model name your server expects. Leave blank if it serves just one.</HV_Tip_LlmModel>
+  <HV_Tip_LlmKey>Only needed for servers that ask for a key. It is kept in your settings file, not shared.</HV_Tip_LlmKey>
+  <HV_Tip_StatusCard>Green means the model is ready, amber means it is busy, red means something went wrong.</HV_Tip_StatusCard>
+  <HV_Tip_ChangeModel>Pick a different model. Your computer is checked first, so only ones that fit are offered.</HV_Tip_ChangeModel>
+  <HV_Tip_UseOwnFile>Use a .gguf model file you already have on this computer. It is used where it is, never copied.</HV_Tip_UseOwnFile>
+  <HV_Tip_Test>Sends a tiny test message to the model and shows how long it took.</HV_Tip_Test>
+  <HV_Tip_HideFallback>Stops the notice about the small stand-in model.</HV_Tip_HideFallback>
+  <HV_Tip_DeleteOld>Frees disk space by deleting the model you switched away from.</HV_Tip_DeleteOld>
+  <HV_Prev_Offer>You switched away from {0}. It still takes {1} of disk space.</HV_Prev_Offer>
+  <HV_Prev_Delete>Delete the old model</HV_Prev_Delete>
+  <HV_Prev_Confirm>Delete {0} and free {1}? You can download it again later.</HV_Prev_Confirm>
+  <HV_Switch_Line>Downloading {0}: {1}%. The current model keeps talking until it is ready.</HV_Switch_Line>
+  <HV_Switch_LineNoPct>Downloading {0}. The current model keeps talking until it is ready.</HV_Switch_LineNoPct>
+  <HV_Tip_Frequency>How often colonists speak up on their own. 1.0 is normal, 0 is silent unless something happens.</HV_Tip_Frequency>
+  <HV_Tip_EffectsOff>What colonists say never changes moods or opinions.</HV_Tip_EffectsOff>
+  <HV_Tip_EffectsLight>Spoken lines nudge moods and opinions at half strength.</HV_Tip_EffectsLight>
+  <HV_Tip_EffectsNormal>Spoken lines nudge moods and opinions at full (still small, capped) strength.</HV_Tip_EffectsNormal>
+  <HV_Tip_AvoidHours>How many game hours a colonist keeps avoiding someone after saying they want to.</HV_Tip_AvoidHours>
+  <HV_Events_Help>Which happenings are allowed to start a spoken line.</HV_Events_Help>
+  <HV_EvTip_Injury>Colonists react when someone gets hurt.</HV_EvTip_Injury>
+  <HV_EvTip_Death>Colonists react when someone dies.</HV_EvTip_Death>
+  <HV_EvTip_MentalBreak>Colonists react when someone has a mental break.</HV_EvTip_MentalBreak>
+  <HV_EvTip_LevelUp>Colonists comment when someone gains a skill level.</HV_EvTip_LevelUp>
+  <HV_EvTip_Tend>Colonists comment when a patient is treated.</HV_EvTip_Tend>
+  <HV_EvTip_Social>Colonists comment on chats, insults and romance attempts.</HV_EvTip_Social>
+  <HV_EvTip_Raid>Colonists react to raids.</HV_EvTip_Raid>
+  <HV_EvTip_Quest>Colonists react to new quests.</HV_EvTip_Quest>
+  <HV_EvTip_Lodger>Colonists react to guests and lodgers arriving or leaving.</HV_EvTip_Lodger>
+  <HV_EvTip_Prisoner>Colonists react to prisoners being captured, recruited or freed.</HV_EvTip_Prisoner>
+  <HV_EvTip_Funeral>Colonists speak at funerals.</HV_EvTip_Funeral>
+  <HV_EvTip_Weather>Colonists react to extreme weather.</HV_EvTip_Weather>
+  <HV_EvTip_Thought>Colonists talk about strong thoughts and moods.</HV_EvTip_Thought>
+  <HV_EvTip_Art>Colonists comment on finished artworks.</HV_EvTip_Art>
+  <HV_EvTip_Sleep>Lets sleeping colonists dream. Dreams show as clouds.</HV_EvTip_Sleep>
+  <HV_EvTip_Firsts>Colonists remark on things they see for the first time.</HV_EvTip_Firsts>
+  <HV_EvTip_Gatherings>Colonists talk during meals, parties, weddings, rituals and speeches.</HV_EvTip_Gatherings>
+  <HV_Tip_BubblesShow>Shows what colonists say as bubbles over their heads.</HV_Tip_BubblesShow>
+  <HV_Tip_BubblesColors>Each colonist gets a bubble colour of their own.</HV_Tip_BubblesColors>
+  <HV_Tip_BubbleStyle>Round comic balloons with tails, or plain boxes.</HV_Tip_BubbleStyle>
+  <HV_Tip_BubbleOpacity>How see-through the bubbles are.</HV_Tip_BubbleOpacity>
+  <HV_Tip_Lettering>Writes bubble text in capital letters, like a comic.</HV_Tip_Lettering>
+  <HV_Tip_BubbleDuration>How many seconds a bubble stays on screen.</HV_Tip_BubbleDuration>
+  <HV_Tip_ThoughtOpacity>How see-through thought clouds are compared with speech bubbles.</HV_Tip_ThoughtOpacity>
+  <HV_Tip_ThoughtPerPawn>The least number of seconds between two thought clouds from the same colonist.</HV_Tip_ThoughtPerPawn>
+  <HV_Tip_ThoughtGlobal>The least number of seconds between two thought clouds anywhere on the map.</HV_Tip_ThoughtGlobal>
+  <HV_Tip_PanSpeed>How quickly the director camera moves to its subject.</HV_Tip_PanSpeed>
+  <HV_Content_Title>Content</HV_Content_Title>
+  <HV_Content_AgeGate>The age gate is always on: nobody under 18 appears in anything romantic or sexual. It cannot be turned off.</HV_Content_AgeGate>
+  <HV_Tip_AgeGate>A fixed safety rule built into the mod. No setting changes it.</HV_Tip_AgeGate>
+  <HV_Storage_Title>Storage</HV_Storage_Title>
+  <HV_Storage_Help>Where the engine keeps its models and files, and how much room they take.</HV_Storage_Help>
+  <HV_Storage_NoEngine>The engine is not running, so its files cannot be listed. Start it from the Model tab.</HV_Storage_NoEngine>
+  <HV_Storage_Refresh>Refresh</HV_Storage_Refresh>
+  <HV_Tip_StorageRefresh>Measures the folders again.</HV_Tip_StorageRefresh>
+  <HV_Storage_Loading>Measuring...</HV_Storage_Loading>
+  <HV_Storage_Failed>The engine did not answer in time. Try Refresh.</HV_Storage_Failed>
+  <HV_Storage_Folder>Folder: {0}</HV_Storage_Folder>
+  <HV_Tip_StorageFolder>Everything the engine downloads or installs lives here.</HV_Tip_StorageFolder>
+  <HV_Storage_OpenFolder>Open folder</HV_Storage_OpenFolder>
+  <HV_Tip_OpenFolder>Opens that folder in your file manager.</HV_Tip_OpenFolder>
+  <HV_Storage_PartLine>{0}: {1}</HV_Storage_PartLine>
+  <HV_Storage_PartModels>Models</HV_Storage_PartModels>
+  <HV_Storage_PartBackends>Engine runtime (backends)</HV_Storage_PartBackends>
+  <HV_Storage_PartRuntime>Helper runtime</HV_Storage_PartRuntime>
+  <HV_Storage_PartDownloads>Unfinished downloads</HV_Storage_PartDownloads>
+  <HV_Storage_PartLogs>Logs</HV_Storage_PartLogs>
+  <HV_Storage_Free>Free space on that disk: {0}</HV_Storage_Free>
+  <HV_Storage_ModelsTitle>Model files</HV_Storage_ModelsTitle>
+  <HV_Storage_NoModels>No model files.</HV_Storage_NoModels>
+  <HV_Storage_Partial>[partial]</HV_Storage_Partial>
+  <HV_Storage_Delete>Delete</HV_Storage_Delete>
+  <HV_Tip_ModelInUse>This model is answering right now, so it cannot be deleted.</HV_Tip_ModelInUse>
+  <HV_Tip_ModelDelete>Deletes this model file to free disk space. You can download it again later.</HV_Tip_ModelDelete>
+  <HV_Storage_DeleteConfirm>Delete {0} ({1})? You can download it again later.</HV_Storage_DeleteConfirm>
+  <HV_Storage_YourFileNote>Your own GGUF file is never touched: it stays where you keep it.</HV_Storage_YourFileNote>
+  <HV_Storage_RemoveAll>Remove downloaded files...</HV_Storage_RemoveAll>
+  <HV_Tip_RemoveAll>Stops the engine and deletes everything it downloaded. Your settings stay.</HV_Tip_RemoveAll>
+  <HV_Storage_RemoveConfirm>This stops the engine and deletes the downloaded models, the engine runtime and unfinished downloads. {0} of disk space comes back.
+
+Your HermesVoice settings are kept, and so is any GGUF file you chose yourself. Afterwards, Set up starts over from the beginning.
+
+Continue?</HV_Storage_RemoveConfirm>
+  <HV_Adv_Help>For people running their own agent or tools. Most players never need this tab.</HV_Adv_Help>
+  <HV_Adv_OpenWarning>Anyone on your network can read colony state and make colonists speak. Set a shared token below, or bind to 127.0.0.1.</HV_Adv_OpenWarning>
+  <HV_Tip_Port>The port the in-game bridge listens on. Change it only if another program already uses 9765.</HV_Tip_Port>
+  <HV_Tip_Bind>127.0.0.1 keeps the bridge on this computer. Anything else opens it to your network.</HV_Tip_Bind>
+  <HV_Tip_Token>The password the agent uses to talk to the bridge. It is written to bridge.json for you.</HV_Tip_Token>
+  <HV_Tip_AgentUrl>If you run your own agent, the mod posts colony events to this address.</HV_Tip_AgentUrl>
+  <HV_Tip_Push>Sends colony events to the agent address above. Events are always kept for the bridge.</HV_Tip_Push>
+  <HV_Tip_Restart>Stops and starts the bridge again, for example after changing the port.</HV_Tip_Restart>
+  <HV_Tip_OpenPage>Opens the engine page in your web browser.</HV_Tip_OpenPage>
+  <HV_Tip_Debug>Opens the developer debug window.</HV_Tip_Debug>
+  <HV_Custom_Title>HermesVoice: use my own GGUF file</HV_Custom_Title>
+  <HV_Custom_Note>The file stays where it is. HermesVoice reads it in place and never copies, moves or deletes it.</HV_Custom_Note>
+  <HV_Custom_NoEngine>The engine is not running yet. It starts with the game; wait a moment or open the Model tab.</HV_Custom_NoEngine>
+  <HV_Custom_PathLabel>Path to a .gguf file</HV_Custom_PathLabel>
+  <HV_Custom_Browse>Browse...</HV_Custom_Browse>
+  <HV_Custom_Check>Check</HV_Custom_Check>
+  <HV_Custom_Checking>Reading the file...</HV_Custom_Checking>
+  <HV_Custom_CheckFailed>Cannot use this file: {0}</HV_Custom_CheckFailed>
+  <HV_Custom_Facts>Architecture {0}, {1} parameters, {2}, trained for {3} tokens of context, {4} on disk.</HV_Custom_Facts>
+  <HV_Custom_Params>{0}B</HV_Custom_Params>
+  <HV_Custom_NoTemplate>This file has no built-in chat format. It may answer badly.</HV_Custom_NoTemplate>
+  <HV_Custom_Estimated>This size estimate is a careful guess from the file header.</HV_Custom_Estimated>
+  <HV_Custom_Use>Use this file</HV_Custom_Use>
+  <HV_Custom_Stop>Stop using it</HV_Custom_Stop>
+  <HV_Custom_StatusUsing>Using your own file: {0} ({1})</HV_Custom_StatusUsing>
+  <HV_Custom_StatusMissing>Your file {0} was not found at {1}. Pick another file or stop using it.</HV_Custom_StatusMissing>
+  <HV_Tip_CustomPath>Type the full path, or use Browse.</HV_Tip_CustomPath>
+  <HV_Tip_CustomCheck>Reads the file header and tells you if it fits your computer. Nothing is changed.</HV_Tip_CustomCheck>
+  <HV_Tip_CustomUse>Starts serving this file. The previous model stays on disk.</HV_Tip_CustomUse>
+  <HV_Tip_CustomClear>Goes back to the last downloaded model. Your file is not deleted.</HV_Tip_CustomClear>
+  <HV_Setup_OwnFileHelp>Have a GGUF file already? Use it where it is, without copying it.</HV_Setup_OwnFileHelp>
+  <HV_Setup_RecommendedMark>[recommended]</HV_Setup_RecommendedMark>
+  <HV_Setup_Switch>Switch</HV_Setup_Switch>
+  <HV_Setup_DiskNeed>needs {0} of disk, {1} free</HV_Setup_DiskNeed>
+  <HV_Setup_DiskShort>needs {0} of disk, only {1} free</HV_Setup_DiskShort>
+  <HV_Unit_GB>{0} GB</HV_Unit_GB>
+  <HV_Unit_MB>{0} MB</HV_Unit_MB>
+  <HV_Unit_KB>{0} KB</HV_Unit_KB>
+  <HV_Unit_Sec>{0} s</HV_Unit_Sec>
+  <HV_Unit_Min>{0} min</HV_Unit_Min>
+  <HV_Unit_HourMin>{0} h {1} min</HV_Unit_HourMin>
 </LanguageData>

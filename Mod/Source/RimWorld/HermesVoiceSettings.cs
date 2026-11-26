@@ -34,6 +34,8 @@ namespace HermesVoice
 
         // The player asked not to be told (once per session) that the smallest fallback model is in use.
         public bool hideFallbackWarning = false;
+        // The last .gguf path typed or picked in "Use my own GGUF file" (a convenience; the engine holds the real choice).
+        public string customGgufPath = "";
 
         // Dialogue display.
         public bool showBubbles = true;
@@ -78,7 +80,6 @@ namespace HermesVoice
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
         public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
-        public string language = "en";
         public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
@@ -113,6 +114,9 @@ namespace HermesVoice
             Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
             Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
             Scribe_Values.Look(ref hideFallbackWarning, "hideFallbackWarning", false);
+            Scribe_Values.Look(ref customGgufPath, "customGgufPath", "");
+            // The old "language" key (saved by earlier versions, read by nothing) is no longer written; an old file that
+            // still has it loads fine because Scribe ignores XML nodes nobody asks for.
             Scribe_Values.Look(ref showBubbles, "showBubbles", true);
             Scribe_Values.Look(ref bubbleDurationSec, "bubbleDurationSec", 8);
             Scribe_Values.Look(ref colorBubbles, "colorBubbles", true);
@@ -150,7 +154,6 @@ namespace HermesVoice
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
-            Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref wantsEnabled, "wantsEnabled", true);
             Scribe_Values.Look(ref recapOnLoad, "recapOnLoad", true);
             Scribe_Values.Look(ref adultContent, "adultContent", false);
