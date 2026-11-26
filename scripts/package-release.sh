@@ -118,8 +118,9 @@ else
   echo "== dotnet build (Release)"
   [ -x "$DOTNET" ] || DOTNET=$(command -v dotnet || true)
   [ -x "$DOTNET" ] || die "dotnet not found"
+  # --no-incremental: an incremental build can skip the copy-local step (obj/*.CopyComplete) after IncrementalClean removed Newtonsoft.Json.dll
   blog="$STAGE/dotnet-build.log"
-  env -u RIMWORLD_DIR -u RimWorldDir $NICE "$DOTNET" build "$MODSRC/HermesVoice.csproj" -c Release \
+  env -u RIMWORLD_DIR -u RimWorldDir $NICE "$DOTNET" build "$MODSRC/HermesVoice.csproj" -c Release --no-incremental \
     -p:RimWorldDir= -p:BuildingWithScript=true >"$blog" 2>&1 || { tail -30 "$blog" >&2; die "dotnet build failed"; }
   w=$(grep -E '^\s*[0-9]+ Warning\(s\)' "$blog" | grep -oE '[0-9]+' | head -1 || true)
   [ "${w:-x}" = 0 ] || { grep -i 'warning' "$blog" | head -20 >&2; die "dotnet build warnings: ${w:-unknown} (baseline 0)"; }
