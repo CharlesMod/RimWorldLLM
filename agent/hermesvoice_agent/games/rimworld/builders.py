@@ -21,12 +21,18 @@ def _s(x) -> str:
     return str(x)
 
 
+def _name_part(x) -> str:
+    """One name part, cleaned; a part that was nothing but a planted instruction counts as absent."""
+    t = gd.clean(x or "", "name")
+    return t.replace(gd.FILTERED, "").strip(" '\"-,.") if gd.FILTERED in t else t
+
+
 def display_name(p: dict) -> str:
     """Names are typed by the player (and by other mods): cleaned of instruction-like content, capped, never empty."""
     n = p.get("name", {})
     if isinstance(n, str):
         return gd.name(n) if n else ""
-    first, nick, last = (gd.clean(n.get(k, ""), "name") for k in ("first", "nick", "last"))
+    first, nick, last = (_name_part(n.get(k, "")) for k in ("first", "nick", "last"))
     short = nick or first
     out = f"{first} '{nick}' {last}".replace("  ", " ").strip() if nick and nick != first else f"{first} {last}".strip() or short
     return gd.name(out)
@@ -36,7 +42,7 @@ def short_name(p: dict) -> str:
     n = p.get("name", {})
     if isinstance(n, str):
         return gd.name(n.split()[0]) if n else ""
-    raw = n.get("nick") or n.get("first") or ""
+    raw = _name_part(n.get("nick", "")) or _name_part(n.get("first", ""))
     return gd.name(raw) if raw else ""
 
 

@@ -150,7 +150,8 @@ def prefix_for(pid: str, sc: dict):
     for r in PAWNS[pid]["relations"]:
         known_tokens |= name_tokens(r["name"])
     ctx = SanitizeCtx(NAME_TOKENS[aid], known_tokens, ALL_TOKENS, prompt_cap_words(prefix), set(ADAPTER.common_words),
-                      third_person=mind.voice.speaks_third_person(NAME_TOKENS[aid]))
+                      third_person=mind.voice.speaks_third_person(NAME_TOKENS[aid]),
+                      intent_labels=tuple(ADAPTER.intent_labels))   # as the Director passes them
     return prefix, mind, ctx, scene
 
 
