@@ -9,6 +9,7 @@ data sections; the system prompt carries the data rule. The text is sanitised an
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -216,6 +217,12 @@ async def write_art(d: "Director", job: ArtJob, slot: int) -> tuple[str | None, 
     toks = d.name_tokens
     allnames = set().union(*toks.values()) if toks else set()
     known = set(toks.get(job.maker, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
+    # people the prompt's own data names (the depicted event, its people, the history lines) may be named too:
+    # the game's own text names them, and refusing them dropped most real descriptions as unknown_name
+    data_words = set(re.findall(r"[A-Za-z']+", msgs[1][1].split("=== REQUEST ===")[0]))
+    for ts in toks.values():
+        if ts & data_words:
+            known |= set(ts)
     minor = d.is_minor(job.maker)
     why = ["sanitize"]
 

@@ -219,3 +219,23 @@ def test_art_prompt_asks_for_a_depicted_scene_not_a_memory_list():
     a = RimWorldAdapter()
     assert "depicts" in a.art_system and "present tense" in a.art_system
     assert "Do not list memories" in a.art_system and "never mention data" in a.art_system
+
+
+def test_depicted_colonist_named_in_tale_is_kept(world):
+    async def go():
+        w = await world.go()
+        w.llm.script["art"] = ["Ana carved Bram holding the gate against the raiders in the rain, granite still rough."]
+        make(w, data={"description": "An image of Bram holding the gate against raiders. It is raining."})
+        await step(w)
+        assert w.fb.art_log and "Bram" in w.fb.art_log[0]["text"]
+    run(go())
+
+
+def test_colonist_absent_from_the_data_is_still_refused(world):
+    async def go():
+        w = await world.go()
+        w.llm.script["art"] = ["Ana carved Cy holding the gate against the raiders in the rain, granite still rough."]
+        make(w, data={"description": "An image of Bram holding the gate against raiders. It is raining."})
+        await step(w)
+        assert not w.fb.art_log
+    run(go())
