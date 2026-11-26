@@ -1,8 +1,7 @@
 """Fixed bio and voice card from GET /pawn data (SPEC §5, §12.4). Deterministic templates first;
 an optional LLM pass writes the voice card's 3 example lines once (saved in the mind).
 
-DLC fields are read only when present: Ideology (ideo_role, precepts), Biotech (xenotype, genes),
-Royalty (title), Anomaly (anomaly: {...}).
+DLC fields are read only when present: Ideology (ideo, ideo_role), Biotech (xenotype, genes), Royalty (royal_title).
 """
 from __future__ import annotations
 
@@ -12,6 +11,7 @@ import json
 from ...core import agegate
 from ...core import gamedata as gd
 from ...core.minds import FixedBio, VoiceCard
+from . import register
 
 
 def _s(x) -> str:
@@ -40,21 +40,62 @@ def short_name(p: dict) -> str:
     return gd.name(raw) if raw else ""
 
 
+def _bs_parts(b) -> dict[str, tuple[str, str]]:
+    """{"child"|"adult": (title, desc)}; a bare string is a one-line backstory with no desc."""
+    if isinstance(b, str):
+        return {"child": (b, "")} if b else {}
+    if not isinstance(b, dict):
+        return {}
+    out = {}
+    for k in ("child", "adult"):
+        v = b.get(k)
+        if isinstance(v, dict):
+            t, d = v.get("title") or v.get("label") or "", v.get("desc") or v.get("description") or ""
+        else:
+            t, d = (str(v) if v else ""), ""
+        if t or d:
+            out[k] = (str(t), str(d))
+    return out
+
+
 def _backstory(b) -> str:
+    """One line (titles and the raw descs) for the voice-card keyword match and the facts."""
     if isinstance(b, str):
         return b
-    if not isinstance(b, dict):
-        return ""
     parts = []
     for k, lab in (("child", "Childhood"), ("adult", "Adulthood")):
-        v = b.get(k)
-        if v:
-            if isinstance(v, dict):
-                t = v.get("title") or v.get("label") or ""
-                d = v.get("desc") or v.get("description") or ""
-                v = f"{t}. {d}".strip(". ") if d else t
-            parts.append(f"{lab}: {v}")
+        t, d = _bs_parts(b).get(k, ("", ""))
+        if t or d:
+            parts.append(f"{lab}: {t + '. ' + d if d else t}")
     return " ".join(parts)
+
+
+def trim_sentence(text: str, cap: int) -> str:
+    """At most ``cap`` characters, cut after the last sentence end (. ! ?) that fits; with none, cut at a word and add '...'."""
+    t = " ".join(str(text or "").split())
+    if len(t) <= cap:
+        return t
+    cut = t[:cap]
+    ends = [i for i, ch in enumerate(cut) if ch in ".!?" and t[i + 1:i + 2] == " "]
+    if ends and ends[-1] >= 15:
+        return cut[:ends[-1] + 1]
+    room = max(cap - 3, 1)
+    head = t[:room] if t[room:room + 1] == " " else (t[:room].rsplit(" ", 1)[0] or t[:room])
+    return head.rstrip(" ,;:-") + "..."
+
+
+def first_sentence(text: str) -> str:
+    t = " ".join(str(text or "").split())
+    for i, ch in enumerate(t):
+        if ch in ".!?" and (i + 1 == len(t) or t[i + 1] == " ") and i >= 15:
+            return t[:i + 1]
+    return t
+
+
+def _field(text, cap: int, first: bool = False) -> str:
+    """One game string for the bio: cleaned (injection, markup), then trimmed at a sentence end to ``cap``."""
+    t = gd.clean(text, "desc", max_len=max(cap * 3, 400))
+    return trim_sentence(first_sentence(t) if first else t, cap)
 
 
 def _trait_labels(p: dict) -> list[str]:
@@ -74,46 +115,128 @@ def skills_text(p: dict) -> str:
     return ", ".join(out)
 
 
+def _relation_kinds(r: dict) -> list[str]:
+    return [k.strip() for k in str(r.get("kind", "")).split(",") if k.strip().lower() in _REL_KINDS]
+
+
+_REL_KINDS = {"parent", "child", "sibling", "spouse", "lover", "fiance", "fiancé", "fiancee", "ex-spouse", "ex-lover", "bond"}
+
+
+def _relative_name(r: dict, names: dict) -> str:
+    """The relative's name, or "" when unknown (never a raw id)."""
+    n = r.get("name")
+    if n:
+        return gd.name(_s(n)) if isinstance(n, (str, dict)) else ""
+    who = r.get("pawn")
+    if isinstance(who, dict):
+        return gd.name(_s(who)) if _s(who) else ""
+    got = names.get(who)
+    return gd.name(got) if got else ""
+
+
+def _ideo(p: dict) -> dict:
+    i = p.get("ideo")
+    return i if isinstance(i, dict) else {}
+
+
+def _meme(m) -> tuple[str, str]:
+    return (_s(m), str(m.get("desc") or "") if isinstance(m, dict) else "")
+
+
 def facts_of(p: dict) -> dict:
     """The game facts the fixed bio depends on; a change rebuilds it."""
     h = p.get("health", {})
     return {
         "name": display_name(p), "age": p.get("age"), "gender": p.get("gender"), "body": p.get("body_type"),
-        "xeno": p.get("xenotype"), "genes": [_s(g) for g in p.get("genes", [])],
-        "backstory": _backstory(p.get("backstory")), "traits": sorted(_trait_labels(p)),
+        "xeno": p.get("xenotype"), "xeno_desc": p.get("xenotype_desc"), "genes": [_s(g) for g in p.get("genes", [])],
+        "backstory": _bs_parts(p.get("backstory")),
+        "traits": sorted((_s(t), str(t.get("desc", "")) if isinstance(t, dict) else "") for t in p.get("traits", [])),
         "missing": sorted(_s(m) for m in h.get("missing_parts", [])),
-        "ideo_role": p.get("ideo_role"), "title": p.get("title"), "status": p.get("status"),
-        "precepts": p.get("precepts"), "anomaly": p.get("anomaly"),
+        "ideo_role": p.get("ideo_role"), "royal_title": p.get("royal_title"), "status": p.get("status"),
+        "ideo": {"name": _ideo(p).get("name"), "memes": [_meme(m) for m in _ideo(p).get("memes", [])],
+                 "precepts": [_s(x) for x in _ideo(p).get("precepts", [])]},
+        "history": p.get("history"), "appearance": p.get("appearance"),
+        "relations": sorted((",".join(_relation_kinds(r)), str(r.get("name") or r.get("pawn")))
+                            for r in p.get("relations", []) if isinstance(r, dict)),
+        "words": register.base_register(p),
     }
 
 
 def facts_hash(p: dict) -> str:
-    f = facts_of(p)
-    f["age"] = None   # ageing alone does not rebuild
-    return hashlib.sha1(json.dumps(f, sort_keys=True, default=str).encode()).hexdigest()[:12]
+    return hashlib.sha1(json.dumps(facts_of(p), sort_keys=True, default=str).encode()).hexdigest()[:12]
 
 
 def build_fixed_bio(p: dict, names: dict[int, str] | None = None) -> FixedBio:
+    """The pawn's character card: backstory, traits, ideoligion, xenotype, history. Every game string is cleaned and trimmed
+    at a sentence end; the whole text is wrapped as data by prompt.block_b."""
     names = names or {}
     h = p.get("health", {})
     lines = [f"Name: {display_name(p)}, {p.get('age')}, {p.get('gender')}, body type {p.get('body_type')}."]
     dlc: dict = {}
-    if p.get("xenotype"):
-        genes = ", ".join(_s(g) for g in p.get("genes", []))
-        lines[0] += f" Xenotype: {p['xenotype']}" + (f"; genes: {genes}." if genes else ".")
-        dlc["xenotype"] = p["xenotype"]
-        dlc["genes"] = [_s(g) for g in p.get("genes", [])]
     if agegate.is_minor(p.get("age")):
         lines.append("Age group: minor, under 18 (hard fact). Nothing romantic or sexual ever involves them.")
-    bs = _backstory(p.get("backstory"))
-    if bs:
-        lines.append(f"Backstory: {bs}")
-    tl = _trait_labels(p)
-    if tl:
-        lines.append("Traits: " + ", ".join(tl))
+    for k, lab in (("child", "Childhood"), ("adult", "Adulthood")):
+        t, d = _bs_parts(p.get("backstory")).get(k, ("", ""))
+        title = gd.clean(t, "label")
+        body = f"{title}. {_field(d, 300)}" if title and d else (title or _field(d, 300))
+        if body:
+            lines.append(f"{lab}: {body}")
+    traits = []
+    for t in p.get("traits", []):
+        lab = _s(t)
+        if not lab:
+            continue
+        lab = gd.clean(lab, "label")
+        lab = lab if lab != lab.lower() else lab.title()
+        d = _field(t.get("desc"), 160, first=True) if isinstance(t, dict) and t.get("desc") else ""
+        traits.append(f"{lab} ({d})" if d else lab)
+    if traits:
+        lines.append("Traits: " + "; ".join(traits))
     if p.get("skills"):
         lines.append(f"Skills (* minor passion, ** major passion): {skills_text(p)}")
-    hl = [_s(c) for c in h.get("conditions", [])]
+    ideo = _ideo(p)
+    if ideo:
+        bits = []
+        if ideo.get("name"):
+            bits.append(f"Ideoligion: {gd.clean(ideo['name'], 'label')}.")
+        memes = []
+        for m in ideo.get("memes", [])[:8]:
+            lab, d = _meme(m)
+            lab = gd.clean(lab, "label")
+            if lab:
+                dd = _field(d, 100, first=True) if d else ""
+                memes.append(f"{lab} ({dd})" if dd else lab)
+        if memes:
+            bits.append("Memes: " + "; ".join(memes) + ".")
+        precepts = [gd.clean(_s(x), "label") for x in ideo.get("precepts", [])[:8] if _s(x)]
+        if precepts:
+            bits.append("Precepts: " + "; ".join(precepts) + ".")
+        if bits:
+            lines.append(" ".join(bits))
+            dlc["ideo"] = gd.clean(ideo.get("name", ""), "label")
+    if p.get("xenotype"):
+        x = gd.clean(p["xenotype"], "label")
+        xd = _field(p.get("xenotype_desc"), 160, first=True) if p.get("xenotype_desc") else ""
+        lines.append(f"Xenotype: {x}" + (f" ({xd})" if xd else ""))
+        dlc["xenotype"] = x
+        genes = [gd.clean(_s(g), "label") for g in p.get("genes", []) if _s(g)]
+        if genes:
+            lines.append("Genes: " + ", ".join(genes))
+            dlc["genes"] = genes
+    if p.get("royal_title"):
+        rt = gd.clean(_s(p["royal_title"]), "label")
+        lines.append(f"Noble title: {rt}")
+        dlc["royal_title"] = rt
+    hist = p.get("history") if isinstance(p.get("history"), dict) else {}
+    if hist.get("arrival"):
+        lines.append(f"Joined the colony: {_field(hist['arrival'], 160)}")
+    tales = [_field(t, 120) for t in (hist.get("tales") or [])[:5] if t]
+    if tales:
+        lines.append("Notable moments: " + "; ".join(t for t in tales if t))
+    if p.get("appearance"):
+        lines.append(f"Appearance: {_field(p['appearance'], 120)}")
+    # temporary states (drunk, high, anaesthetised) live in the scene, not the frozen bio (they would go stale)
+    hl = [_s(c) for c in h.get("conditions", []) if not register.is_temporary(c)]
     if hl:
         lines.append("Health: " + "; ".join(hl))
     miss = [_s(m) for m in h.get("missing_parts", [])]
@@ -124,25 +247,17 @@ def build_fixed_bio(p: dict, names: dict[int, str] | None = None) -> FixedBio:
     if p.get("ideo_role"):
         lines.append(f"Ideology role: {_s(p['ideo_role'])}")
         dlc["ideo_role"] = _s(p["ideo_role"])
-    if p.get("precepts"):
-        pr = [_s(x) for x in p["precepts"]]
-        lines.append("Precepts of their ideoligion: " + "; ".join(pr))
-        dlc["precepts"] = pr
-    if p.get("title"):
-        lines.append(f"Noble title: {_s(p['title'])}")
-        dlc["title"] = _s(p["title"])
-    if p.get("anomaly"):
-        lines.append(f"Anomaly: {json.dumps(p['anomaly'], sort_keys=True)}")
-        dlc["anomaly"] = p["anomaly"]
     rel = []
     for r in p.get("relations", []):
-        if r.get("kind") in ("parent", "child", "sibling", "spouse", "lover", "fiance", "ex-spouse", "ex-lover",
-                             "Parent", "Child", "Sibling", "Spouse", "Lover", "Fiance", "Bond"):
-            who = r.get("pawn")
-            who = names.get(who, who) if not isinstance(who, dict) else _s(who)
-            rel.append(f"{who} ({r['kind']})")
+        if not isinstance(r, dict):
+            continue
+        kinds = _relation_kinds(r)
+        who = _relative_name(r, names)
+        if kinds and who:
+            rel.append(f"{who} ({', '.join(k.lower() for k in kinds)})")
     if rel:
-        lines.append("Key relatives: " + ", ".join(str(r) for r in rel))
+        lines.append("Key relatives: " + ", ".join(rel))
+    dlc["words"] = register.base_words(p)
     return FixedBio(text="\n".join(lines), facts_hash=facts_hash(p), extras=dlc)
 
 

@@ -12,17 +12,47 @@ import httpx
 def default_pawn(pid: int, first: str, **kw) -> dict:
     p = {
         "id": pid, "name": {"first": first, "nick": "", "last": "Tester"}, "age": 30, "gender": "Female",
-        "body_type": "Thin", "xenotype": "Baseliner", "genes": [],
+        "body_type": "Thin", "xenotype": "Baseliner", "genes": [], "xenotype_desc": "",
         "backstory": {"child": {"title": "Farm kid", "desc": "grew up on a farm"},
                       "adult": {"title": "Cook", "desc": "ran a kitchen"}},
-        "traits": [{"def": "Abrasive", "label": "abrasive", "degree": 0}],
+        "traits": [{"def": "Abrasive", "label": "abrasive", "degree": 0,
+                    "desc": "Has a sharp tongue and little patience for small talk."}],
         "skills": [{"skill": "Cooking", "level": 8, "passion": "major"}],
-        "health": {"conditions": [], "missing_parts": [], "pain": 0.0, "consciousness": 1.0, "downed": False},
+        "health": {"conditions": [], "missing_parts": [], "pain": 0.0, "consciousness": 1.0, "talking": 1.0, "downed": False},
         "needs": {"mood": 0.6, "food": 0.5, "rest": 0.7, "joy": 0.4},
         "mood": {"value": 0.6, "thoughts": [{"label": "Ate without table", "offset": -3, "cause_pawn": None}]},
         "asleep": False, "job": "Cooking", "gear": {"worn": [], "held": []}, "relations": [], "status": "colonist",
         "faction": "colony", "map": 0, "pos": [10, 10], "room": "Kitchen", "alive": True, "spawned": True,
     }
+    p.update(kw)
+    return p
+
+
+def rich_pawn(pid: int = 7, first: str = "Ada", **kw) -> dict:
+    """A pawn with every card field the mod can send (backstory descs, traits with descs, ideoligion, history)."""
+    p = default_pawn(
+        pid, first, age=34, name={"first": first, "nick": "Wren", "last": "Voss"}, xenotype="Baseliner",
+        xenotype_desc="Baseliners are normal humans with no engineered genes. They have no special strengths.",
+        genes=[{"def": "Learning_Fast", "label": "quick study"}, {"def": "Hair_Dark", "label": "dark hair"}],
+        backstory={
+            "child": {"title": "Urbworld lab brat", "desc": "Grew up in the lower levels of a research arcology, taking apart "
+                      "discarded instruments and teaching herself from salvaged data slates. Her parents rarely noticed."},
+            "adult": {"title": "Field researcher", "desc": "Spent a decade cataloguing ruined sites for a university guild, "
+                      "trading comfort for answers. The work taught her patience and to distrust easy conclusions."}},
+        traits=[{"def": "TooSmart", "label": "too smart", "degree": 0,
+                 "desc": "Learns quickly but forgets to eat, and is bothered by tedious company. Her mind races."},
+                {"def": "Sanguine", "label": "sanguine", "degree": 2,
+                 "desc": "Almost always in a cheerful mood. Recovers quickly from bad news."}],
+        skills=[{"skill": "Intellectual", "level": 15, "passion": "major"}, {"skill": "Medicine", "level": 9, "passion": "minor"}],
+        ideo={"name": "Seekers of the Quiet Light",
+              "memes": [{"def": "Rationalist", "label": "rationalist", "desc": "Reason is the highest virtue. Ritual is distrusted."},
+                        {"def": "Structure", "label": "structure", "desc": "Order and hierarchy keep people safe."}],
+              "precepts": ["Drugs: prohibited", "Meat eating: abhorrent", "Rituals: rarely", "Slavery: horrible"], "certainty": 0.8},
+        royal_title="Knight",
+        history={"arrival": "Crash-landed with two companions and a cracked data slate.",
+                 "tales": ["Cured the colony of a plague", "Survived a raid alone", "Wrote the first colony ledger"]},
+        appearance="Short dark hair, pale skin, wears a lab coat and goggles.",
+        relations=[{"pawn": 2, "kind": "lover, bond", "opinion": 60}, {"pawn": 99, "kind": "parent"}])
     p.update(kw)
     return p
 

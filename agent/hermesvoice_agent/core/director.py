@@ -36,6 +36,7 @@ from .llm import LLMClient, LLMError
 from .minds import Mind, Relation
 from .passes import Dropped, SanitizeCtx, Spoken, line_pass, speak
 from . import dreams, inner
+from . import speech as speechmod
 from .dreams import DreamBook
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
@@ -522,7 +523,7 @@ class Director:
         worries = concerns_mod.worry_lines(mind) if self.cfg.concerns else None
         prefix = build_prefix(self.adapter.block_a, mind, mems, [e.summary for e in led], sc, thoughts, talk or None,
                               worries)
-        lease.data.update(prefix=prefix, turns=[], snap=snap)
+        lease.data.update(prefix=prefix, turns=[], snap=snap, speech=sc.speech_short or None)
         known_tokens = set().union(*(self.name_tokens.get(k, set()) for k in known))
         all_tokens = set().union(*self.name_tokens.values()) if self.name_tokens else set()
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
@@ -599,13 +600,14 @@ class Director:
                 s, _ = await line_pass(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                        turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx,
                                        max_tokens=self.cfg.llm.line_max_tokens,
-                                       request=self.adapter.vanilla_request(vanilla, self.names[aid], lname or "them"))
+                                       request=self.adapter.vanilla_request(vanilla, self.names[aid], lname or "them"),
+                                       speech=lease.data.get("speech"))
                 res = Spoken(s.text, self.adapter.intent_labels[0]) if s.ok else Dropped(s.reason)
             else:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],
                                   turns=[], turn_no=self.line_count.get(aid, 0), ctx=ctx, listener_name=lname,
                                   labels=self.labels_for(minor), max_tokens=self.cfg.llm.line_max_tokens,
-                                  **self._inner_kw(mind))
+                                  speech=lease.data.get("speech"), **self._inner_kw(mind))
             lease.generating = False
             if isinstance(res, Dropped):
                 self.dropped.append((aid, res.reason))
@@ -773,7 +775,8 @@ class Director:
         try:
             mind, parties = self.minds[aid], info["parties"]
             minor = self.is_minor(aid) or any(self.is_minor(p) for p in parties)
-            msgs = bystanders.messages(self.adapter, mind, self.names, parties, info["summary"], minor)
+            words = await speechmod.register_phrase(self, aid, mind)
+            msgs = bystanders.messages(self.adapter, mind, self.names, parties, info["summary"], minor, words=words)
             lease.generating = True
             try:
                 c = await self.llm.complete(msgs, slot=lease.slot, kind="reaction", max_tokens=bystanders.REACTION_MAX_TOKENS,
@@ -863,7 +866,7 @@ class Director:
                                   listener_name=self.names[lis], labels=self.labels_for(ctxs[sp_id].minor_involved),
                                   max_tokens=self.cfg.llm.line_max_tokens,
                                   check=check, retries=self.cfg.repeat_retries, on_check=on_check,
-                                  **self._inner_kw(self.minds[sp_id]))
+                                  speech=li.data.get("speech"), **self._inner_kw(self.minds[sp_id]))
                 li.generating = False
                 if isinstance(res, Dropped):
                     self.dropped.append((sp_id, res.reason))

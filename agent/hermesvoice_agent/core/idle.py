@@ -16,12 +16,13 @@ from typing import TYPE_CHECKING
 
 from . import agegate, art, dreams
 from . import gamedata as gd
-from . import habits, inner, lore, memory
+from . import habits, inner, lore, memory, speech
 from .bridge import BridgeError
 from .lease import Cls, Lease
 from .llm import LLMError
 from .wants import run_wants
 from .reflection import apply_reflection, reflection_due, run_reflection
+from .prompt import BIO_LINE_CAP, EVOLVING_CAP
 from .sanitize import prompt_cap_words, sanitize_prose, Sanitized
 
 if TYPE_CHECKING:
@@ -272,12 +273,13 @@ class IdleRunner:
         mems.sort(key=lambda m: (m.game, m.id))
         today = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
         stream = inner.inner_on_day(mind, target, d.day) if d.cfg.inner_monologue else []
-        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
-                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
+        words = await speech.register_phrase(d, aid, mind)
+        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=BIO_LINE_CAP, multiline=True))}"
+                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc', max_len=EVOLVING_CAP))}"
                 f"=== WHAT HAPPENED TODAY ===\n{gd.data_section('events', today)}"
                 + (f"=== WHAT YOU WERE THINKING TODAY ===\n{gd.data_section('thoughts', inner.thoughts_text(stream))}"
                    if stream else "") +
-                f"=== REQUEST ===\n{d.adapter.diary_request}")
+                f"=== REQUEST ===\n{speech.register_line(mind.name, words)}{d.adapter.diary_request}")
         lease.generating = True
         try:
             c = await d.llm.complete([("system", d.adapter.diary_system + "\n\n" + gd.DATA_RULE), ("user", user)], slot=lease.slot,
@@ -323,10 +325,11 @@ class IdleRunner:
         mind = d.minds[aid]
         lease = self.lease
         mem_lines = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
-        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
-                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
+        words = await speech.register_phrase(d, aid, mind)
+        user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=BIO_LINE_CAP, multiline=True))}"
+                f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc', max_len=EVOLVING_CAP))}"
                 f"=== WHAT IS ON YOUR MIND ===\n{gd.data_section('memories', mem_lines)}"
-                f"=== REQUEST ===\n{d.adapter.thought_request}")
+                f"=== REQUEST ===\n{speech.register_line(mind.name, words)}{d.adapter.thought_request}")
         minors = d.minor_tokens()
         involves_minor = d.is_minor(aid) or any(d.is_minor(p) for m in mems for p in m.people)
         system = d.adapter.thought_system + "\n\n" + gd.DATA_RULE + (("\n\n" + agegate.MINOR_RULE) if involves_minor else "")

@@ -11,7 +11,7 @@ from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
 from ...core.prompt import Scene
 from ...core.sanitize import name_tokens
-from . import builders, concern_rules
+from . import builders, concern_rules, register
 
 _HERE = Path(__file__).parent
 
@@ -375,7 +375,9 @@ class RimWorldAdapter:
             if isinstance(v, list) and len(v) >= 2:
                 st.append(f"{k.replace('_', ' ')} {v[0]} -> {v[-1]}")
         ths = [f"{t.get('label')} ({round(t.get('offset', 0)):+d})" for t in mood.get("thoughts", [])[:4]]
+        now, short = register.speech_now(snap)
         return Scene(where=where, when=when or "daytime", present=present, state=", ".join(st) or "ordinary",
+                     speech_now=now, speech_short=short,
                      job=snap.get("job") or "idle", thoughts=ths, trigger=trigger,
                      minor_self=agegate.is_minor(self.snapshot_age(snap)))
 
@@ -388,6 +390,9 @@ class RimWorldAdapter:
 
     def build_voice_card(self, snap: dict) -> VoiceCard:
         return builders.build_voice_card(snap)
+
+    def speech_register(self, snap: dict) -> str | None:
+        return register.effective_words(snap)
 
     def talk_weight(self, snap: dict) -> float:
         return builders.talk_weight(snap)

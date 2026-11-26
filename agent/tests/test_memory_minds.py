@@ -113,22 +113,24 @@ def test_bio_diff_history_and_undo():
 
 
 def test_builders_deterministic_with_dlc():
-    p = default_pawn(1, "Ana", title={"label": "Baron"}, ideo_role="Moral guide",
-                     precepts=["Cannibalism: required"], anomaly={"void": "touched"},
+    p = default_pawn(1, "Ana", royal_title="Baron", ideo_role="Moral guide",
+                     ideo={"name": "Flesh Eaters", "memes": ["cannibal"], "precepts": ["Cannibalism: required"]},
                      xenotype="Hussar", genes=[{"label": "Robust"}],
                      health={"conditions": [], "missing_parts": ["left arm"]},
                      traits=[{"def": "Kind", "label": "kind"}, {"def": "Tough", "label": "tough"}])
     bio = build_fixed_bio(p)
     assert "Baron" in bio.text and "Moral guide" in bio.text and "Cannibalism" in bio.text
-    assert "Hussar" in bio.text and "Robust" in bio.text and "left arm" in bio.text and "Anomaly" in bio.text
-    assert bio.extras["title"] == "Baron"
+    assert "Hussar" in bio.text and "Robust" in bio.text and "left arm" in bio.text
+    assert bio.extras["royal_title"] == "Baron" and "Noble title: Baron" in bio.text
     assert build_fixed_bio(p).text == bio.text
     vc = build_voice_card(p)
     assert len(vc.examples) == 3 and 1 <= len(vc.tics) <= 3 and vc.register_line
     plain = default_pawn(2, "Bo")
-    assert "Baron" not in build_fixed_bio(plain).text and "Anomaly" not in build_fixed_bio(plain).text
-    # facts hash: a lost limb changes it, ageing does not
+    assert "Baron" not in build_fixed_bio(plain).text
+    # facts hash: a lost limb changes it, and so does ageing (the printed age must stay right)
     q = json.loads(json.dumps(p)); q["age"] = 99
+    assert facts_hash(q) != facts_hash(p)
+    q["age"] = p["age"]
     assert facts_hash(q) == facts_hash(p)
     q["health"]["missing_parts"].append("right leg")
     assert facts_hash(q) != facts_hash(p)

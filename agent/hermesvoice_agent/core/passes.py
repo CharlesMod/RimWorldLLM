@@ -44,8 +44,8 @@ class Dropped:
 async def line_pass(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str,
                     turns: list[tuple[str, str]], turn_no: int, ctx: SanitizeCtx,
                     max_tokens: int = 48, request: str | None = None,
-                    aim: str | None = None) -> tuple[Sanitized, Messages]:
-    msgs = line_messages(prefix, turns, mind, name, turn_no, request, aim)
+                    aim: str | None = None, speech: str | None = None) -> tuple[Sanitized, Messages]:
+    msgs = line_messages(prefix, turns, mind, name, turn_no, request, aim, speech)
     try:
         c = await llm.complete(msgs, slot=slot, kind="line", max_tokens=max_tokens,
                                stop=["\n"], actor=mind.actor_id)
@@ -127,12 +127,14 @@ async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str
                 listener_name: str | None, labels: list[str], max_tokens: int = 48,
                 request: str | None = None, aim: bool = False, solo_aim: bool = True, fresh_aim: str | None = None,
                 check: Callable[[str], tuple[str, str] | None] | None = None,
-                retries: int = 0, on_check: Callable[[dict], None] | None = None) -> Spoken | Dropped:
+                retries: int = 0, on_check: Callable[[dict], None] | None = None,
+                speech: str | None = None) -> Spoken | Dropped:
     """A line, then its intent. ``check(text)`` is a further validation of a sanitised line: it returns None when
     the line is fine, or (reason code, request text for the retry). A refused line is retried up to ``retries``
     times with that request, then the result is Dropped(reason code). ``on_check`` gets one event per check."""
     s, msgs = await line_pass(llm, slot=slot, mind=mind, name=name, prefix=prefix, turns=turns,
-                              turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=request, aim=fresh_aim)
+                              turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=request, aim=fresh_aim,
+                              speech=speech)
     attempt = 0
     while s.ok and check is not None:
         bad = check(s.text)
@@ -144,7 +146,8 @@ async def speak(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix: str
             return Dropped(bad[0])
         attempt += 1
         s, msgs = await line_pass(llm, slot=slot, mind=mind, name=name, prefix=prefix, turns=turns,
-                                  turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=bad[1], aim=fresh_aim)
+                                  turn_no=turn_no, ctx=ctx, max_tokens=max_tokens, request=bad[1], aim=fresh_aim,
+                                  speech=speech)
     if not s.ok:
         return Dropped(s.reason)
     intent, delivery, raw_aim = await intent_pass_aim(llm, slot=slot, msgs=msgs, line=s.text, listener_name=listener_name,

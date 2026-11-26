@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 
-from . import agegate
+from . import agegate, speech
 from . import gamedata as gd
 from .minds import Mind
 from .sanitize import prompt_cap_words, sanitize_prose
@@ -57,7 +57,8 @@ def template(templates: tuple[str, ...], aid: int, key: object) -> str:
     return templates[h % len(templates)]
 
 
-def messages(adapter, mind: Mind, names: dict[int, str], parties: list[int], summary: str, minor: bool):
+def messages(adapter, mind: Mind, names: dict[int, str], parties: list[int], summary: str, minor: bool,
+             words: str | None = None):
     """The whole prompt, kept small: who you are in one line, what you saw, what you feel about the two."""
     reg = gd.clean(mind.voice.register_line or "plain and dry", "desc")
     seen = []
@@ -68,7 +69,7 @@ def messages(adapter, mind: Mind, names: dict[int, str], parties: list[int], sum
     body = f"{' and '.join(seen)} are quarrelling in front of you. {gd.clean(summary, 'event')}".strip()
     user = (f"=== WHO YOU ARE ===\n{gd.data_section('voice', f'You talk like this: {reg}')}"
             f"=== WHAT YOU SEE ===\n{gd.data_section('scene', body)}"
-            f"=== REQUEST ===\n{adapter.reaction_request}")
+            f"=== REQUEST ===\n{speech.register_line(mind.name, words)}{adapter.reaction_request}")
     system = adapter.reaction_system + "\n\n" + gd.DATA_RULE + (("\n\n" + agegate.MINOR_RULE) if minor else "")
     return [("system", system), ("user", user)]
 

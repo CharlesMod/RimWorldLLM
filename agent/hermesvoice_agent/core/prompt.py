@@ -20,6 +20,9 @@ from .minds import Memory, Mind
 
 
 
+BIO_LINE_CAP = 700      # per line of the fixed bio (a full character card: backstory, traits, ideoligion, history)
+EVOLVING_CAP = 700      # the evolving bio: reflection allows 90 words (core/reflection.py), about 600 characters
+
 DELIVERIES = ["normal", "shout", "whisper"]     # how a line is said; decided in the intent pass (POST /say kind)
 
 
@@ -48,13 +51,18 @@ class Scene:
     thoughts: list[str] = field(default_factory=list)  # "text (+/-n)"
     trigger: str = ""
     minor_self: bool = False             # the speaker is under 18 (or of unknown age)
+    speech_now: str = ""                 # "Right now: drunk..." from the current health/needs; empty when none applies
+    speech_short: str = ""               # the effective register phrase while a temporary state is active (for block G)
 
 
 def block_b(mind: Mind) -> str:
     v = mind.voice
-    s = "=== WHO YOU ARE ===\n" + gd.data_section("bio", gd.clean(mind.fixed.text, "line", max_len=600, multiline=True))
+    s = "=== WHO YOU ARE ===\n" + gd.data_section("bio", gd.clean(mind.fixed.text, "line", max_len=BIO_LINE_CAP, multiline=True))
+    words = mind.fixed.extras.get("words") if isinstance(mind.fixed.extras, dict) else None
+    words_line = (f"Words: {gd.clean(words, 'desc')} (your style above still applies).\n"
+                  if words and not v.edited_by_player else "")     # a player-edited card: the player's wording stands
     s += ("\n=== HOW YOU TALK ===\n"
-          f"Register: {gd.clean(v.register_line, 'desc')}\n"
+          f"Register: {gd.clean(v.register_line, 'desc')}\n" + words_line +
           f"Habits: {'; '.join(gd.clean(t, 'label') for t in v.tics)} (use a habit in at most one line in three)\n"
           "Example lines:\n" + "\n".join(f"- {gd.clean(e, 'line')}" for e in v.examples) + "\n")
     return s
@@ -72,7 +80,7 @@ def block_c(mind: Mind, names: dict[int, str] | None = None, max_rel: int = 6, m
         shown += 1 if rep else 0
         lines.append(f"- {gd.name(r.name)}{op}: {gd.clean(r.feeling, 'line')}" +
                      (f" {gd.clean(r.history, 'line')}" if r.history else "") + rep)
-    body = "Becoming: " + gd.clean(mind.evolving_bio or "(nothing yet)", "desc") + "\n"
+    body = "Becoming: " + gd.clean(mind.evolving_bio or "(nothing yet)", "desc", max_len=EVOLVING_CAP) + "\n"
     body += "Wants: " + ("; ".join(gd.clean(w, "label") for w in mind.wants) if mind.wants else "none in particular") + "\n"
     if mind.notes:
         body += "Director's notes (written by the player): " + gd.clean(mind.notes, "note") + "\n"
@@ -110,7 +118,8 @@ def block_e(sc: Scene) -> str:
     th = "\n".join(f"- {c(t, 'label')}" for t in sc.thoughts) or "- nothing much"
     body = (f"Where: {c(sc.where, 'label')}\nWhen: {c(sc.when, 'label')}\n"
             f"Present: {', '.join(c(p, 'label') for p in sc.present) or 'nobody else'}\n"
-            + ("You are a minor (under 18).\n" if sc.minor_self else "") +
+            + ("You are a minor (under 18).\n" if sc.minor_self else "")
+            + (f"{c(sc.speech_now, 'line', max_len=500)}\n" if sc.speech_now else "") +
             f"Your state: {c(sc.state, 'line')}\nCurrent job: {c(sc.job, 'label')}\nYour current thoughts:\n{th}\n"
             f"What just happened: {c(sc.trigger, 'event')}\n")
     return "=== THE SCENE ===\n" + gd.data_section("scene", body)
@@ -136,21 +145,25 @@ def block_f(turns: list[tuple[str, str]]) -> str:
     return "=== TURNS SO FAR ===\n" + "\n".join(f"{gd.name(n)}: {t}" for n, t in turns) + "\n"
 
 
-def block_g(mind: Mind, name: str, turn_no: int = 0, request: str | None = None, aim: str | None = None) -> str:
+def block_g(mind: Mind, name: str, turn_no: int = 0, request: str | None = None, aim: str | None = None,
+            speech: str | None = None) -> str:
     """One-line voice reminder plus the request. Re-sent every turn, so it stays short.
     Enforces the tic rule: habits allowed only on every third line."""
     v = mind.voice
     ex = f' Sound like: "{v.examples[0]}"' if v.examples else ""
     habit = f"Habits (this line): {'; '.join(v.tics)}." if turn_no % 3 == 0 else "No habits this line."
     s = f"=== VOICE REMINDER ===\nYou are {name}. {v.register_line} {habit}{ex}\n"
+    if speech:    # only while a temporary state (drunk, dazed...) is active
+        s += f"Your words right now: {gd.clean(speech, 'desc')}.\n"
     if aim:       # a fresh private aim from the inner stream (per turn, so it lives here and not in A-E)
         s += f"Your private aim (never say it outright): {gd.clean(aim, 'line')}\n"
     return s + (request or f"=== REQUEST ===\nWrite {name}'s next line of speech now. One line only.")
 
 
 def line_messages(prefix: str, turns: list[tuple[str, str]], mind: Mind, name: str,
-                  turn_no: int = 0, request: str | None = None, aim: str | None = None) -> list[tuple[str, str]]:
-    return [("system", prefix), ("user", block_f(turns) + "\n" + block_g(mind, name, turn_no, request, aim))]
+                  turn_no: int = 0, request: str | None = None, aim: str | None = None,
+                  speech: str | None = None) -> list[tuple[str, str]]:
+    return [("system", prefix), ("user", block_f(turns) + "\n" + block_g(mind, name, turn_no, request, aim, speech))]
 
 
 AIM_ASK = "what you privately want or really mean, in about 12 words, first person, never said aloud"

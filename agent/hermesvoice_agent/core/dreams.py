@@ -14,10 +14,11 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from . import agegate, inner, memory
+from . import agegate, inner, memory, speech
 from . import gamedata as gd
 from .bridge import BridgeError
 from .llm import LLMError
+from .prompt import BIO_LINE_CAP
 from .sanitize import prompt_cap_words, sanitize_prose
 
 if TYPE_CHECKING:
@@ -128,10 +129,11 @@ async def run_dream(d: "Director", job: DreamJob, lease) -> str | None:
     minors = d.minor_tokens()
     involves_minor = d.is_minor(aid) or any(d.is_minor(p) for m in mems for p in m.people)
     mem_lines = "\n".join(f"- {gd.clean(m.text, 'event')}" for m in mems)
-    user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=600, multiline=True))}"
+    words = await speech.register_phrase(d, aid, mind, snap)
+    user = (f"=== WHO YOU ARE ===\n{gd.data_section('bio', gd.clean(mind.fixed.text, 'line', max_len=BIO_LINE_CAP, multiline=True))}"
             f"=== WHAT HAPPENED TODAY ===\n{gd.data_section('memories', mem_lines)}"
             + (f"=== WHAT YOU WERE THINKING ===\n{gd.data_section('thoughts', inner.thoughts_text(stream))}" if stream else "") +
-            f"=== REQUEST ===\n{d.adapter.dream_request}")
+            f"=== REQUEST ===\n{speech.register_line(mind.name, words)}{d.adapter.dream_request}")
     system = d.adapter.dream_system + "\n\n" + gd.DATA_RULE + (("\n\n" + agegate.MINOR_RULE) if involves_minor else "")
     lease.generating = True
     try:

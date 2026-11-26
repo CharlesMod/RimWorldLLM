@@ -378,7 +378,8 @@ async def run(d, item: WorkItem, lease0: Lease) -> None:
                               turns=[(t.name, t.text) for t in g.turns], turn_no=len(g.turns), ctx=ctx,
                               listener_name=None, labels=d.labels_for(ctx.minor_involved),
                               max_tokens=d.cfg.eulogy_max_tokens if (g.kind == "funeral" and sp == g.lead and not g.turns) else d.cfg.llm.line_max_tokens,
-                              request=req, check=check, retries=d.cfg.repeat_retries, on_check=on_check)
+                              request=req, check=check, retries=d.cfg.repeat_retries, on_check=on_check,
+                              speech=lease.data.get("speech"))
             lease.generating = False
             if isinstance(res, Dropped):
                 d.dropped.append((sp, res.reason))
