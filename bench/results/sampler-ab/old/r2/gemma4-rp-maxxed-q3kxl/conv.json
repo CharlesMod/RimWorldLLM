@@ -1,0 +1,518 @@
+{
+ "summary": {
+  "exchanges": 10,
+  "turns": 40,
+  "turn_drop_rate": 0.0,
+  "complete_exchanges": 1.0,
+  "answers_previous_rate": 0.8,
+  "writes_other_line_rate": 0.0,
+  "repetition_loop_exchanges": 0,
+  "examples": [
+   {
+    "scene": "sc18",
+    "turns": [
+     [
+      "pip",
+      "Okay so, Nate, is there anything else I can do, or am I totally finished for the night?"
+     ],
+     [
+      "rook",
+      "Hm. Grab that pot and scrub it. Don't just stand there."
+     ],
+     [
+      "pip",
+      "On it, I'm totally on it, I'll have it looking brand new in a second!"
+     ],
+     [
+      "rook",
+      "Don't burn your hands. Just get it clean."
+     ]
+    ]
+   },
+   {
+    "scene": "sc19",
+    "turns": [
+     [
+      "moth",
+      "I think, well, maybe I should drink this now, since I haven't really eaten since noon."
+     ],
+     [
+      "lux",
+      "Of course, one must prioritize tea over sustenance when the research becomes so dreadfully absorbing."
+     ],
+     [
+      "moth",
+      "I think, well, I should probably try to eat something soon too."
+     ],
+     [
+      "lux",
+      "Naturally, one cannot expect a scholar to maintain their constitution on nothing but intellect and sheer willpower."
+     ]
+    ]
+   },
+   {
+    "scene": "sc20",
+    "turns": [
+     [
+      "ash",
+      "That muffalo looks heavy. Put it on the table near the dining hall."
+     ],
+     [
+      "tuk",
+      "Tuk found good meat. It is heavy, but it is good."
+     ],
+     [
+      "ash",
+      "Copy. Get it inside before the temperature drops further."
+     ],
+     [
+      "tuk",
+      "Tuk will bring it. You stay here and watch the dark."
+     ]
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "scene": "sc18",
+   "a": "pip",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so, Nate, is there anything else I can do, or am I totally finished for the night?",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. Grab that pot and scrub it. Don't just stand there.",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "On it, I'm totally on it, I'll have it looking brand new in a second!",
+     "intent": "kind"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "Don't burn your hands. Just get it clean.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc19",
+   "a": "moth",
+   "b": "lux",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, maybe I should drink this now, since I haven't really eaten since noon.",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "lux",
+     "text": "Of course, one must prioritize tea over sustenance when the research becomes so dreadfully absorbing.",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I think, well, I should probably try to eat something soon too.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "lux",
+     "text": "Naturally, one cannot expect a scholar to maintain their constitution on nothing but intellect and sheer willpower.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc20",
+   "a": "ash",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "That muffalo looks heavy. Put it on the table near the dining hall.",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Tuk found good meat. It is heavy, but it is good.",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Copy. Get it inside before the temperature drops further.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "Tuk will bring it. You stay here and watch the dark.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc21",
+   "a": "lux",
+   "b": "rook",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "lux",
+     "text": "Naturally, my dear Nate, this stew possesses a repetitive character that is quite frankly exhausting.",
+     "intent": "slight"
+    },
+    {
+     "turn": 1,
+     "speaker": "rook",
+     "text": "Hm. It's stew. Eat it or don't.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "lux",
+     "text": "Of course, one is expected to find sustenance in monotony, but even I have my limits.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "rook",
+     "text": "If you want variety, go find a berry bush and starve.",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc22",
+   "a": "moth",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, maybe that dog is just... startled by the light?",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so he's totally fine, he just likes to say hi to people...",
+     "intent": "none"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "I suppose that's... well, probably better than him being aggressive.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "He's like, super friendly, I promise, he just wants to be everyone's best friend!",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc23",
+   "a": "tuk",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "tuk",
+     "text": "Pip, do not sit there all day. Help Tuk with the brush.",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I'm totally helping, I'm just like, waiting for the calf to stop moving...",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "tuk",
+     "text": "Hold the leg still, Pip. The calf needs the brush.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "I've got it, I'm holding it, see? It's staying totally still now.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc24",
+   "a": "ash",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "ash",
+     "text": "Loosen your grip on the rifle, Pip. You are squeezing too hard.",
+     "intent": "kind"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so I'm trying, but it's like, totally hard to hold it steady without shaking...",
+     "intent": "complain"
+    },
+    {
+     "turn": 2,
+     "speaker": "ash",
+     "text": "Relax your hands. If you squeeze like that, you will pull the shot.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "I'll try to relax, but it's like my hands just won't listen to me.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc01",
+   "a": "rook",
+   "b": "pip",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "rook",
+     "text": "Hm. Back's gone again. Get the rice moved.",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "pip",
+     "text": "Okay so that's like, totally bad, Nate, do you need me to get the medkit or something...?",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "rook",
+     "text": "Just move the rice, Pip. I don't need a kit.",
+     "intent": "slight"
+    },
+    {
+     "turn": 3,
+     "speaker": "pip",
+     "text": "You're totally acting like you're fine but you're literally on the floor!",
+     "intent": "insult"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc02",
+   "a": "pip",
+   "b": "tuk",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "pip",
+     "text": "Okay so I totally just sliced my hand on the wire, it's like, fine though...",
+     "intent": "none"
+    },
+    {
+     "turn": 1,
+     "speaker": "tuk",
+     "text": "Tuk will fix that hand before it gets red and angry.",
+     "intent": "kind"
+    },
+    {
+     "turn": 2,
+     "speaker": "pip",
+     "text": "It's totally fine, I just need a bandage or something so it doesn't get all gross.",
+     "intent": "none"
+    },
+    {
+     "turn": 3,
+     "speaker": "tuk",
+     "text": "Tuk will get the bandage. Stay still.",
+     "intent": "kind"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    false,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  },
+  {
+   "scene": "sc03",
+   "a": "moth",
+   "b": "ash",
+   "turns": [
+    {
+     "turn": 0,
+     "speaker": "moth",
+     "text": "I think, well, maybe if you'd just take the medicine, the bleeding would, um, stop more easily?",
+     "intent": "complain"
+    },
+    {
+     "turn": 1,
+     "speaker": "ash",
+     "text": "Negative. I do not need medicine for this.",
+     "intent": "slight"
+    },
+    {
+     "turn": 2,
+     "speaker": "moth",
+     "text": "It's not about needing it, it's just... the blood loss is still quite high.",
+     "intent": "complain"
+    },
+    {
+     "turn": 3,
+     "speaker": "ash",
+     "text": "It is under control. Just finish the stitches.",
+     "intent": "none"
+    }
+   ],
+   "dropped": 0,
+   "writes_other_line": 0,
+   "answers": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "rep": {
+    "cross": 0,
+    "inner": 0,
+    "loop": false
+   }
+  }
+ ]
+}
