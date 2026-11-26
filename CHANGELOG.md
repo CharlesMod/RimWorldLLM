@@ -17,7 +17,10 @@ Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are inclu
   it is served in place, never copied or deleted, and only llama.cpp is downloaded.
 - Settings reorganised into Model, Colonists, Display, Content, Storage and Advanced, with a tooltip on every option.
   Changing model keeps the current one talking until the new one is ready, and shows the disk space needed first.
-  The Storage tab shows what the engine keeps on disk and can remove it all in one click.
+  The Storage tab shows what the engine keeps on disk and can remove it all in one click, including (ticked by default)
+  the helper's memory of your colonists and its logs.
+- The settings and setup windows show which graphics card the game and the model use, and how much room the model has
+  (for example "Game on Intel Iris Xe · RTX 3050: 3.9 GB free for the model").
 - Replaces the old external agent setup over the network; the agent now runs on your machine, started by the engine.
 
 ### Colonists with more inner life

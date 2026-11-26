@@ -26,7 +26,7 @@ Where it lives and how to remove it
 - Windows: %LOCALAPPDATA%\HermesEngine
 - Linux: ~/.local/share/hermes-engine
 - macOS: ~/Library/Application Support/HermesEngine
-The helper's memory and log are in .local/share/hermesvoice-agent in your home folder. To remove everything: quit RimWorld (the engine stops with the game), delete those two folders, and unsubscribe or delete the mod.
+The helper's memory and log are in %LOCALAPPDATA%\hermesvoice-agent on Windows and ~/.local/share/hermesvoice-agent elsewhere. To remove everything: Mod settings, HermesVoice, Storage, Remove downloaded files (it also offers to delete the helper's memory and logs), then unsubscribe or delete the mod. Or quit RimWorld and delete those two folders by hand.
 
 Hardware
 - 16 GB graphics card: Gemma 4 26B RP, the full experience (uses about 12 GB).

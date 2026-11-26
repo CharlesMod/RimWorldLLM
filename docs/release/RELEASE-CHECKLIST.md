@@ -17,7 +17,7 @@ can do or decide; the rest the coordinator can do.
 2. **[keeper] Decisions** (see the release report):
    - Nexus adult-content flag: the mod's adult setting is off by default, but the model cards are tagged
      not-for-all-audiences.
-   - Whether an uninstall button (or a "remove downloaded models" action) is needed before a public release.
+   - Uninstall: settled. Storage has one "Remove downloaded files" button that also offers to delete the helper's memory and logs.
 3. Build the zip on a clean tree: `scripts/package-release.sh` (builds under `nice -n 19`). Every line must say PASS.
    Keep the printed size and sha256.
 4. **[keeper] Play-test** on Linux + NVIDIA with that zip, following docs/release/PLAYTEST.md (sections A-I). Any FAIL in

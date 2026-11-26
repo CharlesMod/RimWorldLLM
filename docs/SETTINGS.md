@@ -83,7 +83,8 @@ The age gate is not a setting: a plain line on the tab says it is always on (age
 
 Engine data folder, size per part (models, engine backends, runtime, downloads, logs), free space, Open folder, the model
 files with size and a Delete button (not for the one in use), and Remove downloaded files...: stops the engine, deletes the
-models, backends, runtime and downloads after a confirmation naming them and the space freed. Mod settings, logs and
+models, backends, runtime and downloads after a confirmation naming them and the space freed. The confirmation window also has a box, ticked by default, to delete the helper's memory and logs (its own folder, with the
+size shown); that folder is emptied only after the engine has stopped the helper. Mod settings, the engine's logs and
 the player's own GGUF file stay; the next Set up starts from scratch.
 
 ### Advanced

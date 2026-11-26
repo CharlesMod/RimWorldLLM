@@ -124,7 +124,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 39. **Quit.** Quit RimWorld: hermes-engine, llama-server and the agent all exit within a few seconds (check the process
     list). Kill the game process instead: they still exit.
 40. **Restart.** Start again: no download, the 26B serves within a minute or so.
-41. **Uninstall.** Follow the README's Uninstall steps exactly. Afterwards nothing named hermes-engine,
+41. **Uninstall.** Use Settings, Storage, Remove downloaded files with the memory box ticked, then follow the README's Uninstall steps (the by-hand list too, on a spare install). Afterwards nothing named hermes-engine,
     HermesEngine or hermesvoice-agent remains, and the game starts cleanly without the mod. Note anything the steps
     missed.
 42. **RimTalk.** (If available.) With RimTalk loaded too: both load, no errors, no pawn speaks twice for the same moment.
@@ -169,7 +169,7 @@ W1. **GPU detection.** The setup window names the NVIDIA card and its memory (nv
 W2. **llama.cpp CUDA download.** The CUDA 12.4 build plus its cudart zip (CUDA 13.5 on RTX 50-series) download, unpack,
     and pass the smoke test; the model runs on the GPU (llama-server.log shows CUDA and layers offloaded).
 W3. **uv and the agent.** uv downloads, creates the Python 3.12 environment, installs the wheel, and the agent starts
-    (agent.log). Note where the agent's own folder lands (expected `%USERPROFILE%\.local\share\hermesvoice-agent`).
+    (agent.log). Note where the agent's own folder lands (expected `%LOCALAPPDATA%\hermesvoice-agent`).
 W4. **Engine with the game.** hermes-engine.exe starts hidden (no console window) with the game and exits when the game
     exits or is killed from Task Manager.
 W5. **Paths with spaces.** A Windows user name with a space, and RimWorld installed under a path with spaces

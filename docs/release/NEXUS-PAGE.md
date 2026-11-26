@@ -75,7 +75,7 @@ The zip contains a small program, [b]hermes-engine[/b] ([font=Courier New]Engine
 [*]Linux: [font=Courier New]~/.local/share/hermes-engine[/font]
 [*]macOS: [font=Courier New]~/Library/Application Support/HermesEngine[/font]
 [/list]
-The helper keeps colonists' memories and a log in [font=Courier New].local/share/hermesvoice-agent[/font] in your home folder. To remove everything: quit RimWorld, delete those two folders, and delete or unsubscribe the mod. There is no uninstall button yet.
+The helper keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\hermesvoice-agent[/font] on Windows and [font=Courier New]~/.local/share/hermesvoice-agent[/font] elsewhere. To remove everything: Mod settings, HermesVoice, Storage, [b]Remove downloaded files[/b] (tick the box to delete the helper's memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those two folders by hand.
 
 [size=4][b]Already run your own model server?[/b][/size]
 Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatible URL. Nothing is downloaded.

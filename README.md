@@ -115,21 +115,22 @@ text or save a picture card to `SaveData/HermesVoice/Shares` in RimWorld's save-
 
 ## Uninstall
 
-To free the space but keep the mod: Options, Mod settings, HermesVoice, Storage,
-**Remove downloaded files...** (models, llama.cpp and Python; your settings stay).
+One button removes everything HermesVoice stored except the mod itself and its settings: Options, Mod settings,
+HermesVoice, Storage, **Remove downloaded files...**. It stops the engine and the helper, deletes the models,
+llama.cpp and Python, and (the box is ticked by default) the helper's memory of your colonists and its logs. The
+engine keeps only its small log and state files. Your own GGUF file is never touched. Then unsubscribe from the mod,
+or delete `Mods/HermesVoice`.
 
-To remove everything:
+To do it by hand instead: quit RimWorld (the engine stops with it) and delete
 
-1. Quit RimWorld. The engine stops with it.
-2. Delete the engine folder (models, llama.cpp, Python, logs):
-   - Windows: `%LOCALAPPDATA%\HermesEngine`
-   - Linux: `~/.local/share/hermes-engine`
-   - macOS: `~/Library/Application Support/HermesEngine`
-3. Delete the helper's folder: `.local/share/hermesvoice-agent` in your home folder
-   (on Windows, `%USERPROFILE%\.local\share\hermesvoice-agent`).
-4. Optionally delete `HermesVoice` in RimWorld's `Config` folder (settings) and in `SaveData`
-   (shared pictures).
-5. Unsubscribe from the mod, or delete `Mods/HermesVoice`.
+- the engine folder:
+  - Windows: `%LOCALAPPDATA%\HermesEngine`
+  - Linux: `~/.local/share/hermes-engine`
+  - macOS: `~/Library/Application Support/HermesEngine`
+- the helper's folder (its memory and logs):
+  - Windows: `%LOCALAPPDATA%\hermesvoice-agent`
+  - Linux and macOS: `~/.local/share/hermesvoice-agent` (or `$XDG_DATA_HOME/hermesvoice-agent` if you set it)
+- optionally `HermesVoice` in RimWorld's `Config` folder (settings) and in `SaveData` (shared pictures).
 
 To free some space, delete single models you no longer use in Settings, Storage.
 
@@ -166,7 +167,6 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 - English only. The 26B in particular is weaker in other languages.
 - The best experience needs a 16 GB card; most people will get E4B RP, which is good but plainer.
 - At 3x and 4x speed colonists speak less (many moments expire before a line is ready).
-- No uninstall button; removal is by hand (see above).
 - The first setup is a large download (about 4 to 15 GB, depending on the card).
 - RimWorld 1.7 only.
 
