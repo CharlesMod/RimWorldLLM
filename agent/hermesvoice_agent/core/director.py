@@ -25,6 +25,7 @@ from .concerns import ConcernEngine
 from .grudges import GrudgeEngine
 from .art import ArtQueue, enabled as art_enabled
 from .config import Config
+from .model_tier import ModelTier, feature_on
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
 from .ledger import Ledger
@@ -109,6 +110,7 @@ class Director:
         self.lore = lore.LoreBook(cfg.lore_max)     # shared lore cache (core/lore.py); the mod holds the save's copy
         self.reputations: dict[int, str] = {}       # what the group says about each actor (core/gossip.py)
         self.art = ArtQueue()                    # core/art.py
+        self.tier = ModelTier(cfg, clock)        # core/model_tier.py
         self.dream_book = DreamBook()
         self.concerns = ConcernEngine(self)        # core/concerns.py
         self.grudges = GrudgeEngine(self)          # core/grudges.py
@@ -272,6 +274,8 @@ class Director:
 
     # ---- main loop ------------------------------------------------------
     async def step(self) -> None:
+        if self.tier.due():
+            self._spawn(self.tier.refresh(self.llm))      # off the line path; at most every 60 s
         events = await self.events.poll()
         if self.bridge.epoch_changed:
             await self.reload_minds()
@@ -706,7 +710,7 @@ class Director:
             return      # the same aim again (structured passes are greedy): no duplicate in the stream, no repeat cloud
         inner.add_inner(self.minds[aid], sp.aim, "aim", self.bridge.env.game, self.cfg.inner_stream_keep)
         self.dirty.add(aid)
-        if not self.cfg.inner_cloud or (minor and sp.aim_gated) or len(sp.aim) > self.cfg.thought_max_chars:
+        if not feature_on(self.tier, self.cfg.inner_cloud, self.cfg.inner_cloud_small) or (minor and sp.aim_gated) or len(sp.aim) > self.cfg.thought_max_chars:
             return
         if self.bridge.env.speed >= self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed):
             return

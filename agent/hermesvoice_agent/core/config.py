@@ -119,6 +119,9 @@ class Config(BaseModel):
     inner_monologue: bool = True       # master: aim in the intent pass, inner stream in the Mind, contrast clouds (core/inner.py)
     inner_stream_keep: int = 6         # inner thoughts kept per Mind
     inner_solo_aim: bool = True        # a line with no listener still gets an aim-only call
+    small_model_patterns: tuple = ("e2b", "e4b")   # model ids containing any of these count as small (core/model_tier.py)
+    inner_cloud_small: bool = True     # contrast clouds on a small model (False = off there; the aim is still made and stored)
+    art_small: bool = True             # art descriptions on a small model (False = off there)
     inner_cloud: bool = True           # sometimes show the aim as a thought cloud after a line
     inner_cloud_chance: float = 0.35
     inner_cloud_gap_real_s: float = 90.0   # per actor, on the play clock

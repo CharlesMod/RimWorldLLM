@@ -18,6 +18,7 @@ from . import creative
 from . import gamedata as gd
 from . import grounding
 from . import memory
+from .model_tier import feature_on
 from .llm import LLMError
 from .sanitize import prompt_cap_words, sanitize_prose
 
@@ -117,7 +118,7 @@ class ArtQueue:
 
 
 def enabled(d: "Director") -> bool:
-    return bool(d.cfg.art_enabled and not d.art.unsupported and d.bridge_cfg.get("art_descriptions") is not False
+    return bool(feature_on(d.tier, d.cfg.art_enabled, d.cfg.art_small) and not d.art.unsupported and d.bridge_cfg.get("art_descriptions") is not False
                 and d.bridge_cfg.get("events", {}).get("art_created") is not False
                 and d.bridge_cfg.get("events", {}).get("art") is not False)
 
