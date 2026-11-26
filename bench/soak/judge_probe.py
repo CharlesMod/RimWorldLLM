@@ -144,7 +144,7 @@ def score(a) -> int:
             bycase[(k["feature"], k["case"], k["rep"])][k["arm"]] = s
         else:                                          # judge_sample.py key: run/kind/actor
             from judge_sample import family
-            fam[family(k["kind"])].append(s)
+            fam[f'{family(k["kind"])} [{k.get("run", "")}]'].append(s)
     for (f, arm), sc in sorted(cell.items(), key=lambda x: (ORDER.index(x[0][0]), x[0][1])):
         res["probe"].setdefault(f, {})[arm] = agg(sc)
     for f in ORDER:

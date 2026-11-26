@@ -148,7 +148,7 @@ def test_score_soak_sample_key(tmp_path):
     js = tmp_path / "o.json"
     assert jp.main(["score", "--key", str(key), "--verdicts", str(ver), "--out", str(tmp_path / "o.md"), "--json", str(js)]) == 0
     fam = json.loads(js.read_text())["soak_families"]
-    assert fam["art"]["mean"] == 5 and fam["aim"]["share_le2"] == 1.0 and fam["speech"]["n"] == 1
+    assert fam["art [r]"]["mean"] == 5 and fam["aim [r]"]["share_le2"] == 1.0 and fam["speech [r]"]["n"] == 1
 
 
 def test_set_parses_comma_lists_for_tuple_fields():
