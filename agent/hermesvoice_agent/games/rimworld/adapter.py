@@ -117,15 +117,14 @@ class RimWorldAdapter:
         "what is still unresolved. Tell the biggest events (deaths, raids, wounds, thefts, weddings, feuds), never small "
         "talk or chores. No title, no numbering, no quotes.")
     lore_system = (
-        "You coin the colony's shared nicknames for the places and events its people talk about, like 'the Long Winter' "
-        "or 'the east barracks'. Use only what the chronicle entry says; never invent people, places or numbers. "
+        "You coin the colony's shared nicknames for the places and events its people talk about. Use only what the chronicle entry says; never invent people, places or numbers. "
         "Nothing romantic or sexual, ever.")
     lore_label = "Colony names"
     lore_request = (
         "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
         "a 2 to 5 word name the colonists would actually say (a nickname, never a label such as an incident or event "
-        "name), a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
-        "months the colony ran short of food). Do not reuse a name already in use. Otherwise answer: none.")
+        "name), a colon, then what it refers to in under 10 words (format: <Name>: <what it "
+        "refers to>). Do not reuse a name already in use. Otherwise answer: none.")
     art_system = (
         "You write the short description on the info card of a work of art made in a RimWorld colony. Plain words, "
         "third person. Say what the piece depicts: one striking moment from the colony's history or the maker's "
@@ -152,8 +151,8 @@ class RimWorldAdapter:
     lore_request_ground = (
         "If the entry holds an event or place the colonists would plausibly keep a nickname for, answer with one line: "
         "a 2 to 5 word name the colonists would actually say (a nickname, never a label such as an incident or event "
-        "name), a colon, then what it refers to in under 10 words (for example: The Long Winter: the "
-        "months the colony ran short of food). Build the name from one vivid moment of the entry: who did what, where. "
+        "name), a colon, then what it refers to in under 10 words (format: <Name>: <what it "
+        "refers to>). Build the name from one vivid moment of the entry: who did what, where. "
         "Do not reuse a name already in use. Otherwise answer: none.")
     # (pattern, weight): what makes a chronicle entry worth a recap line (core/recap.py ranks by the sum of matches)
     recap_importance = (

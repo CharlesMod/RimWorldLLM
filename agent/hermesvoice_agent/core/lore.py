@@ -1,4 +1,4 @@
-"""Shared lore (aliveness item 4): shared nicknames for places and events ("the Long Winter", "Bram's Folly").
+"""Shared lore (aliveness item 4): shared nicknames for places and events (a short name people say, and what it refers to).
 
 Coined by the narrator in one small extra call after a major chronicle entry (kind "lore", about 24 tokens: "Name: what
 it refers to", or "none"). Stored once in the mod's chronicle book as kind "lore" (text "Name: what it refers to") so it
