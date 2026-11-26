@@ -317,6 +317,27 @@ namespace HermesVoice
             get { var st = _status; return LocalSource && st != null && st.ModelFallback; }
         }
 
+        /// <summary>True while a starter model answers and the chosen model is still downloading (fast first run).</summary>
+        public static bool StarterInUse
+        {
+            get { var st = _status; return LocalSource && st != null && Bridge.StarterWatch.IsStarter(st.ModelTier); }
+        }
+
+        /// <summary>The chosen model's download percent while a starter serves, or -1.</summary>
+        public static int StarterPercent()
+        {
+            var st = _status;
+            var p = st != null && st.Upgrade != null ? st.Upgrade.Progress : null;
+            return p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
+        }
+
+        public static string TargetName()
+        {
+            var st = _status;
+            return st != null && st.Upgrade != null && !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName
+                 : st != null ? st.Model : "";
+        }
+
         /// <summary>The engine's note about the fallback model, or the stock sentence when it sent none.</summary>
         public static string FallbackNote(string fromEngine)
         {
@@ -326,6 +347,11 @@ namespace HermesVoice
         /// <summary>The amber warning line for the status area, or null when the model in use is not a fallback.</summary>
         public static string FallbackLine()
         {
+            if (StarterInUse)
+            {
+                int pct = StarterPercent();
+                return pct >= 0 ? UiUtil.T("HV_Starter_StatusLine", pct) : UiUtil.T("HV_Starter_StatusLineNoPct");
+            }
             if (!FallbackInUse) return null;
             return UiUtil.T("HV_Fallback_StatusLine", FallbackNote(_status.ModelNote));
         }

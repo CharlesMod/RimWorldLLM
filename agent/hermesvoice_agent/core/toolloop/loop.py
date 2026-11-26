@@ -202,6 +202,9 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                 res.outcome = "done"
                 break
             await _run_calls(actions, by_name, executor, res, seen, hist, protocol, user)
+            if any(a.kind == "call" and by_name.get(a.tool) is not None and by_name[a.tool].ends_turn for a, _, _ in actions):
+                res.outcome = "done"                                 # a turn-ending tool ran: nothing more to ask
+                break
     except Exception as e:                                     # the loop itself must not raise either
         res.failures.append(f"loop fault {type(e).__name__}: {e}"[:200])
         reason = reason or "loop_fault"

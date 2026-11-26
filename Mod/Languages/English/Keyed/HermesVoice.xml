@@ -30,6 +30,22 @@
   <HV_LogEffectRefused>effect refused: {0}</HV_LogEffectRefused>
   <HV_LogNoEffect>no effect sought</HV_LogNoEffect>
   <HV_LogJumpTip>Jump to {0}</HV_LogJumpTip>
+  <HV_Share_Button>Share</HV_Share_Button>
+  <HV_Share_Exchange>Share exchange</HV_Share_Exchange>
+  <HV_Share_CopyText>Copy text</HV_Share_CopyText>
+  <HV_Share_SaveImage>Save image</HV_Share_SaveImage>
+  <HV_Share_Close>Close</HV_Share_Close>
+  <HV_Share_OpenFolder>Open folder</HV_Share_OpenFolder>
+  <HV_Share_Copied>Copied to the clipboard.</HV_Share_Copied>
+  <HV_Share_Saved>Saved {0}</HV_Share_Saved>
+  <HV_Share_SavedBody>Saved the share image to:\n{0}</HV_Share_SavedBody>
+  <HV_Share_Failed>Could not save the image: {0}</HV_Share_Failed>
+  <HV_Share_Thinking>thinking</HV_Share_Thinking>
+  <HV_Share_More>...and {0} more lines</HV_Share_More>
+  <HV_Share_DiaryOf>Diary of {0}</HV_Share_DiaryOf>
+  <HV_Share_Chronicle>Chronicle</HV_Share_Chronicle>
+  <HV_Share_Footer>Footer on shares</HV_Share_Footer>
+  <HV_Share_FooterTip>Add the "HermesVoice: local AI colonist dialogue for RimWorld" footer to copied text and saved share images.</HV_Share_FooterTip>
   <HV_LogPawnGone>{0} is no longer in the game.</HV_LogPawnGone>
   <HV_Refused_effects_off>effects are off</HV_Refused_effects_off>
   <HV_Refused_no_intent>no intent</HV_Refused_no_intent>
@@ -179,6 +195,9 @@
   <HV_Recap_Enable>Recap when a save is loaded</HV_Recap_Enable>
   <HV_Recap_EnableTip>After you load a save, a letter titled "Previously on ..." gives a three-line recap of the colony's chronicle. It never pauses the game.</HV_Recap_EnableTip>
   <HV_Recap_Title>Previously on {0}...</HV_Recap_Title>
+  <HV_Adult_Enable>Adult content</HV_Adult_Enable>
+  <HV_Adult_EnableTip>Off: romance and affection are fine, anything sexual fades to black. On: explicit sexual content between adult colonists. Never involving anyone under 18, in either setting.</HV_Adult_EnableTip>
+  <HV_Adult_ConfirmText>Turn on adult content? This allows explicit sexual content between adult colonists; never involving anyone under 18.</HV_Adult_ConfirmText>
   <HV_Wants_Enable>Pawns act on their wants</HV_Wants_Enable>
   <HV_Wants_EnableTip>In quiet moments a pawn may decide to seek someone out for a chat or to keep clear of someone for a while. Only ever small social moves; anything more important interrupts them.</HV_Wants_EnableTip>
   <HV_Wants_AvoidHours>How long a pawn avoids someone: {0} game hours</HV_Wants_AvoidHours>
@@ -281,6 +300,10 @@
 Use it anyway?</HV_Fallback_ConfirmText>
   <HV_Fallback_StatusLine>Warning: the smallest (fallback) model is in use. {0}</HV_Fallback_StatusLine>
   <HV_Fallback_MessageText>HermesVoice is using its smallest model. Speech will be simpler and may repeat. To change it, open Options, Mod settings, HermesVoice, then "Set up / Change model...".</HV_Fallback_MessageText>
+  <HV_Starter_MessageText>HermesVoice is talking with a small starter model while the full model downloads. Speech will be simpler until it switches over by itself.</HV_Starter_MessageText>
+  <HV_Starter_ReadyText>HermesVoice switched to the full model ({0}).</HV_Starter_ReadyText>
+  <HV_Starter_StatusLine>Starter model: simpler speech while the full model downloads ({0}%).</HV_Starter_StatusLine>
+  <HV_Starter_StatusLineNoPct>Starter model: simpler speech while the full model downloads.</HV_Starter_StatusLineNoPct>
   <HV_Fallback_HideSetting>Don't warn about the small model again</HV_Fallback_HideSetting>
   <!-- Director camera -->
   <HV_Camera_ButtonOn>Director camera: on</HV_Camera_ButtonOn>

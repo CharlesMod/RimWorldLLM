@@ -163,3 +163,31 @@ def test_line_pass_applies_guard_unless_card_says_third_person():
 ])
 def test_bullets_stripped_not_dropped(raw, expect):
     assert s(raw).text == expect
+
+
+# ---- a leaked intent label after the line (E4B rp, gpubench 2026-11-25) ------------------------------------------
+_LABELS = ("none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain")
+
+
+@pytest.mark.parametrize("raw,want", [
+    ("Pip watch calf leg. Need more work done before dark. kind", "Pip watch calf leg. Need more work done before dark."),
+    ("Okay so Moth, like, you gotta stop tearing the papers up, it's not helping... comfort",
+     "Okay so Moth, like, you gotta stop tearing the papers up, it's not helping..."),
+    ("Hm. Raiders. Get the big cooking pots ready. gossip", "Hm. Raiders. Get the big cooking pots ready."),
+    ("I think maybe that tea could... would it be bad? kind", "I think maybe that tea could... would it be bad?"),
+    ("Dirt warm enough. I take the plate. comfort.", "Dirt warm enough. I take the plate."),
+    ("Thank you, you are always so kind", "Thank you, you are always so kind"),       # not after a sentence end
+    ("That was a cheap slight.", "That was a cheap slight."),                         # part of the sentence
+    ("Stop it. Kind words cost nothing", "Stop it. Kind words cost nothing"),          # capitalised, more words
+])
+def test_a_trailing_intent_label_is_cut(raw, want):
+    from hermesvoice_agent.core.sanitize import strip_trailing_label
+    assert strip_trailing_label(raw, _LABELS) == want
+
+
+def test_sanitize_line_cuts_the_label_only_when_given_labels():
+    from hermesvoice_agent.core.sanitize import sanitize_line
+    kw = dict(speaker_names=set(), known_names=set(), all_names=set())
+    assert sanitize_line("Good meat here. Not bad like that scrap yesterday. kind", intent_labels=_LABELS, **kw).text \
+        == "Good meat here. Not bad like that scrap yesterday."
+    assert sanitize_line("Good meat here. kind", **kw).text.endswith("kind")

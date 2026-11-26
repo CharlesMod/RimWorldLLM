@@ -58,6 +58,7 @@ class Chronicle:
     def __init__(self, data_dir: Path | None = None, units_per_day: int = 60000):
         self.dir = Path(data_dir) if data_dir else None
         self.day = units_per_day
+        self.last_drop = ""                  # why the last write was dropped by the sanitiser (read by idle)
         self.state = ChronicleState()
         self.log: list[Entry] = []          # everything written this run (the file keeps all of it)
         self.load()
@@ -173,6 +174,7 @@ class Chronicle:
                            prompt_words=prompt_cap_words(msgs[1][1]), common_words=common_words,
                            min_words=8, max_words=150, minor_names=minor_names)
         if not s.ok:
+            self.last_drop = s.reason or "sanitize"
             return None
         game = max(n.game for n in notes)
         e = Entry(day=day, game=game, kind=kind, text=s.text)

@@ -385,3 +385,34 @@ def test_harness_run_passes_allowed():
     rec = Rec()
     r = run(h.run(system="s", user="u", executor=rec, allowed={"say"}))
     assert rec.calls == [] and r.allowed == ["say"]
+
+
+# ---- a turn-ending tool (gpubench 2026-11-25: E4B rp repeated do_nothing into the repeat rule) ----------------------
+def _tools_ending():
+    return [t if t.name != "do_nothing" else ToolSpec("do_nothing", "Nothing.", ends_turn=True) for t in tools()]
+
+
+@pytest.mark.parametrize("protocol", ["grammar", "json", "native"])
+def test_a_turn_ending_tool_stops_the_loop_without_asking_again(protocol):
+    reply = Reply(text="", tool_calls=[{"name": "do_nothing", "arguments": {}}]) if protocol == "native" else call("do_nothing")
+    fake = Fake([reply])                          # it would repeat do_nothing forever if asked again
+    rec = Rec()
+    r = run(run_loop(fake, _tools_ending(), system="You are a cook.", user="Do things.", executor=rec, protocol=protocol,
+                     fallback=Action("call", "do_nothing")))
+    assert r.outcome == "done" and r.retries == 0 and not r.failures
+    assert len(fake.calls) == 1 and rec.calls == [("do_nothing", {})]
+
+
+def test_without_ends_turn_the_same_model_meets_the_repeat_rule():
+    fake = Fake([call("do_nothing")])
+    r = run(run_loop(fake, tools(), system="You are a cook.", user="Do things.", executor=Rec(), protocol="grammar",
+                     fallback=Action("call", "do_nothing")))
+    assert r.retries > 0                           # the old behaviour this fix removes for turn-ending tools
+
+
+def test_a_turn_ending_tool_after_a_real_action_keeps_the_action():
+    fake = Fake([call("remember", fact="the well is dry", importance="fairly important"), call("do_nothing")])
+    rec = Rec()
+    r = run(run_loop(fake, _tools_ending(), system="You are a cook.", user="Do things.", executor=rec, protocol="grammar",
+                     fallback=Action("call", "do_nothing")))
+    assert r.outcome == "done" and [c[0] for c in rec.calls] == ["remember", "do_nothing"] and len(fake.calls) == 2

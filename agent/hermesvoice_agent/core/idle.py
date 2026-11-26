@@ -14,7 +14,7 @@ import hashlib
 import logging
 from typing import TYPE_CHECKING
 
-from . import art, dreams
+from . import agegate, art, dreams
 from . import gamedata as gd
 from . import habits, inner, lore, memory
 from .bridge import BridgeError
@@ -22,7 +22,7 @@ from .lease import Cls, Lease
 from .llm import LLMError
 from .wants import run_wants
 from .reflection import apply_reflection, reflection_due, run_reflection
-from .sanitize import prompt_cap_words, sanitize_prose
+from .sanitize import prompt_cap_words, sanitize_prose, Sanitized
 
 if TYPE_CHECKING:
     from .director import Director
@@ -327,9 +327,12 @@ class IdleRunner:
                 f"=== WHO YOU ARE BECOMING ===\n{gd.data_section('character', gd.clean(mind.evolving_bio or '(nothing yet)', 'desc'))}"
                 f"=== WHAT IS ON YOUR MIND ===\n{gd.data_section('memories', mem_lines)}"
                 f"=== REQUEST ===\n{d.adapter.thought_request}")
+        minors = d.minor_tokens()
+        involves_minor = d.is_minor(aid) or any(d.is_minor(p) for m in mems for p in m.people)
+        system = d.adapter.thought_system + "\n\n" + gd.DATA_RULE + (("\n\n" + agegate.MINOR_RULE) if involves_minor else "")
         lease.generating = True
         try:
-            c = await d.llm.complete([("system", d.adapter.thought_system + "\n\n" + gd.DATA_RULE), ("user", user)], slot=lease.slot,
+            c = await d.llm.complete([("system", system), ("user", user)], slot=lease.slot,
                                      kind="thought", max_tokens=40, stop=["\n"], temperature=0.9, actor=aid)
         except LLMError:
             lease.generating = False
@@ -343,8 +346,10 @@ class IdleRunner:
         known = set(toks.get(aid, set())).union(*(toks.get(p, set()) for m in mems for p in m.people))
         s = sanitize_prose(c.text, known_names=known, all_names=allnames, prompt_words=prompt_cap_words(user),
                            common_words=set(d.adapter.common_words), speaker_names=toks.get(aid, set()),
-                           min_words=2, max_words=18)
+                           min_words=2, max_words=18, involves_minor=involves_minor, minor_names=minors)
         text = s.text if s.ok else None
+        if text is not None and agegate.violation(text, involves_minor=involves_minor, minor_names=minors):
+            text, s = None, Sanitized(None, "minor_safety")     # last guard, as in the dream path
         if text is not None and len(text) > d.cfg.thought_max_chars:
             text = None                                   # a long thought never reaches the map
         if text is None:
@@ -414,6 +419,9 @@ class IdleRunner:
                                         lore_lines=d.lore.lines() if d.cfg.lore else None)
             if e is None:
                 self._fail("chronicle", -1)
+                if d.chronicle.last_drop:
+                    d.dropped.append((-1, f"chronicle:{d.chronicle.last_drop}"))
+                    d.chronicle.last_drop = ""
                 return
             self.log.append({"kind": "chronicle", "day": e.day, "entry_kind": e.kind, "game": e.game,
                              "text": e.text, "summary": d.chronicle.state.summary})

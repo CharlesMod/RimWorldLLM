@@ -15,7 +15,7 @@ import random
 import time
 from typing import Callable
 
-from . import agegate, bystanders, firsts, gossip, group, lore, memory, recap
+from . import adult, agegate, bystanders, firsts, gossip, group, lore, memory, recap
 from .adapter import GameAdapter
 from .bridge import Bridge, BridgeError, EventSource
 from .builders import ensure_mind_built
@@ -193,9 +193,18 @@ class Director:
         self._started = True
 
     async def refresh_config(self) -> None:
+        self._cfg_at = self.clock()
         self.bridge_cfg = await self.bridge.config()
         self.leases.pause_ambient_at_speed = int(
             self.bridge_cfg.get("pause_ambient_at_speed", self.cfg.pause_ambient_at_speed))
+        adult.set_enabled(self.bridge_cfg.get("adult_content", False))      # live: a missing key means off
+
+    def adult_off_drops(self) -> int:
+        """Lines dropped because the Adult content setting is off (reason ``adult_off``, any path)."""
+        return sum(1 for _, r in self.dropped if r.endswith("adult_off"))
+
+    def gate_stats(self) -> dict:
+        return {**self.gate.to_dict(), "adult_off_dropped": self.adult_off_drops()}
 
     async def roster_ids(self) -> list[int]:
         resp = await self.bridge.roster()
@@ -268,6 +277,11 @@ class Director:
             return
         if self.events.last_gap:
             await self.roster_ids()      # events were lost: resync the ledger from the roster
+        if self.clock() - getattr(self, "_cfg_at", float("-inf")) >= self.cfg.config_refresh_real_s:
+            try:
+                await self.refresh_config()       # mod settings (adult content, wants, dreams...) apply within seconds
+            except BridgeError as e:
+                log.warning("config refresh failed: %s", e)
         await self.ingest(events)
         await self.take_talk()
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
@@ -514,7 +528,8 @@ class Director:
         ctx = SanitizeCtx(self.name_tokens.get(aid, set()), known_tokens, all_tokens,
                           prompt_cap_words(prefix), set(self.adapter.common_words),
                           third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())),
-                          minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens())
+                          minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens(),
+                          intent_labels=tuple(self.adapter.intent_labels))
         sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
         return ctx, scene, sig
 

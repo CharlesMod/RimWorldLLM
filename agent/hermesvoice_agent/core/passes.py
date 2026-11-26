@@ -24,6 +24,7 @@ class SanitizeCtx:
     minor_involved: bool = False                       # the speaker or the listener is under 18 (or of unknown age)
     minor_names: set[str] = field(default_factory=set)  # name tokens of every minor in the world
     third_person: bool = False                         # the speaker's voice card speaks of itself by name
+    intent_labels: tuple[str, ...] = ()                # cut a label the model leaks after the line ("... kind")
 
 
 @dataclass
@@ -54,6 +55,7 @@ async def line_pass(llm: LLMClient, *, slot: int, mind: Mind, name: str, prefix:
                       all_names=ctx.all_names, prompt_words=ctx.prompt_words, common_words=ctx.common_words, secrets=ctx.secrets,
                       narration_guard=not ctx.third_person,
                       involves_minor=ctx.minor_involved, minor_names=ctx.minor_names,
+                      intent_labels=ctx.intent_labels,
                       truncated=c.stats.predicted_n >= max_tokens)
     return s, msgs
 

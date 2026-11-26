@@ -69,6 +69,7 @@ namespace HermesVoice
         public bool evThought = true;
         public bool evArt = true;
         public bool evSleep = true;                     // sleep_start events (feed dreams)
+        public bool shareFooter = true;                 // "Share this moment": add the HermesVoice footer to shared text and images
         public bool dreamsEnabled = true;               // sleepers get a dream cloud (POST /thought kind "dream"); also GET /config dreams
         public bool evFirsts = true;
         public bool evGatherings = true;                // gathering / gathering_end events (meals, parties, weddings, rituals, speeches)
@@ -81,6 +82,7 @@ namespace HermesVoice
         public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
+        public bool adultContent = false;              // explicit sexual content between adult colonists; OFF by default; also GET /config adult_content. The agent's age gate ignores it.
         public float wantsAvoidHours = 1f;             // how long an "avoid" want lasts, in game hours
 
         // Quotes: show the line that caused a thought or log entry; voice the game's own social interactions.
@@ -140,6 +142,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref evThought, "evThought", true);
             Scribe_Values.Look(ref evArt, "evArt", true);
             Scribe_Values.Look(ref evSleep, "evSleep", true);
+            Scribe_Values.Look(ref shareFooter, "shareFooter", true);
             Scribe_Values.Look(ref dreamsEnabled, "dreamsEnabled", true);
             Scribe_Values.Look(ref evFirsts, "evFirsts", true);
             Scribe_Values.Look(ref evGatherings, "evGatherings", true);
@@ -150,6 +153,7 @@ namespace HermesVoice
             Scribe_Values.Look(ref language, "language", "en");
             Scribe_Values.Look(ref wantsEnabled, "wantsEnabled", true);
             Scribe_Values.Look(ref recapOnLoad, "recapOnLoad", true);
+            Scribe_Values.Look(ref adultContent, "adultContent", false);
             Scribe_Values.Look(ref wantsAvoidHours, "wantsAvoidHours", 1f);
             Scribe_Values.Look(ref showQuotes, "showQuotes", true);
             Scribe_Values.Look(ref voiceVanillaSocial, "voiceVanillaSocial", true);
