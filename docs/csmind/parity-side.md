@@ -53,8 +53,8 @@ Goldens are generated from the Python by `~/.local/share/rimworld-hermes-engine/
   test_shipped_strategy_loaded_capped_and_override_order.
 - test_steward_chat_status: the cycle tests (thinking/idle/final, backend raises, no final, rejecting bridge).
 - test_creative_ground: art queue/prompt, lore, ceremony, inner, aim, sampler routing, art v2 (art.py, lore.py, group.py, inner.py, Director).
-- test_diary_chronicle_pacing: diary tests, chronicle-through-Director, idle tests, chronicle bridge on/off, narrator coverage, the
-  chronicle client contract (bridge.chronicle; the bridge part).
+- test_diary_chronicle_pacing: ported to Mod.Tests/Mind/JobsWorldTests.cs (diary, chronicle through the Director, bridge on/off, narrator coverage,
+  pacing/idle tests, the chronicle client contract).
 - Not applicable: test_package_data_lists_strategy_files (pyproject; the files are embedded).
 
 ## Behaviour differences from the Python

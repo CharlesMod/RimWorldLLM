@@ -27,6 +27,7 @@ implements them explicitly where types differ:
 
 ## Tests
 C#: Mod.Tests/Mind/IdlePureTests.cs (wants roll vs Python sha1, floor div/mod, float of bridge value, constants).
-Deferred (world fixture): test_textfill.py (idle_*, art_idle_job_skipped_when_text_queue_live), (test_wants.py / test_wants_wiring.py due_wants and test_reflection idle.log are ported in MindWorldTests.cs),
-test_diary_chronicle_pacing.py, test_art.py (anything_due, starving, due_since, actors_want_windows, idle jobs),
-test_speed_sim.py, test_steward_more.py (idle.task/kind/due_wants), test_steward_chat_status.py, test_vanilla_social.py (meta thought drop).
+C# world tests: Mod.Tests/Mind/JobsWorldTests.cs (test_textfill idle_* and art_idle_job_skipped_when_text_queue_live, test_art anything_due/starving/actors_want_windows/idle job,
+test_diary_chronicle_pacing idle tests); MindWorldTests.cs (test_wants / test_wants_wiring due_wants, test_reflection idle.log); InnerWorldTests.cs (test_vanilla_social meta thought drop);
+StewardWorldTests.cs (test_steward_more idle.task/kind/due_wants, test_steward_chat_status).
+Deferred: test_art.py `due_since` bookkeeping beyond the starving test; test_speed_sim.py (needs a C# port of games/rimworld/speedsim.py, which does not exist yet; 12 tests, no Director involved).

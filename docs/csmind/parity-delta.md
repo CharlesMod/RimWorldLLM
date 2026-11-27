@@ -74,9 +74,8 @@ Python tests ported:
   test_why_is_in_every_acting_tool_and_optional, test_why_is_cleaned_and_capped.
 
 Deferred (need the Director/world fixture or core/steward.py):
-- test_textfill.py: test_art_idle_job_skipped_when_text_queue_live, test_idle_runs_text_fill_last_when_idle,
-  test_idle_text_fill_yields_to_other_jobs_and_to_real_work, test_idle_text_fill_honours_both_flags,
-  test_idle_text_fill_404_backs_off_five_minutes (idle runner, director clock, leases, art queue).
+- test_textfill.py: the five idle tests are ported (Mod.Tests/Mind/JobsWorldTests.cs: ArtIdleJobSkippedWhenTextQueueLive, IdleRunsTextFillLastWhenIdle,
+  IdleTextFillYieldsToOtherJobsAndToRealWork, IdleTextFillHonoursBothFlags, IdleTextFill404BacksOffFiveMinutes).
 - test_vanilla_social.py: all world tests are now ported (InnerWorldTests.cs, see parity-inner.md); nothing left.
 - test_steward.py: the "no notes after acts" assertions in test_advisor_mode..., test_playing_runs_many_actions...,
   test_why_passes... (core/steward.py cycle), test_only_plain_player_lines_are_answered (steward cycle, chat feed).

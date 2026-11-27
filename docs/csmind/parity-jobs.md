@@ -35,16 +35,18 @@ Ported: test_art 12/15, test_lore 9/10 (one partly), test_recap 14/14, test_drea
 test_steward_chat_status 4/5, the 15 test_creative_ground tests touching these modules.
 
 ## Deferred (reason: needs Director internals, no `world` fixture in C#)
-- art: preempted job put back (idle runner; queue-level PutBack covered separately); pending art counts as idle work / can starve (`idle.anything_due`, `starving`);
-  starved art yields to reactive work (`idle.actors_want_windows`).
-- dreams: dream preempted by actor work (idle runner).
-- lore: the chronicle prompt "SHARED NAMES" block (`Director._common_talk`); the Director's epoch-change reload trigger (`Lore.LoadAsync` itself is tested).
-- recap: `Director._recap_when_free` (Recap.RunAsync/LateDue are tested directly).
+- (ported by helper w5 into Mod.Tests/Mind/JobsWorldTests.cs over the World fixture: art preempted-job put back, pending art due/starving, starved art vs reactive work,
+  dream preempted by actor work, lore SHARED NAMES + epoch-change reload, recap through the Director, recap waits for slot 0.)
+- test_creative_ground's `world` tests (art flag on/off prompt, lore referents/compose, ceremony, aim tension/sampler, inner kw, flags-off one call, art v2 prompts,
+  recap ground per kind): not ported by w5 (out of its time; they need FakeLlm prompt inspection of the grounding blocks that the pure ArtTests/LoreTests/GroundingTests already cover at the unit level).
 - steward: `test_recap_waits_for_the_cycle`, `test_wants_off_with_a_backend_present_runs_no_wants` (Director idle due_wants), `test_steward_try_cli_runs_one_cycle`
   (no C# CLI), task-cancel half of `test_idle_jobs_yield_to_a_cycle_and_come_back`, the `Director.ingest` half of `test_letters_and_alerts_are_not_voiced`;
   the two digest tests (covered by StewardToolsTests) and `test_client_bodies` (BridgeClientTests).
 
 ## Behaviour differences / notes
+- World tests (JobsWorldTests): C# cannot count a cancelled LLM call (no token reaches `ILlmClient`; the idle job is cancelled with `Task.WaitAsync(token)` and the call is detached),
+  so Python's `llm.cancelled == 1` is replaced by "job ended, window released, nothing applied, and still nothing applied after the gate opens".
+- Python's `narrator_owner = "steward"` set by a test is reset by `StewardSession.Reset` on a reload step (same in C#); the recap-waits test uses another owner string.
 - `Lore.cs` keeps a private copy of the refusal regex (Sanitize's is private).
 - `LoadStrategy` normalises CRLF/CR to LF (Python text mode); "not read" notes use C# OS error class names (OSError/PermissionError mapped, wording of the OS text may differ).
 - `Art.System` is named `Art.SystemText` (clashes with the System namespace).
