@@ -45,7 +45,9 @@ namespace RimWorldLLM
         public string Label;
         public int X, Z, Count;
         public bool Forbidden;
-        public LooseItem(string label, int x, int z, int count, bool forbidden) { Label = label; X = x; Z = z; Count = count; Forbidden = forbidden; }
+        /// <summary>Caller's handle (e.g. an index into its thing list); the pile keeps its largest stack's.</summary>
+        public int Ref;
+        public LooseItem(string label, int x, int z, int count, bool forbidden, int reference = -1) { Label = label; X = x; Z = z; Count = count; Forbidden = forbidden; Ref = reference; }
     }
 
     /// <summary>A summarised pile of loose material: what, how much, how far from home, which way.</summary>
@@ -58,6 +60,10 @@ namespace RimWorldLLM
         /// <summary>8-point compass (N, NE, E, SE, S, SW, W, NW; north is +z); empty when at home.</summary>
         public string Dir;
         public bool Forbidden;
+        /// <summary>The <see cref="LooseItem.Ref"/> of the pile's largest stack (-1 when none was given).</summary>
+        public int Ref = -1;
+        /// <summary>Where it could be stored: "ok", "none", "full" or "far" (see <see cref="NarratorWork.StoreVerdict"/>); null until judged.</summary>
+        public string Store;
     }
 
     /// <summary>Verse-free helpers of the digest's `build` block.</summary>
@@ -139,6 +145,7 @@ namespace RimWorldLLM
             if (cell < 1) cell = PileCell;
             var acc = new Dictionary<string, double[]>();   // sum count, sum x*count, sum z*count
             var meta = new Dictionary<string, KeyValuePair<string, bool>>();
+            var rep = new Dictionary<string, KeyValuePair<int, int>>();   // largest stack's count, ref
             if (items != null)
                 foreach (var it in items)
                 {
@@ -147,6 +154,8 @@ namespace RimWorldLLM
                     string key = it.Label.Trim().ToLowerInvariant() + "|" + (it.Forbidden ? 1 : 0) + "|" + gx + "|" + gz;
                     double[] a;
                     if (!acc.TryGetValue(key, out a)) { acc[key] = a = new double[3]; meta[key] = new KeyValuePair<string, bool>(it.Label.Trim(), it.Forbidden); }
+                    KeyValuePair<int, int> r;
+                    if (!rep.TryGetValue(key, out r) || it.Count > r.Key) rep[key] = new KeyValuePair<int, int>(it.Count, it.Ref);
                     a[0] += it.Count; a[1] += (double)it.X * it.Count; a[2] += (double)it.Z * it.Count;
                 }
             var piles = new List<LoosePile>();
@@ -155,7 +164,7 @@ namespace RimWorldLLM
                 double dx = kv.Value[1] / kv.Value[0] - hx, dz = kv.Value[2] / kv.Value[0] - hz;
                 piles.Add(new LoosePile
                 {
-                    Label = meta[kv.Key].Key, Forbidden = meta[kv.Key].Value, Count = (int)kv.Value[0],
+                    Label = meta[kv.Key].Key, Forbidden = meta[kv.Key].Value, Count = (int)kv.Value[0], Ref = rep[kv.Key].Value,
                     Dist = (int)Math.Round(Math.Sqrt(dx * dx + dz * dz)), Dir = Direction(dx, dz)
                 });
             }
