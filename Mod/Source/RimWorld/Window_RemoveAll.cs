@@ -19,7 +19,13 @@ namespace RimWorldLLM
         public Window_RemoveAll(long downloadBytes)
         {
             _downloadBytes = downloadBytes;
-            try { _memoryBytes = AgentDataDir.SizeOf(AgentDataDir.ResolveHere(EnginePlatform.Detect()).Path); } catch { _memoryBytes = 0; }
+            try
+            {
+                var here = AgentDataDir.ResolveHere(EnginePlatform.Detect());
+                var old = AgentDataDir.Legacy(here);
+                _memoryBytes = AgentDataDir.SizeOf(here.Path) + (old != null ? AgentDataDir.SizeOf(old.Path) : 0);
+            }
+            catch { _memoryBytes = 0; }
             forcePause = true;
             doCloseX = true;
             absorbInputAroundWindow = true;

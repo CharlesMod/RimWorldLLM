@@ -387,6 +387,13 @@ namespace RimWorldLLM
                     Path.Combine(home, ".local", "share"), Path.Combine(home, "AppData", "Local"),
                     EngineClient.DataDir(plat.Os, n => Environment.GetEnvironmentVariable(n), home) };
                 var d = AgentDataDir.Delete(where, where.Path, guard);
+                // a folder still under the mod's old name (both existed when the agent started) goes too
+                var legacy = AgentDataDir.Legacy(where);
+                if (legacy != null && Directory.Exists(legacy.Path) && d.Outcome != AgentDataDir.DeleteOutcome.Refused)
+                {
+                    var dl = AgentDataDir.Delete(legacy, legacy.Path, guard);
+                    if (dl.Outcome == AgentDataDir.DeleteOutcome.Deleted) { d.FreedBytes += dl.FreedBytes; d.Outcome = AgentDataDir.DeleteOutcome.Deleted; }
+                }
                 if (d.Outcome == AgentDataDir.DeleteOutcome.Deleted) _removeNote = UiUtil.T("RWL_Storage_MemoryDeleted", Window_EngineSetup.Bytes(d.FreedBytes));
                 else if (d.Outcome == AgentDataDir.DeleteOutcome.NothingThere) _removeNote = UiUtil.T("RWL_Storage_MemoryNone");
                 else { _removeNote = UiUtil.T("RWL_Storage_MemoryRefused", where.Path, d.Reason); Log.Warning("[RimWorldLLM] Agent memory not deleted: " + d.Reason); }

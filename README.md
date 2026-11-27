@@ -20,6 +20,8 @@ are included but not yet tested. Reports are very welcome (see [Reporting a prob
 2. Install RimWorldLLM: from Nexus Mods, or download `RimWorldLLM-<version>.zip` from the
    [GitHub releases](https://github.com/CharlesMod/RimWorldLLM/releases) and unzip it into
    RimWorld's `Mods` folder, so you get `Mods/RimWorldLLM/About/About.xml`.
+   Upgrading from a build called HermesVoice: delete the old `Mods/HermesVoice` folder first. Your settings and the
+   helper's memory carry over by themselves.
 3. Enable Harmony, then RimWorldLLM (below Harmony) in the mod list, and restart.
 
 ## First run

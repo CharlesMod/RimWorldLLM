@@ -159,7 +159,7 @@ namespace RimWorldLLM.Tests
         [Fact]
         public async Task LauncherPostsHostAfterAttachAndTolerates404()
         {
-            string dir = Path.Combine(Path.GetTempPath(), "hv-gpu-" + Guid.NewGuid().ToString("N"));
+            string dir = Path.Combine(Path.GetTempPath(), "rwl-gpu-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             try
             {
@@ -207,7 +207,7 @@ namespace RimWorldLLM.Tests
 
         sealed class Tmp : IDisposable
         {
-            public readonly string Dir = Path.Combine(Path.GetTempPath(), "hv-agentdir-" + Guid.NewGuid().ToString("N"));
+            public readonly string Dir = Path.Combine(Path.GetTempPath(), "rwl-agentdir-" + Guid.NewGuid().ToString("N"));
             public Tmp() { Directory.CreateDirectory(Dir); }
             public string Sub(params string[] p) { var d = Path.Combine(Dir, Path.Combine(p)); Directory.CreateDirectory(d); return d; }
             public void Dispose() { try { Directory.Delete(Dir, true); } catch { } }

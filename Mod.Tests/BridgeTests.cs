@@ -23,7 +23,7 @@ namespace RimWorldLLM.Tests
         public readonly OpIdStore Ids;
         public readonly ApiRouter Router;
         public BridgeServer Server;
-        public string Dir = Path.Combine(Path.GetTempPath(), "hv-test-" + Guid.NewGuid().ToString("N"));
+        public string Dir = Path.Combine(Path.GetTempPath(), "rwl-test-" + Guid.NewGuid().ToString("N"));
         public GameState State = new GameState { GameLoaded = true, Tick = 1000, SaveEpoch = 3, Paused = false, Speed = 1 };
         public Harness()
         {

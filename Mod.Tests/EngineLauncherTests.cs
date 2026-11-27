@@ -27,7 +27,7 @@ namespace RimWorldLLM.Tests
 
         sealed class Temp : IDisposable
         {
-            public readonly string Dir = Path.Combine(Path.GetTempPath(), "hv-launch-" + Guid.NewGuid().ToString("N"));
+            public readonly string Dir = Path.Combine(Path.GetTempPath(), "rwl-launch-" + Guid.NewGuid().ToString("N"));
             public Temp() { Directory.CreateDirectory(Dir); }
             public string Touch(params string[] rel)
             {
@@ -78,6 +78,7 @@ namespace RimWorldLLM.Tests
             Assert.Equal("3.12", (string)a["python"]);
             Assert.Equal("run", (string)a["args"][0]);
             Assert.Equal("/c/bridge.json", (string)a["env"]["RIMWORLDLLM_BRIDGE_JSON"]);
+            Assert.Equal("RIMWORLDLLM_LLM_URL", (string)a["llm_url_env"]);
         }
 
         [Fact]

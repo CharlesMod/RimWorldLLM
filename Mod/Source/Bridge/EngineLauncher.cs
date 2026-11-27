@@ -193,6 +193,8 @@ namespace RimWorldLLM.Bridge
                     ["wheel"] = wheelPath,
                     ["python"] = "3.12",
                     ["args"] = new JArray("run"),
+                    // the engine hands the agent its URL in this variable (+ _MODE/_MODEL in external mode), the agent's own override slot
+                    ["llm_url_env"] = "RIMWORLDLLM_LLM_URL",
                     ["env"] = new JObject { ["RIMWORLDLLM_BRIDGE_JSON"] = bridgeJsonPath }
                 };
             }

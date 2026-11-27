@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .bridge import BridgeClient
 from .calllog import CallLog
-from .config import Config, load_config, read_bridge_json
+from .config import Config, load_config, migrate_legacy_data_dir, read_bridge_json
 from .adapter import GameAdapter
 from .director import Director
 from .endpoint_test import test_endpoint
@@ -67,6 +67,7 @@ def make_tool_backend(cfg: Config) -> OpenAIBackend | None:
 
 
 async def _run(cfg: Config, adapter: GameAdapter, bridge_timeout: float = 0.0) -> int:
+    migrate_legacy_data_dir(cfg.data_dir)   # hermesvoice-agent -> rimworldllm-agent, once, default location only
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
     if not cfg.bridge_url:
         path = Path(cfg.bridge_json or adapter.default_bridge_json())

@@ -321,7 +321,7 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void ReadLockPortHandlesJsonAndText()
         {
-            string dir = Path.Combine(Path.GetTempPath(), "hv-lock-" + Guid.NewGuid().ToString("N"));
+            string dir = Path.Combine(Path.GetTempPath(), "rwl-lock-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             try
             {

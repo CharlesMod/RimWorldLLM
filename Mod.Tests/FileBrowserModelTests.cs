@@ -12,7 +12,7 @@ namespace RimWorldLLM.Tests
 
         public FileBrowserModelTests()
         {
-            _root = Directory.CreateTempSubdirectory("hv-fb-").FullName;
+            _root = Directory.CreateTempSubdirectory("rwl-fb-").FullName;
         }
 
         // Removes only the unique directory this test instance created.

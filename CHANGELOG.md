@@ -4,6 +4,13 @@
 
 Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are included but untested.
 
+### New name: RimWorldLLM
+- The mod was called HermesVoice in test builds; it is now **RimWorldLLM** (packageId `charleszard.rimworldllm`,
+  folder `Mods/RimWorldLLM`). Delete the old `Mods/HermesVoice` folder when you install this one.
+- Your settings carry over once from the old settings file (which is left in place), and the helper's memory folder
+  moves from `hermesvoice-agent` to `rimworldllm-agent` on its first start (if both exist, both are kept).
+- Saves made with a HermesVoice test build do not load the old mod's colony data.
+
 ### One-click local setup
 - The mod now sets up its own local model: a letter on first start, then one **Install** click. It checks your graphics
   card, memory and disk, picks a model that fits, and downloads it with llama.cpp. No API key, no account, free.

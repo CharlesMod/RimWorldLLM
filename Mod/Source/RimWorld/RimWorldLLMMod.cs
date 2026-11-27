@@ -28,8 +28,25 @@ namespace RimWorldLLM
         public RimWorldLLMMod(ModContentPack content) : base(content)
         {
             Instance = this;
+            CarryOverOldSettings();
             Log.Message("[RimWorldLLM] Mod loaded — applying Harmony patches");
             new Harmony("charleszard.rimworldllm").PatchAll(typeof(RimWorldLLMMod).Assembly);
+        }
+
+        // The mod was called HermesVoice before 2.1.0; its settings file had that name. Read once before GetSettings.
+        void CarryOverOldSettings()
+        {
+            try
+            {
+                // Verse: Config/Mod_<folder>_<Mod class>.xml (LoadedModManager.GetSettingsFilename, not public)
+                string file = System.IO.Path.Combine(GenFilePaths.ConfigFolderPath, GenText.SanitizeFilename("Mod_" + Content.FolderName + "_" + GetType().Name + ".xml"));
+                var outcome = RimWorldLLM.Bridge.LegacySettings.Migrate(file, out string old);
+                if (outcome == RimWorldLLM.Bridge.LegacySettings.Outcome.Copied)
+                    Log.Message("[RimWorldLLM] Carried over settings from " + old + " (left in place)");
+                else if (outcome == RimWorldLLM.Bridge.LegacySettings.Outcome.Failed)
+                    Log.Warning("[RimWorldLLM] Could not carry over the old HermesVoice settings; starting with defaults");
+            }
+            catch (System.Exception e) { Log.Warning("[RimWorldLLM] Settings carry-over skipped: " + e.Message); }
         }
 
         public override string SettingsCategory() => "RimWorldLLM";

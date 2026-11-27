@@ -8,6 +8,7 @@ LLM endpoint is env > file > bridge.json > default.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import tomllib
 from pathlib import Path
@@ -29,6 +30,34 @@ def default_data_dir() -> Path:
         local = os.environ.get("LOCALAPPDATA")
         return Path(local if local else Path.home() / "AppData" / "Local") / "rimworldllm-agent"
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "rimworldllm-agent"
+
+
+LEGACY_DATA_LEAF = "hermesvoice-agent"   # the folder's name before the mod became RimWorldLLM
+
+
+def migrate_legacy_data_dir(target: Path) -> str:
+    """One-time move of the old-named data folder (hermesvoice-agent) to ``target`` when ``target`` is the default
+    location and does not exist yet. Never deletes: when both exist both stay (logged). Returns what happened:
+    "override", "custom", "none", "both", "moved" or "failed"."""
+    log = logging.getLogger("rimworldllm.config")
+    if os.environ.get("RIMWORLDLLM_DATA_DIR"):
+        return "override"
+    target = Path(target)
+    if target != default_data_dir():
+        return "custom"
+    old = target.parent / LEGACY_DATA_LEAF
+    if old.is_symlink() or not old.is_dir():
+        return "none"
+    if target.exists():
+        log.info("both %s and the old %s exist; using the new one and leaving the old one alone", target, old)
+        return "both"
+    try:
+        os.rename(old, target)
+    except OSError as e:
+        log.warning("could not move the old data folder %s to %s: %s", old, target, e)
+        return "failed"
+    log.info("moved the old data folder %s to %s", old, target)
+    return "moved"
 
 
 class LLMConfig(BaseModel):

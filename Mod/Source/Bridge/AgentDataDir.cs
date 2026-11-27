@@ -8,6 +8,8 @@ namespace RimWorldLLM.Bridge
     public static class AgentDataDir
     {
         public const string LeafName = "rimworldllm-agent";
+        /// <summary>The folder's name before the mod was renamed (HermesVoice). The agent moves it to <see cref="LeafName"/> on start; if both exist, both stay.</summary>
+        public const string LegacyLeafName = "hermesvoice-agent";
 
         /// <summary>True when the removal job is over and the agent is down, so its folder may be emptied. <paramref name="sawRemoving"/>: the engine has reported phase "removing" at least once.</summary>
         public static bool RemovalFinished(string phase, string agentPhase, bool sawRemoving, long elapsedMs)
@@ -52,6 +54,15 @@ namespace RimWorldLLM.Bridge
             string xdg = env("XDG_DATA_HOME");
             string baseDir = string.IsNullOrEmpty(xdg) ? System.IO.Path.Combine(home ?? "", ".local", "share") : xdg;
             return new Resolved { Path = System.IO.Path.Combine(baseDir, LeafName) };
+        }
+
+        /// <summary>The old-named folder beside the default one, or null for an overridden folder (an override is the player's own path).</summary>
+        public static Resolved Legacy(Resolved current)
+        {
+            if (current == null || current.Overridden || string.IsNullOrEmpty(current.Path)) return null;
+            string parent = System.IO.Path.GetDirectoryName(current.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
+            if (string.IsNullOrEmpty(parent)) return null;
+            return new Resolved { Path = System.IO.Path.Combine(parent, LegacyLeafName) };
         }
 
         public static Resolved ResolveHere(EnginePlatform p)
@@ -109,7 +120,10 @@ namespace RimWorldLLM.Bridge
             string root = System.IO.Path.GetPathRoot(got);
             if (string.IsNullOrEmpty(System.IO.Path.GetFileName(got)) || (root != null && string.Equals(root.TrimEnd('/', '\\'), got, cmp))) return "a drive or filesystem root";
             // always the agent's own leaf name, even for an overridden folder: an override pointing at, say, Documents must never be emptied
-            if (!string.Equals(System.IO.Path.GetFileName(got), LeafName, cmp)) return "not named " + LeafName;
+            // the old name is accepted only for the default (not overridden) location's sibling, see Legacy()
+            string leaf = System.IO.Path.GetFileName(got);
+            bool named = string.Equals(leaf, LeafName, cmp) || (!expected.Overridden && string.Equals(leaf, LegacyLeafName, cmp));
+            if (!named) return "not named " + LeafName;
             if (extraProtected != null)
                 foreach (var p in extraProtected)
                 {

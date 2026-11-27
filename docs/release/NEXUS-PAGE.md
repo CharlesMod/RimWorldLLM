@@ -98,6 +98,7 @@ Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatibl
 [size=4][b]Install[/b][/size]
 [list=1]
 [*]Install Harmony.
+[*]Had a test build called HermesVoice? Delete the old [font=Courier New]Mods/HermesVoice[/font] folder first; your settings and the helper's memory carry over.
 [*]Unzip [font=Courier New]RimWorldLLM-2.1.0-beta.zip[/font] into RimWorld's [font=Courier New]Mods[/font] folder, so you get [font=Courier New]Mods/RimWorldLLM/About/About.xml[/font].
 [*]Enable Harmony, then RimWorldLLM below it, and restart.
 [*]Load a game and click [b]Set up[/b] on the letter.
