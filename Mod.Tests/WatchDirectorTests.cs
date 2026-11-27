@@ -100,13 +100,25 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
-        public void NonUrgentNeverCutsIn()
+        public void NonUrgentNeverCutsIntoAnEvent()
+        {
+            var d = new WatchDirector();
+            d.Offer(Ev(WatchKinds.Combat, 1), 0);
+            d.Next(0);
+            d.Offer(Ev(WatchKinds.Birth, 2), 1);
+            Assert.Null(d.Next(4));
+        }
+
+        [Fact]
+        public void AnyEventCutsIntoFillerAfterTheMinimum()
         {
             var d = new WatchDirector();
             d.Offer(Ev(WatchKinds.Wander, 1), 0);
             d.Next(0);
             d.Offer(Ev(WatchKinds.Birth, 2), 1);
-            Assert.Null(d.Next(4));
+            Assert.Null(d.Next(2));                   // not before CutInMinSec
+            var s = d.Next(4);
+            Assert.True(s.Cut); Assert.Equal(WatchKinds.Birth, s.Kind);
         }
 
         [Fact]

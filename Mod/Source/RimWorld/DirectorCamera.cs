@@ -137,6 +137,7 @@ namespace RimWorldLLM
         public static void Update()
         {
             if (WatchCamera.Enabled) { WatchCamera.Update(); return; }   // watch mode drives the camera instead
+            WatchCamera.UpdateOff();
             if (!Active) return;
             var map = Find.CurrentMap;
             if (map == null || Current.ProgramState != ProgramState.Playing) return;
@@ -203,6 +204,26 @@ namespace RimWorldLLM
             }
             else { _lastSet = c; _lastSize = size; _haveSet = true; }
         }
+
+        /// <summary>Set the camera's root position and size directly (watch mode's own smoothing), remembering it so
+        /// <see cref="MovedByOthers"/> does not mistake our move for the player's.</summary>
+        internal static void Place(CameraDriver cam, float x, float z, float size)
+        {
+            Vector3 camPos = cam.MyCamera.transform.position;
+            cam.SetRootPosAndSize(new Vector3(x, camPos.y, z), size);
+            _lastSet = new Vector2(x, z); _lastSize = cam.RootSize; _haveSet = true;
+        }
+
+        /// <summary>A cut to a far position (keeps the size).</summary>
+        internal static void Cut(CameraDriver cam, float x, float z)
+        {
+            Vector3 camPos = cam.MyCamera.transform.position;
+            cam.JumpToCurrentMapLoc(new Vector3(x, camPos.y, z));
+            _lastSet = new Vector2(x, z); _lastSize = cam.RootSize; _haveSet = true;
+        }
+
+        /// <summary>Forget where we left the camera (after a pause, or when watch mode turns off).</summary>
+        internal static void ForgetPlaced() { _haveSet = false; }
 
         static void Sweep(Map map, double now)
         {

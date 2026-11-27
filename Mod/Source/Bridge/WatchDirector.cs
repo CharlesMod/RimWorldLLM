@@ -9,7 +9,14 @@ namespace RimWorldLLM.Bridge
     {
         public const string Raid = "raid_start", Combat = "combat", MentalBreak = "mental_break", SocialFight = "social_fight",
             Death = "death", Funeral = "funeral", Birth = "birth", Wedding = "wedding", Party = "party",
-            Masterwork = "masterwork", ShipPart = "ship_part", Art = "art_created", Wander = "wander";
+            Masterwork = "masterwork", ShipPart = "ship_part", Art = "art_created", Wander = "wander",
+            Thread = "thread", Battle = "battle", BattleEnd = "battle_end", Downed = "downed";
+
+        /// <summary>Events (things that happened) beat scenes, story-thread follows and filler.</summary>
+        public static bool IsEvent(string kind)
+        {
+            return kind != null && kind != Wander && kind != Thread && !SceneKinds.IsScene(kind);
+        }
 
         /// <summary>Interest of a kind when it is fresh. Higher wins.</summary>
         public static double Weight(string kind)
@@ -28,6 +35,16 @@ namespace RimWorldLLM.Bridge
                 case Party: return 7;
                 case Masterwork: return 6;
                 case Art: return 4;
+                case Thread: return 2.5;
+                case SceneKinds.Medical: return 3.5;
+                case SceneKinds.Meal: return 3.0;
+                case SceneKinds.Romance: return 2.6;
+                case SceneKinds.Child: return 2.6;
+                case SceneKinds.Recreation: return 2.5;
+                case SceneKinds.Prisoner: return 2.4;
+                case SceneKinds.Taming: return 2.2;
+                case SceneKinds.Night: return 2.0;
+                case SceneKinds.Work: return 1.8;
                 case Wander: return 1;
                 default: return 0;
             }
@@ -43,6 +60,7 @@ namespace RimWorldLLM.Bridge
             {
                 case Raid: case Death: case Birth: case Wedding: case Funeral: return 12;
                 case ShipPart: case MentalBreak: case SocialFight: case Combat: return 8;
+                case Downed: return 4;
                 case Wander: return 6;
                 default: return 7;
             }
@@ -121,6 +139,10 @@ namespace RimWorldLLM.Bridge
         public string Name;         // subject label for the caption
         public string Detail;       // extra caption word (direction, label)
         public double Severity = 1; // scales the weight (clamped 0.5..1.5)
+        public string Caption;      // ready-made caption (scenes, threads); null = built from kind/name/detail
+        public ShotStyle Style = ShotStyle.Follow;
+        public List<int> Ids;       // group members for Group shots
+        public string SceneKey;     // scene identity for no-repeat
     }
 
     /// <summary>The next shot, or null from Next for "stay".</summary>
@@ -132,6 +154,9 @@ namespace RimWorldLLM.Bridge
         public double Dwell;
         public bool Cut;            // true when it cut in on a shot still in its dwell
         public double Score;
+        public ShotStyle Style;
+        public List<int> Ids;
+        public string BlockKey;
     }
 
     /// <summary>
@@ -153,7 +178,7 @@ namespace RimWorldLLM.Bridge
         public const double CaptionGapSec = 12.0, UrgentCaptionGapSec = 4.0, SameCaptionSec = 90.0;
 
         sealed class Pending { public WatchEvent E; public double At; }
-        sealed class Shown { public string Kind; public int Key; public int MapId, X, Z; public double At; }
+        sealed class Shown { public string Kind; public int Key; public int MapId, X, Z; public double At; public string SceneKey; }
 
         readonly List<Pending> _pending = new List<Pending>();
         readonly List<Shown> _recent = new List<Shown>();
@@ -161,12 +186,32 @@ namespace RimWorldLLM.Bridge
         double _pausedUntil = -1;
         double _lastCaptionAt = -1e9; string _lastCaption;
         public double PlayerPauseSec = 20.0;
+        public WatchPace Pace = WatchPace.Normal;
+        /// <summary>Extra interest for a pawn (story threads); null = none. Takes the pawn id.</summary>
+        public Func<int, double> SubjectBoost;
+        readonly RepeatGuard _guard = new RepeatGuard();
 
         public WatchShot Current { get { return _cur; } }
         public int PendingCount { get { return _pending.Count; } }
         public bool IsPaused(double now) { return now < _pausedUntil; }
 
-        public void Clear() { _pending.Clear(); _recent.Clear(); _cur = null; _curAt = -1e9; _pausedUntil = -1; _lastCaption = null; _lastCaptionAt = -1e9; }
+        /// <summary>True when there is no shot or its hold is over (time for the next quiet-stretch offer).</summary>
+        public bool ShotOver(double now) { return _cur == null || now - _curAt >= _cur.Dwell; }
+
+        /// <summary>Drop the current shot (a battle took the camera); the next pick starts fresh.</summary>
+        public void EndShot() { _cur = null; _curAt = -1e9; }
+
+        /// <summary>The shared caption limit: true (and remembered) when cap may be written now.</summary>
+        public bool TryCaption(string cap, bool urgent, double now)
+        {
+            if (cap == null) return false;
+            double gap = urgent ? UrgentCaptionGapSec : CaptionGapSec;
+            if (now - _lastCaptionAt < gap || (cap == _lastCaption && now - _lastCaptionAt < SameCaptionSec)) return false;
+            _lastCaption = cap; _lastCaptionAt = now;
+            return true;
+        }
+
+        public void Clear() { _guard.Clear(); _pending.Clear(); _recent.Clear(); _cur = null; _curAt = -1e9; _pausedUntil = -1; _lastCaption = null; _lastCaptionAt = -1e9; }
 
         /// <summary>The player moved the camera: no shots for PlayerPauseSec.</summary>
         public void PlayerTouched(double now) { _pausedUntil = now + Math.Max(0, PlayerPauseSec); }
@@ -175,10 +220,12 @@ namespace RimWorldLLM.Bridge
         {
             if (e == null || WatchKinds.Weight(e.Kind) <= 0) return;
             foreach (var p in _pending)
-                if (p.E.Kind == e.Kind && p.E.Key == e.Key && p.E.MapId == e.MapId && now - p.At < MergeWithinSec)
+                if (p.E.Kind == e.Kind && p.E.Key == e.Key && p.E.MapId == e.MapId && p.E.SceneKey == e.SceneKey && now - p.At < MergeWithinSec)
                 {
                     if (e.Severity >= p.E.Severity) p.E.Severity = e.Severity;   // refresh, keep one
                     p.E.X = e.X; p.E.Z = e.Z; p.At = now;
+                    if (e.Caption != null) p.E.Caption = e.Caption;
+                    if (e.Ids != null) p.E.Ids = e.Ids;
                     return;
                 }
             _pending.Add(new Pending { E = e, At = now });
@@ -189,13 +236,20 @@ namespace RimWorldLLM.Bridge
             double age = Math.Max(0, now - p.At);
             double sev = Math.Min(1.5, Math.Max(0.5, p.E.Severity));
             double s = WatchKinds.Weight(p.E.Kind) * sev * Math.Pow(0.5, age / HalfLifeSec);
+            if (SubjectBoost != null)
+            {
+                double b = p.E.Key >= 0 ? SubjectBoost(p.E.Key) : 1;
+                if (p.E.Ids != null) foreach (int id in p.E.Ids) b = Math.Max(b, SubjectBoost(id));
+                s *= Math.Max(1, b);
+            }
             for (int i = _recent.Count - 1; i >= 0; i--)
             {
                 var r = _recent[i];
                 double dt = now - r.At;
                 if (r.Kind == p.E.Kind && dt < KindWindowSec) { s *= KindFactor; }
                 bool samePlace = r.MapId == p.E.MapId && Math.Abs(r.X - p.E.X) <= 6 && Math.Abs(r.Z - p.E.Z) <= 6;
-                bool sameSubject = p.E.Key >= 0 ? r.Key == p.E.Key : samePlace && r.Key < 0;
+                bool sameSubject = p.E.SceneKey != null ? r.SceneKey == p.E.SceneKey   // scenes: by scene, not by place
+                    : p.E.Key >= 0 ? r.Key == p.E.Key : samePlace && r.Key < 0 && r.SceneKey == null;
                 if (sameSubject && dt < SubjectWindowSec) s *= SubjectFactor;
             }
             return s;
@@ -208,12 +262,18 @@ namespace RimWorldLLM.Bridge
             _recent.RemoveAll(r => now - r.At > Math.Max(SubjectWindowSec, KindWindowSec));
             if (now < _pausedUntil) return null;
 
-            Pending best = null; double bs = 0;
+            // Events beat scenes, threads and filler: the best event that clears MinScore wins outright.
+            double window = DirectorPacing.NoRepeatSec(Pace);
+            _guard.Prune(now, window);
+            Pending best = null, bestLow = null; double bs = 0, bls = 0;
             foreach (var p in _pending)
             {
+                if (_guard.Blocked(DirectorPacing.BlockKey(p.E.Kind, p.E.Key, p.E.SceneKey), now, window, WatchKinds.IsUrgent(p.E.Kind))) continue;
                 double s = Score(p, now);
-                if (s > bs) { bs = s; best = p; }
+                if (WatchKinds.IsEvent(p.E.Kind)) { if (s > bs) { bs = s; best = p; } }
+                else if (s > bls) { bls = s; bestLow = p; }
             }
+            if (best == null || bs < MinScore) { best = bestLow; bs = bls; }
             if (best == null || bs < MinScore) return null;
 
             bool cut = false;
@@ -223,7 +283,8 @@ namespace RimWorldLLM.Bridge
                 if (on < _cur.Dwell)
                 {
                     bool urgent = WatchKinds.IsUrgent(best.E.Kind);
-                    if (!(urgent && on >= CutInMinSec && bs > _cur.Score * CutInMargin)) return null;
+                    bool overQuiet = WatchKinds.IsEvent(best.E.Kind) && !WatchKinds.IsEvent(_cur.Kind);   // events cut into scenes/filler
+                    if (on < CutInMinSec || !(urgent && bs > _cur.Score * CutInMargin || overQuiet)) return null;
                     cut = true;
                 }
             }
@@ -232,19 +293,17 @@ namespace RimWorldLLM.Bridge
             var shot = new WatchShot
             {
                 Kind = best.E.Kind, Key = best.E.Key, TargetId = best.E.TargetId, MapId = best.E.MapId, X = best.E.X, Z = best.E.Z,
-                Dwell = WatchKinds.Dwell(best.E.Kind), Cut = cut, Score = bs
+                Dwell = DirectorPacing.Hold(best.E.Kind, Pace), Cut = cut, Score = bs,
+                Style = best.E.Style, Ids = best.E.Ids, BlockKey = DirectorPacing.BlockKey(best.E.Kind, best.E.Key, best.E.SceneKey)
             };
             if (WatchKinds.HasCaption(shot.Kind))
             {
-                string cap = WatchKinds.Caption(shot.Kind, best.E.Name, best.E.Detail);
-                double gap = WatchKinds.IsUrgent(shot.Kind) ? UrgentCaptionGapSec : CaptionGapSec;
-                if (cap != null && now - _lastCaptionAt >= gap && !(cap == _lastCaption && now - _lastCaptionAt < SameCaptionSec))
-                {
-                    shot.Caption = cap; _lastCaption = cap; _lastCaptionAt = now;
-                }
+                string cap = best.E.Caption ?? WatchKinds.Caption(shot.Kind, best.E.Name, best.E.Detail);
+                if (TryCaption(cap, WatchKinds.IsUrgent(shot.Kind), now)) shot.Caption = cap;
             }
+            _guard.Shown(shot.BlockKey, now);
             _cur = shot; _curAt = now;
-            _recent.Add(new Shown { Kind = shot.Kind, Key = shot.Key, MapId = shot.MapId, X = shot.X, Z = shot.Z, At = now });
+            _recent.Add(new Shown { Kind = shot.Kind, Key = shot.Key, MapId = shot.MapId, X = shot.X, Z = shot.Z, At = now, SceneKey = best.E.SceneKey });
             return shot;
         }
     }

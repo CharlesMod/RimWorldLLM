@@ -424,6 +424,20 @@ namespace RimWorldLLM
             {
                 Check(l, "RWL_Watch_Captions", ref s.watchCaptions, "RWL_Watch_CaptionsTip");
                 NumRow(l, "RWL_Watch_PauseSec", ref s.watchPlayerPauseSec, ref _watchPauseBuf, 3, 300, "RWL_Watch_PauseSecTip");
+                Check(l, "RWL_Watch_Zoom", ref s.watchZoom, "RWL_Watch_ZoomTip");
+                Check(l, "RWL_Watch_SelectFollowed", ref s.watchSelectFollowed, "RWL_Watch_SelectFollowedTip");
+                float paceY = l.CurHeight;
+                string paceKey = s.watchPace <= 0 ? "RWL_Watch_PaceCalm" : s.watchPace >= 2 ? "RWL_Watch_PaceLively" : "RWL_Watch_PaceNormal";
+                if (l.ButtonTextLabeled(UiUtil.T("RWL_Watch_Pace"), UiUtil.T(paceKey))) s.watchPace = (Mathf.Clamp(s.watchPace, 0, 2) + 1) % 3;
+                Tip(l, paceY, UiUtil.T("RWL_Watch_PaceTip"));
+                l.Label(UiUtil.T("RWL_Watch_Scenes"));
+                Check(l, "RWL_Watch_SceneMeals", ref s.watchSceneMeals, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneRecreation", ref s.watchSceneRecreation, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneWork", ref s.watchSceneWork, "RWL_Watch_SceneWorkTip");
+                Check(l, "RWL_Watch_SceneNight", ref s.watchSceneNight, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneMedical", ref s.watchSceneMedical, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneChildren", ref s.watchSceneChildren, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneRomance", ref s.watchSceneRomance, "RWL_Watch_SceneRomanceTip");
             }
             l.GapLine();
             Check(l, "RWL_Share_Footer", ref s.shareFooter, "RWL_Share_FooterTip");
