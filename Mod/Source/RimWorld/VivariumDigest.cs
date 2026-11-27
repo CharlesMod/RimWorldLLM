@@ -74,6 +74,8 @@ namespace RimWorldLLM
             Sec(o, "build", () => VivariumBuildView.Build(map));
             Sec(o, "stuck", () => Stuck(map));
             Sec(o, "power", () => Power(map));
+            Sec(o, "food", () => VivariumFood.Digest(map));
+            Sec(o, "deadlines", () => VivariumDeadlines.Digest(map));
             Sec(o, "facts", () => VivariumFacts.Build(map));
             return o;
         }
@@ -211,6 +213,7 @@ namespace RimWorldLLM
             var cannot = VivariumStuck.Cannot(p);
             if (cannot.Count > 0) o["cannot"] = new JArray(cannot);
             if (VivariumStuck.IsIdle(p)) o["idle"] = true;
+            try { VivariumExtras.AddPawn(o, p); } catch (Exception e) { LogOnce("pawn_extras", e); }
 
             if (p.timetable != null)
             {
