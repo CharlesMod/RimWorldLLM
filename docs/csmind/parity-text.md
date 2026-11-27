@@ -15,9 +15,7 @@ Modules: AgeGate, Adult, GameData, CommonWords, Think, Sanitize, LoopGuard, Leas
 
 ## Deferred tests (need Director/world fixture, LLM, bridge or reflection module)
 The contract part (docs/csmind/parity-contract.md) ported everything that needed only the adapter, prompt or builders. Still deferred:
-- test_agegate: the 12 Director tests (`_prepare`, `labels_for`, conversation, group, intent, vanilla, player talk, diary path).
-- test_adult: live_toggle_from_bridge_config_and_stats, missing_key_means_off, settings_refresh (Director + bridge config).
-- test_gamedata: director_prompt_holds_planted_scene_text_as_data, idle_prompts_wrap_game_text_too (reflection module).
+- test_agegate, test_adult (3), test_gamedata (2), test_register (4), test_prompt (1), test_split (2): ported in `ContractWorldTests` (see parity-contract.md).
 - test_sanitize: VoiceCard/passes halves of the guard tests.
 - test_loopguard: offline_bench_numbers (bench files), 4 Director tests.
 - test_memory_minds: none left.

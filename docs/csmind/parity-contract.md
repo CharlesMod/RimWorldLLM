@@ -42,14 +42,12 @@ All captured against the Python (`gen_golden.py` writes `Mod.Tests/Mind/Contract
 
 Counts: 157 C# tests added by this part (1332 to 1489), mod build 0 warnings.
 
+Ported with the Director (`ContractWorldTests`, 27 tests over `World`): test_agegate (the 15 tests that drive the Director: `prompt_carries_minor_flags_and_rule` and `prompt_marks_minors_present...` through `PrepareAsync`, `labels_offered_exclude_romance_for_minor_exchange`, conversation with a minor / adult pair / group overhearing / group out of earshot / adults naming a minor, `unknown_age_is_treated_as_minor`, `intent_refusal_is_the_last_guard`, the two vanilla-romance tests, the two player-talk tests, `romantic_prose_about_a_minor...`), test_adult (`live_toggle_from_bridge_config_and_stats`, `missing_key_means_off`, `settings_refresh_on_their_own_without_a_reload`), test_register (`drunk_pawn_gets_the_scene_line...`, `dream_prompt...`, `diary_prompt...`, `thought_prompt...`), test_gamedata (`director_prompt_holds_planted_scene_text_as_data`, `idle_prompts_wrap_game_text_too`), test_prompt `lease_prefix_stable_through_director`, test_split `gossip_names_a_third_actor...` and `every_write_carries_an_op_id`. Test seams: `PyRandom` is unsealed with a virtual `Random()` (the Python test subclassed `random.Random` as `Always`; `SwitchRng` in the test file returns 0.0 once switched on after the start); `World` takes an optional `rng` and `wrapAdapter` (a `DispatchProxy` over `IGameAdapter` that swaps `IntentLabels`, since the Python set `intent_labels` on the adapter class/instance and `RimWorldAdapter` is sealed). The two prompt tests also exist as Director-free versions in `ContractDeferredTests` (kept).
+
 Deferred (need the Director / world fixture / modules owned by other parts; port with the Director wave):
 
-- test_register: `drunk_pawn_gets_the_scene_line...`, `dream_prompt_has_the_register_line`, `diary_prompt...`, `thought_prompt...` (Director), `bystander_prompt_has_the_register_line` (core/bystanders).
-- test_prompt: `lease_prefix_stable_through_director`.
-- test_character_card: none left. test_split: `say_refusal_reasons...` was already ported; `gossip_names_a_third_actor...` and `every_write_carries_an_op_id` need the world fixture.
-- test_agegate: the 12 tests that drive the Director (`_prepare`, `labels_for`, conversation, group, intent, vanilla, player talk, diary path).
-- test_adult: `live_toggle_from_bridge_config_and_stats`, `missing_key_means_off`, `settings_refresh_on_their_own` (Director + bridge config).
-- test_gamedata: `director_prompt_holds_planted_scene_text_as_data`, `idle_prompts_wrap_game_text_too` (reflection module).
+- test_register: `bystander_prompt_has_the_register_line` (core/bystanders; not a Director test, still not ported: needs the bystander prompt builder, left to the bystanders owner).
+- test_character_card: none left. test_split: none left.
 - test_habits: the 2 reflection-module tests (`schema_and_prompt_only_when_habits_asked`, `apply_reflection...`) and the Director ones.
 - test_firsts and test_loopguard Director tests; test_creative / test_clouds `world` tests.
 

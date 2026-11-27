@@ -10,7 +10,7 @@ using System.Numerics;
 
 namespace RimWorldLLM.Mind.Py
 {
-    public sealed class PyRandom
+    public class PyRandom
     {
         private const int N = 624, M = 397;
         private readonly uint[] mt = new uint[N];
@@ -86,7 +86,7 @@ namespace RimWorldLLM.Mind.Py
         }
 
         /// <summary>random.random(): float in [0, 1) with 53 bits.</summary>
-        public double Random()
+        public virtual double Random()
         {
             uint a = GenRand32() >> 5, b = GenRand32() >> 6;
             return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);

@@ -41,7 +41,7 @@ namespace RimWorldLLM.Tests.Mind.Fakes
         public readonly HookLlm Hook;
         public readonly Director D;
 
-        public World(Action<MindConfig> tweak = null, IEventSource events = null)
+        public World(Action<MindConfig> tweak = null, IEventSource events = null, PyRandom rng = null, Func<RimWorldAdapter, IGameAdapter> wrapAdapter = null)
         {
             // the creative-round defaults are off here so the older tests keep pinning the one-call paths
             Cfg = new MindConfig
@@ -56,7 +56,7 @@ namespace RimWorldLLM.Tests.Mind.Fakes
             Fb.AddPawn(3, "Cy");
             Bridge = FakeBridge.Client(Fb);
             Hook = new HookLlm(Llm);
-            D = new Director(Cfg, Bridge, Hook, Adapter, events, () => Real, new PyRandom(1));
+            D = new Director(Cfg, Bridge, Hook, wrapAdapter == null ? (IGameAdapter)Adapter : wrapAdapter(Adapter), events, () => Real, rng ?? new PyRandom(1));
         }
 
         public async Task<World> GoAsync() { await D.StartAsync(); return this; }
