@@ -62,6 +62,9 @@ namespace RimWorldLLM
 
             F(o, "research_current", () => { var p = Find.ResearchManager.GetProject(); return p == null ? JValue.CreateNull() : (JToken)p.defName; });
             F(o, "research_done", () => new JArray(DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(d => d.IsFinished).Select(d => d.defName)));
+            // Every research defName this game defines, so the agent can switch off playbook rules naming research that
+            // does not exist (the playbook's names are not all confirmed). Never rendered into the prompt.
+            F(o, "research_known", () => new JArray(DefDatabase<ResearchProjectDef>.AllDefsListForReading.Select(d => d.defName)));
             return o;
         }
 

@@ -179,3 +179,29 @@ def test_cycle_sends_alerts_to_the_model(world):
         assert "=== PLAYBOOK ALERTS ===" in user and "[P1 food.emergency]" in user
         assert user.index("WHY YOU WOKE") < user.index("PLAYBOOK ALERTS") < user.index("SETTINGS")
     run(go())
+
+
+def test_unknown_research_name_turns_rule_off(caplog):
+    from rimworldllm_agent.games.rimworld import steward_rules as sr
+    run = sr.compile_condition("'Batteries' not in research_done and colonists > 0")
+    assert run.research_names == frozenset({"Batteries"})
+    facts = {"research_done": [], "colonists": 3}
+    assert run(facts) is True
+    assert sr.unknown_research(run.research_names, facts) == frozenset()          # no list: cannot judge
+    facts["research_known"] = ["Electricity"]
+    assert sr.unknown_research(run.research_names, facts) == frozenset({"Batteries"})
+    facts["research_known"] = ["Batteries", "Electricity"]
+    assert sr.unknown_research(run.research_names, facts) == frozenset()
+
+
+def test_fired_rules_skip_rules_with_unknown_research():
+    from rimworldllm_agent.games.rimworld import steward_rules as sr
+    rules = [r for r in sr.load_rules() if r[3].research_names]
+    assert rules, "the shipped playbook names some research"
+    rid = rules[0][0]
+    names = rules[0][3].research_names
+    base = {"research_known": []}                                               # the game defines no research at all
+    assert all(r[1] not in {x[0] for x in rules} for r in sr.fired_rules(base))
+    known = {"research_known": sorted(names)}
+    assert sr.unknown_research(names, known) == frozenset()
+    assert rid

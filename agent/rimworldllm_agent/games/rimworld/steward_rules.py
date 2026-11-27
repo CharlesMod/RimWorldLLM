@@ -164,7 +164,44 @@ def compile_condition(cond: str):
             return None
 
     run.always_on = always
+    run.research_names = _research_names(tree)
     return run
+
+
+_RESEARCH_FIELDS = ("research_done", "research_current")
+
+
+def _research_names(tree: ast.AST) -> frozenset:
+    """The research defNames a condition names: string constants compared with research_done / research_current."""
+    names = set()
+    for n in ast.walk(tree):
+        if not isinstance(n, ast.Compare):
+            continue
+        sides = [n.left, *n.comparators]
+        if not any(isinstance(x, ast.Name) and x.id in _RESEARCH_FIELDS for x in sides):
+            continue
+        for x in sides:
+            if isinstance(x, ast.Constant) and isinstance(x.value, str):
+                names.add(x.value)
+            elif isinstance(x, (ast.List, ast.Tuple)):
+                names.update(e.value for e in x.elts if isinstance(e, ast.Constant) and isinstance(e.value, str))
+    return frozenset(names)
+
+
+_warned_research: set = set()
+
+
+def unknown_research(names: frozenset, facts: dict) -> frozenset:
+    """Names the game does not define, judged by facts["research_known"] (every ResearchProjectDef defName, sent by the
+    mod). Without that list nothing can be judged and nothing is unknown. Each miss is logged once."""
+    known = facts.get("research_known")
+    if not names or not isinstance(known, (list, tuple)):
+        return frozenset()
+    miss = frozenset(n for n in names if n not in set(known))
+    for n in miss - _warned_research:
+        _warned_research.add(n)
+        log.warning("playbook rules name research %r, which this game does not define; those rules stay off", n)
+    return miss
 
 
 @lru_cache(maxsize=1)
@@ -265,6 +302,8 @@ def fired_rules(facts: dict) -> list[tuple[int, str, str]]:
     for rid, pri, action, run, always in load_rules():
         if always:
             continue
+        if unknown_research(getattr(run, "research_names", frozenset()), facts):
+            continue                                    # a research name the game lacks: the condition counts as false
         if run(facts) is True:
             out.append((pri, rid, action))
     out.sort(key=lambda t: (t[0], t[1]))
