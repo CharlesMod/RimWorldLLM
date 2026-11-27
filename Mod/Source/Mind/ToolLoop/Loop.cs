@@ -99,6 +99,9 @@ namespace RimWorldLLM.Mind.ToolLoop
         public bool FallbackAfterActions;
         public IEnumerable<string> Allowed;
         public int? Slot;
+        /// <summary>Streaming (not in the Python): when set and the backend is an IStreamingBackend, each model step goes through
+        /// its options overload, so the sink sees Sent/Queued/Progress/FirstToken/Partial. Null: the ordinary request, byte for byte.</summary>
+        public CallOptions CallOptions;
         /// <summary>time.monotonic() in seconds; injectable for tests.</summary>
         public Func<double> Clock = AwayGate.MonotonicS;
 
@@ -200,8 +203,11 @@ namespace RimWorldLLM.Mind.ToolLoop
                         try
                         {
                             double to = Math.Min(o.StepTimeoutS, remaining);
-                            reply = await WaitFor(backend.ChatAsync(stepMsgs, grammar, nativeTools, nativeTools != null && nativeTools.Count > 0 ? "auto" : null,
-                                                                    o.MaxTokens, o.Temperature, to, o.Slot), to + 1.0).ConfigureAwait(false);
+                            string choice = nativeTools != null && nativeTools.Count > 0 ? "auto" : null;
+                            Task<Reply> call = o.CallOptions != null && backend is IStreamingBackend sb
+                                ? sb.ChatAsync(stepMsgs, grammar, nativeTools, choice, o.MaxTokens, o.Temperature, to, o.Slot, o.CallOptions)
+                                : backend.ChatAsync(stepMsgs, grammar, nativeTools, choice, o.MaxTokens, o.Temperature, to, o.Slot);
+                            reply = await WaitFor(call, to + 1.0).ConfigureAwait(false);
                         }
                         catch (StepTimeout) { tr.Kind = "timeout"; tr.Error = "the model took too long"; }
                         catch (BackendAway e) { tr.Kind = "away"; tr.Error = e.Message; }
