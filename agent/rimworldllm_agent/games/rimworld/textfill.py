@@ -40,6 +40,20 @@ SYSTEM = (
     "Reply with one JSON array: one object per item, {\"id\": the item's id, \"text\": ..., \"title\": ... only when the "
     "item asks for a title}.\n\n" + gd.DATA_RULE)
 
+# What makes each kind good, beyond "what this text is" from the mod.
+KIND_HINTS = {
+    "art": "Say what the piece shows (the tale it depicts, if any) and one concrete detail of its making; let the maker's "
+           "mood or the day's events leak into it. The title is short and witty.",
+    "grave": "An epitaph as carved on the stone, in the voice of the people who buried them: short, may be darkly funny "
+             "about who they were or how they died, never cruel.",
+    "book": "Keep the book's type: a novel's blurb is about its story (a plot shaped by the author's life and mood), a "
+            "textbook or schematic is about its subject. The title fits the type.",
+    "social": "Say what was actually said or done: the topic, the jab or the kind word, concrete and drawn from the "
+              "context. One sentence.",
+    "combat": "One sentence: the attack and its outcome, with one vivid concrete detail.",
+}
+TEMPERATURE = 0.9      # these are creative texts: the structured default would make every artwork read alike
+
 MINOR_LINE = ("A child or teenager is involved in this one: keep it innocent and wholesome, with nothing romantic, "
               "sexual or frightening about them.")
 
@@ -96,6 +110,7 @@ def messages(items: list[dict]) -> list[tuple[str, str]]:
         body = [f"id: {gd.clean(it.get('id', ''), 'label', max_len=80)}",
                 f"kind: {gd.clean(it.get('kind', ''), 'label', max_len=20)}",
                 f"what this text is: {gd.clean(it.get('about', ''), 'line', max_len=300)}",
+                f"how to write it: {KIND_HINTS.get(it.get('kind'), 'Specific to the context.')}",
                 f"length: {int(it.get('min_len', 0))} to {int(it.get('max_len', 300))} characters"
                 + (f"; title up to {int(it.get('title_max', 60))} characters" if title else "; no title"),
                 "allowed tokens: " + (", ".join(f"[{t}]" for t in toks) if toks else "none (no square brackets at all)")]
@@ -189,7 +204,7 @@ async def fill_once(d, slot: int) -> int:
         d.text_fill_wait_s = WAIT_EMPTY_S
         return 0
     max_tokens = min(1500, sum(int(i.get("max_len", 300)) // 3 + 64 for i in group))
-    c = await d.llm.complete(messages(group), slot=slot, kind="textfill", max_tokens=max_tokens, stop=[],
+    c = await d.llm.complete(messages(group), slot=slot, kind="textfill", max_tokens=max_tokens, stop=[], temperature=TEMPERATURE,
                              json_schema=schema(group))        # LLMError goes up: the idle job backs off
     tried.update(i["id"] for i in group)
     by_id = {i["id"]: i for i in group}
