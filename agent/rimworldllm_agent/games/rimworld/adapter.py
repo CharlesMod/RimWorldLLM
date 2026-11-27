@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -34,9 +35,19 @@ _FIRST_CUES = {
 # vanilla interactions that are an argument a bystander may react to (core/bystanders.py)
 ARGUMENT_INTERACTIONS = frozenset({"Insult", "Slight"})
 # What the game's own interactions are, in words the line prompt can use, so the line fits (an insult reads as an insult).
+# A chitchat names no topic of its own: describe the situation (a passing exchange), never the word. The marker phrase
+# is how drops_meta later recognises a thought or line whose scene was only that.
+_PASSING = "passing exchange"
+_PASSING_KIND = "a passing exchange about whatever is around (the work, the food, the weather, the latest event)"
+_CHITCHAT_SUMMARY = re.compile(r"^(?P<a>.+?) -> (?P<b>.+?): Chitchat\.?$", re.I)
+_META_TALK = re.compile(
+    r"chit[\s-]?chat|small[\s-]?talk|\bidle (talk|chatter|chat)\b|\b(all|this|that|enough|more|so much|too much|such)\s+(the\s+)?"
+    r"(talk|talking|chatter|chatting|yapping|yakking|gossip|jabber|prattle|blather)\b|"
+    r"\b(stop|quit|cut|enough|tired of|sick of)\b[^.!?]{0,20}\b(talking|chatting|chatter|yapping)\b|\bwhy (does|do|is) everyone (talk|chat)", re.I)
+_NO_META_RULE = "Don't remark on the conversation or the act of talking itself; react to the people and what's happening."
 _INTERACTION_KIND = {
     "Insult": "an insult", "Slight": "a cutting remark that slights them", "KindWords": "kind words",
-    "Chitchat": "idle small talk", "DeepTalk": "a deep, personal conversation",
+    "Chitchat": _PASSING_KIND, "DeepTalk": "a deep, personal conversation",
     "RomanceAttempt": "a romantic advance", "MarriageProposal": "a marriage proposal", "Breakup": "ending their relationship",
     "ConvertIdeoAttempt": "an attempt to win them over to a belief", "Reassure": "reassurance", "Counsel": "counsel",
 }
@@ -84,13 +95,13 @@ class RimWorldAdapter:
         "plain, dry, blunt; the colonist's own register. No moralising, no flowery language.")
     diary_request = (
         "Write today's diary entry: 2 to 4 sentences, under 70 words, one paragraph, only about what is listed "
-        "under what happened today. Do not name anyone who is not mentioned there.")
+        "under what happened today. Do not name anyone who is not mentioned there. " + _NO_META_RULE)
     thought_system = (
         "You are the passing mind of one RimWorld colonist: the single small thought that crosses their head "
         "while they work. First person, plain, dry, the colonist's own register. Never narrate, never advise.")
     thought_request = (
         "Write the one thought crossing your mind now: one short sentence, under 14 words, no quotes, only about "
-        "something listed under what is on your mind. Do not name anyone who is not mentioned there.")
+        "something listed under what is on your mind. Do not name anyone who is not mentioned there. " + _NO_META_RULE)
     dream_system = (
         "You are the sleeping mind of one RimWorld colonist: one strange dream fragment, as it is dreamt. First person, "
         "present tense, plain words, surreal but small. Nothing sexual, nothing gory, never about anyone not listed.")
@@ -101,7 +112,7 @@ class RimWorldAdapter:
         "You are one RimWorld colonist watching two people argue. You do not take part. Give the tiny reaction that "
         "shows on your face or under your breath: first person, in your own register, never a speech, never advice.")
     reaction_request = (
-        "Write your reaction: 2 to 6 words, plain, no quotes, naming nobody (for example: Not again. / Ha. About time.).")
+        "Write your reaction: 2 to 6 words, plain, no quotes, naming nobody (for example: Not again. / Ha. About time.). " + _NO_META_RULE)
     bystander_templates = ("Not again.", "Here we go.", "Oh, come on.", "Ha. About time.", "Keep me out of it.", "Ugh. Those two.")
     argument_intents = frozenset({"insult", "slight"})
     chronicle_system = (
@@ -247,6 +258,9 @@ class RimWorldAdapter:
 
     def first_person(self, event: dict, actor_id: int) -> str:
         summary = event.get("summary", "").strip()
+        m = _CHITCHAT_SUMMARY.match(summary) if event.get("type") == "social" else None
+        if m:                                              # the game's label names the interaction, not what was said
+            summary = f"{m['a']} and {m['b']} had a {_PASSING}."
         roles = {int(a["id"]): a.get("role", "") for a in event.get("actors", [])}
         if roles.get(actor_id) in _SUBJECT_ROLES:
             return f"It happened to me: {summary}"
@@ -319,13 +333,20 @@ class RimWorldAdapter:
                 "romantic": key in self.romantic_interactions,
                 "kind": _INTERACTION_KIND.get(key) or str(data.get("interaction_label") or "a social moment")}
 
+    def drops_meta(self, text: str, context) -> bool:
+        """True for a thought or line that is only meta-talk about chatting ("I wish people would cut this chitchat")
+        when its scene (memory or trigger texts in ``context``) was a passing chitchat. Any other scene keeps it."""
+        if not _META_TALK.search(text or ""):
+            return False
+        return any(_PASSING in str(c).lower() for c in context or ())
+
     def vanilla_request(self, info: dict, speaker: str, listener: str) -> str:
         """The line request for a vanilla interaction: what the game wrote, what kind of thing it was, the same subject."""
         s = f' The game\'s own log reads: "{info["sentence"]}".' if info["sentence"] else ""
         return ("=== REQUEST ===\n"
                 f"{speaker} has just done something to {listener}: it is {info['kind']}.{s}\n"
                 f"Write {speaker}'s one line of speech to {listener} that goes with it. It must read as {info['kind']} "
-                "and stay on the same subject the log names. One line only.")
+                "and stay on the same subject the log names. " + _NO_META_RULE + " One line only.")
 
     # ---- ongoing concerns and grudges (core/concerns.py, core/grudges.py) ----------
     def concern_births(self, event: dict, holders: list[int], loved) -> list[dict]:

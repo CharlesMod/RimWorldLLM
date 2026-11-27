@@ -28,6 +28,9 @@ _QUIET_TYPES = frozenset({"social", "thought", "level_up", "first_cue", "gatheri
 
 WORK_FALLBACK = ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Construction", "Growing", "Mining",
                  "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research"]
+WHY_MAX = 80
+_WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
+             "it is shown to the player beside what you did", max_len=WHY_MAX, required=False)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "draft", "order")
 
 ADVISOR_NOTE = (
@@ -82,34 +85,34 @@ class Session:
             [Param("pause", "enum", "pause the game, unpause it, or leave it", choices=["leave", "yes", "no"]),
              Param("speed", "enum", "game speed 1 to 4, or leave", choices=["leave", "1", "2", "3", "4"]),
              Param("emergency", "enum", "yes only for a real emergency pause", choices=["no", "yes"]),
-             Param("reason", "text", "why, a few words", max_len=120)])]
+             _WHY])]
         if names:
             pawn = Param("pawn", "enum", "which colonist, by name", choices=names)
             out += [
                 ToolSpec("set_work", "Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.",
-                         [pawn, Param("work", "enum", "work type", choices=self.work), Param("priority", "int", "0 off, 1 highest, 4 lowest", lo=0, hi=4)]),
+                         [pawn, Param("work", "enum", "work type", choices=self.work), Param("priority", "int", "0 off, 1 highest, 4 lowest", lo=0, hi=4), _WHY]),
                 ToolSpec("set_schedule", "Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).",
                          [pawn, Param("from_hour", "int", "first hour, 0 to 23", lo=0, hi=23), Param("to_hour", "int", "end hour, 0 to 24", lo=0, hi=24),
-                          Param("assignment", "enum", "what they do in those hours", choices=["anything", "work", "joy", "sleep", "meditate"])]),
+                          Param("assignment", "enum", "what they do in those hours", choices=["anything", "work", "joy", "sleep", "meditate"]), _WHY]),
                 ToolSpec("draft", "Draft or undraft colonists. pawns is a comma-separated list of names, or all.",
-                         [Param("pawns", "text", "names separated by commas, or all", max_len=160), Param("drafted", "enum", "draft or undraft", choices=["yes", "no"])]),
+                         [Param("pawns", "text", "names separated by commas, or all", max_len=160), Param("drafted", "enum", "draft or undraft", choices=["yes", "no"]), _WHY]),
                 ToolSpec("order", "Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.",
                          [pawn, Param("order", "enum", "the order", choices=["move", "attack", "hold"]),
                           Param("x", "int", "move: cell x (0 if unused)", lo=0, hi=999), Param("z", "int", "move: cell z (0 if unused)", lo=0, hi=999),
                           Param("target_id", "int", "attack: the target's id (0 if unused)", lo=0, hi=999999),
-                          Param("hold", "enum", "hold: yes to hold, no to stop holding", choices=["yes", "no"])])]
+                          Param("hold", "enum", "hold: yes to hold, no to stop holding", choices=["yes", "no"]), _WHY])]
             if any(self.policies.get(k) for k in ("outfit", "food", "drug")):
                 out.append(ToolSpec("set_policy", "Give one colonist an outfit, food or drug policy by name (see POLICIES).",
-                                    [pawn, Param("kind", "enum", "which policy", choices=["outfit", "food", "drug"]), Param("name", "text", "the policy's name", max_len=60)]))
+                                    [pawn, Param("kind", "enum", "which policy", choices=["outfit", "food", "drug"]), Param("name", "text", "the policy's name", max_len=60), _WHY]))
             if self.beds:
                 out.append(ToolSpec("assign_bed", "Assign one colonist to a bed (by the bed's id in BEDS).",
-                                    [pawn, Param("bed_id", "enum", "the bed's id", choices=list(self.beds))]))
+                                    [pawn, Param("bed_id", "enum", "the bed's id", choices=list(self.beds)), _WHY]))
         out.append(ToolSpec("set_research", "Choose the research project to work on, by name (see RESEARCH).",
-                            [Param("project", "text", "the project's name", max_len=80)]))
+                            [Param("project", "text", "the project's name", max_len=80), _WHY]))
         if self.letters:
             out.append(ToolSpec("answer_letter", "Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.",
                                 [Param("letter_id", "enum", "the letter's id", choices=list(self.letters)),
-                                 Param("choice", "text", "one of the letter's choices, or dismiss", max_len=80)]))
+                                 Param("choice", "text", "one of the letter's choices, or dismiss", max_len=80), _WHY]))
         return out
 
     # ---- running a tool ---------------------------------------------------------------
@@ -137,6 +140,13 @@ class Session:
         return self.pawns[name]
 
     def _body(self, tool: str, v: dict) -> tuple[str, dict]:
+        verb, body = self._verb_body(tool, v)
+        why = gd.clean(str(v.get("why") or ""), "why", max_len=WHY_MAX).strip()
+        if why:
+            body["why"] = why
+        return verb, body
+
+    def _verb_body(self, tool: str, v: dict) -> tuple[str, dict]:
         if tool == "set_time":
             b: dict = {}
             if v["pause"] != "leave":
@@ -146,7 +156,6 @@ class Session:
             if not b:
                 raise ValueError("nothing to change: set pause or speed")
             b["emergency"] = v["emergency"] == "yes"
-            b["reason"] = v["reason"]
             return "time", b
         if tool == "set_work":
             return "work", {"pawn": self._pawn(v["pawn"]), "priorities": {v["work"]: v["priority"]}}
