@@ -38,6 +38,9 @@ namespace RimWorldLLM.Tests
         public HandResult CombatSpeed(int speed, bool restore) { return Next; }
         public JObject TradeOffer(string with, TradeLimits l) { return null; }
         public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { return Next; }
+        public HandResult TradeStart(TradeArgs a, TradeLimits l, TradeDay d, out PendingTrade p, out string cannot) { p = null; cannot = null; return Next; }
+        public WalkObs TradeObserve(PendingTrade p) { return default(WalkObs); }
+        public void TradeReissue(PendingTrade p) { }
         public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { return null; }
         public HandResult Caravan(CaravanArgs a, int maxPawns) { return Next; }
 
@@ -328,6 +331,9 @@ namespace RimWorldLLM.Tests
             public HandResult CombatSpeed(int speed, bool restore) { return null; }
             public JObject TradeOffer(string with, TradeLimits l) { return null; }
             public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { return null; }
+            public HandResult TradeStart(TradeArgs a, TradeLimits l, TradeDay d, out PendingTrade p, out string cannot) { p = null; cannot = null; return null; }
+            public WalkObs TradeObserve(PendingTrade p) { return default(WalkObs); }
+            public void TradeReissue(PendingTrade p) { }
             public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { return null; }
             public HandResult Caravan(CaravanArgs a, int maxPawns) { return null; }
         }
