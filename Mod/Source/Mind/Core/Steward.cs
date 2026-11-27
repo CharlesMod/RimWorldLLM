@@ -203,7 +203,7 @@ namespace RimWorldLLM.Mind
             string text;
             if (path.Length > 0)
             {
-                try { text = new UTF8Encoding(false, false).GetString(File.ReadAllBytes(ExpandUser(path))); }
+                try { text = new UTF8Encoding(false, false).GetString(File.ReadAllBytes(ExpandUser(path))).Replace("\r\n", "\n").Replace("\r", "\n"); }   // Python text mode: universal newlines
                 catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is NotSupportedException || e is ArgumentException)
                 {
                     return ("", "strategy file " + path + " not read (" + (e is IOException ? "OSError" : e is UnauthorizedAccessException ? "PermissionError" : PyNames.Of(e)) + "): section left out");
