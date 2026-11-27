@@ -382,6 +382,7 @@ namespace RimWorldLLM.Mind
                         if (k <= 0) break;
                         ms.Write(buf, 0, k);
                     }
+                    if (status == 401) LlmAuth.Unauthorized(status, System.Text.Encoding.UTF8.GetString(ms.ToArray()));
                     throw StreamErrors.FromReply(status, ms.ToArray(), retryAfter, www);
                 }
                 var reader = new ChatStreamReader(sink, sw);

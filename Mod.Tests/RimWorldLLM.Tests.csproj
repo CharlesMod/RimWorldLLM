@@ -62,9 +62,6 @@
         <EmbeddedResource Include="Mind/Data/dialogs_ransom.json" LogicalName="RimWorldLLM.Tests.dialogs_ransom.json" />
         <EmbeddedResource Include="Mind/Data/dialogs_naming.json" LogicalName="RimWorldLLM.Tests.dialogs_naming.json" />
         <EmbeddedResource Include="Mind/Data/dialogs_growth.json" LogicalName="RimWorldLLM.Tests.dialogs_growth.json" />
-        <EmbeddedResource Include="Mind/Data/steward_digest_trader.json" LogicalName="RimWorldLLM.Tests.steward_digest_trader.json" />
-        <EmbeddedResource Include="Mind/Data/steward_digest_orbital.json" LogicalName="RimWorldLLM.Tests.steward_digest_orbital.json" />
-        <EmbeddedResource Include="Mind/Data/steward_digest_settlement.json" LogicalName="RimWorldLLM.Tests.steward_digest_settlement.json" />
         <EmbeddedResource Include="Mind/Data/jobs-art-golden.json" LogicalName="RimWorldLLM.Tests.jobs-art-golden.json" />
         <EmbeddedResource Include="Mind/Data/jobs-lore-golden.json" LogicalName="RimWorldLLM.Tests.jobs-lore-golden.json" />
         <EmbeddedResource Include="Mind/Data/jobs-recap-golden.json" LogicalName="RimWorldLLM.Tests.jobs-recap-golden.json" />

@@ -86,6 +86,22 @@ namespace RimWorldLLM.Mind
     }
 
     /// <summary>The one HTTP seam. The timeout is per request (a cancellation token), the client's own timeout is not used.</summary>
+    /// <summary>
+    /// A 401 from the mind's own /v1 calls (HttpLlm, OpenAIBackend; stream and not) is passed to <see cref="OnUnauthorized"/>(status, body).
+    /// The mod sets it to RimWorldLLM.Bridge.EngineAuthStatus.Note (the mind stays free of Bridge references). Never throws.
+    /// </summary>
+    public static class LlmAuth
+    {
+        public static volatile Action<int, string> OnUnauthorized;
+
+        public static void Unauthorized(int status, string body)
+        {
+            var cb = OnUnauthorized;
+            if (cb == null) return;
+            try { cb(status, body ?? ""); } catch (Exception) { }
+        }
+    }
+
     public static class HttpUtil
     {
         public static HttpClient NewClient() => new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
@@ -120,6 +136,7 @@ namespace RimWorldLLM.Mind
                 foreach (var h in resp.Headers.NonValidated) reply.Headers[h.Key] = string.Join(", ", h.Value);
                 foreach (var h in resp.Content.Headers.NonValidated) reply.Headers[h.Key] = string.Join(", ", h.Value);
                 reply.Content = await resp.Content.ReadAsByteArrayAsync(cts.Token).ConfigureAwait(false);
+                if (reply.Status == 401) LlmAuth.Unauthorized(reply.Status, System.Text.Encoding.UTF8.GetString(reply.Content));
                 return reply;
             }
             catch (HttpTransportException) { throw; }

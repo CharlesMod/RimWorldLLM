@@ -44,6 +44,7 @@ namespace RimWorldLLM
         /// <summary>Builds the runner for the current inputs (game thread; the config file is read here, a bad one throws ConfigError).</summary>
         static IMindProc Make(MindInputs i)
         {
+            LlmAuth.OnUnauthorized = (status, body) => EngineAuthStatus.Note(status, body);   // a 401 from the mind's /v1 calls updates the pairing status
             if (!_sinkSet) { _sinkSet = true; LlmLog.Sink = (lvl, logger, msg) => Logs.Enqueue("[" + lvl + "] " + msg); }
             if (!_migrated) { _migrated = true; try { MindConfig.MigrateLegacyDataDir(i.DataDir, MindEnv.Process); } catch (Exception) { } }
             var cfg = MindPlan.BuildConfig(i);

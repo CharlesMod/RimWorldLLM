@@ -277,7 +277,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.True(!t.Contains("</game_data>") && !t.Contains("<|"));
         }
 
-        [Fact(Skip = "deferred to merge: the digest's COMBAT lines are delta3-b's (steward_digest.py)")]
+        [Fact]
         public void DigestGetsCombatLinesAfterAlertsAndKeepsThemUnderTheCap()
         {
             var d = CombatData.Digest();
@@ -764,7 +764,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.NotNull(typeof(StewardCombat).Assembly.GetManifestResourceStream(StewardCombat.SystemName));
         }
 
-        [Fact(Skip = "deferred to merge: steward_system.txt and steward_strategy.md are delta3-b's resources")]
+        [Fact]
         public void PromptsAndPackagingSystemAndStrategyMentionCombat()
         {
             var kit = new StewardKit();
