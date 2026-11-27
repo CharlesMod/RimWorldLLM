@@ -262,6 +262,8 @@ namespace RimWorldLLM.Bridge
         public string Error;     // short reason when !Ok
         public bool TimedOut;
         public bool Unreachable;
+        /// <summary>On a 401: what the engine said about the token (token_required / token_invalid / token_revoked).</summary>
+        public EngineAuth Auth;
     }
 
     /// <summary>
@@ -282,6 +284,8 @@ namespace RimWorldLLM.Bridge
         }
 
         public string BaseUrl { get; private set; }
+        /// <summary>Bearer token for an engine on another machine (pairing); null or "" on loopback. Never logged.</summary>
+        public string Token;
         public int ShortTimeoutMs = 3000;      // status, plan, cancel, attach...
         public int CheckTimeoutMs = 10000;     // custom/check (reads a GGUF header)
         public int StorageTimeoutMs = 5000;    // storage (directory walk)
@@ -346,6 +350,7 @@ namespace RimWorldLLM.Bridge
                 try
                 {
                     var req = new HttpRequestMessage(new HttpMethod(method), BaseUrl + "/engine/v1/" + path);
+                    if (!string.IsNullOrEmpty(Token)) req.Headers.TryAddWithoutValidation("Authorization", "Bearer " + Token);
                     if (method != "GET")
                     {
                         req.Headers.TryAddWithoutValidation(CsrfHeader, "1");
@@ -358,6 +363,7 @@ namespace RimWorldLLM.Bridge
                         if (!resp.IsSuccessStatusCode)
                         {
                             res.Error = ErrorText(text, res.HttpStatus);
+                            if (res.HttpStatus == 401) res.Auth = EngineAuthStatus.Note(401, text);
                             return res;
                         }
                         try
