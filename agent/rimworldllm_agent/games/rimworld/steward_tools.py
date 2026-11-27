@@ -14,6 +14,7 @@ from pathlib import Path
 from ...core import gamedata as gd
 from ...core.bridge import BridgeError
 from ...core.toolloop import Param, ToolSpec
+from .steward_bio import BioKit
 from .steward_build import BuildKit
 from .steward_digest import pawn_names, render_digest
 from .steward_rules import alerts_section
@@ -30,6 +31,8 @@ _QUIET_TYPES = frozenset({"social", "thought", "level_up", "first_cue", "gatheri
 WORK_FALLBACK = ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Construction", "Growing", "Mining",
                  "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research"]
 WHY_MAX = 80
+CHILD_AGE = 13
+CHILD_REFUSAL = "children stay out of fights"
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
              "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order")
@@ -77,8 +80,10 @@ class Session:
         self.policies = {k: [str(x) for x in v] for k, v in (digest.get("policies") or {}).items() if isinstance(v, list)}
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
-        self.tools = self._tools() + self.build.tools
-        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names}
+        self.bio = BioKit(digest)                            # the Biotech tools exist only when the digest has a bio block
+        self.ages = {gd.name(p.get("name")): p["age"] for p in digest.get("pawns") or [] if isinstance(p.get("age"), (int, float))}
+        self.tools = self._tools() + self.build.tools + self.bio.tools
+        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.bio.names}
 
     # ---- the tool list for this digest ----------------------------------------------
     def _tools(self) -> list[ToolSpec]:
@@ -194,6 +199,10 @@ class Session:
             raise ValueError("that dialog's options are: " + ", ".join(f"{x.get('index')} {x.get('label')}" for x in live))
         return body
 
+    def _child(self, name: str) -> bool:
+        """Under 13 by the digest's age: vanilla cannot draft them, and children stay out of fights."""
+        return self.ages.get(name, 99) < CHILD_AGE
+
     def _pawn(self, name: str) -> int:
         if name not in self.pawns:
             raise ValueError(f"no colonist named {name}; the colonists are: " + ", ".join(self.pawns))
@@ -256,19 +265,23 @@ class Session:
         if tool == "draft":
             raw = v["pawns"].strip()
             if raw.lower() == "all":
-                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist"]
+                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist" and not self._child(n)]
             else:
                 ids = []
                 for part in (x for x in raw.split(",") if x.strip()):
                     n = _ci(self.pawns, part)
                     if n is None:
                         raise ValueError(f"no colonist named {part.strip()}; the colonists are: " + ", ".join(self.pawns))
+                    if self._child(n):
+                        raise ValueError(CHILD_REFUSAL)
                     ids.append(self.pawns[n])
             if not ids:
                 raise ValueError("no one to draft")
             return "draft", {"pawns": ids[:30], "drafted": v["drafted"] == "yes"}
         if tool == "order":
             pid, kind = self._pawn(v["pawn"]), v["order"]
+            if self._child(v["pawn"]):
+                raise ValueError(CHILD_REFUSAL)
             if kind == "move":
                 return "order", {"pawn": pid, "order": "move", "x": v["x"], "z": v["z"]}
             if kind == "attack":
@@ -278,6 +291,8 @@ class Session:
             return "order", {"pawn": pid, "order": "hold", "hold": v["hold"] == "yes"}
         if tool in self.build.names:
             return self.build.body(tool, v)
+        if tool in self.bio.names:
+            return self.bio.body(tool, v)
         raise ValueError(f"unknown tool {tool}")
 
 

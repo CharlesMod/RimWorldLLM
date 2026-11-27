@@ -141,6 +141,14 @@ Act when food_days < 3, or < 5 and falling.
 - **Caravans**: 2-3 pawns plus pack animals. Carry food for twice the travel time plus 3 days. Leave fighters, a doctor and a cook at home.
 - **Endings** (ship; Royal Ascent [Royalty]; Archonexus [Ideology]; Void Awakening [Anomaly]; Mechhive [Odyssey]): start only with 15+ food days, a strong killzone, medicine and 6+ fighters.
 
+## Biotech
+Only when the digest has Biotech lines.
+- Mechanitor early, once BasicMechtech: gestate labor mechs (lifter, agrihand, constructoid). Keep 1 bandwidth free; build a recharger before gestating.
+- Wastepacks go to a waste stockpile far from home (zone preset waste); build an atomizer once researched. Never dump them near home.
+- Sanguophages get hemogen from packs or a prisoner donor; never strip food for it.
+- Children learn daily (school desk or blackboard, school preset). Babies are fed before work (feeder plus carers). Children never fight.
+- Implant genes only with a plan the player can read.
+
 ## How to act
 - Each turn, name the top 1-3 problems from the digest with their numbers, then call the tools that fix them.
 - Prefer small reversible changes (priorities, bills, zones); big builds when calm, one per turn.
