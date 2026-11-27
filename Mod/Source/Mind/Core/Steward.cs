@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind.Py;
+using RimWorldLLM.Mind.RimWorld;
 using RimWorldLLM.Mind.ToolLoop;
 
 namespace RimWorldLLM.Mind
@@ -179,6 +180,12 @@ namespace RimWorldLLM.Mind
         public TimeSpan LiveRefresh = TimeSpan.FromSeconds(30);
         /// <summary>NEW: the least gap between two partial posts (at most 8 a second).</summary>
         public double PartialMinGapS = 0.125;
+        /// <summary>NEW (the look tool): can the model read pictures? Null: built from the tool backend's endpoint on first use.</summary>
+        public IVisionGate Vision;
+        /// <summary>NEW: the game's "narrator may look" setting (GET /config vision_allowed; missing is allowed). The director sets it.</summary>
+        public Func<bool> VisionAllowed = () => true;
+        /// <summary>NEW: the wait between two polls of a pending picture (the look tool); replaceable for tests.</summary>
+        public Func<int, Task> VisionDelay;
         private int _streams;
         private string _strategyNote;
 
@@ -615,6 +622,22 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>The vision gate: the game's setting allows it and the model reads pictures. A failing probe is a closed gate, never a failed turn.</summary>
+        private async Task<bool> VisionOpenAsync()
+        {
+            try
+            {
+                if (!VisionAllowed()) return false;
+                if (Vision == null && D.ToolBackend is OpenAIBackend ob) Vision = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
+                return Vision != null && await Vision.OpenAsync().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                LlmLog.Debug("rimworldllm.steward", "steward: vision gate failed: " + e.Message);
+                return false;
+            }
+        }
+
         private static string Need(JObject v, string key)
         {
             JToken t = JobsJson.Get(v, key);
@@ -653,9 +676,16 @@ namespace RimWorldLLM.Mind
             string system = kit.SystemPrompt(advisor) + (strategy.Length > 0 ? "\n\n" + StrategyHeading + "\n" + strategy : "") + "\n\n" + GameData.DataRule;
             var session = reason == "combat over" && kit is IStewardCombatKit afterKit ? afterKit.SessionAfterFight(digest, d.Bridge, advisor) : kit.Session(digest, d.Bridge, advisor);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board, advisor)).ToList();
+            VisionKit vision = null;                                       // the look tool: routine turns with a build block, when the model reads pictures
+            if (reason != "combat started" && reason != "combat over" && digest != null && digest["build"] is JObject && await VisionOpenAsync().ConfigureAwait(false))
+            {
+                vision = new VisionKit(d.Bridge, VisionDelay);
+                tools.Add(VisionKit.Spec());
+            }
             HashSet<string> allowed = advisor
                 ? new HashSet<string>(session.Tools.Select(x => x.Name)) { "note", "add_order", "do_nothing" }
                 : new HashSet<string>(tools.Select(x => x.Name));
+            if (vision != null) allowed.Add(VisionKit.ToolName);
             string alerts = "";
             try { alerts = kit.PlaybookAlerts(digest) ?? ""; }
             catch (Exception e) { LlmLog.Warning("rimworldllm.steward", "steward: playbook alerts failed: " + e); }     // the playbook never takes a cycle down
@@ -679,6 +709,7 @@ namespace RimWorldLLM.Mind
             async Task<JToken> executor(string tool, JObject v)
             {
                 if (tool == "do_nothing") return null;
+                if (tool == VisionKit.ToolName && vision != null) return await vision.RunAsync(v).ConfigureAwait(false);
                 if (tool == "note")
                 {
                     string line = CleanLine(Need(v, "text"), 160);
@@ -745,6 +776,7 @@ namespace RimWorldLLM.Mind
                     o.FinalMax = FinalMax;
                     o.MaxTokens = 220;
                     if (sink != null) o.CallOptions = new CallOptions { Sink = sink };
+                    if (vision != null) o.TakeAttachment = vision.TakeAttachment;
                 }).ConfigureAwait(false);
             }
             catch
@@ -768,6 +800,7 @@ namespace RimWorldLLM.Mind
             t["failures"] = new JArray(res.Failures.Skip(Math.Max(0, res.Failures.Count - 4)).Cast<object>().ToArray());
             t["executed"] = new JArray(res.Executed.Select(e => (object)new JArray(e.Tool, e.Args, e.Result)).ToArray());
             t["elapsed_s"] = Math.Round(res.ElapsedS, 2);
+            if (vision != null && vision.Looked.Count > 0) t["looks"] = new JArray(vision.Looked.Cast<object>().ToArray());
 
             // no automatic chat notes: the game writes one greentext line per act itself (from the act's "why")
             // the cycle's final line

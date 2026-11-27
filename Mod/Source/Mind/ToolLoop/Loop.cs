@@ -102,6 +102,9 @@ namespace RimWorldLLM.Mind.ToolLoop
         /// <summary>Streaming (not in the Python): when set and the backend is an IStreamingBackend, each model step goes through
         /// its options overload, so the sink sees Sent/Queued/Progress/FirstToken/Partial. Null: the ordinary request, byte for byte.</summary>
         public CallOptions CallOptions;
+        /// <summary>NEW (the look tool): called after each step's tool results are in the history; a non-null image content part is attached
+        /// to the next request (see ImageParts.Attach) and replaces any earlier one. Null (the default): bodies are byte for byte as before.</summary>
+        public Func<JObject> TakeAttachment;
         /// <summary>time.monotonic() in seconds; injectable for tests.</summary>
         public Func<double> Clock = AwayGate.MonotonicS;
 
@@ -247,6 +250,8 @@ namespace RimWorldLLM.Mind.ToolLoop
                     if (first.Kind == "final") { res.Outcome = "final"; res.FinalText = first.Text; break; }
                     if (first.Kind == "done") { res.Outcome = "done"; break; }
                     await RunCalls(acts, byName, executor, res, seen, hist, protocol).ConfigureAwait(false);
+                    JObject attachment = o.TakeAttachment?.Invoke();
+                    if (attachment != null) ImageParts.Attach(hist, protocol, attachment);
                     if (acts.Any(a => a.Action.Kind == "call" && byName.TryGetValue(a.Action.Tool, out var sp) && sp.EndsTurn))
                     {
                         res.Outcome = "done";
