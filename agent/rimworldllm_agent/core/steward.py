@@ -46,7 +46,7 @@ _NO_LINE = {"", "done", "nothing", "nothing to say", "none", "n/a", "ok"}
 
 def load_strategy(cfg, default_text: str) -> tuple[str, str]:
     """The strategy section text and a note for the log ("" when fine). Order: env path, config path, the shipped text.
-    A chosen file that is missing, unreadable or empty leaves the section out; a long one is cut at 8 KB (config) on a line."""
+    A chosen file that is missing, unreadable or empty leaves the section out; a long one is cut at steward_strategy_max_bytes (12 KB) on a line."""
     path = os.environ.get(ENV_STRATEGY, "").strip() or str(cfg.steward_strategy_path or "").strip()
     note = ""
     if path:
@@ -255,7 +255,13 @@ class Steward:
         session = kit.session(digest, d.bridge, advisor)
         tools = session.tools + board_tools(board, advisor)
         allowed = {x.name for x in session.tools} | {"note", "add_order", "do_nothing"} if advisor else {x.name for x in tools}
-        user = self._user(reason, chat, events, board, kit.render_digest(digest), advisor)
+        alerts = ""
+        if getattr(kit, "playbook_alerts", None):
+            try:
+                alerts = kit.playbook_alerts(digest)
+            except Exception:                           # the playbook never takes a cycle down
+                log.exception("steward: playbook alerts failed")
+        user = self._user(reason, chat, events, board, kit.render_digest(digest), advisor, alerts)
         t["system_chars"], t["user_chars"] = len(system), len(user)
 
         edits = Edits()
@@ -357,7 +363,7 @@ class Steward:
                 except BridgeError:
                     return
 
-    def _user(self, reason: str, chat: list[dict], events: list[str], board: dict, digest_text: str, advisor: bool) -> str:
+    def _user(self, reason: str, chat: list[dict], events: list[str], board: dict, digest_text: str, advisor: bool, alerts: str = "") -> str:
         d, st = self.d, (self.vv.get("settings") or {})
         parts = []
         if advisor:
@@ -375,6 +381,8 @@ class Steward:
         if events:
             why.append("Since you last looked:\n" + "\n".join(f"- {x}" for x in events))
         parts.append("=== WHY YOU WOKE ===\n" + "\n".join(why) + "\n")
+        if alerts.strip():
+            parts.append(alerts.rstrip("\n") + "\n")
         sets = []
         sets.append("You may change the game speed or pause it whenever you like." if st.get("controls_speed") else
                     ("You may not change the game speed. You may pause only in a real emergency (set_time with emergency yes)."

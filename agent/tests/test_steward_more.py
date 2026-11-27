@@ -137,7 +137,7 @@ def test_strategy_missing_or_empty_is_left_out_and_long_is_cut(tmp_path, monkeyp
     big = tmp_path / "b.txt"
     big.write_text("\n".join(f"line {i} " + "x" * 50 for i in range(400)))
     text, note = stew.load_strategy(Config(steward_strategy_path=str(big)), "S")
-    assert len(text.encode()) <= 8192 and "cut to 8192" in note and text.endswith("x" * 50)
+    assert len(text.encode()) <= 12288 and "cut to 12288" in note and text.endswith("x" * 50)
 
 
 def test_an_empty_strategy_leaves_the_heading_out(world, tmp_path, monkeypatch):

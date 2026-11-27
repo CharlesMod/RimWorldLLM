@@ -136,7 +136,7 @@ class Config(BaseModel):
     steward: bool = True               # the vivarium steward (core/steward.py); it stays off against a mod without /vivarium
     steward_min_gap_real_s: float = 20.0   # least real seconds between two steward cycles that are not chat (chat ignores it)
     steward_strategy_path: str = ""    # a strategy playbook file for the steward prompt; env RIMWORLDLLM_STEWARD_STRATEGY wins; "" = the shipped one
-    steward_strategy_max_bytes: int = 8192
+    steward_strategy_max_bytes: int = 12288
     art_enabled: bool = True           # LLM art descriptions (core/art.py); also needs the mod's art_descriptions
     art_max_tokens: int = 110
     chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
