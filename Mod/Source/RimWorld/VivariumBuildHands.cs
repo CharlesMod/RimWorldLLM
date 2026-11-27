@@ -461,6 +461,10 @@ namespace RimWorldLLM
                 case "raw":
                     f.SetDisallowAll(); f.SetAllow(ThingCategoryDefOf.ResourcesRaw, true);
                     break;
+                case "waste":
+                    // Biotech: wastepacks only (the zone sits away from home, like a dump)
+                    f.SetDisallowAll(); if (ThingDefOf.Wastepack != null) f.SetAllow(ThingDefOf.Wastepack, true);
+                    break;
             }
         }
 
@@ -522,10 +526,12 @@ namespace RimWorldLLM
 
                 // stockpile and dump
                 bool dump = a.Kind == "dump";
+                bool waste = !dump && string.Equals(a.Preset, "waste", StringComparison.OrdinalIgnoreCase);
+                if (waste && (!ModsConfig.BiotechActive || ThingDefOf.Wastepack == null)) return HandResult.No("wastepacks need Biotech");
                 var preset = dump ? StorageSettingsPreset.DumpingStockpile : StorageSettingsPreset.DefaultStockpile;
                 var cells = new List<IntVec3>();
                 string where;
-                if (!dump && a.At.Room != 0)
+                if (!dump && !waste && a.At.Room != 0)
                 {
                     Room room = null;
                     foreach (var r in map.regionGrid.AllRooms) if (r.ID == a.At.Room) { room = r; break; }
@@ -547,10 +553,10 @@ namespace RimWorldLLM
                         if (!BuildHelpers.InMap(box.X, box.Z, w, h, map.Size.x, map.Size.z)) return HandResult.No("that zone would leave the map");
                         foreach (var c in BuildPure.BoxCells(box)) if (!ok(new IntVec3(c[0], 0, c[1]))) return HandResult.No("(" + c[0] + "," + c[1] + ") is not free open ground");
                     }
-                    else if (dump)
+                    else if (dump || waste)
                     {
                         box = FindBox(map, BuildHelpers.DumpCandidates(home.x, home.z, w, h), w, h, ok, null);
-                        if (box == null) return HandResult.No("no free " + w + "x" + h + " place 12 to 30 cells from the base for a dump");
+                        if (box == null) return HandResult.No("no free " + w + "x" + h + " place 12 to 30 cells from the base for a " + (waste ? "waste stockpile" : "dump"));
                     }
                     else
                     {

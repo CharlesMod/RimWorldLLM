@@ -569,6 +569,7 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayPause>The narrator may pause for emergencies</RWL_Viv_MayPause>
   <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
   <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
+  <RWL_Viv_ImplantGenes>The narrator may implant xenogerms (Biotech)</RWL_Viv_ImplantGenes>
   <RWL_Viv_SlowForCombat>The narrator slows the game for fights</RWL_Viv_SlowForCombat>
   <RWL_Viv_SlowForCombatTip>On: when a fight starts the narrator sets normal speed, and puts your speed back when it ends (unless you changed it meanwhile). Works even when the narrator does not control the speed.</RWL_Viv_SlowForCombatTip>
   <RWL_Viv_Commentary>Narrator commentary</RWL_Viv_Commentary>
@@ -578,6 +579,7 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_DialogTimeout>Seconds before a popup gets the safe default</RWL_Viv_DialogTimeout>
   <RWL_Viv_DialogTimeoutTip>Real seconds, not game time: popups pause the game. Default 90.</RWL_Viv_DialogTimeoutTip>
   <RWL_Viv_ControlsSpeedTip>Off: your speed is respected. On: the narrator may pause, unpause and change the speed.</RWL_Viv_ControlsSpeedTip>
+  <RWL_Viv_ImplantGenesTip>Off: the narrator may assemble xenogerms but never implants one. On: it may set a grown colonist to receive a xenogerm, always with a plan you can read. Never children or prisoners.</RWL_Viv_ImplantGenesTip>
   <RWL_Viv_Heartbeat>The narrator looks at the colony every {0} game hours</RWL_Viv_Heartbeat>
   <RWL_Viv_HeartbeatTip>How often the narrator wakes up on its own to look over the colony, in game hours. It also wakes when you chat or something important happens.</RWL_Viv_HeartbeatTip>
   <RWL_Viv_Autosave>Rotating autosave while the narrator plays</RWL_Viv_Autosave>

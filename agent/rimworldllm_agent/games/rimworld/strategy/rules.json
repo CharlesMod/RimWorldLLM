@@ -65,6 +65,13 @@
   "components": "int",
   "silver": "int",
   "dlc": "list of strings: royalty|ideology|biotech|anomaly|odyssey",
+  "bio_babies_hungry": "int, hungry babies (Biotech; from the digest bio block)",
+  "hemogen_min_pct": "int, the lowest hemogen percent among hemogen-needing colonists (Biotech)",
+  "bandwidth_free": "int, the most free mech bandwidth any mechanitor has, gestating counted (Biotech)",
+  "mech_kinds_ready": "int, mech kinds a gestator could take now (Biotech)",
+  "pollution_growing": "bool, pollution trend is growing (Biotech)",
+  "wastepacks_near_home": "int, wastepacks lying near home (Biotech)",
+  "quest_offer_threat": "float or null, threat points of a pending quest's danger (if known)",
   "traders_ready": "int, traders in TRADERS that can trade now (digest trade block)",
   "trade_needs": "int, entries in the trade block's needs",
   "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block",
@@ -125,6 +132,9 @@
   "W-biomes": "https://rimworldwiki.com/wiki/Biomes",
   "W-ice": "https://rimworldwiki.com/wiki/Ice_Sheet_Guide",
   "W-pollution": "https://rimworldwiki.com/wiki/Pollution",
+  "W-mechanitor": "https://rimworldwiki.com/wiki/Mechanitor",
+  "W-hemogen": "https://rimworldwiki.com/wiki/Hemogen",
+  "W-baby": "https://rimworldwiki.com/wiki/Baby",
   "W-1.6.4518": "https://rimworldwiki.com/wiki/Version/1.6.4518",
   "W-1.6.4566": "https://rimworldwiki.com/wiki/Version/1.6.4566",
   "W-1.6.4850": "https://rimworldwiki.com/wiki/Version/1.6.4850",
@@ -798,7 +808,51 @@
    "id": "event.pollution",
    "category": "event",
    "condition": "'acidic_smog' in events",
-   "action": "Acidic smog: keep pawns indoors where possible, haul items indoors (they decay faster outside); dispose of wastepacks with an atomizer or far from the colony.",
+   "action": "Acidic smog: keep pawns indoors where possible, haul items indoors (they decay faster outside); dispose of wastepacks with an atomizer or in a waste stockpile (zone, preset waste) far from the colony.",
+   "priority": 2,
+   "sources": [
+    "W-pollution"
+   ],
+   "dlc": "biotech"
+  },
+  {
+   "id": "bio.baby_hungry",
+   "category": "biotech",
+   "condition": "bio_babies_hungry > 0",
+   "action": "A baby is hungry: set a feeder (children tool, feed) and keep a carer on Childcare; babies are fed before any other work.",
+   "priority": 1,
+   "sources": [
+    "W-baby"
+   ],
+   "dlc": "biotech"
+  },
+  {
+   "id": "bio.hemogen_low",
+   "category": "biotech",
+   "condition": "hemogen_min_pct < 25",
+   "action": "A hemogen-needing colonist is under 25% (craving soon): this turn set a grown prisoner to give blood (genes tool, op donate), or get hemogen packs. Never strip food for it.",
+   "priority": 1,
+   "sources": [
+    "W-hemogen"
+   ],
+   "dlc": "biotech"
+  },
+  {
+   "id": "bio.bandwidth_idle",
+   "category": "biotech",
+   "condition": "bandwidth_free >= 2 and mech_kinds_ready > 0",
+   "action": "A mechanitor has 2+ bandwidth idle: gestate a labor mech (mechs tool, op gestate), keeping 1 bandwidth free. No mech recharger yet: build one first (build tool, mech recharger).",
+   "priority": 3,
+   "sources": [
+    "W-mechanitor"
+   ],
+   "dlc": "biotech"
+  },
+  {
+   "id": "bio.pollution_growing",
+   "category": "biotech",
+   "condition": "pollution_growing == true or wastepacks_near_home > 0",
+   "action": "Pollution is growing or wastepacks lie near home: make a waste stockpile far from home (zone, stockpile, preset waste); an atomizer once researched.",
    "priority": 2,
    "sources": [
     "W-pollution"

@@ -14,6 +14,7 @@ from pathlib import Path
 from ...core import gamedata as gd
 from ...core.bridge import BridgeError
 from ...core.toolloop import Param, ToolSpec
+from .steward_bio import BioKit
 from .steward_build import BuildKit
 from .steward_combat import CombatKit, render_combat
 from .steward_digest import pawn_names, render_digest
@@ -32,6 +33,8 @@ _QUIET_TYPES = frozenset({"social", "thought", "level_up", "first_cue", "gatheri
 WORK_FALLBACK = ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Construction", "Growing", "Mining",
                  "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research"]
 WHY_MAX = 80
+CHILD_AGE = 13
+CHILD_REFUSAL = "children stay out of fights"
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
              "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order")
@@ -81,13 +84,15 @@ class Session:
         self.policies = {k: [str(x) for x in v] for k, v in (digest.get("policies") or {}).items() if isinstance(v, list)}
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
+        self.bio = BioKit(digest)                            # the Biotech tools exist only when the digest has a bio block
+        self.ages = {gd.name(p.get("name")): p["age"] for p in digest.get("pawns") or [] if isinstance(p.get("age"), (int, float))}
         self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
         self.trade = TradeKit(digest)                        # trade_offer, trade, caravan_plan, caravan: only with a trade block
         tools = self._tools()
         if self.combat.tools and any(t.name == "squad" for t in self.combat.tools):
             tools = [t for t in tools if t.name != "order"]   # in a fight squad orders replace single orders (cells by name, not x/z)
-        self.tools = tools + self.build.tools + self.combat.tools + self.trade.tools
-        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names or t.name in self.trade.acting}
+        self.tools = tools + self.build.tools + self.combat.tools + self.trade.tools + self.bio.tools
+        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names or t.name in self.trade.acting or t.name in self.bio.names}
 
     # ---- the tool list for this digest ----------------------------------------------
     def _tools(self) -> list[ToolSpec]:
@@ -210,6 +215,10 @@ class Session:
             raise ValueError("that dialog's options are: " + ", ".join(f"{x.get('index')} {x.get('label')}" for x in live))
         return body
 
+    def _child(self, name: str) -> bool:
+        """Under 13 by the digest's age: vanilla cannot draft them, and children stay out of fights."""
+        return self.ages.get(name, 99) < CHILD_AGE
+
     def _pawn(self, name: str) -> int:
         if name not in self.pawns:
             raise ValueError(f"no colonist named {name}; the colonists are: " + ", ".join(self.pawns))
@@ -272,19 +281,23 @@ class Session:
         if tool == "draft":
             raw = v["pawns"].strip()
             if raw.lower() == "all":
-                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist" and n not in self.cannot_fight]
+                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist" and n not in self.cannot_fight and not self._child(n)]
             else:
                 ids = []
                 for part in (x for x in raw.split(",") if x.strip()):
                     n = _ci(self.pawns, part)
                     if n is None:
                         raise ValueError(f"no colonist named {part.strip()}; the colonists are: " + ", ".join(self.pawns))
+                    if self._child(n):
+                        raise ValueError(CHILD_REFUSAL)
                     ids.append(self.pawns[n])
             if not ids:
                 raise ValueError("no one to draft")
             return "draft", {"pawns": ids[:30], "drafted": v["drafted"] == "yes"}
         if tool == "order":
             pid, kind = self._pawn(v["pawn"]), v["order"]
+            if self._child(v["pawn"]):
+                raise ValueError(CHILD_REFUSAL)
             if kind == "move":
                 if not v["x"] and not v["z"]:
                     raise ValueError("move needs a real cell (x and z); in a fight use squad move with a named position")
@@ -300,6 +313,8 @@ class Session:
             return self.combat.body(tool, v)
         if tool in self.trade.acting:
             return self.trade.body(tool, v)
+        if tool in self.bio.names:
+            return self.bio.body(tool, v)
         raise ValueError(f"unknown tool {tool}")
 
 
@@ -343,6 +358,10 @@ class StewardKit:
 
     def default_strategy(self) -> str:
         return (_HERE / "strategy" / "steward_strategy.md").read_text(encoding="utf-8")
+
+    def strategy_extra(self, digest: dict) -> str:
+        """Notes that only matter in some games: the Biotech section when the digest has a bio block."""
+        return (_HERE / "strategy" / "steward_biotech.md").read_text(encoding="utf-8").strip() if isinstance(digest.get("bio"), dict) else ""
 
     def playbook_alerts(self, digest: dict) -> str:
         """The "=== PLAYBOOK ALERTS ===" block: playbook rules that fire on this digest's facts ("" when none)."""

@@ -36,6 +36,8 @@ namespace RimWorldLLM.Bridge
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
         /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
         public bool Commentary = true;
+        /// <summary>Biotech: may the narrator implant xenogerms into colonists. Off until the player says so.</summary>
+        public bool MayImplantGenes = false;
         /// <summary>Phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"); the game side refreshes these from the mod settings.</summary>
         public bool Trade = true;
         public bool Caravans = true;
@@ -67,6 +69,7 @@ namespace RimWorldLLM.Bridge
                 ["controls_speed"] = ControlsSpeed,
                 ["slow_for_combat"] = SlowForCombat,
                 ["heartbeat_hours"] = HeartbeatHours,
+                ["may_implant_genes"] = MayImplantGenes,
                 ["trade"] = Trade,
                 ["caravans"] = Caravans,
                 ["trade_max_deal"] = TradeMaxDeal,

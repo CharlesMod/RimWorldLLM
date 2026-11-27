@@ -346,10 +346,10 @@ def test_big_digest_fits_the_cap_and_trade_shrinks_before_the_base():
 
 def test_steps_order_shrinks_build_then_trade_then_base():
     s = sd._STEPS
-    assert s[0] == (0, 0, 0) and s[-1][0] == 3
-    assert [x[1] for x in s] == sorted(x[1] for x in s) and [x[2] for x in s] == sorted(x[2] for x in s)
+    assert s[0] == (0, 0, 0, 0) and s[-1][0] == 3          # (base, build, trade, bio)
+    assert all([x[i] for x in s] == sorted(x[i] for x in s) for i in (1, 2, 3))
     first_base = next(i for i, x in enumerate(s) if x[0] > 0)
-    assert all(x[1] == 3 and x[2] == 3 for x in s[first_base:]) and s[first_base - 1][2] == 3
+    assert all(x[1] == 3 and x[2] == 3 and x[3] == 3 for x in s[first_base:]) and s[first_base - 1][2] == 3
 
 
 def test_every_sample_digest_fits_the_cap():

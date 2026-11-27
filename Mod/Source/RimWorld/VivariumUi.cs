@@ -35,6 +35,7 @@ namespace RimWorldLLM
             var vs = VivariumGame.State.Settings;
             vs.MayPauseForEmergencies = s.narratorMayPauseForEmergencies;
             vs.ControlsSpeed = s.narratorControlsSpeed;
+            vs.MayImplantGenes = s.narratorMayImplantGenes;
             vs.SlowForCombat = s.narratorSlowsForCombat;
             vs.HeartbeatHours = s.stewardHeartbeatHours;
             vs.AnswerDialogs = s.narratorAnswerDialogs;

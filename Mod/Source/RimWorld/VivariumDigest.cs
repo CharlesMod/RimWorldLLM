@@ -74,6 +74,7 @@ namespace RimWorldLLM
             Sec(o, "combat", () => { var cs = VivariumGame.State.Combat; if (!cs.Active) return null; var c = new VivariumHands().Combat(cs); c["squad"] = cs.Squad.ToJson(); c["speed_rule"] = cs.SpeedRuleJson(); return c; });
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "build", () => VivariumBuildView.Build(map));
+            Sec(o, "bio", () => VivariumBioView.Build(map));
             Sec(o, "stuck", () => Stuck(map));
             Sec(o, "power", () => Power(map));
             Sec(o, "food", () => VivariumFood.Digest(map));

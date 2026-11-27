@@ -372,6 +372,9 @@ class Steward:
             self._strategy_note = snote
             if snote:
                 log.info("steward: %s", snote)
+        extra = kit.strategy_extra(digest) if getattr(kit, "strategy_extra", None) else ""   # notes that only some games need (the adapter decides)
+        if extra:
+            strategy = (strategy + "\n\n" + extra) if strategy else extra
         system = kit.system_prompt(advisor) + ("\n\n" + STRATEGY_HEADING + "\n" + strategy if strategy else "") + "\n\n" + gd.DATA_RULE
         session = kit.session(digest, d.bridge, advisor, after_fight=True) if reason == "combat over" else kit.session(digest, d.bridge, advisor)
         tools = session.tools + board_tools(board, advisor)
