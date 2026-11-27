@@ -72,6 +72,7 @@ namespace RimWorldLLM
             Sec(o, "threats", () => Threats(map));
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "power", () => Power(map));
+            Sec(o, "facts", () => VivariumFacts.Build(map));
             return o;
         }
 
