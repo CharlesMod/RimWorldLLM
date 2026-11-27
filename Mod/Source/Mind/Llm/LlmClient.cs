@@ -41,6 +41,16 @@ namespace RimWorldLLM.Mind
         public string Cause { get; }
         public int Status { get; }
         public LlmError(string cause, int status = 0) : base(cause) { Cause = cause; Status = status; }
+        // Detail the streaming path fills from the server's error body (all empty/null for the non-stream path).
+        /// <summary>The server's error code as text ("yielded", "model_server_gone", "503"...).</summary>
+        public string Code { get; set; } = "";
+        /// <summary>The server's message (or the whole "error" string).</summary>
+        public string Detail { get; set; } = "";
+        public string ErrorType { get; set; } = "";
+        public string ServerRequestId { get; set; } = "";
+        /// <summary>Retry-After (header) or "retry" (mid-stream event) in seconds, clamped to [0, 30]; null when the server gave none.</summary>
+        public double? RetryAfterS { get; set; }
+        public string WwwAuthenticate { get; set; }
     }
 
     /// <summary>The engine answered 503 code "yielded": the model server machine is running a game. Not a fault.</summary>
@@ -50,7 +60,7 @@ namespace RimWorldLLM.Mind
         public string AwayMessage { get; }
         public double RetryAfter { get; }
         public override string PyName => "LLMAway";
-        public LlmAway(string message, double retryAfter = 5.0) : base("yielded", 503) { AwayMessage = message; RetryAfter = retryAfter; }
+        public LlmAway(string message, double retryAfter = 5.0) : base("yielded", 503) { AwayMessage = message; RetryAfter = retryAfter; RetryAfterS = retryAfter; }
     }
 
     /// <summary>The httpx.HTTPError analog: the request did not complete. Kind is the httpx class name
@@ -84,13 +94,15 @@ namespace RimWorldLLM.Mind
             => SendAsync(http, HttpMethod.Get, url, null, headers, timeoutS);
 
         /// <summary>POST with `json=body` as httpx 0.28 sends it (compact, UTF-8, Content-Type: application/json).</summary>
-        public static Task<HttpReply> PostJsonAsync(HttpClient http, string url, object body, IDictionary<string, string> headers, double timeoutS)
-            => SendAsync(http, HttpMethod.Post, url, PyJson.HttpxJson(body), headers, timeoutS);
+        public static Task<HttpReply> PostJsonAsync(HttpClient http, string url, object body, IDictionary<string, string> headers, double timeoutS,
+                                                    CancellationToken cancel = default)
+            => SendAsync(http, HttpMethod.Post, url, PyJson.HttpxJson(body), headers, timeoutS, cancel);
 
         public static async Task<HttpReply> SendAsync(HttpClient http, HttpMethod method, string url, byte[] body,
-                                                      IDictionary<string, string> headers, double timeoutS)
+                                                      IDictionary<string, string> headers, double timeoutS,
+                                                      CancellationToken cancel = default)
         {
-            using var cts = new CancellationTokenSource();
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancel);
             if (timeoutS > 0 && !double.IsInfinity(timeoutS)) cts.CancelAfter(TimeSpan.FromSeconds(Math.Min(timeoutS, 86400.0)));
             using var req = new HttpRequestMessage(method, url);
             if (body != null)
@@ -110,7 +122,7 @@ namespace RimWorldLLM.Mind
                 return reply;
             }
             catch (HttpTransportException) { throw; }
-            catch (OperationCanceledException e) when (cts.IsCancellationRequested)
+            catch (OperationCanceledException e) when (!cancel.IsCancellationRequested && cts.IsCancellationRequested)
             {
                 throw new HttpTransportException("ReadTimeout", "timed out", e);
             }
@@ -355,7 +367,7 @@ namespace RimWorldLLM.Mind
         }
     }
 
-    public class HttpLlm : ILlmClient, IEngineClient
+    public class HttpLlm : IStreamingLlmClient, IEngineClient
     {
         public LlmConfig Cfg { get; }
         public CallLog CallLog { get; }
@@ -366,6 +378,9 @@ namespace RimWorldLLM.Mind
         public AwayGate Gate { get; }
 
         private readonly bool _ownsHttp;
+
+        /// <summary>Makes the X-Request-Id of each call (printable ASCII, at most 128 bytes). Replaceable for tests.</summary>
+        public Func<string> RequestIdFactory { get; set; } = RequestIds.New;
 
         public HttpLlm(LlmConfig cfg, CallLog calllog = null, HttpClient client = null, LogSink log = null, Func<double> clock = null)
         {
@@ -429,14 +444,24 @@ namespace RimWorldLLM.Mind
             return PyJson.Truthy(t) ? PyJson.Str(t) : "";
         }
 
-        public virtual async Task<Completion> CompleteAsync(IReadOnlyList<LlmMessage> messages, int? slot, string kind = "line", int maxTokens = 48,
-                                                            IReadOnlyList<string> stop = null, string grammar = null, double? temperature = null,
-                                                            int? actor = null, JObject jsonSchema = null)
+        public virtual Task<Completion> CompleteAsync(IReadOnlyList<LlmMessage> messages, int? slot, string kind = "line", int maxTokens = 48,
+                                                      IReadOnlyList<string> stop = null, string grammar = null, double? temperature = null,
+                                                      int? actor = null, JObject jsonSchema = null)
+            => CompleteAsync(messages, slot, kind, maxTokens, stop, grammar, temperature, actor, jsonSchema, (CallOptions)null);
+
+        /// <summary>As above, with per-call options: a cancellation token (cancels the HTTP request) and, in openai mode, a stream sink.
+        /// Without a sink the request is the ordinary non-streaming one. Native mode never streams.</summary>
+        public virtual async Task<Completion> CompleteAsync(IReadOnlyList<LlmMessage> messages, int? slot, string kind, int maxTokens,
+                                                            IReadOnlyList<string> stop, string grammar, double? temperature,
+                                                            int? actor, JObject jsonSchema, CallOptions options)
         {
             IReadOnlyList<string> stopL = stop ?? new[] { "\n" };
             Gate.Check();                           // backing off after "yielded": no request, no calllog record
             var sw = Stopwatch.StartNew();
-            var st = new CallStats { Kind = kind, Slot = slot, Actor = actor };
+            var st = new CallStats { Kind = kind, Slot = slot, Actor = actor, RequestId = RequestIdFactory() };
+            CancellationToken cancel = options != null ? options.Cancel : default;
+            ILlmStreamSink sink = options?.Sink;
+            bool streamed = false;
             JToken tim;
             string text;
             try
@@ -444,6 +469,7 @@ namespace RimWorldLLM.Mind
                 var (samp, sh) = await SamplingAsync(kind, grammar, jsonSchema).ConfigureAwait(false);
                 var hdr = Headers();
                 foreach (var kv in sh) hdr[kv.Key] = kv.Value;
+                hdr["X-Request-Id"] = st.RequestId;
                 if (Cfg.Mode == "native")
                 {
                     var body = new JObject
@@ -457,7 +483,7 @@ namespace RimWorldLLM.Mind
                     if (slot.HasValue) body["id_slot"] = slot.Value;
                     if (!string.IsNullOrEmpty(grammar)) body["grammar"] = grammar;
                     if (jsonSchema != null && jsonSchema.Count > 0) body["json_schema"] = jsonSchema.DeepClone();
-                    var r = await HttpUtil.PostJsonAsync(Http, LlmWire.RemoveV1(Base) + "/completion", body, hdr, Cfg.TimeoutS).ConfigureAwait(false);
+                    var r = await HttpUtil.PostJsonAsync(Http, LlmWire.RemoveV1(Base) + "/completion", body, hdr, Cfg.TimeoutS, cancel).ConfigureAwait(false);
                     JToken data = Ok(r);
                     Gate.Ok();
                     text = TextOf(PyAccess.Get(data, "content", new JValue("")));
@@ -480,7 +506,27 @@ namespace RimWorldLLM.Mind
                     if (slot.HasValue) body["id_slot"] = slot.Value;
                     if (!string.IsNullOrEmpty(grammar)) body["grammar"] = grammar;
                     if (jsonSchema != null && jsonSchema.Count > 0) body["json_schema"] = jsonSchema.DeepClone();
-                    var r = await HttpUtil.PostJsonAsync(Http, Base + "/chat/completions", body, hdr, Cfg.TimeoutS).ConfigureAwait(false);
+                    if (sink != null)
+                    {
+                        // appended after every other field, in this order; return_progress only for easyEngine
+                        body["stream"] = true;
+                        body["stream_options"] = new JObject { ["include_usage"] = true };
+                        if (await IsEngineAsync().ConfigureAwait(false)) body["return_progress"] = true;
+                        streamed = true;
+                        var sr = await StreamSender.PostAsync(Http, Base + "/chat/completions", body, hdr, sink, Cfg.TimeoutS, cancel, sw).ConfigureAwait(false);
+                        Gate.Ok();
+                        text = sr.Text;
+                        st.TtftS = sr.TtftS;
+                        tim = sr.Timings ?? new JObject();
+                        if (!PyJson.Truthy(tim) && sr.Usage != null)
+                        {
+                            st.PromptN = LlmWire.PyInt(PyAccess.Get(sr.Usage, "prompt_tokens", new JValue(0)));
+                            st.PredictedN = LlmWire.PyInt(PyAccess.Get(sr.Usage, "completion_tokens", new JValue(0)));
+                        }
+                    }
+                    else
+                    {
+                    var r = await HttpUtil.PostJsonAsync(Http, Base + "/chat/completions", body, hdr, Cfg.TimeoutS, cancel).ConfigureAwait(false);
                     JToken data = Ok(r);
                     Gate.Ok();
                     JToken content = PyAccess.Get(PyAccess.Item(PyAccess.Item(PyAccess.Item(data, "choices"), 0), "message"), "content");
@@ -492,7 +538,15 @@ namespace RimWorldLLM.Mind
                         st.PromptN = LlmWire.PyInt(PyAccess.Get(usage, "prompt_tokens", new JValue(0)));
                         st.PredictedN = LlmWire.PyInt(PyAccess.Get(usage, "completion_tokens", new JValue(0)));
                     }
+                    }
                 }
+            }
+            catch (OperationCanceledException) when (cancel.IsCancellationRequested)
+            {
+                st.Ok = false; st.Error = "cancelled";
+                st.WallS = sw.Elapsed.TotalSeconds;
+                CallLog.Record(st);
+                throw;
             }
             catch (HttpTransportException e)
             {
@@ -519,6 +573,7 @@ namespace RimWorldLLM.Mind
                 st.PredictedMs = LlmWire.PyFloatOf(PyAccess.Get(tim, "predicted_ms", new JValue(0)));
             }
             CallLog.Record(st);
+            if (streamed) ChatStreamReader.Emit(sink, StreamEvent.Done(text, st));
             return new Completion(text, st);
         }
 
