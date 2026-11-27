@@ -78,7 +78,8 @@ def test_chitchat_request_describes_the_situation_not_the_name(world):
     info = ad.vanilla_social(ad.normalize_event(vanilla(world, "Chitchat", "chitchat", text="Ana chatted with Bram.", tier="idle")))
     req = ad.vanilla_request(info, "Ana", "Bram").lower()
     assert "small talk" not in req and "chitchat" not in req and "small-talk" not in req
-    assert "whatever is around" in req
+    assert "really going on around them" in req
+    assert "never assume food" in req                      # the keeper saw two pawns talk about food with nobody eating
     assert "don't remark on the conversation or the act of talking itself" in req
 
 
@@ -95,7 +96,7 @@ def test_chitchat_memory_text_does_not_name_the_interaction(world):
                                               data={"interaction": "Chitchat", "interaction_label": "Chitchat"}))
     t = ad.first_person(e, 1)
     assert "chitchat" not in t.lower() and "Ana and Bram" in t
-    assert "the work, the food, the weather" in t           # what it was about, so the thought has a subject other than the talking
+    assert "food" not in t.lower() and "going about their day" in t   # no made-up topic: a listed "the food" made every chitchat about food
 
 
 def test_drops_meta_only_with_a_chitchat_scene(world):
