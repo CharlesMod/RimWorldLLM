@@ -304,7 +304,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Contains("BUILD: home (120,98); missing: freezer, dining table, research bench", text);
             Assert.Contains("ROOMS (bedrooms 3, barracks 1, hospital no, freezer no): #12 Ana's bedroom 3x3 imp 24 bed door roofed", text);
             Assert.Contains("BENCH: #4410 campfire: bills cook simple meal x10; recipes simple meal, roasted meat", text);
-            Assert.Contains("ZONES: #3 grow potatoes 64 cells; #4 stockpile all 36 cells", text);
+            Assert.Contains("ZONES: #3 grow potatoes 64 cells; #4 stockpile food 36 cells", text);
             Assert.Contains("CAN BUILD: wall, door, bed", text); Assert.Contains("STUFF: steel 410, wood 280", text);
             Assert.Contains("PLANTS: potatoes, rice", text); Assert.Contains("ORES: steel 34 cells 18 away", text);
             Assert.True(text.Length <= 6000);

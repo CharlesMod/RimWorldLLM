@@ -43,6 +43,9 @@
         <EmbeddedResource Include="Mind/Data/steward_golden.json" LogicalName="RimWorldLLM.Tests.steward_golden.json" />
         <EmbeddedResource Include="Mind/Data/steward_build_golden.json" LogicalName="RimWorldLLM.Tests.steward_build_golden.json" />
         <EmbeddedResource Include="Mind/Data/steward_digest_sample.json" LogicalName="RimWorldLLM.Tests.steward_digest_sample.json" />
+        <EmbeddedResource Include="Mind/Data/steward_digest_orbital.json" LogicalName="RimWorldLLM.Tests.steward_digest_orbital.json" />
+        <EmbeddedResource Include="Mind/Data/steward_digest_settlement.json" LogicalName="RimWorldLLM.Tests.steward_digest_settlement.json" />
+        <EmbeddedResource Include="Mind/Data/steward_digest_trader.json" LogicalName="RimWorldLLM.Tests.steward_digest_trader.json" />
         <None Include="Mind/Data/multiday.jsonl" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/e2e-multiday.json" LogicalName="RimWorldLLM.Tests.e2e-multiday.json" />
         <EmbeddedResource Include="Mind/Data/e2e-mixed.json" LogicalName="RimWorldLLM.Tests.e2e-mixed.json" />

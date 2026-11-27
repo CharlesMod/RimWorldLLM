@@ -153,7 +153,7 @@ namespace RimWorldLLM.Mind.RimWorld
         private static readonly Dictionary<char, string> SchedWord = new Dictionary<char, string>
         { ['A'] = "any", ['W'] = "work", ['J'] = "joy", ['S'] = "sleep", ['M'] = "meditate" };
 
-        private sealed class Level
+        internal sealed class Level
         {
             public int Skills, Resources, Research, Beds, Letter, Alerts, Stuck, Deadlines, Rot, Harvest, Game, Cannot, Why, Combat;
             public Level(int skills, int resources, int research, int beds, int letter, int alerts, int stuck, int deadlines, int rot, int harvest, int game, int cannot, int why, int combat)
@@ -166,7 +166,7 @@ namespace RimWorldLLM.Mind.RimWorld
         // detail levels, most to least: skills per pawn, resources, research options, beds, letter text chars, alerts, then the narrator-view
         // lines (stuck rows, deadlines, rotting stacks, harvest rows, game rows, "can't" reasons, mood "why" items),
         // combat = the character cap of the COMBAT lines (after ALERTS; the fight's DIGEST_CAPS)
-        private static readonly Level[] Levels =
+        internal static readonly Level[] Levels =
         {
             new Level(4, 25, 15, 20, 280, 10, 6, 6, 3, 3, 3, 3, 2, CombatSeam.DigestCaps[0]),
             new Level(3, 16, 8, 12, 160, 8, 4, 6, 3, 3, 2, 3, 2, CombatSeam.DigestCaps[1]),
@@ -174,7 +174,7 @@ namespace RimWorldLLM.Mind.RimWorld
             new Level(1, 6, 3, 4, 60, 3, 0, 3, 1, 1, 0, 1, 0, CombatSeam.DigestCaps[3]),
         };
 
-        private sealed class BuildLevel
+        internal sealed class BuildLevel
         {
             public int Rooms, Benches, Bills, Recipes, Zones, CanBuild, Stuff, Plants, Ores, Loose, Flags;
             public BuildLevel(int rooms, int benches, int bills, int recipes, int zones, int canBuild, int stuff, int plants, int ores, int loose, int flags)
@@ -183,7 +183,7 @@ namespace RimWorldLLM.Mind.RimWorld
 
         // the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
         // plants, ores, loose piles, room flags (temp, mountain, dirty). The last step keeps just BUILD/missing and a short ROOMS.
-        private static readonly BuildLevel[] BuildLevels =
+        internal static readonly BuildLevel[] BuildLevels =
         {
             new BuildLevel(12, 8, 5, 8, 10, 40, 8, 10, 6, 6, 1),
             new BuildLevel(8, 5, 3, 4, 6, 20, 6, 6, 4, 4, 1),
@@ -191,7 +191,7 @@ namespace RimWorldLLM.Mind.RimWorld
             new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         };
 
-        private sealed class TradeLevel
+        internal sealed class TradeLevel
         {
             public int Stock, Needs, Never, Traders, Sells, Buys, Places, Quests;
             public TradeLevel(int stock, int needs, int never, int traders, int sells, int buys, int places, int quests)
@@ -201,7 +201,7 @@ namespace RimWorldLLM.Mind.RimWorld
         // the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
         // trader, settlements, quests. The last step keeps the TRADE line and the few traders and quests.
         // (The Python level also has "caravans"; the keeper dropped caravans, so the field is left out.)
-        private static readonly TradeLevel[] TradeLevels =
+        internal static readonly TradeLevel[] TradeLevels =
         {
             new TradeLevel(10, 8, 8, 6, 6, 4, 6, 6),
             new TradeLevel(6, 5, 5, 4, 4, 3, 4, 4),
@@ -358,7 +358,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return h < 48 ? PyFmt.RoundInt(h).ToString(CultureInfo.InvariantCulture) + " h" : PyFmt.RoundInt(h / 24).ToString(CultureInfo.InvariantCulture) + " days";
         }
 
-        private static string Hours(JToken h) => IsNum(h) ? Hours(DigestJson.PyFloat(h)) : "";
+        internal static string Hours(JToken h) => IsNum(h) ? Hours(DigestJson.PyFloat(h)) : "";
 
         /// <summary>Num() for a computed value (Python's format(x, "g")).</summary>
         private static string NumD(double x) => DigestJson.G6(x);
@@ -754,7 +754,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return GameData.Clean(DigestJson.G(r, "label") ?? "", "label") + " " + DigestJson.Str(r, "count", "?") + (extra.Count > 0 ? " (" + string.Join(", ", extra) + ")" : "");
         }
 
-        private static string Render(JObject d, Level lv, BuildLevel bl, TradeLevel tl, bool combat = true)
+        internal static string Render(JObject d, Level lv, BuildLevel bl, TradeLevel tl, bool combat = true)
         {
             var outl = new List<string> { "DATE: " + Date(d) };
             string dl = DeadlinesLine(d, lv.Deadlines);
