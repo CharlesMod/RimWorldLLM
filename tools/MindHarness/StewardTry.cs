@@ -55,9 +55,10 @@ namespace RimWorldLLM.Harness
         /// <param name="wrapTransport">taps the fake bridge (goldens record the writes through it).</param>
         /// <param name="combat">a recorded GET /combat body: the game is in this fight (the digest gets it as its combat block)</param>
         /// <param name="combatCycle">run one small combat turn (the steward is playing and the fight is already known)</param>
+        /// <param name="tradeTurn">run one trade turn (a trader arrived: the fake bridge's /vivarium lists the digest's traders); implies playing</param>
         public static async Task<Outcome> TryOnceAsync(JObject digest, JObject goals, string chat, bool playing, string llmUrl, string model = "", string mode = "auto",
                                                        Func<MindConfig, IBackend> makeBackend = null, Func<IBridgeTransport, IBridgeTransport> wrapTransport = null,
-                                                       JObject combat = null, bool combatCycle = false)
+                                                       JObject combat = null, bool combatCycle = false, bool tradeTurn = false)
         {
             digest = digest == null ? new JObject() : new JObject(digest);
             if (combat != null && !digest.ContainsKey("combat")) digest["combat"] = combat.DeepClone();
@@ -85,7 +86,7 @@ namespace RimWorldLLM.Harness
                 {
                     fb.Playing = false;
                     await d.Steward.StepAsync();                 // first sight: the chat cursor starts here
-                    fb.Playing = playing || combatCycle;
+                    fb.Playing = playing || combatCycle || tradeTurn;
                     if (combatCycle) d.Steward.CombatOn = true;         // as if the "combat started" cycle had run: the next wake is a combat turn
                     if (!string.IsNullOrEmpty(chat)) fb.AddChat("player", chat);
                     var t0 = System.Diagnostics.Stopwatch.StartNew();
@@ -142,7 +143,8 @@ namespace RimWorldLLM.Harness
 
         public const string Usage =
             "steward-try --digest FILE [--goals FILE] [--chat TEXT] [--playing] --llm-url URL [--model M] [--mode auto|grammar|json|native]\n" +
-            "      [--combat FILE [--combat-cycle]]   (a recorded GET /combat body; --combat-cycle runs one small combat turn and needs no --digest)\n" +
+            "      [--combat FILE [--combat-cycle]] [--trade-turn]   (a recorded GET /combat body; --combat-cycle runs one small combat turn and needs no --digest)\n" +
+            "      --trade-turn runs one trade turn on the digest (needs --digest; implies --playing); SKIPPED is printed when food is critical or a fight is on.\n" +
             "  Runs one steward cycle on a recorded GET /digest body against the fake bridge with the real tool backend at URL; prints the system prompt size,\n" +
             "  the user turn, each tool call with its result, the chat lines and the REJECTED failures. Nothing here touches a game.";
 
@@ -150,7 +152,7 @@ namespace RimWorldLLM.Harness
         public static async Task<int> MainAsync(string[] argv, TextWriter stdout, TextWriter stderr, Func<MindConfig, IBackend> makeBackend = null)
         {
             string digest = null, goals = null, chat = "", url = null, model = "", mode = "auto", combat = null;
-            bool playing = false, combatCycle = false;
+            bool playing = false, combatCycle = false, tradeTurn = false;
             for (int i = 0; i < argv.Length; i++)
             {
                 string a = argv[i];
@@ -165,6 +167,7 @@ namespace RimWorldLLM.Harness
                         case "--playing": playing = true; break;
                         case "--combat": combat = Next(); break;
                         case "--combat-cycle": combatCycle = true; break;
+                        case "--trade-turn": tradeTurn = true; break;
                         case "--llm-url": url = Next(); break;
                         case "--model": model = Next(); break;
                         case "--mode":
@@ -179,11 +182,12 @@ namespace RimWorldLLM.Harness
             if (url == null) { stderr.WriteLine("steward_try: error: the following arguments are required: --llm-url"); return 2; }
             if (combatCycle && combat == null) { stderr.WriteLine("steward_try: error: --combat-cycle needs --combat"); return 2; }
             if (digest == null && !combatCycle) { stderr.WriteLine("steward_try: error: --digest is required (except with --combat-cycle)"); return 2; }
-            if (chat.Length == 0 && !playing && !combatCycle) { stderr.WriteLine("steward_try: error: nothing would wake the steward: give --chat or --playing"); return 2; }
+            if (tradeTurn && digest == null) { stderr.WriteLine("steward_try: error: --trade-turn needs --digest"); return 2; }
+            if (chat.Length == 0 && !playing && !combatCycle && !tradeTurn) { stderr.WriteLine("steward_try: error: nothing would wake the steward: give --chat or --playing"); return 2; }
             var dj = digest == null ? new JObject() : (JObject)BridgeJson.Parse(File.ReadAllText(digest));
             var cj = combat == null ? null : (JObject)BridgeJson.Parse(File.ReadAllText(combat));
             var gj = goals == null ? null : (JObject)BridgeJson.Parse(File.ReadAllText(goals));
-            var o = await TryOnceAsync(dj, gj, chat, playing, url, model, mode, makeBackend, null, cj, combatCycle);
+            var o = await TryOnceAsync(dj, gj, chat, playing, url, model, mode, makeBackend, null, cj, combatCycle, tradeTurn);
             return Report(o, stdout);
         }
     }

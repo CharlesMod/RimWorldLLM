@@ -37,5 +37,7 @@
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_strategy.md" LogicalName="RimWorldLLM.Mind.steward_strategy.md" />
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_system.txt" LogicalName="RimWorldLLM.Mind.steward_system.txt" />
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_combat.txt" LogicalName="RimWorldLLM.Mind.steward_combat.txt" />
+        <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_trade.txt" LogicalName="RimWorldLLM.Mind.steward_trade.txt" />
+        <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_biotech.md" LogicalName="RimWorldLLM.Mind.steward_biotech.md" />
     </ItemGroup>
 </Project>

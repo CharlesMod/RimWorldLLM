@@ -57,6 +57,21 @@ namespace RimWorldLLM.Mind
         /// <summary>The playbook's alert section; null when the kit has no playbook.</summary>
         string PlaybookAlerts(JObject digest);
         string RenderDigest(JObject digest);
+        /// <summary>Notes that only some runs need (the kit decides from the digest); "" for none. Joined to the strategy text.</summary>
+        string StrategyExtra(JObject digest);
+    }
+
+    /// <summary>NEW (the Python's hasattr(kit, "trade_session")): a kit that has the trade turn, a small turn for each new trader.</summary>
+    public interface IStewardTradeKit
+    {
+        /// <summary>trade_tools: what a trade turn may use.</summary>
+        IReadOnlyCollection<string> TradeTools { get; }
+        IStewardSession TradeSession(JObject digest, IBridge bridge);
+        string TradeSystemPrompt();
+        /// <summary>Why no trade turn now (food is critical, ...), or "" to go on.</summary>
+        string TradeSkip(JObject digest);
+        /// <summary>The trade view for the new traders and a food line ("" for none).</summary>
+        (string View, string Food) RenderTrade(JObject digest, IList<string> arrived);
     }
 
     /// <summary>NEW (the Python's hasattr(kit, "combat_session")): a kit that has the combat loop. core/steward.py reads these members
@@ -142,6 +157,9 @@ namespace RimWorldLLM.Mind
         // a combat turn is small: the combat view and the plan line, the combat tools only, three steps (the last is the closing line)
         public const int CombatSteps = 3, CombatMaxTokens = 160, CombatFinalMax = 120;
         public const double CombatBudgetS = 40.0, CombatStepTimeoutS = 30.0;
+        // a trade turn (a trader arrived): the trade view, the trade tools, a few steps (the last is the closing line)
+        public const int TradeSteps = 4, TradeMaxTokens = 300, TradeFinalMax = 120;
+        public const double TradeBudgetS = 60.0, TradeStepTimeoutS = 30.0;
         public const int TicksPerGameS = 60;
         public const int CombatStartSteps = 5;            // the "combat started" cycle: draft, place, flee, one defence, the line; the combat turns follow
         public const string EnvStrategy = "RIMWORLDLLM_STEWARD_STRATEGY";
@@ -177,6 +195,8 @@ namespace RimWorldLLM.Mind
         public bool CombatOn;                             // a fight is running and the combat loop owns the cadence
         public bool CombatStart;                          // the "combat started" cycle is due
         public bool CombatOver;                           // the "combat over" cycle is due
+        public HashSet<string> TradeSeen = new HashSet<string>(StringComparer.Ordinal);   // trader ids already given their trade turn (one per visit)
+        public List<string> TradeNew = new List<string>();                                  // the ids the due trade turn is for
         public bool Slowed;                               // we put the game on 1x for the fight
 
         public Steward(IStewardHost d)
@@ -252,6 +272,8 @@ namespace RimWorldLLM.Mind
             CombatStart = false;
             CombatOver = false;
             Slowed = false;
+            TradeSeen = new HashSet<string>(StringComparer.Ordinal);
+            TradeNew = new List<string>();
             DialogPending = false;
             Vv = new JObject();
             if (D.Leases.NarratorOwner == "steward") D.Leases.NarratorOwner = null;
@@ -443,12 +465,31 @@ namespace RimWorldLLM.Mind
                 }
                 return null;
             }
+            if (Kit is IStewardTradeKit)
+            {
+                var fresh = TraderIds().Where(x => !TradeSeen.Contains(x)).OrderBy(x => x, StringComparer.Ordinal).ToList();
+                if (fresh.Count > 0)
+                {
+                    TradeNew = fresh;
+                    return "trade";
+                }
+            }
             var st = JobsJson.Get(Vv, "settings") as JObject;
             JToken hh = st == null ? null : JobsJson.Get(st, "heartbeat_hours");
             double hours = Truthy(hh) ? Convert.ToDouble(hh.Type == JTokenType.String ? (object)double.Parse((string)hh, System.Globalization.CultureInfo.InvariantCulture) : (double)hh) : 6.0;
             double hb = hours * d.Day / 24;
             if (LastGame == null || env.Game < LastGame || env.Game - LastGame.Value >= hb) return "heartbeat";
             return null;
+        }
+
+        /// <summary>The ids of the traders the vivarium lists (GET /vivarium traders).</summary>
+        private HashSet<string> TraderIds()
+        {
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            if (JobsJson.Get(Vv, "traders") is JArray a)
+                foreach (var x in a.OfType<JObject>())
+                    if (Truthy(JobsJson.Get(x, "id"))) ids.Add(PyJson.Str(JobsJson.Get(x, "id")));
+            return ids;
         }
 
         /// <summary>The combat wakes. "" = a fight is on and nothing is due (nothing else wakes); null = not in a fight, carry on.</summary>
@@ -479,7 +520,8 @@ namespace RimWorldLLM.Mind
             var chat = PendingChat;
             PendingChat = new List<JObject>();
             List<string> events;
-            if (reason == "combat") events = new List<string>();   // a combat turn leaves the events for the full cycle that follows the fight
+            if (reason == "trade") TradeSeen.UnionWith(TraderIds());     // once per visit, whatever the turn does
+            if (reason == "combat" || reason == "trade") events = new List<string>();   // a combat or trade turn leaves the events for the full cycle that follows the fight
             else
             {
                 events = playing ? Events : new List<string>();
@@ -489,7 +531,7 @@ namespace RimWorldLLM.Mind
             d.Leases.NarratorOwner = "steward";                  // idle narrator work yields from here on
             if (d.Idle != null && d.Idle.Active() && (d.Idle.Kind == "chronicle" || d.Idle.Kind == "art"))
                 d.Idle.Preempt("steward");                       // a running slot-0 job is cancelled; nothing it made is applied
-            LastGame = d.Bridge.Env.Game;
+            if (reason != "trade") LastGame = d.Bridge.Env.Game;        // a trade turn does not push the routine look back
             LastReal = d.Clock();
             Task = d.Spawn(() => CycleAsync(reason, chat, events, playing));
         }
@@ -586,6 +628,7 @@ namespace RimWorldLLM.Mind
             var kit = Kit;
             bool advisor = !playing;
             if (reason == "combat") { await RunCombatAsync(t).ConfigureAwait(false); return; }
+            if (reason == "trade") { await RunTradeAsync(t).ConfigureAwait(false); return; }
             JObject digest, board;
             try
             {
@@ -605,6 +648,8 @@ namespace RimWorldLLM.Mind
                 _strategyNote = snote;
                 if (snote.Length > 0) LlmLog.Info("rimworldllm.steward", "steward: " + snote);
             }
+            string extra = kit.StrategyExtra(digest) ?? "";                // notes that only some games need (the adapter decides)
+            if (extra.Length > 0) strategy = strategy.Length > 0 ? strategy + "\n\n" + extra : extra;
             string system = kit.SystemPrompt(advisor) + (strategy.Length > 0 ? "\n\n" + StrategyHeading + "\n" + strategy : "") + "\n\n" + GameData.DataRule;
             var session = reason == "combat over" && kit is IStewardCombatKit afterKit ? afterKit.SessionAfterFight(digest, d.Bridge, advisor) : kit.Session(digest, d.Bridge, advisor);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board, advisor)).ToList();
@@ -825,6 +870,96 @@ namespace RimWorldLLM.Mind
             t["elapsed_s"] = Math.Round(res.ElapsedS, 2);
         }
 
+        /// <summary>A trade turn: GET /digest, a short prompt with the trade view first, trade_offer and trade, four steps. Skipped (and
+        /// the trader stays seen) when food is critical or a fight is on. No board edits, no closing chat line.</summary>
+        private async Task RunTradeAsync(JObject t)
+        {
+            var d = D;
+            var kit = (IStewardTradeKit)Kit;
+            JObject digest, board;
+            try
+            {
+                digest = await d.Bridge.DigestAsync().ConfigureAwait(false);
+                board = await d.Bridge.GoalsAsync().ConfigureAwait(false);
+            }
+            catch (BridgeError e)
+            {
+                t["error"] = "read failed: " + e.Message;
+                Stats.Failed++;
+                return;
+            }
+            string skip = CombatOn || Truthy(JobsJson.Get(JobsJson.Get(Vv, "combat") as JObject ?? new JObject(), "active")) ? "a fight is on" : kit.TradeSkip(digest);
+            IStewardSession session = string.IsNullOrEmpty(skip) ? kit.TradeSession(digest, d.Bridge) : null;
+            if (session != null)
+            {
+                var names = new HashSet<string>(session.Tools.Select(x => x.Name), StringComparer.Ordinal);
+                if (!(names.Contains("trade_offer") && names.Contains("trade"))) skip = "no trader that can be dealt with now";
+            }
+            if (!string.IsNullOrEmpty(skip))
+            {
+                t["skipped"] = skip;
+                LlmLog.Info("rimworldllm.steward", "steward: trade turn skipped: " + skip);
+                return;
+            }
+            var (view, food) = kit.RenderTrade(digest, TradeNew);
+            string system = kit.TradeSystemPrompt() + "\n\n" + GameData.DataRule;
+            var allowed = new HashSet<string>(kit.TradeTools, StringComparer.Ordinal);
+            var tools = session.Tools.Concat(StewardBoard.BoardTools(board)).Where(x => allowed.Contains(x.Name)).ToList();
+            JToken planTok = JobsJson.Get(board, "plan");
+            string plan = StewardBoard.Plain(Truthy(planTok) ? PyJson.Str(planTok) : "", 300);
+            string user = string.Join("\n", new[]
+            {
+                "=== THE TRADE ===\n" + GameData.DataSection("trade", view),
+                food.Length > 0 ? food + "\n" : "",
+                "=== YOUR PLAN ===\n" + (plan.Length > 0 ? plan : "none") + "\n",
+                "Decide now: look at the offer, make the deal this trader is worth, then end with done.",
+            });
+            t["system_chars"] = PyStr.Len(system);
+            t["user_chars"] = PyStr.Len(user);
+            int notes = 0;
+
+            Task<string> validator(string tool, JObject v)
+            {
+                if (tool == "note" && notes >= MaxNotes) return Task.FromResult("at most " + MaxNotes + " notes per turn");
+                string text = string.Join(" ", v.Properties().Where(p => p.Value.Type == JTokenType.String).Select(p => (string)p.Value));
+                if (AgeGate.Violation(text, false, d.MinorTokens())) return Task.FromResult("not allowed: nothing romantic or sexual involving a minor");
+                return Task.FromResult<string>(null);
+            }
+
+            async Task<JToken> executor(string tool, JObject v)
+            {
+                if (tool == "do_nothing") return null;
+                if (tool == "note")
+                {
+                    string line = CleanLine(Need(v, "text"), 160);
+                    if (line == null) return new JObject { ["error"] = "empty note" };
+                    notes++;
+                    if (await SayAsync("note", line).ConfigureAwait(false)) Stats.Notes++;
+                    return new JObject { ["done"] = "note posted" };
+                }
+                var outc = await session.RunAsync(tool, v).ConfigureAwait(false);
+                if (outc.Ok) Stats.Acts++;
+                else if (outc.Result.ContainsKey("refused")) Stats.Refused++;
+                return outc.Result;
+            }
+
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, TradeSteps, 2, TradeBudgetS, TradeStepTimeoutS);
+            var allowedSorted = allowed.OrderBy(x => x, StringComparer.Ordinal).ToList();
+            LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
+            {
+                o.Allowed = allowedSorted;
+                o.Slot = d.Cfg.NarratorSlot;
+                o.FinalMax = TradeFinalMax;
+                o.MaxTokens = TradeMaxTokens;
+            }).ConfigureAwait(false);
+            t["outcome"] = res.Outcome;
+            t["reason_ended"] = res.Reason;
+            t["protocol"] = res.Protocol;
+            t["failures"] = new JArray(res.Failures.Skip(Math.Max(0, res.Failures.Count - 4)).Cast<object>().ToArray());
+            t["executed"] = new JArray(res.Executed.Select(e => (object)new JArray(e.Tool, e.Args, e.Result)).ToArray());
+            t["elapsed_s"] = Math.Round(res.ElapsedS, 2);
+        }
+
         private bool LivePartialOk(string text)
         {
             return !AgeGate.Violation(StewardBoard.Plain(text, 500), false, D.MinorTokens());
@@ -841,7 +976,7 @@ namespace RimWorldLLM.Mind
 
         private string LogLine(string reason, List<JObject> chat, List<(string Verb, string Note)> acts, Edits edits)
         {
-            string label = reason == "chat" ? "Asked" : reason == "heartbeat" ? "Routine look" : reason == "paused" ? "After my pause" : reason == "combat over" ? "After the fight" : "On " + reason;
+            string label = reason == "chat" ? "Asked" : reason == "heartbeat" ? "Routine look" : reason == "paused" ? "After my pause" : reason == "combat over" ? "After the fight" : reason == "trade" ? "Trade turn" : "On " + reason;
             if (reason == "chat" && chat.Count > 0) label += " (" + StewardBoard.Plain(JobsJson.Str(chat[chat.Count - 1], "text", ""), 50) + ")";
             var did = acts.Select(a => a.Note).ToList();
             if (edits.Any) did.Add("updated the goals board");

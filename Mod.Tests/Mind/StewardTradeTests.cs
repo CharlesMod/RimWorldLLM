@@ -85,10 +85,31 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
-        public void ACaravanOnASettlementMakesItATradePartner()
+        public void NoDigestOffersACaravanTool()
         {
-            var s = Session(AtSettlement());
-            Assert.Equal(new[] { "T4321" }, Choices(s, "trade", "with"));
+            var merged = Clone(Trader);
+            foreach (var k in new[] { "quests" }) merged[k] = Settle[k].DeepClone();
+            foreach (var d in new[] { Sample, Trader, Orbital, Settle, AtSettlement(), merged })
+                foreach (bool adv in new[] { false, true })
+                {
+                    var s = Session(d, null, adv);
+                    Assert.Empty(s.Tools.Select(t => t.Name).Intersect(new[] { "caravan", "caravan_plan" }));
+                    Assert.DoesNotContain("caravan", s.Acting);
+                }
+        }
+
+        [Fact]
+        public void ACaravanAtASettlementIsNoTradePartner()
+            => Assert.DoesNotContain("trade", Session(AtSettlement()).Tools.Select(t => t.Name));          // T-tile trades need a caravan, which is off
+
+        [Fact]
+        public async Task TheNarratorCaravanRouteIsRefused()
+        {
+            var fb = new FakeBridge { Digest = Clone(Trader) };
+            var br = FakeBridge.Client(fb);
+            var e = await Assert.ThrowsAsync<BridgeError>(() => br.ActAsync("caravan", JObject.Parse(@"{""op"": ""form"", ""pawns"": [101], ""to"": ""T4321""}")));
+            Assert.Contains("caravans are off", e.Message);
+            Assert.Empty(fb.ActLog);
         }
 
         // ---- bodies
@@ -192,7 +213,35 @@ namespace RimWorldLLM.Tests.Mind
             fb.ActExtra["trade"] = JObject.Parse(@"{""spent"": 300, ""got"": 200, ""net"": -100}");
             var r = await Do(s, "trade", new { with = "P5521", buy = "steel x10" });
             Assert.Equal(300, (int)r.Result["spent"]);
-            Assert.StartsWith("trade:", (string)r.Result["done"]);
+            Assert.Equal("walking", (string)r.Result["status"]);
+            Assert.Equal("Ana is walking to Bulk goods trader Tomas to trade", (string)r.Result["done"]);
+        }
+
+        [Fact]
+        public async Task ATradeWithATraderWalksAndASecondIsRefusedUntilItEnds()
+        {
+            var (s, fb) = Live(Trader);
+            var r = await Do(s, "trade", new { with = "P5521", buy = "steel x10" });
+            Assert.True(r.Ok); Assert.Equal("walking", (string)r.Result["status"]); Assert.Equal("Ana", (string)r.Result["negotiator"]);
+            Assert.Equal("Bulk goods trader Tomas", (string)r.Result["to"]);
+            Assert.Equal("Ana is walking to Bulk goods trader Tomas to trade", r.Note);
+            var again = await Do(s, "trade", new { with = "P5521", sell = "cloth x10" });
+            Assert.False(again.Ok); Assert.Contains("a trade is already under way", (string)again.Result["refused"]);
+            Assert.Single(fb.ActLog);
+            Assert.True(JToken.DeepEquals(JObject.Parse(@"{""negotiator"": ""Ana"", ""to"": ""Bulk goods trader Tomas"", ""with"": ""P5521""}"), fb.TradePending));
+            fb.TradePending = null;
+            Assert.True((await Do(s, "trade", new { with = "P5521", sell = "cloth x10" })).Ok);
+        }
+
+        [Fact]
+        public async Task TheFakeDigestShowsThePendingTradeAndVivariumListsTraders()
+        {
+            var fb = new FakeBridge { Digest = Clone(Trader) };
+            var br = FakeBridge.Client(fb);
+            Assert.True(JToken.DeepEquals(JArray.Parse(@"[{""id"": ""P5521"", ""kind"": ""caravan"", ""name"": ""Bulk goods trader Tomas""}]"), (await br.VivariumAsync())["traders"]));
+            Assert.Equal(JTokenType.Null, (await br.DigestAsync())["trade"]["pending"].Type);
+            await br.ActAsync("trade", JObject.Parse(@"{""with"": ""P5521"", ""buy"": [{""item"": ""steel"", ""count"": 5}], ""sell"": []}"));
+            Assert.Equal("Ana", (string)(await br.DigestAsync())["trade"]["pending"]["negotiator"]);
         }
 
         // ---- the look tools
@@ -299,6 +348,73 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal(100, (int)w.Fb.ActLog[0].Value["sell"][0]["count"]);
             Assert.Contains("one task only", WRig.Json(fake.Calls[3]));
             Assert.Contains("trader silver 1800", WRig.Json(fake.Calls[1]));                  // the look's text went back to the model
+        }
+
+        // ---- digest lines, rules, steps and prompt text (the changed parts of test_steward_trade.py)
+        [Fact]
+        public void QuestLinesHaveNoCaravansOrSettlementsBlock()
+        {
+            var d = AtSettlement();
+            var q = (JObject)((JArray)d["quests"])[0];
+            q["can"] = false; q["why_not"] = "needs a caravan (caravans are off)";
+            string text = StewardDigest.RenderDigest(d);
+            Assert.DoesNotContain("SETTLEMENTS", text); Assert.DoesNotContain("Rivermouth (Hill Union", text);
+            Assert.DoesNotContain("CARAVANS", text); Assert.DoesNotContain("Caravan Ana", text);
+            Assert.Contains("- Q77 [active] delivery: 20 cloth to Rivermouth, reward 600 silver, expires in 240 h, 3.1 days away, can't: needs a caravan (caravans are off)", text);
+            Assert.DoesNotContain("CANNOT:", text); Assert.Contains("decline one that can't", text);
+            Assert.Contains("- Q77", StewardDigest.RenderDigest(Settle)); Assert.Contains(", can", StewardDigest.RenderDigest(Settle));
+        }
+
+        [Fact]
+        public void APendingTradeIsShownInTheTradeLine()
+        {
+            var d = Clone(Trader);
+            ((JObject)d["trade"])["pending"] = JObject.Parse(@"{""negotiator"": ""Ana"", ""to"": ""the comms console"", ""with"": ""Bulk goods trader Tomas""}");
+            Assert.Contains("a trade is under way: Ana is walking to the comms console to trade with Bulk goods trader Tomas", StewardDigest.RenderDigest(d));
+            ((JObject)d["trade"])["pending"] = JValue.CreateNull();
+            Assert.DoesNotContain("under way", StewardDigest.RenderDigest(d));
+        }
+
+        [Fact]
+        public void StepsOrderShrinksBuildThenBioThenTradeThenBase()
+        {
+            var s = StewardDigest.StepsForTest;
+            Assert.Equal(new[] { 0, 0, 0, 0 }, s[0]); Assert.Equal(3, s[s.Length - 1][0]);       // (base, build, trade, bio)
+            foreach (int i in new[] { 1, 2, 3 }) Assert.Equal(s.Select(x => x[i]).OrderBy(x => x).ToArray(), s.Select(x => x[i]).ToArray());
+            int firstBase = System.Array.FindIndex(s, x => x[0] > 0);
+            Assert.All(s.Skip(firstBase), x => Assert.True(x[1] == 3 && x[2] == 3 && x[3] == 3));
+            Assert.Equal(3, s[firstBase - 1][2]);
+        }
+
+        [Fact]
+        public void AQuestThatCannotIsDeclinedByARule()
+        {
+            var d = Clone(Settle);
+            var q = (JObject)((JArray)d["quests"])[0];
+            q["state"] = "offer"; q["can"] = false; q["why_not"] = "needs a caravan (caravans are off)";
+            var f = StewardRules.DeriveFacts(d);
+            Assert.Equal(true, f["quest_offer_cannot"]); Assert.Equal(false, f["quest_offer_can"]);
+            f["food_days"] = 12L; f["colonists_downed"] = 0L; f["colonists_sick"] = 0L;
+            var ids = StewardRules.FiredRules(f).Select(r => r.Id).ToList();
+            Assert.Contains(ids, i => i.Contains("growth.quest_decline"));
+            Assert.DoesNotContain(ids, i => i.Contains("growth.quest_accept"));
+            Assert.DoesNotContain(ids, i => i.Contains("caravan_safety"));
+            q["state"] = "active";
+            Assert.Equal(false, StewardRules.DeriveFacts(d)["quest_offer_cannot"]);
+        }
+
+        [Fact]
+        public void PromptTextIsAmendedNotAppended()
+        {
+            var kit = new StewardKit();
+            string sys = kit.SystemPrompt(false);
+            Assert.Contains("trade_offer and trade", sys); Assert.Contains("Caravans are off", sys); Assert.Contains("declined with choose", sys);
+            Assert.DoesNotContain("caravan_plan", sys); Assert.DoesNotContain("likewise trade and caravans", sys);
+            string strat = kit.DefaultStrategy();
+            Assert.DoesNotContain("caravan_plan", strat); Assert.DoesNotContain("Caravans:", strat); Assert.DoesNotContain("trade, caravans", strat);
+            Assert.Contains("## Trade and quests", strat); Assert.Contains("declined with choose", strat); Assert.Contains("500 silver", strat);
+            Assert.Contains("trade_offer before every trade", strat);
+            Assert.True(System.Text.Encoding.UTF8.GetByteCount(strat) <= 12288);
         }
 
         // ---- growth moments (test_steward_dialogs.py)

@@ -238,6 +238,11 @@ namespace RimWorldLLM.Tests.Mind
             var digests = (JArray)g["digests"];
             foreach (var r in (JArray)g["render"])
                 Assert.Equal((string)r["text"], StewardDigest.RenderDigest((JObject)digests[(int)r["digest"]], (int)r["cap"]));
+            foreach (var r in (JArray)g["trade_view"])
+            {
+                var arrived = ((JArray)r["arrived"]).Select(x => (string)x).ToList();
+                Assert.Equal((string)r["text"], StewardDigest.TradeView((JObject)digests[(int)r["digest"]], arrived));
+            }
             var names = (JArray)g["pawn_names"];
             for (int i = 0; i < names.Count; i++)
             {

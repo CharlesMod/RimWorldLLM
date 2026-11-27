@@ -1,0 +1,35 @@
+{
+ "scenario": "trade_skip",
+ "args": {
+  "mode": "grammar",
+  "chat": "",
+  "playing": false,
+  "digest": "steward_digest_orbital.json",
+  "trade_turn": true,
+  "food_days": 1.0
+ },
+ "backend": [],
+ "bridge": [],
+ "result": {
+  "messages": null,
+  "trace": {
+   "reason": "trade",
+   "playing": true,
+   "chat": [],
+   "events": [],
+   "skipped": "food is critical (1 days)"
+  },
+  "chat": [],
+  "acts": [],
+  "board": {
+   "rev": 0,
+   "goals": [],
+   "plan": "",
+   "orders": [],
+   "log": []
+  },
+  "dialogs_left": []
+ },
+ "report": "no cycle ran: trade turn skipped: food is critical (1 days)\n",
+ "rc": 1
+}

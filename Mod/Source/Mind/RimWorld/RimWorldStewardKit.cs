@@ -6,7 +6,7 @@ using RimWorldLLM.Mind.ToolLoop;
 namespace RimWorldLLM.Mind.RimWorld
 {
     /// <summary>The RimWorld StewardKit as the core Steward's IStewardKit (the adapter's StewardKit object).</summary>
-    public sealed class RimWorldStewardKit : IStewardKit, IStewardCombatKit
+    public sealed class RimWorldStewardKit : IStewardKit, IStewardCombatKit, IStewardTradeKit
     {
         private readonly StewardKit _k;
         public RimWorldStewardKit(StewardKit k) { _k = k; }
@@ -17,6 +17,12 @@ namespace RimWorldLLM.Mind.RimWorld
         public IStewardSession Session(JObject digest, IBridge bridge, bool advisor) { return new Sess(_k.Session(digest, bridge, advisor)); }
         public string PlaybookAlerts(JObject digest) { return _k.PlaybookAlerts(digest); }
         public string RenderDigest(JObject digest) { return _k.RenderDigest(digest); }
+        public string StrategyExtra(JObject digest) { return _k.StrategyExtra(digest); }
+        public IReadOnlyCollection<string> TradeTools { get { return StewardKit.TradeToolNames; } }
+        public IStewardSession TradeSession(JObject digest, IBridge bridge) { return new Sess(_k.TradeSession(digest, bridge)); }
+        public string TradeSystemPrompt() { return _k.TradeSystemPrompt(); }
+        public string TradeSkip(JObject digest) { return _k.TradeSkip(digest); }
+        public (string View, string Food) RenderTrade(JObject digest, IList<string> arrived) { return _k.RenderTrade(digest, arrived); }
         public IReadOnlyCollection<string> CombatTools { get { return StewardKit.CombatToolNames; } }
         public IStewardSession SessionAfterFight(JObject digest, IBridge bridge, bool advisor) { return new Sess(_k.Session(digest, bridge, advisor, true)); }
         public IStewardSession CombatSession(JObject view, IBridge bridge) { return new Sess(_k.CombatSession(view, bridge)); }

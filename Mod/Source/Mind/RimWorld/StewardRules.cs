@@ -35,6 +35,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public const string RulesName = "RimWorldLLM.Mind.rules.json";
         public const string StrategyName = "RimWorldLLM.Mind.steward_strategy.md";
         public const string SystemName = "RimWorldLLM.Mind.steward_system.txt";
+        public const string BiotechName = "RimWorldLLM.Mind.steward_biotech.md";
+        public const string TradeName = "RimWorldLLM.Mind.steward_trade.txt";
 
         /// <summary>The file's text (UTF-8, a BOM dropped), or throws when it is not embedded.</summary>
         public static string Text(string logicalName)
@@ -313,8 +315,12 @@ namespace RimWorldLLM.Mind.RimWorld
                 Fill("trade_needs", (long)(G(tr, "needs") as JArray ?? new JArray()).Count(n => PyJson.Truthy(n)));
             }
             if (G(digest, "quests") is JArray qs)
+            {
                 Fill("quest_offer_can", qs.OfType<JObject>().Any(q => G(q, "state") is JValue sv && sv.Type == JTokenType.String && (string)sv == "offer"
                     && G(q, "can") is JValue cv && cv.Type == JTokenType.Boolean && (bool)cv));
+                Fill("quest_offer_cannot", qs.OfType<JObject>().Any(q => G(q, "state") is JValue sv && sv.Type == JTokenType.String && (string)sv == "offer"
+                    && G(q, "can") is JValue cv && cv.Type == JTokenType.Boolean && !(bool)cv));
+            }
             if (G(digest, "threats") is JArray th)
             {
                 BigInteger n = BigInteger.Zero;
@@ -341,7 +347,47 @@ namespace RimWorldLLM.Mind.RimWorld
                 if (IsNumTok(G(pw, "produced")) && IsNumTok(G(pw, "used"))) Fill("power_net_w", Sub(NumOf(G(pw, "produced")), NumOf(G(pw, "used"))));
                 if (IsNumTok(G(pw, "stored"))) Fill("battery_wd", NumOf(G(pw, "stored")));
             }
+            BioFacts(G(digest, "bio"), Fill);
             return f;
+        }
+
+        /// <summary>Biotech facts from the digest's bio block (absent block: none). Only what the block states.</summary>
+        private static void BioFacts(JToken bio, Action<string, object> fill)
+        {
+            if (!(bio is JObject b)) return;
+            var babies = Dicts(G(b, "babies")).ToList();
+            if (b.ContainsKey("babies")) fill("bio_babies_hungry", (long)babies.Count(x => PyJson.Truthy(G(x, "hungry"))));
+            object lo = null;
+            foreach (var g in Dicts(G(b, "genes")))
+            {
+                JToken p = G(g, "hemogen_pct");
+                if (!IsNumTok(p)) continue;
+                object n = NumOf(p);
+                if (lo == null || StewardExpr.CompareNum(StewardExpr.Norm(n), StewardExpr.Norm(lo)) < 0) lo = n;
+            }
+            if (lo != null) fill("hemogen_min_pct", NormOut(lo));
+            object hi = null;
+            bool anyFree = false;
+            foreach (var m in Dicts(G(b, "mechanitors")))
+            {
+                JToken total = G(m, "bandwidth_total"), used = G(m, "bandwidth_used"), gest = G(m, "gestating_bandwidth");
+                if (!(IsNumTok(total) && IsNumTok(used))) continue;
+                JToken gg = PyJson.Truthy(gest) ? gest : null;
+                if (gg != null && !IsNumTok(gg)) continue;
+                object free = Sub(Sub(NumOf(total), NumOf(used)), gg == null ? (object)0L : NumOf(gg));
+                anyFree = true;
+                if (hi == null || StewardExpr.CompareNum(StewardExpr.Norm(free), StewardExpr.Norm(hi)) > 0) hi = free;
+            }
+            if (anyFree)
+            {
+                fill("bandwidth_free", NormOut(hi));
+                fill("mech_kinds_ready", (long)Dicts(G(b, "can_gestate")).Count());
+            }
+            if (G(b, "pollution") is JObject pol)
+            {
+                if (PyJson.Truthy(G(pol, "trend"))) fill("pollution_growing", G(pol, "trend") is JValue tv && tv.Type == JTokenType.String && (string)tv == "growing");
+                if (IsNumTok(G(pol, "wastepacks_near_home"))) fill("wastepacks_near_home", NormOut(NumOf(G(pol, "wastepacks_near_home"))));
+            }
         }
 
         // fact values handed back to callers: ints as long where they fit

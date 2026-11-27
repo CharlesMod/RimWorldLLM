@@ -118,6 +118,9 @@ namespace RimWorldLLM.Tests.Mind
         [InlineData("advisor")]
         [InlineData("json")]
         [InlineData("native")]
+        [InlineData("trade")]
+        [InlineData("trade_skip")]
+        [InlineData("bio")]
         public async Task StewardTryMatchesThePythonCallForCall(string name)
         {
             JObject g;
@@ -132,11 +135,20 @@ namespace RimWorldLLM.Tests.Mind
             }).ToList();
             RecordingBackend rb = null; RecordingTransport tap = null;
             var args = (JObject)g["args"];
-            var o = await StewardTry.TryOnceAsync(DigestSample(), null, (string)args["chat"], (bool)args["playing"], "http://x/v1", "", (string)args["mode"],
-                                                  cfg => rb = new RecordingBackend(script), t => tap = new RecordingTransport(t));
+            var digest = DigestSample();
+            if (args["digest"] != null)
+                using (var ds = typeof(E2eGoldenTests).Assembly.GetManifestResourceStream("RimWorldLLM.Tests." + (string)args["digest"]))
+                using (var dr = new StreamReader(ds)) digest = (JObject)BridgeJson.Parse(dr.ReadToEnd());
+            if (args["food_days"] != null)
+            {
+                digest["food_days"] = args["food_days"];
+                if (digest["facts"] is JObject facts) facts["food_days"] = args["food_days"];
+            }
+            var o = await StewardTry.TryOnceAsync(digest, null, (string)args["chat"], (bool)args["playing"], "http://x/v1", "", (string)args["mode"],
+                                                  cfg => rb = new RecordingBackend(script), t => tap = new RecordingTransport(t), null, false, args["trade_turn"] != null && (bool)args["trade_turn"]);
             var sw = new StringWriter();
             int rc = StewardTry.Report(o, sw);
-            Assert.True(((JArray)g["backend"]).Count > 0 && ((JArray)g["bridge"]).Count > 0);
+            Assert.True(name == "trade_skip" || (((JArray)g["backend"]).Count > 0 && ((JArray)g["bridge"]).Count > 0));
             var diffs = new[]
             {
                 FirstDiff("backend", (JArray)g["backend"], rb.Log),

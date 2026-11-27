@@ -36,6 +36,8 @@
         <EmbeddedResource Include="../Mod/Source/Mind/RimWorld/Resources/steward_strategy.md" LogicalName="RimWorldLLM.Mind.steward_strategy.md" />
         <EmbeddedResource Include="../Mod/Source/Mind/RimWorld/Resources/steward_system.txt" LogicalName="RimWorldLLM.Mind.steward_system.txt" />
         <EmbeddedResource Include="../Mod/Source/Mind/RimWorld/Resources/steward_combat.txt" LogicalName="RimWorldLLM.Mind.steward_combat.txt" />
+        <EmbeddedResource Include="../Mod/Source/Mind/RimWorld/Resources/steward_trade.txt" LogicalName="RimWorldLLM.Mind.steward_trade.txt" />
+        <EmbeddedResource Include="../Mod/Source/Mind/RimWorld/Resources/steward_biotech.md" LogicalName="RimWorldLLM.Mind.steward_biotech.md" />
         <EmbeddedResource Include="Mind/Data/jobs-steward-golden.json" LogicalName="RimWorldLLM.Tests.jobs-steward-golden.json" />
     </ItemGroup>
 
@@ -48,6 +50,7 @@
         <EmbeddedResource Include="Mind/Data/steward_digest_orbital.json" LogicalName="RimWorldLLM.Tests.steward_digest_orbital.json" />
         <EmbeddedResource Include="Mind/Data/steward_digest_settlement.json" LogicalName="RimWorldLLM.Tests.steward_digest_settlement.json" />
         <EmbeddedResource Include="Mind/Data/steward_digest_trader.json" LogicalName="RimWorldLLM.Tests.steward_digest_trader.json" />
+        <EmbeddedResource Include="Mind/Data/bio_*.json" LogicalName="RimWorldLLM.Tests.%(Filename)%(Extension)" />
         <None Include="Mind/Data/multiday.jsonl" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/e2e-multiday.json" LogicalName="RimWorldLLM.Tests.e2e-multiday.json" />
         <EmbeddedResource Include="Mind/Data/e2e-mixed.json" LogicalName="RimWorldLLM.Tests.e2e-mixed.json" />

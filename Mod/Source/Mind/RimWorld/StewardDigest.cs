@@ -173,28 +173,47 @@ namespace RimWorldLLM.Mind.RimWorld
 
         internal sealed class TradeLevel
         {
-            public int Stock, Needs, Never, Traders, Sells, Buys, Places, Quests;
-            public TradeLevel(int stock, int needs, int never, int traders, int sells, int buys, int places, int quests)
-            { Stock = stock; Needs = needs; Never = never; Traders = traders; Sells = sells; Buys = buys; Places = places; Quests = quests; }
+            public int Stock, Needs, Never, Traders, Sells, Buys, Quests;
+            public TradeLevel(int stock, int needs, int never, int traders, int sells, int buys, int quests)
+            { Stock = stock; Needs = needs; Never = never; Traders = traders; Sells = sells; Buys = buys; Quests = quests; }
         }
 
         // the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
-        // trader, settlements, quests. The last step keeps the TRADE line and the few traders and quests.
-        // (The Python level also has "caravans"; the keeper dropped caravans, so the field is left out.)
+        // trader, quests. The last step keeps the TRADE line and the few traders and quests. (No places, no caravans: both are off.)
         internal static readonly TradeLevel[] TradeLevels =
         {
-            new TradeLevel(10, 8, 8, 6, 6, 4, 6, 6),
-            new TradeLevel(6, 5, 5, 4, 4, 3, 4, 4),
-            new TradeLevel(3, 3, 3, 3, 3, 2, 2, 3),
-            new TradeLevel(0, 2, 0, 2, 2, 0, 1, 2),
+            new TradeLevel(10, 8, 8, 6, 6, 4, 6),
+            new TradeLevel(6, 5, 5, 4, 4, 3, 4),
+            new TradeLevel(3, 3, 3, 3, 3, 2, 3),
+            new TradeLevel(0, 2, 0, 2, 2, 0, 2),
         };
 
-        // (base level, build level, trade level): the build block shrinks all the way first, then the trade blocks, then the rest
+        internal sealed class BioLevel
+        {
+            public int Mechs, Packs, Genes, Detail, Urgent;
+            public BioLevel(int mechs, int packs, int genes, int detail, int urgent)
+            { Mechs = mechs; Packs = packs; Genes = genes; Detail = detail; Urgent = urgent; }
+        }
+
+        // the Biotech block (bio): per-mech and genepack lists go first, then the detail lines, then all but the urgent facts
+        internal static readonly BioLevel[] BioLevels =
+        {
+            new BioLevel(8, 8, 6, 1, 0),
+            new BioLevel(0, 0, 4, 1, 0),
+            new BioLevel(0, 0, 0, 0, 0),
+            new BioLevel(0, 0, 0, 0, 1),
+        };
+
+        // (base level, build level, trade level, bio level): the build block shrinks all the way first, then the bio block, then the
+        // trade blocks, then the rest
         private static readonly int[][] Steps =
         {
-            new[] { 0, 0, 0 }, new[] { 0, 1, 0 }, new[] { 0, 2, 0 }, new[] { 0, 3, 0 }, new[] { 0, 3, 1 },
-            new[] { 0, 3, 2 }, new[] { 0, 3, 3 }, new[] { 1, 3, 3 }, new[] { 2, 3, 3 }, new[] { 3, 3, 3 },
+            new[] { 0, 0, 0, 0 }, new[] { 0, 1, 0, 0 }, new[] { 0, 2, 0, 0 }, new[] { 0, 3, 0, 0 }, new[] { 0, 3, 0, 1 },
+            new[] { 0, 3, 0, 2 }, new[] { 0, 3, 0, 3 }, new[] { 0, 3, 1, 3 }, new[] { 0, 3, 2, 3 }, new[] { 0, 3, 3, 3 },
+            new[] { 1, 3, 3, 3 }, new[] { 2, 3, 3, 3 }, new[] { 3, 3, 3, 3 },
         };
+
+        internal static int[][] StepsForTest => Steps;
 
         /// <summary>Cleaned display name -> pawn id, for the colonists and slaves the digest lists (the first one wins a
         /// duplicate). Insertion order is the digest's order.</summary>
@@ -537,7 +556,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return outl;
         }
 
-        // ---- the trade blocks (vivarium phase 4); the CARAVANS block is dropped (keeper: no caravans at all) ----------------
+        // ---- the trade blocks (vivarium phase 4); no SETTLEMENTS or CARAVANS (caravans are off) ----------------
         /// <summary>d.get(k, dflt) where a present JSON null stays null (Num of it is "?").</summary>
         private static JToken GetD(JToken o, string k, JToken dflt)
         {
@@ -566,19 +585,6 @@ namespace RimWorldLLM.Mind.RimWorld
             return string.Join(", ", bits);
         }
 
-        private static string PlaceLine(JObject s)
-        {
-            string head = CleanLabel(GetD(s, "id", new JValue(""))) + " " + GameData.Clean(Nz(GetD(s, "name", new JValue(""))), "name");
-            var d = new List<string>();
-            foreach (var k in new[] { "faction", "relation" })
-                if (DigestJson.G(s, k) != null) d.Add(CleanLabel(DigestJson.G(s, k)));
-            if (DigestJson.G(s, "goodwill") != null) d.Add("goodwill " + Num(DigestJson.G(s, "goodwill")));
-            var bits = new List<string> { head + (d.Count > 0 ? " (" + string.Join(", ", d) + ")" : "") };
-            if (DigestJson.G(s, "days") != null) bits.Add(Num(DigestJson.G(s, "days")) + " days");
-            if (DigestJson.Truthy(DigestJson.G(s, "trader"))) bits.Add(CleanLabel(DigestJson.G(s, "trader")));
-            return string.Join(", ", bits);
-        }
-
         private static string QuestLine(JObject q)
         {
             JToken what = DigestJson.Truthy(DigestJson.G(q, "what")) ? DigestJson.G(q, "what") : GetD(q, "name", new JValue(""));
@@ -593,11 +599,11 @@ namespace RimWorldLLM.Mind.RimWorld
             JToken dg = DigestJson.G(q, "danger");
             if (!(dg == null || (dg.Type == JTokenType.String && ((string)dg == "" || (string)dg == "none")))) bits.Add("danger " + CleanLabel(dg));
             if (DigestJson.Truthy(DigestJson.G(q, "can"))) bits.Add("can");
-            else { string why = GameData.Clean(Nz(GetD(q, "why_not", new JValue(""))), "label", 80); bits.Add("CANNOT: " + (why.Length > 0 ? why : "no")); }
+            else { string why = GameData.Clean(Nz(GetD(q, "why_not", new JValue(""))), "label", 80); bits.Add("can't: " + (why.Length > 0 ? why : "no")); }
             return string.Join(", ", bits);
         }
 
-        /// <summary>TRADE / NEEDS / STOCK / NEVER SELL / TRADERS / SETTLEMENTS from the trade block, QUESTS from their own.</summary>
+        /// <summary>TRADE / NEEDS / STOCK / NEVER SELL / TRADERS from the trade block, QUESTS from their own.</summary>
         private static List<string> TradeLines(JObject d, TradeLevel tl)
         {
             var outl = new List<string>();
@@ -615,6 +621,10 @@ namespace RimWorldLLM.Mind.RimWorld
                 else head.Add("no negotiator");
                 head.Add("comms " + CleanLabel(GetD(t, "comms", new JValue("?"))));
                 head.Add("beacon " + (DigestJson.Truthy(DigestJson.G(t, "beacon")) ? "yes" : "no"));
+                var pend = DigestJson.G(t, "pending") as JObject;
+                if (pend != null && DigestJson.Truthy(DigestJson.G(pend, "negotiator")))
+                    head.Add("a trade is under way: " + GameData.Name(DigestJson.G(pend, "negotiator")) + " is walking to " + CleanLabel(GetD(pend, "to", new JValue("?")))
+                        + " to trade with " + CleanLabel(GetD(pend, "with", new JValue("?"))));
                 var td = DigestJson.G(t, "today") as JObject;
                 if (td != null)
                     head.Add("today " + Num(GetD(td, "deals", new JValue(0))) + " deals, " + Num(GetD(td, "deals_left", new JValue("?"))) + " left, value left " + Num(GetD(td, "value_left", new JValue("?"))));
@@ -633,16 +643,190 @@ namespace RimWorldLLM.Mind.RimWorld
                     outl.Add("TRADERS (look with trade_offer, then trade; by id):");
                     outl.AddRange(traders.Select(x => TraderLine(x, tl)));
                 }
-                var places = Objs(DigestJson.G(t, "settlements"), tl.Places);
-                if (places.Count > 0) outl.Add("SETTLEMENTS: " + string.Join("; ", places.Select(PlaceLine)));
             }
             var qs = Objs(DigestJson.G(d, "quests"), tl.Quests);
             if (qs.Count > 0)
             {
-                outl.Add("QUESTS (an offer is answered with choose):");
+                outl.Add("QUESTS (an offer is answered with choose; decline one that can't):");
                 outl.AddRange(qs.Select(QuestLine));
             }
             return outl;
+        }
+
+        // ---- the Biotech block (digest "bio", contract A) -------------------------------------
+        /// <summary>A dict key the way Python hashes a pawn id: 5, 5.0 and True are one key; a string is another.</summary>
+        private static string Key(JToken t)
+        {
+            if (t == null || t.Type == JTokenType.Null) return "N";
+            if (t.Type == JTokenType.String) return "s" + (string)t;
+            if (DigestJson.IsNumberish(t)) return "n" + DigestJson.PyFloat(t).ToString("R", CultureInfo.InvariantCulture);
+            return "o" + t.ToString(Newtonsoft.Json.Formatting.None);
+        }
+
+        private static List<JObject> ObjList(JToken b, string k)
+            => DigestJson.G(b, k) is JArray a ? a.OfType<JObject>().ToList() : new List<JObject>();
+
+        private static List<JObject> Head(List<JObject> l, int n) => l.Count <= n ? l : l.GetRange(0, Math.Max(0, n));
+
+        /// <summary>The BIOTECH lines: mechs, pollution, genes, blood, genepacks, children, babies, pregnancies. Every key may be missing.
+        /// Pregnancies are plain facts for adults only (a child's pawn id or an age under 18 drops the entry).</summary>
+        private static List<string> BioLines(JObject b, BioLevel bl, Dictionary<string, double> ages)
+        {
+            var outl = new List<string>();
+            var kids = ObjList(b, "children");
+            bool urgent = bl.Urgent != 0;
+            var mechBits = new List<string>();
+            foreach (var m in ObjList(b, "mechanitors"))
+            {
+                string t = CleanLabel(DigestJson.G(m, "name")) + " bandwidth " + Num(DigestJson.G(m, "bandwidth_used")) + "/" + Num(DigestJson.G(m, "bandwidth_total"));
+                if (DigestJson.Truthy(DigestJson.G(m, "gestating_bandwidth"))) t += " (" + Num(DigestJson.G(m, "gestating_bandwidth")) + " gestating)";
+                long free;
+                try
+                {
+                    JToken tot = DigestJson.G(m, "bandwidth_total"), used = DigestJson.G(m, "bandwidth_used"), ges = DigestJson.G(m, "gestating_bandwidth");
+                    free = (DigestJson.Truthy(tot) ? DigestJson.PyInt(tot) : 0) - (DigestJson.Truthy(used) ? DigestJson.PyInt(used) : 0) - (DigestJson.Truthy(ges) ? DigestJson.PyInt(ges) : 0);
+                }
+                catch (PyValueError) { free = 0; }
+                catch (PyTypeError) { free = 0; }
+                if (free > 0) t += ", " + free.ToString(CultureInfo.InvariantCulture) + " free";
+                var gs = DigestJson.Items(DigestJson.G(m, "groups")).OfType<JObject>()
+                    .Select(g => "group " + Num(DigestJson.G(g, "group")) + " " + CleanLabel(DigestJson.G(g, "mode")) + " (" + Num(DigestJson.G(g, "mechs")) + ")").ToList();
+                mechBits.Add(t + (gs.Count > 0 ? "; " + string.Join(", ", gs) : ""));
+            }
+            foreach (var m in Head(ObjList(b, "mechs"), bl.Mechs))
+            {
+                string rest;
+                if (DigestJson.Truthy(DigestJson.G(m, "problem"))) rest = CleanLabel(DigestJson.G(m, "problem"));
+                else
+                {
+                    var parts = new List<string> { CleanLabel(DigestJson.G(m, "job")), DigestJson.G(m, "energy") != null ? Num(DigestJson.G(m, "energy")) + "%" : "" };
+                    rest = string.Join(" ", parts.Where(x => x.Length > 0));
+                }
+                mechBits.Add(CleanLabel(DigestJson.G(m, "name")) + " " + rest);
+            }
+            if (mechBits.Count > 0 && !urgent) outl.Add("MECHS: " + string.Join("; ", mechBits.Select(x => PyStr.Strip(x))));
+            if (bl.Detail != 0)
+            {
+                var gest = ObjList(b, "gestators").Select(g => CleanLabel(DigestJson.G(g, "label")) + " " + CleanLabel(DigestJson.G(g, "state"))).ToList();
+                var rech = ObjList(b, "rechargers").Select(r => CleanLabel(DigestJson.G(r, "label")) + " " + CleanLabel(DigestJson.G(r, "state"))
+                    + (DigestJson.Truthy(DigestJson.G(r, "waste")) ? " (" + CleanLabel(DigestJson.G(r, "waste")) + ")" : "")).ToList();
+                if (gest.Count > 0 || rech.Count > 0)
+                    outl.Add("GESTATORS: " + (gest.Count > 0 ? string.Join("; ", gest) : "none") + ". RECHARGERS: " + (rech.Count > 0 ? string.Join("; ", rech) : "none"));
+                var cg = ObjList(b, "can_gestate").Select(k => CleanLabel(DigestJson.G(k, "kind")) + " " + Num(DigestJson.G(k, "bandwidth"))).ToList();
+                if (cg.Count > 0) outl.Add("CAN GESTATE (bandwidth): " + string.Join(", ", cg));
+            }
+            var p = DigestJson.G(b, "pollution") as JObject;
+            if (p != null && p.Count > 0 && !urgent)
+            {
+                var bits = new List<string> { Num(DigestJson.G(p, "wastepacks")) + " wastepacks"
+                    + (DigestJson.Truthy(DigestJson.G(p, "wastepacks_near_home")) ? " (" + Num(DigestJson.G(p, "wastepacks_near_home")) + " near home)" : "") };
+                if (DigestJson.G(p, "home_polluted_pct") != null) bits.Add("home " + Num(DigestJson.G(p, "home_polluted_pct")) + "% polluted");
+                if (DigestJson.Truthy(DigestJson.G(p, "trend"))) bits.Add(CleanLabel(DigestJson.G(p, "trend")));
+                if (DigestJson.Truthy(DigestJson.G(p, "toxic_buildup"))) bits.Add("toxic buildup " + string.Join(", ", Words(DigestJson.G(p, "toxic_buildup"), 4)));
+                bits.Add(DigestJson.Truthy(DigestJson.G(p, "waste_stockpile")) ? "waste stockpile set" : "no waste stockpile");
+                if (DigestJson.Truthy(DigestJson.G(p, "atomizer"))) bits.Add("atomizer built");
+                else if (DigestJson.Truthy(DigestJson.G(p, "can_atomize"))) bits.Add("atomizer researched, not built");
+                outl.Add("POLLUTION: " + string.Join(", ", bits));
+            }
+            var gl = new List<string>();
+            foreach (var g in Head(ObjList(b, "genes"), bl.Genes))
+            {
+                var eff = Words(DigestJson.G(g, "effects"), 6);
+                if (DigestJson.G(g, "hemogen_pct") != null)
+                    eff = eff.Select(e => e == "needs hemogen" ? e + " " + Num(DigestJson.G(g, "hemogen_pct")) + "%" : e).ToList();
+                gl.Add(CleanLabel(DigestJson.G(g, "name")) + " " + CleanLabel(DigestJson.G(g, "xenotype")) + (eff.Count > 0 ? " (" + string.Join(", ", eff) + ")" : ""));
+            }
+            if (gl.Count > 0 && !urgent) outl.Add("GENES: " + string.Join("; ", gl));
+            var hg = DigestJson.G(b, "hemogen") as JObject;
+            if (hg != null && hg.Count > 0)
+            {
+                string t = Num(DigestJson.G(hg, "packs")) + " packs";
+                if (DigestJson.Truthy(DigestJson.G(hg, "donors")) && !urgent) t += "; donors " + string.Join(", ", Words(DigestJson.G(hg, "donors"), 3));
+                if (DigestJson.Truthy(DigestJson.G(hg, "needing")))
+                {
+                    t += "; needing " + string.Join(", ", Words(DigestJson.G(hg, "needing"), 4));
+                    var could = DigestJson.Items(DigestJson.G(hg, "prisoners")).OfType<JObject>().Select(x => CleanLabel(DigestJson.G(x, "name"))).Take(3).ToList();
+                    if (could.Count > 0 && !DigestJson.Truthy(DigestJson.G(hg, "donors"))) t += "; prisoners who could give blood: " + string.Join(", ", could);
+                }
+                outl.Add("HEMOGEN: " + t);
+            }
+            var gb = DigestJson.G(b, "genebank") as JObject;
+            if (gb != null && gb.Count > 0 && !urgent)
+            {
+                string t = Num(DigestJson.G(gb, "genepacks")) + " genepacks" + (DigestJson.Truthy(DigestJson.G(gb, "unstored")) ? " (" + Num(DigestJson.G(gb, "unstored")) + " unstored)" : "");
+                t += ", " + Num(DigestJson.G(gb, "banks")) + " bank" + (DigestJson.G(gb, "bank_space") != null ? " (" + Num(DigestJson.G(gb, "bank_space")) + " free)" : "");
+                if (DigestJson.Truthy(DigestJson.G(gb, "assembler"))) t += ", assembler " + CleanLabel(DigestJson.G(gb, "assembler"));
+                var pk = Words(DigestJson.G(gb, "packs"), bl.Packs);
+                outl.Add("GENEBANK: " + t + (pk.Count > 0 ? "; packs " + string.Join(", ", pk) : ""));
+            }
+            var germs = ObjList(b, "xenogerms").Select(x => CleanLabel(DigestJson.G(x, "name"))).ToList();
+            if (germs.Count > 0 && !urgent)
+            {
+                JToken mi = DigestJson.G(b, "may_implant");
+                outl.Add("XENOGERMS: " + string.Join(", ", germs.Take(4)) + (mi != null && mi.Type == JTokenType.Boolean && (bool)mi ? "" : " (implanting is the player's call)"));
+            }
+            if (kids.Count > 0 && !urgent)
+                outl.Add("CHILDREN: " + string.Join("; ", Head(kids, 6).Select(k =>
+                {
+                    var bits = new List<string>
+                    {
+                        DigestJson.G(k, "learning_pct") != null ? "learning " + Num(DigestJson.G(k, "learning_pct")) + "%" : "",
+                        CleanLabel(DigestJson.G(k, "learning")),
+                        DigestJson.Truthy(DigestJson.G(k, "desk")) ? "" : "no school desk",
+                    };
+                    return CleanLabel(DigestJson.G(k, "name")) + " " + Num(DigestJson.G(k, "age")) + " (" + string.Join(", ", bits.Where(x => x.Length > 0)) + ")";
+                })));
+            var babies = ObjList(b, "babies");
+            if (babies.Count > 0)
+            {
+                var show = urgent ? babies.Where(x => DigestJson.Truthy(DigestJson.G(x, "hungry"))).ToList() : babies;
+                if (show.Count > 0)
+                    outl.Add("BABIES: " + string.Join("; ", Head(show, 6).Select(x =>
+                    {
+                        string line = CleanLabel(DigestJson.G(x, "name")) + " " + Num(DigestJson.G(x, "age_days")) + " days, "
+                            + (DigestJson.Truthy(DigestJson.G(x, "hungry")) ? "hungry " + Num(DigestJson.G(x, "food_pct")) + "%" : "fed " + Num(DigestJson.G(x, "food_pct")) + "%");
+                        JToken feeding = DigestJson.G(x, "feeding");
+                        if (DigestJson.Truthy(DigestJson.G(x, "feeder")))
+                            line += ", fed by " + CleanLabel(DigestJson.G(x, "feeder")) + (DigestJson.Truthy(feeding) ? " (" + CleanLabel(feeding) + ")" : "");
+                        else if (DigestJson.Truthy(feeding) && !(feeding.Type == JTokenType.String && (string)feeding == "no one assigned"))
+                            line += ", fed by " + CleanLabel(feeding);
+                        else line += ", no feeder";
+                        return line;
+                    })));
+            }
+            var kidIds = new HashSet<string>(kids.Select(k => Key(DigestJson.G(k, "pawn"))));
+            var preg = ObjList(b, "pregnancies").Where(x =>
+            {
+                string key = Key(DigestJson.G(x, "pawn"));
+                return !kidIds.Contains(key) && (ages.TryGetValue(key, out double age) ? age : 99) >= 18;
+            }).ToList();
+            if (preg.Count > 0 && !urgent)
+                outl.Add("PREGNANT: " + string.Join("; ", Head(preg, 4).Select(x =>
+                    CleanLabel(DigestJson.G(x, "name")) + " " + Num(DigestJson.G(x, "progress_pct")) + "% (" + Num(DigestJson.G(x, "days_left")) + " days left)")));
+            var cr = Words(DigestJson.G(b, "carers"), 6);
+            if (cr.Count > 0 && !urgent) outl.Add("CARERS: " + string.Join(", ", cr));
+            var miss = Words(DigestJson.G(b, "missing"), 6);
+            if (miss.Count > 0) outl.Add("BIO MISSING: " + string.Join(", ", miss));
+            return outl;
+        }
+
+        /// <summary>The trade turn's view: who arrived, then TRADE / NEEDS / STOCK / NEVER SELL / TRADERS (no settlements, no quests).</summary>
+        public static string TradeView(JObject d, IList<string> arrived)
+        {
+            var t = DigestJson.G(d, "trade") as JObject ?? new JObject();
+            var names = new List<string>();
+            foreach (var x in DigestJson.Items(DigestJson.G(t, "traders")).OfType<JObject>())
+            {
+                if (!DigestJson.Truthy(DigestJson.G(x, "id")) || !arrived.Contains(DigestJson.Str(x, "id", "None"))) continue;
+                JToken nm = DigestJson.Truthy(DigestJson.G(x, "name")) ? DigestJson.G(x, "name") : DigestJson.G(x, "id");
+                names.Add(CleanLabel(nm) + " (" + CleanLabel(DigestJson.G(x, "id")) + ")");
+            }
+            var outl = new List<string>();
+            if (names.Count > 0) outl.Add("ARRIVED: " + string.Join(", ", names));
+            var t2 = (JObject)t.DeepClone();
+            t2["settlements"] = new JArray();
+            outl.AddRange(TradeLines(new JObject { ["trade"] = t2 }, TradeLevels[1]));
+            return string.Join("\n", outl);
         }
 
         /// <summary>OPEN DIALOGS: the windows and letters that wait for a player's choice (GET /dialogs), answered with the choose tool.</summary>
@@ -734,7 +918,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return GameData.Clean(DigestJson.G(r, "label") ?? "", "label") + " " + DigestJson.Str(r, "count", "?") + (extra.Count > 0 ? " (" + string.Join(", ", extra) + ")" : "");
         }
 
-        internal static string Render(JObject d, Level lv, BuildLevel bl, TradeLevel tl, bool combat = true)
+        internal static string Render(JObject d, Level lv, BuildLevel bl, TradeLevel tl, BioLevel bio = null, bool combat = true)
         {
             var outl = new List<string> { "DATE: " + Date(d) };
             string dl = DeadlinesLine(d, lv.Deadlines);
@@ -854,6 +1038,13 @@ namespace RimWorldLLM.Mind.RimWorld
                 outl.AddRange(built);
             }
             else if (counts.Length > 0) outl.Add("ROOMS: " + counts);
+            if (DigestJson.G(d, "bio") is JObject biob)
+            {
+                var ages = new Dictionary<string, double>();
+                foreach (var p in pawns)
+                    if (p is JObject && DigestJson.IsNumberish(DigestJson.G(p, "age"))) ages[Key(DigestJson.G(p, "id"))] = DigestJson.PyFloat(DigestJson.G(p, "age"));
+                outl.AddRange(BioLines(biob, bio ?? BioLevels[0], ages));
+            }
             outl.AddRange(TradeLines(d, tl));
             JToken pw = DigestJson.G(d, "power");
             if (DigestJson.Truthy(pw))
@@ -870,13 +1061,13 @@ namespace RimWorldLLM.Mind.RimWorld
             digest = digest ?? new JObject();
             foreach (var st in Steps)
             {
-                text = Render(digest, Levels[st[0]], BuildLevels[st[1]], TradeLevels[st[2]]);
+                text = Render(digest, Levels[st[0]], BuildLevels[st[1]], TradeLevels[st[2]], BioLevels[st[3]]);
                 if (PyStr.Len(text) <= cap) return text;
             }
             if (CombatKit.ViewActive(DigestJson.G(digest, "combat")))           // the cut takes the tail of the rest, never the fight
             {
                 string fight = StewardCombat.RenderCombat(DigestJson.G(digest, "combat"), StewardCombat.DigestCaps[StewardCombat.DigestCaps.Length - 1]);
-                string rest = Render(digest, Levels[Levels.Length - 1], BuildLevels[BuildLevels.Length - 1], TradeLevels[TradeLevels.Length - 1], combat: false);
+                string rest = Render(digest, Levels[Levels.Length - 1], BuildLevels[BuildLevels.Length - 1], TradeLevels[TradeLevels.Length - 1], BioLevels[BioLevels.Length - 1], combat: false);
                 string head = PyStr.Head(rest, Math.Max(cap - PyStr.Len(fight) - 40, 0));
                 int hn = head.LastIndexOf('\n');
                 return (hn >= 0 ? head.Substring(0, hn) : head) + "\n" + fight + "\n(digest cut: too long)";

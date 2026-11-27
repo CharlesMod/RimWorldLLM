@@ -55,6 +55,12 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly CombatKit Combat;
         /// <summary>The trade tools (trade_offer, trade); they exist only when the digest has a trade block.</summary>
         public readonly TradeKit Trade;
+        /// <summary>The Biotech tools (mechs, genes, children); they exist only when the digest has a bio block.</summary>
+        public readonly BioKit Bio;
+        /// <summary>Cleaned colonist name -> age, for the pawns whose digest entry has a numeric age.</summary>
+        public readonly Dictionary<string, double> Ages = new Dictionary<string, double>(StringComparer.Ordinal);
+        public const int ChildAge = 13;
+        public const string ChildRefusal = "children stay out of fights";
 
         public StewardSession(JObject digest, IBridge bridge, bool advisor, bool afterFight = false)
         {
@@ -82,13 +88,16 @@ namespace RimWorldLLM.Mind.RimWorld
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
                 if (p is JObject po && IncapableOfViolence(DigestJson.G(po, "incapable"))) CannotFight.Add(GameData.Name(DigestJson.G(po, "name")));
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
+            Bio = new BioKit(Digest);                            // the Biotech tools exist only when the digest has a bio block
+            foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
+                if (p is JObject ao && DigestJson.IsNumberish(DigestJson.G(ao, "age"))) Ages[GameData.Name(DigestJson.G(ao, "name"))] = DigestJson.PyFloat(DigestJson.G(ao, "age"));
             Combat = new CombatKit(DigestJson.G(Digest, "combat"), Pawns, Build, afterFight);   // squad needs a combat view; defend also a build block
-            Trade = new TradeKit(Digest);                        // trade_offer, trade: only with a trade block
+            Trade = new TradeKit(Digest);                        // trade_offer, trade: only with a trade block (caravans are off)
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n)), StringComparer.Ordinal);
+            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n)), StringComparer.Ordinal);
         }
 
         /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
@@ -286,6 +295,9 @@ namespace RimWorldLLM.Mind.RimWorld
             return body;
         }
 
+        /// <summary>Under 13 by the digest's age: vanilla cannot draft them, and children stay out of fights.</summary>
+        private bool IsChild(string name) => (Ages.TryGetValue(name, out double a) ? a : 99) < ChildAge;
+
         private int PawnId(string name)
         {
             if (!Pawns.TryGetValue(name, out int id))
@@ -391,7 +403,7 @@ namespace RimWorldLLM.Mind.RimWorld
                         var ids = new List<int>();
                         if (raw.ToLowerInvariant() == "all")
                         {
-                            foreach (var kv in Pawns) if ((!IsColonist.TryGetValue(kv.Key, out bool col) || col) && !CannotFight.Contains(kv.Key)) ids.Add(kv.Value);
+                            foreach (var kv in Pawns) if ((!IsColonist.TryGetValue(kv.Key, out bool col) || col) && !CannotFight.Contains(kv.Key) && !IsChild(kv.Key)) ids.Add(kv.Value);
                         }
                         else
                         {
@@ -399,6 +411,7 @@ namespace RimWorldLLM.Mind.RimWorld
                             {
                                 string n = Ci(Pawns.Keys, part);
                                 if (n == null) throw new PyValueError("no colonist named " + PyStr.Strip(part) + "; the colonists are: " + string.Join(", ", Pawns.Keys));
+                                if (IsChild(n)) throw new PyValueError(ChildRefusal);
                                 ids.Add(Pawns[n]);
                             }
                         }
@@ -409,6 +422,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     {
                         int pid = PawnId(S(v, "pawn"));
                         string kind = S(v, "order");
+                        if (IsChild(S(v, "pawn"))) throw new PyValueError(ChildRefusal);
                         if (kind == "move")
                         {
                             if (I(v, "x") == 0 && I(v, "z") == 0) throw new PyValueError("move needs a real cell (x and z); in a fight use squad move with a named position");
@@ -425,6 +439,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     if (Build.Names.Contains(tool)) return Build.Body(tool, v);
                     if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
                     if (Trade.Acting.Contains(tool)) return Trade.Body(tool, v);
+                    if (Bio.Names.Contains(tool)) return Bio.Body(tool, v);
                     throw new PyValueError("unknown tool " + tool);
             }
         }
@@ -450,6 +465,11 @@ namespace RimWorldLLM.Mind.RimWorld
 
         /// <summary>COMBAT_TOOLS: what a combat turn may use (core/steward.py).</summary>
         public static readonly string[] CombatToolNames = { "squad", "defend", "draft", "note", "do_nothing" };
+
+        /// <summary>TRADE_TOOLS: what a trade turn may use (core/steward.py).</summary>
+        public static readonly string[] TradeToolNames = { "trade_offer", "trade", "note", "do_nothing" };
+        /// <summary>FOOD_CRITICAL_DAYS: the playbook's starvation rule (food_days &lt; 3): no trade turn.</summary>
+        public const int FoodCriticalDays = 3;
 
         public static readonly string[] ActingNames = { "set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order" };
         public static readonly HashSet<string> Acting = new HashSet<string>(ActingNames, StringComparer.Ordinal);
@@ -518,6 +538,10 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public string DefaultStrategy() => StewardResources.Text(StewardResources.StrategyName);
 
+        /// <summary>Notes that only matter in some games: the Biotech section when the digest has a bio block.</summary>
+        public string StrategyExtra(JObject digest)
+            => DigestJson.G(digest, "bio") is JObject ? StewardResources.Text(StewardResources.BiotechName).Trim() : "";
+
         /// <summary>The "=== PLAYBOOK ALERTS ===" block: playbook rules that fire on this digest's facts ("" when none).</summary>
         public string PlaybookAlerts(JObject digest) => StewardRules.AlertsSection(digest);
 
@@ -544,6 +568,33 @@ namespace RimWorldLLM.Mind.RimWorld
         }
 
         public string CombatSystemPrompt() => StewardCombat.SystemPrompt();
+
+        public StewardSession TradeSession(JObject digest, IBridge bridge) => new StewardSession(digest, bridge, false);
+
+        public string TradeSystemPrompt() => StewardResources.Text(StewardResources.TradeName);
+
+        /// <summary>Why a trade turn is not worth running now ("" when it is): the colony is starving (food_days under 3, or a
+        /// critical starvation alert), so the routine cycle handles food first.</summary>
+        public string TradeSkip(JObject digest)
+        {
+            if (StewardRules.DeriveFacts(digest).TryGetValue("food_days", out object fd) && IsRealNumber(fd) && Convert.ToDouble(fd, CultureInfo.InvariantCulture) < FoodCriticalDays)
+                return "food is critical (" + DigestJson.G6(Convert.ToDouble(fd, CultureInfo.InvariantCulture)) + " days)";
+            foreach (var a in DigestJson.Items(DigestJson.G(digest, "alerts")).OfType<JObject>())
+                if (DigestJson.Truthy(DigestJson.G(a, "critical"))
+                    && (DigestJson.Str(a, "alert", "") + " " + DigestJson.Str(a, "label", "")).ToLowerInvariant().Contains("starv"))
+                    return "a critical starvation alert";
+            return "";
+        }
+
+        private static bool IsRealNumber(object o) => o is long || o is int || o is double || o is System.Numerics.BigInteger;
+
+        /// <summary>(the trade view naming the arrivals, the food line).</summary>
+        public (string view, string food) RenderTrade(JObject digest, IList<string> arrived)
+        {
+            StewardRules.DeriveFacts(digest).TryGetValue("food_days", out object fd);
+            return (StewardDigest.TradeView(digest, arrived),
+                IsRealNumber(fd) ? "FOOD: about " + DigestJson.G6(Convert.ToDouble(fd, CultureInfo.InvariantCulture)) + " days of food" : "");
+        }
 
         public string RenderCombat(JObject view) => StewardCombat.RenderCombat(view);
     }

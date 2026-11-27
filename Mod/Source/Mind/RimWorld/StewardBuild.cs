@@ -46,6 +46,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly List<KeyValuePair<string, string>> Benches;
         public readonly Dictionary<string, List<string>> Recipes = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         public readonly List<string> Things, Stuff, Plants, Ores;
+        /// <summary>The stockpile presets: waste (a wastepack-only stockpile) is added with a Biotech bio block.</summary>
+        public readonly List<string> PresetList;
         public readonly List<ToolSpec> Tools;
         public readonly HashSet<string> Names;
 
@@ -128,6 +130,7 @@ namespace RimWorldLLM.Mind.RimWorld
             Stuff = WordsOf(Iter(DigestJson.G(b, "stuff")).Select(s => s is JObject so ? (so.TryGetValue("stuff", out JToken v) ? v : null) : s));
             Plants = WordsOf(Iter(DigestJson.G(b, "plants")));
             Ores = WordsOf(Iter(DigestJson.G(b, "ores")).Select(o => o is JObject oo ? (oo.TryGetValue("ore", out JToken v) ? v : null) : o));
+            PresetList = Presets.Concat(DigestJson.G(digest, "bio") is JObject ? new[] { "waste" } : new string[0]).ToList();
             Tools = Has ? BuildTools() : new List<ToolSpec>();
             Names = new HashSet<string>(Tools.Select(t => t.Name), StringComparer.Ordinal);
         }
@@ -166,7 +169,7 @@ namespace RimWorldLLM.Mind.RimWorld
             zk.Add("stockpile"); zk.Add("dump");
             var zp = new List<Param> { new Param("kind", "enum", "grow: a field; stockpile: storage; dump: junk", choices: zk) };
             if (Plants.Count > 0) zp.Add(Opt("plant", "grow: the crop", Plants));
-            zp.Add(Opt("preset", "stockpile: what it takes", Presets));
+            zp.Add(Opt("preset", "stockpile: what it takes", PresetList));
             zp.Add(Opt("size", "how big", Sizes));
             if (Rooms.Count > 0) zp.Add(RoomsParam("stockpile: inside this room"));
             zp.Add(WhyParam);

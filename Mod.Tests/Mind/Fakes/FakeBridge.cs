@@ -144,6 +144,9 @@ namespace RimWorldLLM.Mind.Fakes
         public Dictionary<string, string> ActRefuse = new Dictionary<string, string>();   // verb -> reason: refused 409 "refused"
         public Dictionary<string, JObject> ActExtra = new Dictionary<string, JObject>();   // verb -> extra fields in the success reply
         public List<KeyValuePair<string, Dictionary<string, string>>> Looks = new List<KeyValuePair<string, Dictionary<string, string>>>();   // (path, query) of every GET /trade/offer
+        public List<JObject> Traders;             // what GET /vivarium lists as traders; null: the digest's trade.traders that can trade
+        public JObject TradePending;              // a walking trade ({negotiator, to, with}); the digest's trade block shows it, a second trade is refused
+        JObject _walk = new JObject();
         public Dictionary<string, JObject> Offers = new Dictionary<string, JObject>();   // trader id -> a canned /trade/offer reply that replaces the one built from the digest
 
         public FakeBridge(string token = "tok") { Token = token; }
@@ -499,12 +502,24 @@ namespace RimWorldLLM.Mind.Fakes
             return new JObject { ["active"] = active, ["since_tick"] = active ? CombatSince : 0, ["hostiles"] = hostiles };
         }
 
+        JArray VivTraders()
+        {
+            if (Traders != null) return new JArray(Traders.Select(x => x.DeepClone()));
+            var t = Digest != null ? Digest["trade"] as JObject : null;
+            var l = new JArray();
+            if (t != null && t["traders"] is JArray tl)
+                foreach (var x in tl.OfType<JObject>())
+                    if (RimWorldLLM.Mind.RimWorld.DigestJson.Truthy(x["id"]) && (x["can_trade"] == null || T(x["can_trade"])))
+                        l.Add(new JObject { ["id"] = x["id"].DeepClone(), ["kind"] = x["kind"] != null ? x["kind"].DeepClone() : "caravan", ["name"] = x["name"] != null ? x["name"].DeepClone() : x["id"].DeepClone() });
+            return l;
+        }
+
         BridgeReply Vivarium(BridgeRequest req, string path, JObject body)
         {
             string method = req.Method;
             if (path == "/vivarium" && method == "GET")
                 return Ok(("playing", Playing), ("paused_by_narrator", PausedByNarrator), ("chat_seq", ChatSeq),
-                    ("goals_rev", GoalsBoard["rev"].DeepClone()), ("actions_seq", Actions.Count), ("settings", VivSettings.DeepClone()),
+                    ("traders", VivTraders()), ("goals_rev", GoalsBoard["rev"].DeepClone()), ("actions_seq", Actions.Count), ("settings", VivSettings.DeepClone()),
                     ("combat", CombatBlock()));
             if (path == "/combat" && method == "GET" && CombatMissing) return Err(404, "not_found", "no combat");
             if (path == "/combat" && method == "GET")
@@ -512,8 +527,9 @@ namespace RimWorldLLM.Mind.Fakes
             if (path == "/digest" && method == "GET")
             {
                 if (Digest == null) return Err(409, "no_game", "no game loaded");
-                if (Dialogs.Count == 0) return Ok(Digest);
                 var withDialogs = (JObject)Digest.DeepClone();
+                if (withDialogs["trade"] is JObject trb) trb["pending"] = TradePending != null ? TradePending.DeepClone() : JValue.CreateNull();
+                if (Dialogs.Count == 0) return Ok(withDialogs);
                 withDialogs["dialogs"] = new JArray(Dialogs.Select(d => d.DeepClone()));
                 return Ok(withDialogs);
             }
@@ -586,13 +602,15 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care" }, verb) < 0)
                     return null;
+                if (verb == "caravan") return Err(409, "refused", "caravans are off");
                 string bad = ActShape(verb, body);
                 if (bad.Length > 0) return Err(400, "bad_request", bad);
                 if (ActRefuse.ContainsKey(verb)) return Err(409, "refused", ActRefuse[verb]);
                 string note, refusal = ActApply(verb, body, out note);
                 if (refusal.Length > 0) return Err(409, "refused", refusal);
+                var walk = _walk;
                 var logged = new JObject();
                 foreach (var p in body.Properties()) if (p.Name != "op_id" && p.Name != "expires_tick") logged[p.Name] = p.Value.DeepClone();
                 ActLog.Add(new KeyValuePair<string, JObject>(verb, logged));
@@ -601,6 +619,7 @@ namespace RimWorldLLM.Mind.Fakes
                 var o = new JObject { ["done"] = note };
                 JObject extra;
                 if (ActExtra.TryGetValue(verb, out extra)) SetAll(o, extra);
+                SetAll(o, walk);
                 return Ok(o);
             }
             return null;
@@ -796,6 +815,23 @@ namespace RimWorldLLM.Mind.Fakes
         internal string ActApply(string verb, JObject b, out string note)
         {
             note = "";
+            _walk = new JObject();
+            if (verb == "trade" && b["with"] != null && b["with"].Type == JTokenType.String && ((string)b["with"]).Length > 0 && (((string)b["with"])[0] == 'P' || ((string)b["with"])[0] == 'S'))
+            {      // a walking trade: the negotiator walks there, the deal runs later
+                if (TradePending != null)
+                    return "a trade is already under way: " + PyStr(TradePending["negotiator"]) + " is walking to " + PyStr(TradePending["to"]);
+                string wid = (string)b["with"];
+                var tb = Digest != null ? Digest["trade"] as JObject : null;
+                var found = tb != null && tb["traders"] is JArray tla ? tla.OfType<JObject>().FirstOrDefault(x => x["id"] != null && x["id"].Type == JTokenType.String && (string)x["id"] == wid) : null;
+                string who = found != null ? PyStr(found["name"] ?? JValue.CreateNull()) : wid;
+                var ngo = tb != null ? tb["negotiator"] as JObject : null;
+                string neg = ngo != null && RimWorldLLM.Mind.RimWorld.DigestJson.Truthy(ngo["name"]) ? PyStr(ngo["name"]) : "A colonist";
+                string to = wid[0] == 'S' ? "the comms console" : who;      // as the mod: orbital at the console, a visitor in person
+                TradePending = new JObject { ["negotiator"] = neg, ["to"] = to, ["with"] = wid };
+                _walk = new JObject { ["status"] = "walking", ["negotiator"] = neg, ["to"] = to };
+                note = neg + " is walking to " + to + " to trade" + (to != who ? " with " + who : "");
+                return "";
+            }
             bool controls = T(VivSettings["controls_speed"]);
             bool mayPause = T(VivSettings["may_pause_for_emergencies"]);
             if (verb == "squad" && b.Value<string>("op") == "undraft" && Combat != null && T(Combat["active"])
@@ -861,7 +897,7 @@ namespace RimWorldLLM.Mind.Fakes
                 case "letter": note = "letter " + PyStr(b["letter"]) + ": " + PyStr(b["choice"]); break;
                 case "draft": note = (b.Value<bool>("drafted") ? "drafted" : "undrafted") + " " + ((JArray)b["pawns"]).Count + " pawn(s)"; break;
                 case "order": note = PyStr(b["order"]) + " order for pawn " + PyStr(b["pawn"]); break;
-                case "trade":      // phase 4 hand: accepted as sent
+                case "trade": case "mech_mode": case "mech_group": case "mech_gestate": case "genepack": case "xenogerm": case "hemogen": case "child_schedule": case "feed": case "child_care":      // phase 4 and Biotech hands: accepted as sent
                     note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + (p.Value.Type == JTokenType.String ? (string)p.Value : RimWorldLLM.Mind.Py.PyJson.Repr(p.Value))));
                     break;
                 case "room": case "build": case "zone": case "designate": case "bill": case "squad": case "defend":     // phase 2-3 hands: accepted as sent

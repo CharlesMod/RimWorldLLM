@@ -9,9 +9,7 @@
 // Optional parameters follow StewardBuild: an optional text may be empty. Accepting or declining a quest stays with `choose`;
 // `player_asked` is never sent.
 //
-// Differences from Python: NO CARAVANS (keeper decision): caravan_plan and caravan, their planners, render_plan and the
-// caravan/quest destination logic are not ported (so LOOKS = trade_offer, ACTS = trade). A caravan that sits at a settlement
-// still makes that settlement a trade partner (the digest's caravans[].can_trade), as the Python.
+// Caravans are off (the Python's too since 4fb37b5): LOOKS = trade_offer, ACTS = trade; a settlement is no trade partner.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -124,8 +122,7 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public readonly bool Has;
         public readonly Dictionary<string, JObject> Traders = new Dictionary<string, JObject>(StringComparer.Ordinal);
-        public readonly Dictionary<string, JObject> Places = new Dictionary<string, JObject>(StringComparer.Ordinal);
-        /// <summary>Who we can deal with: visiting traders, and a settlement where one of our caravans sits.</summary>
+        /// <summary>Who we can deal with: the visiting traders.</summary>
         public readonly Dictionary<string, JObject> Partners = new Dictionary<string, JObject>(StringComparer.Ordinal);
         public readonly List<ToolSpec> Tools;
         public readonly HashSet<string> Names;
@@ -137,12 +134,7 @@ namespace RimWorldLLM.Mind.RimWorld
             Has = t != null;
             t = t ?? new JObject();
             foreach (var x in DigestJson.Items(DigestJson.G(t, "traders"))) { string i = IdOf(x); if (i.Length > 0) Traders[i] = (JObject)x; }
-            foreach (var x in DigestJson.Items(DigestJson.G(t, "settlements"))) { string i = IdOf(x); if (i.Length > 0) Places[i] = (JObject)x; }
-            var at = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var c in DigestJson.Items(DigestJson.G(digest, "caravans")).OfType<JObject>())
-                if (IdOf(c).Length > 0 && DigestJson.Truthy(DigestJson.G(c, "can_trade"))) at.Add(PyJson.Str(DigestJson.G(c, "can_trade")));
             foreach (var kv in Traders) Partners[kv.Key] = kv.Value;
-            foreach (var kv in Places) if (at.Contains(kv.Key)) Partners[kv.Key] = kv.Value;
             Tools = Has ? BuildTools() : new List<ToolSpec>();
             Names = new HashSet<string>(Tools.Select(x => x.Name), StringComparer.Ordinal);
             Acting = new HashSet<string>(Names.Where(n => Array.IndexOf(Acts, n) >= 0), StringComparer.Ordinal);

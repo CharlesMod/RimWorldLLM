@@ -148,7 +148,7 @@ Act when food_days < 3, or < 5 and falling.
 ## Trade and quests
 - Sell surplus art, textiles, drugs; buy components, medicine, then plasteel/advanced components (NEEDS). Keep 500 silver.
 - Traders leave: trade first in a turn; trade_offer before every trade (final).
-- Take quests only when QUESTS says can; no fights at quest sites yet.
+- Take quests only when QUESTS says can; one that says can't (it needs a caravan; caravans are off) is declined with choose. No fights at quest sites yet.
 
 ## Reading the digest's new lines
 - **DEADLINES** come first: a bleed-out, an infection losing the race, rot or an expiring letter in a few hours beats everything planned. Winter in days means harvest and bank food now.
