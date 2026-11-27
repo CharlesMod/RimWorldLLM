@@ -151,19 +151,19 @@ namespace RimWorldLLM.Mind.RimWorld
 
         private sealed class BuildLevel
         {
-            public int Rooms, Benches, Bills, Recipes, Zones, CanBuild, Stuff, Plants, Ores;
-            public BuildLevel(int rooms, int benches, int bills, int recipes, int zones, int canBuild, int stuff, int plants, int ores)
-            { Rooms = rooms; Benches = benches; Bills = bills; Recipes = recipes; Zones = zones; CanBuild = canBuild; Stuff = stuff; Plants = plants; Ores = ores; }
+            public int Rooms, Benches, Bills, Recipes, Zones, CanBuild, Stuff, Plants, Ores, Loose;
+            public BuildLevel(int rooms, int benches, int bills, int recipes, int zones, int canBuild, int stuff, int plants, int ores, int loose)
+            { Rooms = rooms; Benches = benches; Bills = bills; Recipes = recipes; Zones = zones; CanBuild = canBuild; Stuff = stuff; Plants = plants; Ores = ores; Loose = loose; }
         }
 
         // the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
         // plants, ores. The last step keeps just BUILD/missing and a short ROOMS.
         private static readonly BuildLevel[] BuildLevels =
         {
-            new BuildLevel(12, 8, 5, 8, 10, 40, 8, 10, 6),
-            new BuildLevel(8, 5, 3, 4, 6, 20, 6, 6, 4),
-            new BuildLevel(5, 3, 2, 0, 4, 0, 4, 0, 2),
-            new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0),
+            new BuildLevel(12, 8, 5, 8, 10, 40, 8, 10, 6, 6),
+            new BuildLevel(8, 5, 3, 4, 6, 20, 6, 6, 4, 4),
+            new BuildLevel(5, 3, 2, 0, 4, 0, 4, 0, 2, 2),
+            new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         };
 
         // (base level, build level): the build block shrinks all the way before the rest loses detail
@@ -379,7 +379,57 @@ namespace RimWorldLLM.Mind.RimWorld
             var ores = Objs(DigestJson.G(b, "ores"), bl.Ores);
             if (ores.Count > 0)
                 outl.Add("ORES: " + string.Join("; ", ores.Select(o => CleanLabel(DigestJson.G(o, "ore")) + " " + Num(DigestJson.G(o, "cells")) + " cells " + Num(DigestJson.G(o, "dist")) + " away")));
+            var piles = Objs(DigestJson.G(b, "loose"), bl.Loose);
+            if (piles.Count > 0) outl.Add("LOOSE: " + string.Join("; ", piles.Select(Pile)));
             return outl;
+        }
+
+        /// <summary>OPEN DIALOGS: the windows and letters that wait for a player's choice (GET /dialogs), answered with the choose tool.</summary>
+        public static List<string> DialogLines(JObject d, int? letterCap = null)
+        {
+            var dl = DigestJson.Items(DigestJson.G(d, "dialogs")).OfType<JObject>().Where(x => DigestJson.Truthy(DigestJson.G(x, "id"))).Take(8).ToList();
+            var outl = new List<string>();
+            if (dl.Count == 0) return outl;
+            int cap = letterCap ?? 280;
+            outl.Add("OPEN DIALOGS (answer each with choose; one left open is answered with its default after the timeout):");
+            foreach (var x in dl)
+            {
+                string opts = string.Join("; ", DigestJson.Items(DigestJson.G(x, "options")).OfType<JObject>().Where(o => !DigestJson.Truthy(DigestJson.G(o, "disabled"))).Select(o =>
+                    PyJson.Str(DigestJson.G(o, "index")) + ": " + CleanLabel(DigestJson.G(o, "label"))
+                    + (DigestJson.Truthy(DigestJson.G(o, "risk")) ? " [" + CleanLabel(DigestJson.G(o, "risk")) + "]" : "")));
+                string flds = string.Join(", ", DigestJson.Items(DigestJson.G(x, "fields")).OfType<JObject>().Select(f =>
+                    CleanLabel(DigestJson.Truthy(DigestJson.G(f, "label")) ? DigestJson.G(f, "label") : (f.ContainsKey("name") ? DigestJson.G(f, "name") : null))
+                    + " (max " + (f.ContainsKey("max_len") ? PyJson.Str(DigestJson.G(f, "max_len")) : "40") + " chars)"));
+                outl.Add("- " + PyJson.Str(x["id"]) + " (" + (x.ContainsKey("kind") ? PyJson.Str(DigestJson.G(x, "kind")) : "") + "): " + CleanLabel(DigestJson.G(x, "title"))
+                    + (opts.Length > 0 ? " [options: " + opts + "]" : "")
+                    + (flds.Length > 0 ? " [type a name: " + flds + "; invent your own fitting names]" : "")
+                    // a naming dialog's fallback stays hidden: shown, the model copied it instead of naming the colony
+                    + (DigestJson.Truthy(DigestJson.G(x, "default")) && flds.Length == 0 ? " [default: " + CleanLabel(DigestJson.G(x, "default")) + "]" : ""));
+                if (DigestJson.Truthy(DigestJson.G(x, "text")) && cap != 0)
+                    outl.Add("    " + GameData.Clean(DigestJson.G(x, "text"), "line", cap));
+            }
+            return outl;
+        }
+
+        private static string Pile(JObject p)
+        {
+            string where = Num(DigestJson.G(p, "dist")) + " cells" + (DigestJson.Truthy(DigestJson.G(p, "dir")) ? " " + CleanLabel(DigestJson.G(p, "dir")) : "");
+            return CleanLabel(DigestJson.G(p, "label")) + " " + Num(DigestJson.G(p, "count")) + " " + where + (DigestJson.Truthy(DigestJson.G(p, "forbidden")) ? " (forbidden)" : "");
+        }
+
+        private static bool PosNum(JObject r, string k)
+        {
+            JToken v = DigestJson.G(r, k);
+            return v != null && (v.Type == JTokenType.Integer || v.Type == JTokenType.Float) && DigestJson.PyFloat(v) > 0;
+        }
+
+        private static string ResEntry(JToken r)
+        {
+            var ro = r as JObject ?? new JObject();
+            var extra = new List<string>();
+            if (PosNum(ro, "loose")) extra.Add("+" + Num(ro["loose"]) + " loose");
+            if (PosNum(ro, "forbidden")) extra.Add(Num(ro["forbidden"]) + " forbidden");
+            return GameData.Clean(DigestJson.G(r, "label") ?? "", "label") + " " + DigestJson.Str(r, "count", "?") + (extra.Count > 0 ? " (" + string.Join(", ", extra) + ")" : "");
         }
 
         private static string Render(JObject d, Level lv, BuildLevel bl)
@@ -397,7 +447,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     string cat = GameData.Clean(HasKey(r, "category") ? DigestJson.G(r, "category") ?? "" : "other", "label");
                     var entry = cats.FirstOrDefault(c => c.Key == cat);
                     if (entry.Value == null) { entry = new KeyValuePair<string, List<string>>(cat, new List<string>()); cats.Add(entry); }
-                    entry.Value.Add(GameData.Clean(DigestJson.G(r, "label") ?? "", "label") + " " + DigestJson.Str(r, "count", "?"));
+                    entry.Value.Add(ResEntry(r));
                 }
                 outl.Add("RESOURCES: " + string.Join("; ", cats.Select(c => c.Key + ": " + string.Join(", ", c.Value))));
             }
@@ -446,6 +496,7 @@ namespace RimWorldLLM.Mind.RimWorld
                 DigestJson.Str(t, "count", "?") + " " + GameData.Clean(DigestJson.G(t, "label") ?? "", "label")
                 + ((HasKey(t, "hostile") ? DigestJson.Truthy(DigestJson.G(t, "hostile")) : true) ? "" : " (not hostile)")));
             outl.Add("THREATS: " + (thText.Length > 0 ? thText : "none"));
+            outl.AddRange(DialogLines(d, lv.Letter));
             var lt = DigestJson.Take(DigestJson.Items(DigestJson.G(d, "letters")), 10);
             if (lt.Count > 0)
             {

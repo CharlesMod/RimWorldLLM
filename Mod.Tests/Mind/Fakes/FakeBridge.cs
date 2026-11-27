@@ -133,6 +133,7 @@ namespace RimWorldLLM.Mind.Fakes
         public JObject GoalsBoard = J(@"{""rev"": 0, ""goals"": [], ""plan"": """", ""orders"": [], ""log"": []}");
         int _goalIds;
         public List<JObject> Actions = new List<JObject>();
+        public List<JObject> Dialogs = new List<JObject>();    // what GET /dialogs lists; POST /act/choose removes the answered one
         public JObject Digest;                    // what GET /digest returns (null: 409 no_game)
         public List<KeyValuePair<string, JObject>> ActLog = new List<KeyValuePair<string, JObject>>();   // (verb, body) of every accepted /act/<verb>
         public Dictionary<string, string> ActRefuse = new Dictionary<string, string>();   // verb -> reason: refused 409 "refused"
@@ -490,8 +491,13 @@ namespace RimWorldLLM.Mind.Fakes
             if (path == "/digest" && method == "GET")
             {
                 if (Digest == null) return Err(409, "no_game", "no game loaded");
-                return Ok(Digest);
+                if (Dialogs.Count == 0) return Ok(Digest);
+                var withDialogs = (JObject)Digest.DeepClone();
+                withDialogs["dialogs"] = new JArray(Dialogs.Select(d => d.DeepClone()));
+                return Ok(withDialogs);
             }
+            if (path == "/dialogs" && method == "GET")
+                return Ok(("dialogs", new JArray(Dialogs.Select(d => d.DeepClone()))), ("timeout_s", 90));
             if (path == "/chat")
             {
                 if (method == "GET")
@@ -501,7 +507,7 @@ namespace RimWorldLLM.Mind.Fakes
                 }
                 string text = PyStr(body["text"]).Trim();
                 string who = body["who"] != null && body["who"].Type == JTokenType.String ? body.Value<string>("who") : null;
-                if (who != "narrator" && who != "note") return Err(400, "bad_request", "who must be narrator or note");
+                if (who != "narrator" && who != "note" && who != "comment") return Err(400, "bad_request", "who must be narrator, note or comment");
                 int len = CpLen(text);
                 if (len < 1 || len > 500) return Err(400, "bad_request", "text 1..500 chars");
                 var e = AddChat(who, text);
@@ -552,7 +558,7 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose" }, verb) < 0)
                     return null;
                 string bad = ActShape(verb, body);
                 if (bad.Length > 0) return Err(400, "bad_request", bad);
@@ -664,6 +670,15 @@ namespace RimWorldLLM.Mind.Fakes
                     if (!Pos(b["letter"]) || n < 1 || n > 80) return "letter id and choice required";
                     break;
                 }
+                case "choose":
+                {
+                    if (b["dialog"] == null || b["dialog"].Type != JTokenType.String || b.Value<string>("dialog").Length == 0) return "dialog required";
+                    var op = b["option"]; var tx = b["text"];
+                    bool optOk = op != null && (op.Type == JTokenType.Integer || op.Type == JTokenType.String || op.Type == JTokenType.Boolean);
+                    bool txOk = tx != null && (tx.Type == JTokenType.String || tx.Type == JTokenType.Object);
+                    if (!optOk && !txOk) return "option or text required";
+                    break;
+                }
                 case "draft":
                 {
                     var ids = b["pawns"] as JArray;
@@ -711,6 +726,15 @@ namespace RimWorldLLM.Mind.Fakes
                 var parts = new List<string>();
                 foreach (var k in new[] { "pause", "speed" }) if (Has(b, k)) parts.Add(k + " " + PyStr(b[k]));
                 note = "time: " + string.Join(", ", parts);
+                return "";
+            }
+            if (verb == "choose")
+            {
+                string did = PyStr(b["dialog"]);
+                var hit = Dialogs.FirstOrDefault(d => d["id"] != null && d["id"].Type == JTokenType.String && (string)d["id"] == did);
+                if (hit == null) return "no open dialog " + did;
+                Dialogs.Remove(hit);
+                note = "choose " + did + ": " + RimWorldLLM.Mind.Py.PyJson.Dumps(b.ContainsKey("option") ? b["option"] : b["text"]);
                 return "";
             }
             switch (verb)

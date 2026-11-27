@@ -815,7 +815,7 @@ namespace RimWorldLLM.Tests.Mind
             WRig.Ev(w, "alert", "Low food", 0.4, JObject.Parse("{\"alert\":\"Alert_LowFood\",\"label\":\"Low food\",\"critical\":false}"));
             await w.D.StepAsync();
             await w.D.DrainAsync();
-            Assert.True(w.D.Adapter.SilentEvents.SetEquals(new[] { "letter", "alert" }));
+            Assert.True(w.D.Adapter.SilentEvents.SetEquals(new[] { "letter", "alert", "dialog" }));
             Assert.True(w.D.Adapter.Priority("letter") == Cls.Idle && w.D.Adapter.Priority("alert") == Cls.Idle);
             Assert.DoesNotContain(w.D.Chronicle.State.Recent, x => x.Text.Contains("A quest came") || x.Text.Contains("Low food"));
             Assert.True(w.D.Dropped.Count == 0 || w.D.Dropped.All(x => !x.ToString().Contains("letter")));

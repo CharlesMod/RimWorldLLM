@@ -451,5 +451,17 @@ namespace RimWorldLLM.Tests.Mind
             foreach (var pair in (JArray)StewardTestData.Golden["alerts_cap"])
                 Assert.True(((string)pair[1]).Length <= (int)pair[0]);
         }
+
+        [Fact]
+        public void FactsCountStoredPlusLooseButNotForbidden()
+        {
+            var d = StewardTestData.Clone(StewardTestData.Sample);
+            d.Remove("facts");
+            d["resources"] = JArray.Parse(@"[{""category"": ""materials"", ""label"": ""steel"", ""count"": 40, ""loose"": 300, ""forbidden"": 50},
+                {""category"": ""materials"", ""label"": ""components"", ""count"": 0, ""loose"": 7, ""forbidden"": 0}]");
+            var f = StewardRules.DeriveFacts(d);
+            Assert.Equal(340L, f["steel"]);
+            Assert.Equal(7L, f["components"]);
+        }
     }
 }

@@ -262,5 +262,36 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal("1e+06", DigestJson.G6(1000000.0));
             Assert.Equal("0.0001", DigestJson.G6(0.0001));
         }
+
+        [Fact]
+        public void ResourcesShowLooseAndForbiddenAndLooseOnlyDefs()
+        {
+            var d = StewardTestData.Clone(StewardTestData.Sample);
+            d["resources"] = JArray.Parse(@"[{""category"": ""materials"", ""label"": ""steel"", ""count"": 40, ""loose"": 300, ""forbidden"": 50},
+                {""category"": ""materials"", ""label"": ""plasteel"", ""count"": 0, ""loose"": 12, ""forbidden"": 0},
+                {""category"": ""materials"", ""label"": ""wood"", ""count"": 5, ""loose"": 0, ""forbidden"": 0}]");
+            string text = StewardDigest.RenderDigest(d);
+            Assert.Contains("steel 40 (+300 loose, 50 forbidden)", text);
+            Assert.Contains("plasteel 0 (+12 loose)", text);
+            Assert.True(text.Contains("wood 5;") || text.Contains("wood 5\n"));
+        }
+
+        [Fact]
+        public void LooseLineRendersPilesWithDistanceDirectionAndForbidden()
+        {
+            var d = StewardTestData.Clone(StewardTestData.Sample);
+            var build = (JObject)d["build"];
+            build["loose"] = JArray.Parse(@"[{""label"": ""steel"", ""count"": 300, ""dist"": 25, ""dir"": ""NE"", ""forbidden"": false},
+                {""label"": ""wood"", ""count"": 80, ""dist"": 12, ""dir"": ""S"", ""forbidden"": true}]");
+            string text = StewardDigest.RenderDigest(d);
+            Assert.Contains("LOOSE: steel 300 25 cells NE; wood 80 12 cells S (forbidden)", text);
+            var nine = new JArray();
+            for (int i = 0; i < 9; i++) { var p = (JObject)((JArray)build["loose"])[0].DeepClone(); p["label"] = "m" + i; nine.Add(p); }
+            build["loose"] = nine;
+            string big = StewardDigest.RenderDigest(d, 100000);
+            Assert.Equal(6, big.Split("cells NE").Length - 1);
+            build["loose"] = new JArray();
+            Assert.DoesNotContain("LOOSE", StewardDigest.RenderDigest(d));
+        }
     }
 }

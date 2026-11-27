@@ -44,6 +44,10 @@
         <EmbeddedResource Include="Mind/Data/steward_digest_sample.json" LogicalName="RimWorldLLM.Tests.steward_digest_sample.json" />
         <None Include="Mind/Data/multiday.jsonl" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/core_golden.json" LogicalName="RimWorldLLM.Tests.core_golden.json" />
+        <EmbeddedResource Include="Mind/Data/dialogs_refugee.json" LogicalName="RimWorldLLM.Tests.dialogs_refugee.json" />
+        <EmbeddedResource Include="Mind/Data/dialogs_quest.json" LogicalName="RimWorldLLM.Tests.dialogs_quest.json" />
+        <EmbeddedResource Include="Mind/Data/dialogs_ransom.json" LogicalName="RimWorldLLM.Tests.dialogs_ransom.json" />
+        <EmbeddedResource Include="Mind/Data/dialogs_naming.json" LogicalName="RimWorldLLM.Tests.dialogs_naming.json" />
         <EmbeddedResource Include="Mind/Data/jobs-art-golden.json" LogicalName="RimWorldLLM.Tests.jobs-art-golden.json" />
         <EmbeddedResource Include="Mind/Data/jobs-lore-golden.json" LogicalName="RimWorldLLM.Tests.jobs-lore-golden.json" />
         <EmbeddedResource Include="Mind/Data/jobs-recap-golden.json" LogicalName="RimWorldLLM.Tests.jobs-recap-golden.json" />

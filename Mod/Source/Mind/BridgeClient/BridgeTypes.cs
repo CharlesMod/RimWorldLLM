@@ -134,6 +134,8 @@ namespace RimWorldLLM.Mind
         Task<JObject> TextFillAsync(string id, string text, string title = null, string opId = null);
         Task<JObject> VivariumAsync();
         Task<JObject> DigestAsync();
+        /// <summary>GET /dialogs: the choice windows and letters open now ({"dialogs": [...], "timeout_s": N}).</summary>
+        Task<JObject> DialogsAsync();
         Task<JObject> ChatSinceAsync(int seq);
         /// <summary>POST /chat {who, text, stream_id?}: a streamId ends that /chat/status stream.</summary>
         Task<JObject> PostChatAsync(string who, string text, string opId = null, string streamId = null);

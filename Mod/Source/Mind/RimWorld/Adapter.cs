@@ -22,7 +22,7 @@ namespace RimWorldLLM.Mind.RimWorld
             { "social", Cls.Social },
             { "level_up", Cls.Ambient }, { "thought", Cls.Ambient },
             { "first_cue", Cls.Reactive },
-            { "letter", Cls.Idle }, { "alert", Cls.Idle },        // the steward reads these; nobody speaks about them (silent_events)
+            { "letter", Cls.Idle }, { "alert", Cls.Idle }, { "dialog", Cls.Idle },        // the steward reads these; nobody speaks about them (silent_events)
         };
         // First-time reactions (core/firsts): what a pawn may react to once, and the words for "the first time you have ever ...".
         private static readonly Dictionary<string, string> FirstCues = new Dictionary<string, string>
@@ -36,7 +36,8 @@ namespace RimWorldLLM.Mind.RimWorld
         // A chitchat names no topic of its own: describe the situation (a passing exchange), never the word. The marker phrase
         // is how DropsMeta later recognises a thought or line whose scene was only that.
         private const string Passing = "passing exchange";
-        private const string PassingKind = "a passing exchange about whatever is around (the work, the food, the weather, the latest event)";
+        private const string PassingKind = "a passing exchange about something really going on around them right now (take it from the scene: "
+            + "what they are doing, where they are, a recent event); never assume food or a meal unless someone is eating";
         private static readonly Regex ChitchatSummary = new Regex(@"^(?<a>.+?) -> (?<b>.+?): Chitchat\.?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         private static readonly Regex MetaTalk = new Regex(
             @"chit[\s-]?chat|small[\s-]?talk|\bidle (talk|chatter|chat)\b|\b(all|this|that|enough|more|so much|too much|such)\s+(the\s+)?" +
@@ -69,7 +70,7 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public override string Name { get { return "rimworld"; } }
         public override ProtocolNames Protocol { get { return WireNames; } }
-        // The steward kit (steward_tools.py's StewardKit): one instance; SilentEvents is its silent_events ({"letter","alert"}).
+        // The steward kit (steward_tools.py's StewardKit): one instance; SilentEvents is its silent_events ({"letter","alert","dialog"}).
         private readonly RimWorldLLM.Mind.RimWorld.StewardKit _stewardKit = new RimWorldLLM.Mind.RimWorld.StewardKit();
         private RimWorldStewardKit _stewardKitView;
         public override ISet<string> SilentEvents { get { return new HashSet<string>(_stewardKit.SilentEvents); } }
@@ -203,7 +204,7 @@ namespace RimWorldLLM.Mind.RimWorld
             string summary = PyStr.Strip(Js.StrOr(ev, "summary", ""));
             var m = Js.StrOr(ev, "type", null) == "social" ? ChitchatSummary.Match(summary) : null;
             if (m != null && m.Success)                       // the game's label names the interaction, not what was said
-                summary = m.Groups["a"].Value + " and " + m.Groups["b"].Value + " had a " + Passing + " about whatever was around: the work, the food, the weather.";
+                summary = m.Groups["a"].Value + " and " + m.Groups["b"].Value + " had a " + Passing + " while going about their day; what was said wasn't noted.";
             var roles = new Dictionary<int, string>();
             foreach (var a in Js.ItemsGet(ev, "actors")) roles[Js.Int(a["id"])] = Js.StrOr(a, "role", "");
             string role;

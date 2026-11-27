@@ -41,6 +41,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly Dictionary<string, bool> IsColonist = new Dictionary<string, bool>(StringComparer.Ordinal);
         public readonly Dictionary<string, JObject> Beds = new Dictionary<string, JObject>(StringComparer.Ordinal);
         public readonly Dictionary<string, JObject> Letters = new Dictionary<string, JObject>(StringComparer.Ordinal);
+        public readonly Dictionary<string, JObject> Dialogs = new Dictionary<string, JObject>(StringComparer.Ordinal);
         public readonly List<string> Work;
         public readonly Dictionary<string, List<string>> Policies = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         public readonly List<JObject> Research;
@@ -64,6 +65,8 @@ namespace RimWorldLLM.Mind.RimWorld
                 if (b is JObject bo && DigestJson.Truthy(DigestJson.G(bo, "id"))) Beds[PyJson.Str(bo["id"])] = bo;
             foreach (var l in DigestJson.Items(DigestJson.G(Digest, "letters")))
                 if (l is JObject lo && DigestJson.Truthy(DigestJson.G(lo, "id"))) Letters[PyJson.Str(lo["id"])] = lo;
+            foreach (var x in DigestJson.Items(DigestJson.G(Digest, "dialogs")))
+                if (x is JObject xo && DigestJson.Truthy(DigestJson.G(xo, "id"))) Dialogs[PyJson.Str(xo["id"])] = xo;
             Work = DigestJson.Items(DigestJson.G(Digest, "work_types")).Select(w => PyJson.Str(w)).ToList();
             if (Work.Count == 0) Work = new List<string>(StewardKit.WorkFallback);
             if (DigestJson.G(Digest, "policies") is JObject pol)
@@ -139,6 +142,16 @@ namespace RimWorldLLM.Mind.RimWorld
                         new Param("letter_id", "enum", "the letter's id", choices: Letters.Keys.ToList()),
                         new Param("choice", "text", "one of the letter's choices, or dismiss", maxLen: 80), WhyParam,
                     }));
+            if (Dialogs.Count > 0 && !Advisor)
+                outl.Add(new ToolSpec("choose", "Answer an open dialog or choice letter (see OPEN DIALOGS) with one of its options; for a naming "
+                    + "dialog give text instead: pick a fitting short name yourself (for the colony, a plain evocative place or family name; "
+                    + "for two names write faction | settlement).",
+                    new[]
+                    {
+                        new Param("dialog", "enum", "the dialog's id", choices: Dialogs.Keys.ToList()),
+                        new Param("option", "text", "the option's number or label; leave empty for a naming dialog", maxLen: 120, required: false),
+                        new Param("text", "text", "naming dialogs only: the name", maxLen: 80, required: false), WhyParam,
+                    }));
             return outl;
         }
 
@@ -174,6 +187,53 @@ namespace RimWorldLLM.Mind.RimWorld
             string w = PyStr.Strip(wanted).ToLowerInvariant();
             foreach (var o in options) if (o.ToLowerInvariant() == w) return o;
             return null;
+        }
+
+        private static string Opt(JObject v, string k)
+            => PyStr.Strip(v.TryGetValue(k, out JToken t) && PyJson.Truthy(t) ? PyJson.Str(t) : "");
+
+        private JObject Choose(JObject v)
+        {
+            string did = S(v, "dialog");
+            if (!Dialogs.TryGetValue(did, out JObject dlg)) throw new PyValueError("no such dialog; the open dialogs are: " + string.Join(", ", Dialogs.Keys));
+            var body = new JObject { ["dialog"] = did };
+            string text = Opt(v, "text"), opt = Opt(v, "option");
+            var fields = DigestJson.Items(DigestJson.G(dlg, "fields")).Where(f => DigestJson.Truthy(DigestJson.G(f, "name"))).Select(f => PyJson.Str(DigestJson.G(f, "name"))).ToList();
+            if (fields.Count > 0)                                // a naming dialog
+            {
+                if (text.Length == 0) text = opt;
+                if (text.Length == 0) throw new PyValueError("this dialog asks for a name: give text");
+                var parts = text.Split('|').Select(x => PyStr.Strip(x)).Where(x => x.Length > 0).ToList();
+                if (fields.Count == 1) body["text"] = parts.Count > 0 ? parts[0] : text;
+                else if (parts.Count == fields.Count)
+                {
+                    var o = new JObject();
+                    for (int i = 0; i < fields.Count; i++) o[fields[i]] = parts[i];
+                    body["text"] = o;
+                }
+                else throw new PyValueError("this dialog needs " + string.Join(" | ", fields) + " (write the names separated by |)");
+                return body;
+            }
+            var live = DigestJson.Items(DigestJson.G(dlg, "options")).Where(o => !DigestJson.Truthy(DigestJson.G(o, "disabled"))).ToList();
+            Func<string> optionList = () => string.Join(", ", live.Select(x => PyJson.Str(DigestJson.G(x, "index")) + " " + PyJson.Str(DigestJson.G(x, "label"))));
+            if (opt.Length == 0) throw new PyValueError("give option: " + optionList());
+            var labels = new Dictionary<string, JToken>(StringComparer.Ordinal);
+            foreach (var x in live)
+            {
+                JToken lb = DigestJson.G(x, "label");
+                labels[(lb == null ? "" : PyJson.Str(lb)).ToLowerInvariant()] = DigestJson.G(x, "index");
+            }
+            var idx = new HashSet<string>(live.Select(x => PyJson.Str(DigestJson.G(x, "index"))), StringComparer.Ordinal);
+            string ostr = PyStr.Strip(opt.TrimStart('#'));
+            if (idx.Contains(ostr))
+            {
+                if (!long.TryParse(ostr, System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture, out long n))
+                    throw new PyValueError("invalid literal for int() with base 10: " + PyJson.StrRepr(ostr));
+                body["option"] = n;
+            }
+            else if (labels.TryGetValue(opt.ToLowerInvariant(), out JToken li)) body["option"] = DigestJson.PyInt(li);
+            else throw new PyValueError("that dialog's options are: " + optionList());
+            return body;
         }
 
         private int PawnId(string name)
@@ -273,6 +333,8 @@ namespace RimWorldLLM.Mind.RimWorld
                         }
                         return ("letter", new JObject { ["letter"] = I(v, "letter_id"), ["choice"] = pick });
                     }
+                case "choose":
+                    return ("choose", Choose(v));
                 case "draft":
                     {
                         string raw = PyStr.Strip(S(v, "pawns"));
@@ -316,7 +378,7 @@ namespace RimWorldLLM.Mind.RimWorld
     public sealed class StewardKit
     {
         // events that wake the steward at once while the narrator plays
-        private static readonly string[] WakeTypes = { "raid_start", "mental_break", "death" };
+        private static readonly string[] WakeTypes = { "raid_start", "mental_break", "death", "dialog" };
         private static readonly string[] WakeAlertWords = { "fire", "starvation", "rescue" };     // beside any alert the game marks critical
         // events never listed in "since last time": chatter the colonists have among themselves
         private static readonly HashSet<string> QuietTypes = new HashSet<string>(StringComparer.Ordinal)
@@ -330,7 +392,7 @@ namespace RimWorldLLM.Mind.RimWorld
             "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research",
         };
 
-        public static readonly string[] ActingNames = { "set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "draft", "order" };
+        public static readonly string[] ActingNames = { "set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order" };
         public static readonly HashSet<string> Acting = new HashSet<string>(ActingNames, StringComparer.Ordinal);
 
         public const string AdvisorNote =
@@ -342,7 +404,7 @@ namespace RimWorldLLM.Mind.RimWorld
             + "Do not change the goals board except to record a standing order they ask for.";
 
         /// <summary>The director never voices these; the steward reads them.</summary>
-        public readonly HashSet<string> SilentEvents = new HashSet<string>(StringComparer.Ordinal) { "letter", "alert" };
+        public readonly HashSet<string> SilentEvents = new HashSet<string>(StringComparer.Ordinal) { "letter", "alert", "dialog" };
 
         /// <summary>A short reason when this event wakes the steward at once, else null.</summary>
         public string Wake(JObject e)
@@ -381,6 +443,13 @@ namespace RimWorldLLM.Mind.RimWorld
                 string label = data is JObject dobj && dobj.TryGetValue("label", out JToken lt) ? PyJson.Str(lt) : text;
                 string choices = string.Join(", ", DigestJson.Items(DigestJson.G(data, "choices")).Select(c => PyJson.Str(c)));
                 text = label + " (choices: " + choices + "; letter #" + DigestJson.Str(data, "letter", "None") + ")";
+            }
+            if (t == "dialog")
+            {
+                JToken ttl = DigestJson.G(data, "title");
+                string title = data is JObject dd && dd.ContainsKey("title") ? PyJson.Str(ttl) : text;
+                return "dialog " + PyJson.Str(DigestJson.G(data, "dialog")) + ": " + GameData.Clean(title, "event")
+                    + " (options: " + string.Join(", ", DigestJson.Items(DigestJson.G(data, "options")).Select(c => PyJson.Str(c))) + ")";
             }
             return text.Length > 0 ? t + ": " + GameData.Clean(text, "event") : t;
         }

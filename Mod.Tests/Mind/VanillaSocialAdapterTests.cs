@@ -48,7 +48,8 @@ namespace RimWorldLLM.Tests.Mind
             var info = Ad.VanillaSocial(Ad.NormalizeEvent(Vanilla("Chitchat", "chitchat", "Ana chatted with Bram.", "idle")));
             string req = Ad.VanillaRequest(info, "Ana", "Bram").ToLowerInvariant();
             Assert.True(!req.Contains("small talk") && !req.Contains("chitchat") && !req.Contains("small-talk"));
-            Assert.Contains("whatever is around", req);
+            Assert.Contains("really going on around them", req);
+            Assert.Contains("never assume food", req);
             Assert.Contains("don't remark on the conversation or the act of talking itself", req);
         }
 
@@ -67,7 +68,7 @@ namespace RimWorldLLM.Tests.Mind
                 "Ana -> Bram: Chitchat.", new[] { 1, 2 }, 0.1, data: new JObject { ["interaction"] = "Chitchat", ["interaction_label"] = "Chitchat" }));
             string t = Ad.FirstPerson(e, 1);
             Assert.True(!t.ToLowerInvariant().Contains("chitchat") && t.Contains("Ana and Bram"));
-            Assert.Contains("the work, the food, the weather", t);      // what it was about, so the thought has a subject other than the talking
+            Assert.True(!t.ToLowerInvariant().Contains("food") && t.Contains("going about their day"));   // no made-up topic
         }
 
         [Theory]

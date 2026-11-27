@@ -154,6 +154,7 @@ namespace RimWorldLLM.Mind
         public bool WasPlaying;                           // the switch was on at the last step (an off to on flip wakes at once)
         public bool SwitchedOn;
         public bool PauseWoken;
+        public bool DialogPending;                        // a choice window opened: wakes even while the game is paused
 
         public Steward(IStewardHost d)
         {
@@ -224,6 +225,7 @@ namespace RimWorldLLM.Mind
             WasPlaying = false;
             SwitchedOn = false;
             PauseWoken = false;
+            DialogPending = false;
             Vv = new JObject();
             if (D.Leases.NarratorOwner == "steward") D.Leases.NarratorOwner = null;
         }
@@ -242,7 +244,8 @@ namespace RimWorldLLM.Mind
                 KeepLast(Events, MaxEventLines);
             }
             string why = Kit.Wake(e);
-            if (!string.IsNullOrEmpty(why))
+            if (why == "dialog") DialogPending = true;        // modal windows pause the game: handled in Wake, not as an urgent event
+            else if (!string.IsNullOrEmpty(why))
             {
                 Urgent.Add(why);
                 KeepLast(Urgent, MaxEventLines);
@@ -309,6 +312,7 @@ namespace RimWorldLLM.Mind
             {
                 Events.Clear();
                 Urgent.Clear();
+                DialogPending = false;
             }
             if (!Truthy(JobsJson.Get(vv, "paused_by_narrator"))) PauseWoken = false;
             if (Active()) return;
@@ -339,13 +343,18 @@ namespace RimWorldLLM.Mind
             var d = D;
             var env = d.Bridge.Env;
             if (PendingChat.Count > 0) return "chat";
-            if (!playing || (env.Paused && !Truthy(JobsJson.Get(Vv, "paused_by_narrator")))) return null;
+            if (!playing || (env.Paused && !Truthy(JobsJson.Get(Vv, "paused_by_narrator")) && !DialogPending)) return null;
             if (SwitchedOn)
             {
                 SwitchedOn = false;
                 if (LastGame != null) return "switched on";      // never looked yet: the heartbeat below fires anyway
             }
             if (LastReal != null && d.Clock() - LastReal.Value < d.Cfg.StewardMinGapRealS) return null;
+            if (DialogPending)
+            {
+                DialogPending = false;
+                return "dialog";                                 // also while paused: the window is why the game is paused
+            }
             if (Urgent.Count > 0 && !env.Paused) return "event";
             if (env.Paused)
             {
@@ -697,6 +706,7 @@ namespace RimWorldLLM.Mind
                 why.Add("The player said in the chat:\n" + string.Join("\n", chat.Select(c => "> " + StewardBoard.Plain(JobsJson.Str(c, "text", ""), 500))));
             if (reason == "heartbeat") why.Add("Routine look: time has passed since you last checked. Look for what needs doing.");
             else if (reason == "event") why.Add("Something important happened (see below). Deal with it first.");
+            else if (reason == "dialog") why.Add("A window or letter is waiting for a choice (see OPEN DIALOGS in the state). Answer it with choose.");
             else if (reason == "paused")
                 why.Add("The game is paused because you paused it for an emergency. If it is handled, unpause with set_time (pause no); otherwise carry on.");
             if (events.Count > 0) why.Add("Since you last looked:\n" + string.Join("\n", events.Select(x => "- " + x)));

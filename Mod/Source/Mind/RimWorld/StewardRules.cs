@@ -236,9 +236,10 @@ namespace RimWorldLLM.Mind.RimWorld
             bool seen = false;
             foreach (var r in res)
             {
-                if (r is JObject && Low(PyStr.Strip(GetStr(r, "label", ""))) == label && IsNumTok(G(r, "count")))
+                if (r is JObject && Low(PyStr.Strip(GetStr(r, "label", ""))) == label && (IsNumTok(G(r, "count")) || IsNumTok(G(r, "loose"))))
                 {
-                    tot += IntOf(G(r, "count"));
+                    // stored plus loose (forbidden piles are the player's call and stay out)
+                    tot += (IsNumTok(G(r, "count")) ? IntOf(G(r, "count")) : BigInteger.Zero) + (IsNumTok(G(r, "loose")) ? IntOf(G(r, "loose")) : BigInteger.Zero);
                     seen = true;
                 }
             }
