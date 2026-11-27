@@ -31,6 +31,7 @@ namespace RimWorldLLM
         public override void GameComponentTick()
         {
             base.GameComponentTick();
+            if (Find.TickManager != null && Find.TickManager.TicksGame % 250 == 0) EventPayload.Safe("vivarium-alerts", VivariumEvents.PollAlerts);
         }
 
         // Runs every frame, even while paused (GameComponentTick does not).
@@ -39,12 +40,14 @@ namespace RimWorldLLM
             base.GameComponentUpdate();
             CheckFallbackNotice();
             DirectorCamera.Update();
+            VivariumSwitch.PushSettings();
         }
 
         public override void GameComponentOnGUI()
         {
             base.GameComponentOnGUI();
             DirectorCamera.OnGUIKey();
+            VivariumSwitch.OnGUIKey();
         }
 
         // One per game session: the engine may still be starting when the save loads, so a loaded game arms the notice and
@@ -92,6 +95,9 @@ namespace RimWorldLLM
             RWLBridge.Art.Clear();
             SpeechBubbles.Clear();
             DirectorCamera.Reset();
+            VivariumGame.State.Clear();
+            VivariumChat.Reset();
+            VivariumEvents.Reset();
             _fallbackNotice.Disarm();
             if (Instance != null) Instance.RecapGate.Disarm();
             Instance = null;
@@ -105,6 +111,8 @@ namespace RimWorldLLM
             _fallbackNotice.Arm(Environment.TickCount64);
             RecapGate.Arm(SaveEpoch, true, Environment.TickCount64);
             DirectorCamera.OnGameStart();
+            VivariumEvents.Reset();
+            VivariumChat.OnGameStart();
         }
 
         public override void StartedNewGame()
@@ -118,6 +126,9 @@ namespace RimWorldLLM
             RWLBridge.Art.Clear();
             SpeechBubbles.Clear();
             DirectorCamera.OnGameStart();
+            VivariumGame.State.Clear();
+            VivariumEvents.Reset();
+            VivariumChat.OnGameStart();
         }
 
         public override void ExposeData()
@@ -127,6 +138,7 @@ namespace RimWorldLLM
             ExposeMinds();
             ExposeChronicle();
             ExposeArt();
+            ExposeVivarium();
             List<int> avoids = null;
             int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
             if (Scribe.mode == LoadSaveMode.Saving) avoids = Avoids.Export(nowTick);
@@ -164,6 +176,22 @@ namespace RimWorldLLM
                 if (list != null)
                     foreach (var e in list)
                         if (e != null && !string.IsNullOrEmpty(e.Text)) book.Add(e.Day, Bridge.ChronicleBook.KnownKind(e.Kind) ? e.Kind : Bridge.ChronicleBook.KindDay, e.Text, e.Tick);
+            }
+        }
+
+        // The whole Vivarium state (playing flag, chat, goals, actions) as one JSON string.
+        void ExposeVivarium()
+        {
+            string json = null;
+            if (Scribe.mode == LoadSaveMode.Saving) json = VivariumGame.State.Export().ToString(Formatting.None);
+            Scribe_Values.Look(ref json, "rwlVivarium");
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                // Older saves have none: they load a fresh Vivarium (switch off), not the one from the game just left.
+                VivariumGame.State.Clear();
+                if (!string.IsNullOrEmpty(json))
+                    try { VivariumGame.State.Import(Newtonsoft.Json.Linq.JObject.Parse(json)); }
+                    catch (Exception e) { Log.Warning("[RimWorldLLM] could not read the saved Vivarium: " + e.Message); }
             }
         }
 

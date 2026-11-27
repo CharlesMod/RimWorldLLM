@@ -197,6 +197,7 @@ class LeaseManager:
         self._ids = itertools.count(1)
         self.last_signature: dict[int, str] = {}    # skip-if-nothing-new
         self.narrator_busy = False
+        self.narrator_owner: str | None = None      # "steward" while a steward cycle holds slot 0: idle narrator work yields
         self.log: list[tuple[str, str]] = []        # (what, why) trail for the debug view and tests
 
     # ---- requests -------------------------------------------------------
@@ -332,10 +333,10 @@ class LeaseManager:
 
     def narrator_may_do_idle_work(self, starving: bool = False) -> bool:
         """Chronicle, diary, reflection: only when no window is leased and nothing is queued."""
-        return not self.narrator_busy and self.windows_idle(starving)
+        return not self.narrator_busy and self.narrator_owner is None and self.windows_idle(starving)
 
     def narrator_should_cover(self, item: WorkItem, now: Now) -> bool:
         """Both windows busy, nothing preemptable, event still live: the narrator covers it."""
-        if self.narrator_busy or item.expired(now) or self.free_slots():
+        if self.narrator_busy or self.narrator_owner is not None or item.expired(now) or self.free_slots():
             return False
         return not any(l.cls < item.cls for l in self.leases.values())

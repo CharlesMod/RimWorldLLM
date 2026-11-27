@@ -4,6 +4,16 @@
 
 Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are included but untested.
 
+### New: Narrator plays (vivarium, phase 1)
+- An eye toggle in the bottom-right play-settings row lets the narrator run the colony: work priorities, schedules,
+  outfit/food/drug policies, beds, research, letters and quest choices, drafting and simple orders. You can still do
+  anything yourself. Saved per game.
+- Press **Enter** on the map to chat with the narrator (strategy, requests, standing orders); `@Name text` talks to a
+  colonist. With the switch off the narrator answers as an advisor and does one task when you ask for it.
+- The narrator keeps a goals board (Voices → Goals) you can read and edit, and logs every action it takes.
+- Settings (Colonists → Narrator plays): it may pause for emergencies (on), it controls the speed (off), and how
+  often it looks over the colony (every 6 game hours). Building, zones, bills, trade and combat micro come later.
+
 ### New name: RimWorldLLM
 - The mod was called HermesVoice in test builds; it is now **RimWorldLLM** (packageId `charleszard.rimworldllm`,
   folder `Mods/RimWorldLLM`). Delete the old `Mods/HermesVoice` folder when you install this one.

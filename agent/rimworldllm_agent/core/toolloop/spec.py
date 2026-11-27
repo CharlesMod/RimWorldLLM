@@ -221,7 +221,7 @@ def build_grammar(tools: list[ToolSpec], *, final_max: int = 200, allow_final: b
         rules.append(f"call{i} ::= {body}")
         alts.append(f"call{i}")
     if allow_final:
-        rules.append(f'final ::= "{{\\"final\\":" tstr{final_max} "}}"')
+        rules.append(f'final ::= "{{\\"final\\":" " "? tstr{final_max} "}}"')   # the space the PROTOCOL text shows; without it the 26B sometimes wrote a scrap like ":"
         alts.append("final")
     if allow_done:
         rules.append('done ::= "{\\"done\\":true}"')

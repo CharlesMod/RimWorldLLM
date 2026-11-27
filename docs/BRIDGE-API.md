@@ -399,3 +399,135 @@ How the RimWorld mod presents Part 1's `kind` on `POST /say` and `surface` on `P
   pawn; at least 20 s between clouds anywhere. A cloud is never drawn over a pawn whose speech
   balloon is visible: it waits (one per pawn) and is dropped when it is more than 10 s old. A speech
   balloon replaces the pawn's cloud.
+
+# Vivarium routes (the narrator plays)
+
+Design: `docs/VIVARIUM.md`. `/vivarium`, `/chat`, `/goals` and `/actions` are game-agnostic
+(`Mod/Source/Bridge/Vivarium*.cs`); `/digest`, `/act/*` and the `letter`/`alert` events are the
+RimWorld schema (`Mod/Source/RimWorld/Vivarium*.cs`). All replies carry the usual envelope.
+
+### `GET /vivarium` (no game needed)
+```json
+{"playing": true, "paused_by_narrator": false, "chat_seq": 41, "goals_rev": 7, "actions_seq": 19,
+ "settings": {"may_pause_for_emergencies": true, "controls_speed": false, "heartbeat_hours": 6.0}}
+```
+The steward polls this every director step (cheap) to see the switch, new chat and settings.
+
+### `GET /chat?since=<seq>` and `POST /chat`
+GET returns `{"entries": [...], "next_seq": 42}` with the entries after `since` (oldest first; at most
+the 300 kept). Entry: `{"seq": 42, "tick": 123456, "who": "player", "to": 0, "name": "", "text": "..."}`.
+`who`: `player` (typed in the chat bar), `narrator` (the steward's lines), `note` (short action notes,
+"→ set Cooking 1 for Ana"), `colonist` (an answer to an `@Name` line; `to`/`name` = that colonist).
+A player line with `to` > 0 was addressed `@Name` to that colonist and went through `/talk`; the
+steward ignores those.
+
+POST body: `{"op_id": "...", "who": "narrator"|"note", "text": "..."}` (text 1..500 chars after trim).
+Reply `{"seq": 43}`. Any other `who` is `bad_request`: only the game's chat bar writes `player` lines.
+
+### `GET /goals` and `PUT /goals`
+```json
+{"rev": 7,
+ "goals": [{"id": "g3", "text": "Get a freezer before summer", "horizon": "short", "status": "open", "by": "narrator"}],
+ "plan": "Stockpile food, then research electricity.",
+ "orders": [{"id": "o1", "text": "always keep 20 meals", "by": "player"}],
+ "log": [{"tick": 120000, "text": "Set Cooking 1 for Ana: no cook on duty"}]}
+```
+`horizon`: `long` | `short`. `status`: `open` | `done` | `dropped`. `by`: `player` | `narrator`.
+At most 20 goals, 20 orders, 50 log lines (oldest dropped); texts 1..300 chars.
+PUT body: `{"op_id": "...", "rev": 7, "goals": [...], "plan": "...", "orders": [...], "log_add": ["..."]}`.
+Every field but `rev` is optional; a given field replaces that part (`log_add` appends). Goals and
+orders without an `id` get a new one; `by` defaults to `narrator` for new items and is kept for
+existing ids. A stale `rev` is `409 conflict` with the current board under `board`; reply on success
+is the new board.
+
+### `GET /actions?since=<seq>`
+`{"actions": [{"seq": 19, "tick": 123456, "verb": "work", "note": "set Cooking 1 for Ana", "by": "narrator"}], "next_seq": 20}`.
+Every successful `/act/*` call is logged (cap 500, saved with the game). `by` is `narrator`.
+
+### `GET /digest` (game needed)
+A compact colony read for the steward: only what the player could see in the UI. Lists are capped
+(top N) so the rendered prompt stays near 6 KB.
+```json
+{"date": {"day": 5, "quadrum": "Aprimay", "year": 5500, "hour": 14, "season": "spring"},
+ "weather": "Rain", "temperature": 12.5, "map": "Ferngrove",
+ "time": {"paused": false, "speed": 2},
+ "food_days": 6.2,
+ "resources": [{"category": "food", "label": "simple meal", "count": 14}, {"category": "materials", "label": "steel", "count": 410}],
+ "pawns": [{"id": 101, "name": "Ana", "role": "colonist", "age": 31,
+            "skills": [{"skill": "Cooking", "level": 9, "passion": "major"}],
+            "incapable": ["Violent"],
+            "work": {"Cooking": 1, "Hauling": 3},
+            "health": "fine", "downed": false, "mood": 64, "mental": "",
+            "job": "Cooking simple meal", "drafted": false,
+            "schedule_now": "work", "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+            "outfit": "Anything", "food": "Lavish", "drug": "Social drugs", "bed": 3301}],
+ "work_types": ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Construction", "Growing", "Mining", "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research"],
+ "manual_priorities": true,
+ "policies": {"outfit": ["Anything", "Worker"], "food": ["Lavish", "Fine"], "drug": ["Social drugs", "No drugs"]},
+ "beds": [{"id": 3301, "label": "bed", "room": "Bedroom", "owner": "Ana"}],
+ "alerts": [{"alert": "Alert_LowFood", "label": "Low food", "critical": false}],
+ "letters": [{"id": 77, "label": "Quest: Ancient danger", "text": "...", "choices": ["Accept", "Reject"], "quest": true, "expires_in_hours": 30}],
+ "research": {"current": {"def": "Electricity", "label": "electricity", "progress": 0.4},
+              "available": [{"def": "Batteries", "label": "batteries", "cost": 700}]},
+ "threats": [{"label": "Pirate raider", "count": 5, "hostile": true}],
+ "rooms": {"bedrooms": 3, "barracks": 0, "hospital": false, "freezer": false},
+ "power": {"produced": 1200, "used": 800, "stored": 0}}
+```
+- `schedule` has one letter per hour 0..23: `A` anything, `W` work, `J` joy, `S` sleep, `M` meditate.
+- `work` lists only non-zero priorities (1 = highest). `work_types` are defNames in the game's order.
+- Caps: 30 pawns (colonists, then slaves), 4 skills per pawn (highest), 25 resources, 15 research
+  options, 10 alerts, 10 letters, 20 beds.
+- `facts`: a flat block named exactly as the playbook's `digest_fields`
+  (`agent/rimworldllm_agent/games/rimworld/strategy/rules.json`), for the agent's rule evaluation; the agent
+  does not render it into the prompt. Filled (a key is left out when it cannot be computed): `day` (days
+  since landing), `season` (spring/summer/fall/winter), `biome` (snake_case defName), `temp_c`, `storyteller`,
+  `difficulty_threat_scale`, `wealth`, `food_days`, `dlc`; `colonists` (free adult colonists spawned),
+  `colonists_capable_fighters`, `colonists_armed`, `colonists_downed`, `colonists_bleeding`, `colonists_sick`,
+  `colonists_below_minor`, `colonists_below_major`, `mental_breaks_active`, `mood_avg`, `mood_min`,
+  `recreation_avg`, `colonists_without_bedroom`, `best_cook_skill`, `best_doctor_skill`, `doctors_capable`;
+  `prisoners`, `animals`, `beds_free`, `prisoner_beds_free`, `hospital_beds`; `raid_active`, `enemies_count`,
+  `turrets`, `events` (active game conditions, snake_case), `fires`; `power_net_w`, `battery_wd`,
+  `battery_capacity_wd`, `unroofed_electrics`; `medicine_total`, `medicine_industrial`, `steel`, `wood`,
+  `components`, `silver`; `research_current`, `research_done` (finished defNames) and `research_known`
+  (every ResearchProjectDef defName in this game: a playbook rule naming research the game lacks stays off).
+
+### `POST /act/*` (game needed)
+Normal writes (`op_id`, optional `expires_tick`). Shape errors are `400 bad_request`; anything the game
+or the settings refuse is `409 refused` with `detail` = a short human reason. Success:
+`{"done": "<short note>", ...extra}` and an action-log entry.
+
+| Route | Body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/time` | `{"pause": true?, "speed": 1..4?, "emergency": false, "reason": "..."}` | at least one of pause/speed. `speed` needs **controls_speed**. `pause: true` needs **controls_speed**, or `emergency: true` with **may_pause_for_emergencies** (then `paused_by_narrator` is set). `pause: false` needs **controls_speed** or `paused_by_narrator`. |
+| `/act/work` | `{"pawn": 101, "priorities": {"Cooking": 1, "Hauling": 0}}` | 1..20 entries, each priority 0..4 |
+| `/act/schedule` | `{"pawn": 101, "from_hour": 22, "to_hour": 6, "assignment": "sleep"}` | hours 0..23 / 0..24, assignment in anything/work/joy/sleep/meditate |
+| `/act/policy` | `{"pawn": 101, "kind": "food", "name": "Fine"}` | kind in outfit/food/drug, name 1..60 chars |
+| `/act/bed` | `{"pawn": 101, "bed": 3301}` | ids positive |
+| `/act/research` | `{"project": "Batteries"}` | 1..80 chars |
+| `/act/letter` | `{"letter": 77, "choice": "Accept"}` | choice 1..80 chars: a label, `#<index>`, or `dismiss` |
+| `/act/draft` | `{"pawns": [101, 102], "drafted": true}` | 1..30 positive ids |
+| `/act/order` | `{"pawn": 101, "order": "move", "x": 40, "z": 61}` / `{"order": "attack", "target": 5512}` / `{"order": "hold", "hold": true}` | order known; move needs x,z ≥ 0; attack needs target > 0 |
+
+Details of the phase 1 implementation (Mod/Source/Bridge/VivariumRoutes.cs):
+- `next_seq` on `/chat` and `/actions` is the last seq returned, used as the next `since` (as on `/events`);
+  a `since` past the end is pulled back.
+- `PUT /goals` is all-or-nothing: an over-cap list, an over-long text or a bad horizon/status is `400` and
+  changes nothing. Ids are never reused.
+- `/act/*` checks in this order: shape (`400`), no game (`503 no_game`), the time gate (`409 refused`), then the
+  hand. With both `pause` and `speed` given, both must pass the gate. `paused_by_narrator` is set by any
+  successful `pause: true` and cleared by any successful `pause: false`.
+- `/act/schedule`: `from_hour == to_hour` is `400`; `0` to `24` is the whole day.
+- `/act/order`: `hold` needs a boolean `hold`. Vanilla has no "hold position" order, so hold = stop the pawn's
+  current job and turn fire-at-will off; `hold: false` turns fire-at-will back on. Orders need a drafted pawn.
+- `/act/work` may partly succeed: the note says what was set and what was refused; it is a refusal only when
+  nothing was set. It turns on manual work priorities when they were off, and says so.
+- `/act/letter` runs the chosen option's action, as the letter dialog would; an option with no action (one that
+  only opens a window) is refused; `dismiss` works only on letters vanilla lets you right-click away.
+
+### Events `letter` and `alert`
+`letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`
+(severity 0.3 when the letter has no choice). `alert`: `{"type": "alert", "severity": 0.8,
+"data": {"alert": "Alert_Fire", "label": "Fire", "critical": true}}`, published when an alert first
+becomes active (polled every 250 ticks; critical alerts and a short list: fire, starvation, low food,
+colonist needs rescue, colonist needs tending, life-threatening illness). Both have empty `pawns`; the
+director does not voice them.

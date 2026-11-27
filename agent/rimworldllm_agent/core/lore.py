@@ -123,8 +123,8 @@ def messages(adapter, entry_text: str, existing: list[str], referents: list[str]
 
 async def coin(d, entry_text: str, game: int, day: int) -> LoreEntry | None:
     """One small narrator call after a major entry. Stores and returns the new entry, or None ("none", unusable text)."""
-    if not d.cfg.lore:
-        return None
+    if not d.cfg.lore or d.leases.narrator_owner is not None:
+        return None                                       # off, or a steward cycle holds slot 0: no new coinage now
     referents = None
     if creative.on(d, "ground", "lore"):
         recent = [e.text for e in d.chronicle.state.recent[-5:]]

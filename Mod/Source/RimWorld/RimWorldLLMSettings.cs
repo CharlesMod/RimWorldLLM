@@ -95,6 +95,11 @@ namespace RimWorldLLM
         public string interactionHigh = Bridge.InteractionPolicy.DefaultHigh;   // def names, voiced first
         public string interactionIdle = Bridge.InteractionPolicy.DefaultIdle;   // def names, voiced only when the speaker is otherwise idle
 
+        // Vivarium (the narrator plays).
+        public bool narratorMayPauseForEmergencies = true;
+        public bool narratorControlsSpeed = false;
+        public float stewardHeartbeatHours = 6f;
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -165,6 +170,9 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref attachRealFloorSec, "attachRealFloorSec", 5);
             Scribe_Values.Look(ref interactionHigh, "interactionHigh", Bridge.InteractionPolicy.DefaultHigh);
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
+            Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
+            Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
+            Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
         }
     }
 }
