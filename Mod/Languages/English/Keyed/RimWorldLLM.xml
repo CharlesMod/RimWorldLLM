@@ -523,6 +523,8 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_RestartStopped>Not restarting.</RWL_Viv_RestartStopped>
   <RWL_Viv_RestartDismissed>Not restarting (the window was closed).</RWL_Viv_RestartDismissed>
   <RWL_Viv_RestartSaveFailed>Could not save the lost world, so it is being kept as it is. Not restarting.</RWL_Viv_RestartSaveFailed>
+  <RWL_Viv_CameraPrefix>Camera:</RWL_Viv_CameraPrefix>
+  <RWL_Viv_CommentPrefix>Narrator:</RWL_Viv_CommentPrefix>
   <RWL_Viv_SwitchTip>Narrator plays: the narrator runs the colony; you can still act and talk to it.</RWL_Viv_SwitchTip>
   <RWL_Viv_NoteOn>Narrator plays: on</RWL_Viv_NoteOn>
   <RWL_Viv_NoteOff>Narrator plays: off</RWL_Viv_NoteOff>

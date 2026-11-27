@@ -178,6 +178,14 @@ namespace RimWorldLLM
         public static List<KeyValuePair<int, float>> Visible(IList<float> heights, float innerH, ref float scroll)
         {
             var res = new List<KeyValuePair<int, float>>();
+            VisibleInto(heights, innerH, ref scroll, res);
+            return res;
+        }
+
+        /// <summary>Same as <see cref="Visible"/> but fills a list the caller reuses (no allocation per frame).</summary>
+        public static void VisibleInto(IList<float> heights, float innerH, ref float scroll, List<KeyValuePair<int, float>> res)
+        {
+            res.Clear();
             float total = 0f;
             for (int k = 0; k < heights.Count; k++) total += heights[k];
             scroll = Clamp(scroll, 0f, Math.Max(0f, total - innerH));
@@ -190,7 +198,6 @@ namespace RimWorldLLM
                 y = top;
             }
             res.Reverse();
-            return res;
         }
 
         /// <summary>Background alpha: the setting while idle, near opaque under the mouse, a touch more while lines are fresh.</summary>
