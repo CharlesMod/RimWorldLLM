@@ -302,6 +302,14 @@ namespace RimWorldLLM
             Check(l, "RWL_Art_Enable", ref s.artDescriptions, "RWL_Art_EnableTip");
 
             l.GapLine();
+            Title(l, "RWL_Viv_Title");
+            Note(l, UiUtil.T("RWL_Viv_Help"));
+            Check(l, "RWL_Viv_MayPause", ref s.narratorMayPauseForEmergencies, "RWL_Viv_MayPauseTip");
+            Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
+            SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
+            s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
+
+            l.GapLine();
             Title(l, "RWL_Events_Title");
             Note(l, UiUtil.T("RWL_Events_Help"));
             Check(l, "RWL_Ev_Injury", ref s.evInjury, "RWL_EvTip_Injury");

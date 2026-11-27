@@ -20,5 +20,7 @@
         <Compile Include="../Mod/Source/RimWorld/Effects.cs" />
         <Compile Include="../Mod/Source/RimWorld/BubbleLayout.cs" />
         <Compile Include="../Mod/Source/RimWorld/ThoughtPacing.cs" />
+        <Compile Include="../Mod/Source/RimWorld/VivariumHandsPure.cs" />
+        <Compile Include="../Mod/Source/RimWorld/VivariumChatParse.cs" />
     </ItemGroup>
 </Project>

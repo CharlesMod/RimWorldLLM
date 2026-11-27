@@ -14,13 +14,14 @@ namespace RimWorldLLM
         string filterName = "";
         int tab;                      // 0 = conversation log, 1 = chronicle
         Vector2 chronScroll;
+        readonly VivariumGoalsPage goals = new VivariumGoalsPage();
 
         public override Vector2 InitialSize { get { return new Vector2(Mathf.Min(UI.screenWidth - 40f, 820f), Mathf.Min(UI.screenHeight - 200f, 640f)); } }
 
         public override void DoWindowContents(Rect inRect)
         {
             Text.Font = GameFont.Medium;
-            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "RWL_LogTitle" : "RWL_ChronTitle"));
+            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "RWL_LogTitle" : tab == 1 ? "RWL_ChronTitle" : "RWL_Viv_GoalsTitle"));
             Text.Font = GameFont.Small;
             if (DirectorCamera.Allowed)
             {
@@ -33,10 +34,11 @@ namespace RimWorldLLM
             var tabs = new List<TabRecord>
             {
                 new TabRecord(UiUtil.T("RWL_TabConversation"), () => tab = 0, tab == 0),
-                new TabRecord(UiUtil.T("RWL_TabChronicle"), () => tab = 1, tab == 1)
+                new TabRecord(UiUtil.T("RWL_TabChronicle"), () => tab = 1, tab == 1),
+                new TabRecord(UiUtil.T("RWL_TabGoals"), () => tab = 2, tab == 2)
             };
             TabDrawer.DrawTabs(body, tabs);
-            if (tab == 0) DrawLog(body); else DrawChronicle(body);
+            if (tab == 0) DrawLog(body); else if (tab == 1) DrawChronicle(body); else goals.Draw(new Rect(body.x, body.y + 6f, body.width, body.height - 8f));
         }
 
         void DrawChronicle(Rect inRect)

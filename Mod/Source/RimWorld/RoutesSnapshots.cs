@@ -81,6 +81,9 @@ namespace RimWorldLLM
                 ["art_descriptions"] = s.artDescriptions,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
                 ["dlc"] = new JArray(ActiveDlc()),
+                ["vivarium_may_pause"] = s.narratorMayPauseForEmergencies,
+                ["vivarium_controls_speed"] = s.narratorControlsSpeed,
+                ["vivarium_heartbeat_hours"] = s.stewardHeartbeatHours,
                 ["llm"] = LlmConfig(s)
             });
         }
