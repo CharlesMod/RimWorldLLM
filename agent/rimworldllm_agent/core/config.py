@@ -144,6 +144,10 @@ class Config(BaseModel):
     chronicle_max_tokens: int = 220
     recap_enabled: bool = True         # "Previously on..." recap after a save load (core/recap.py; also the mod's recap setting)
     narrator_context_tokens: int = 6000
+    commentary: bool = True            # documentary voice (core/commentary.py): one wry line at big moments, on the narrator slot
+    commentary_min_gap_real_s: float = 180.0
+    commentary_min_gap_game: int = 15000   # 6 game hours; urgent moments skip this gap but keep a 30 s floor
+    commentary_recap: bool = True      # one recap line per finished game day
     narrator_min_gap_game: int = 6000  # coverage lines: min gap on both clocks; major events bypass
     shout_gap_real_s: float = 45.0     # one speaker shouts at most this often (a calm scene cannot burst every line)
     thought_enabled: bool = True       # short map thoughts (POST /thought kind "thought" + surface), idle work only
