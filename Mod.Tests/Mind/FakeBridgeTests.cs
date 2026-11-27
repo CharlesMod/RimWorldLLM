@@ -189,6 +189,28 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ChatStatusRoutesAndStreamIds()
+        {
+            var (fb, b) = Mk();
+            var r = await b.PostChatStatusAsync("narrator", "thinking", "s-1.a:b");
+            Assert.True((string)r["stream_id"] == "s-1.a:b" && (string)r["state"] == "thinking");
+            await b.PostChatStatusAsync("colonist", "typing", "s2", 4, 0.5);
+            Assert.Equal(2, fb.ChatStatus.Count);
+            Assert.True(fb.ChatStatus[1]["op_id"] == null && (int)fb.ChatStatus[1]["to"] == 4);
+            await b.PostChatAsync("narrator", "a"); await b.PostChatAsync("narrator", "b", streamId: "s1");
+            Assert.Equal(new string[] { null, "s1" }, fb.ChatStreams.ToArray());
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("player", "idle", "s"))).Code);
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("narrator", "sleeping", "s"))).Code);
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("narrator", "idle", "bad id"))).Code);
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("narrator", "idle", new string('x', 65)))).Code);
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("colonist", "idle", "s"))).Code);
+            Assert.Equal("bad_request", (await Fails(b.PostChatStatusAsync("narrator", "typing", "s", null, 1.5))).Code);
+            Assert.Equal(2, fb.ChatStatus.Count);
+            fb.ChatStatusEnabled = false;
+            Assert.Equal("not_found", (await Fails(b.PostChatStatusAsync("narrator", "idle", "s"))).Code);
+        }
+
+        [Fact]
         public async Task GoalsBoardRevIdsAndConflict()
         {
             var (fb, b) = Mk();
