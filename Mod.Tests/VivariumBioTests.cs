@@ -36,6 +36,10 @@ namespace RimWorldLLM.Tests
         public HandResult Squad(SquadArgs a, CombatState s) { return Next; }
         public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { return Next; }
         public HandResult CombatSpeed(int speed, bool restore) { return Next; }
+        public JObject TradeOffer(string with, TradeLimits l) { return null; }
+        public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { return Next; }
+        public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { return null; }
+        public HandResult Caravan(CaravanArgs a, int maxPawns) { return Next; }
 
         public HandResult MechMode(int m, int g, string mode) { Calls.Add("mech_mode " + m + " " + g + " " + mode); return Next; }
         public HandResult MechGroup(int m, int g) { Calls.Add("mech_group " + m + " " + g); return Next; }
@@ -322,6 +326,10 @@ namespace RimWorldLLM.Tests
             public HandResult Squad(SquadArgs a, CombatState s) { return null; }
             public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { return null; }
             public HandResult CombatSpeed(int speed, bool restore) { return null; }
+            public JObject TradeOffer(string with, TradeLimits l) { return null; }
+            public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { return null; }
+            public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { return null; }
+            public HandResult Caravan(CaravanArgs a, int maxPawns) { return null; }
         }
     }
 

@@ -19,6 +19,7 @@ from .steward_build import BuildKit
 from .steward_combat import CombatKit, render_combat
 from .steward_digest import pawn_names, render_digest
 from .steward_rules import alerts_section
+from .steward_trade import LOOKS, TradeKit
 
 _HERE = Path(__file__).parent
 
@@ -42,7 +43,7 @@ COMBAT_TOOLS = ("squad", "defend", "draft", "note", "do_nothing")        # what 
 ADVISOR_NOTE = (
     "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
     "player's message explicitly asks for, and do at most one task (one action tool call); then say plainly what you did. "
-    "If they ask for something you cannot do yet (trade, caravans, anything with no tool listed), say you cannot yet. If they only "
+    "If they ask for something you have no tool for, say you cannot yet. If they only "
     "ask or talk, just answer. A question (\"should we take the quest?\", \"what do you think about...?\") is not a request: "
     "answer it with your advice and do not act. Act only on a plain instruction such as \"put Ana on cooking\". "
     "Do not change the goals board except to record a standing order they ask for.")
@@ -86,11 +87,12 @@ class Session:
         self.bio = BioKit(digest)                            # the Biotech tools exist only when the digest has a bio block
         self.ages = {gd.name(p.get("name")): p["age"] for p in digest.get("pawns") or [] if isinstance(p.get("age"), (int, float))}
         self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
+        self.trade = TradeKit(digest)                        # trade_offer, trade, caravan_plan, caravan: only with a trade block
         tools = self._tools()
         if self.combat.tools and any(t.name == "squad" for t in self.combat.tools):
             tools = [t for t in tools if t.name != "order"]   # in a fight squad orders replace single orders (cells by name, not x/z)
-        self.tools = tools + self.build.tools + self.combat.tools + self.bio.tools
-        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names or t.name in self.bio.names}
+        self.tools = tools + self.build.tools + self.combat.tools + self.trade.tools + self.bio.tools
+        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names or t.name in self.trade.acting or t.name in self.bio.names}
 
     # ---- the tool list for this digest ----------------------------------------------
     def _tools(self) -> list[ToolSpec]:
@@ -144,6 +146,13 @@ class Session:
         return None
 
     async def run(self, tool: str, v: dict) -> Outcome:
+        if tool in LOOKS:                                   # a look tool GETs a route and returns text; it is not an action
+            try:
+                return Outcome({"result": await self.trade.look(tool, v, self.bridge)})
+            except ValueError as e:
+                return Outcome({"error": str(e)})
+            except BridgeError as e:
+                return Outcome({"refused": e.detail or e.code} if e.code == "refused" else {"error": f"{e.code}: {e.detail}".strip(": ")[:160]})
         try:
             verb, body = self._body(tool, v)
         except ValueError as e:
@@ -302,6 +311,8 @@ class Session:
             return self.build.body(tool, v)
         if tool in self.combat.names:
             return self.combat.body(tool, v)
+        if tool in self.trade.acting:
+            return self.trade.body(tool, v)
         if tool in self.bio.names:
             return self.bio.body(tool, v)
         raise ValueError(f"unknown tool {tool}")

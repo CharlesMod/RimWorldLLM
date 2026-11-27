@@ -374,3 +374,35 @@ Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field,
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
 
+
+## J. Phase 4: trade, caravans, quests (with the agent and the 26B)
+Needs: a colony with a comms console (Microelectronics) and power, some surplus (cloth, a sculpture), a few silver,
+5+ colonists, a pack animal. Dev mode may spawn a trade caravan or ship for the test only (the narrator never uses
+dev mode). Check `GET /digest` with `curl ... | jq '.trade, .caravans, .quests'`.
+58. **Trade view.** A visiting trade caravan shows in `trade.traders` as `P<id>` with its sells/buys and `can_trade`
+    true; an orbital ship in range shows as `S<id>` with `leaves_h`; turn the console's power off: `can_trade` false,
+    `why_not` "the console has no power". `stock` lists the top items, `surplus` lower for medicine and food than the
+    count. `settlements` shows the nearest friendly towns with days close to the caravan dialog's estimate.
+59. **Offer.** `GET /trade/offer?with=P<id>`: prices close to the trade window's (open it yourself after, then close it
+    without trading). Worn apparel and the colonists' weapons never appear in `sells`.
+60. **A deal.** Ask in chat "sell 50 cloth to the trader and buy 5 components". The greentext line says bought/sold with
+    the silver; the colony's stock and silver change by exactly that; the trader's stock too. Check the direction (a
+    buy adds, a sell removes): a wrong direction is refused as "count direction ... not what was expected".
+61. **Refusals.** Put "cloth" in Never sell: the same ask is refused naming the list. Ask to sell all medicine: it sells
+    down to the keep floor and says so. Ask for a deal over 2000 silver: refused with the cap. A 4th deal in a day:
+    refused.
+62. **Orbital.** With a ship in range: a buy drops goods by pod at the beacon (or near the console) as vanilla does. The
+    negotiator does not walk (decision); say if that feels wrong.
+63. **Caravan plan and form.** Ask "plan a caravan to <town> with Ana and Bram". `caravan_plan` days/food/mass match the
+    vanilla form-caravan dialog roughly. Then "send them": the pawns gather the food (pemmican first) and goods, form
+    and leave the map like a player-formed caravan. Try including the best doctor: refused unless you said so.
+    Try sending everyone: refused.
+64. **Travel and arrival.** On the world map the caravan heads to the town; `caravans` in the digest shows days left and
+    food days. On arrival one chat note "Caravan ... reached ...: it can trade there"; then a trade with `T<tile>` works
+    and the goods go into the caravan. "Bring them home": it paths home and enters the map.
+65. **Quests.** Accept a trade-request quest (through `choose`): `quests` shows kind `delivery` with the items and
+    `can`; "do the delivery" forms a caravan carrying the requested items to the right town. A raid/bandit-camp quest
+    shows `combat` with `why_not` "needs combat (not yet)"; a lodger quest shows `hosting` and the caravan hand refuses
+    with what to prepare. A quest far beyond the deadline shows "no time".
+66. **Save/load.** Save mid-trip and load: the day's trade counters and the caravan's plan survive (the plan of a
+    caravan still forming is dropped).

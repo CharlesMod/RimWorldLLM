@@ -703,6 +703,22 @@ The digest gains `bio` (absent without Biotech; every key may be missing):
 `hemogen.prisoners` lists grown, non-hemogenic prisoners not yet giving blood. `GET /vivarium` `settings` gains
 `may_implant_genes`; `GET /config` gains `vivarium_may_implant_genes`. `POST /act/zone` takes `preset: "waste"`.
 
+### Phase 4: trade, caravans, quests (game needed)
+Full shapes and behaviour: docs/VIVARIUM.md "Phase 4". Same rules as the other `/act/*`. Nothing here is undoable;
+the hands check first and refuse with a reason. The JObject reads (`/trade/offer`, `/caravan/plan`) answer `409 refused`
+with the hand's reason and write no chat line.
+
+| Route | Example | Checks before the game is asked |
+| --- | --- | --- |
+| `GET /trade/offer?with=P5521` | | `with` matches `P<id>` (visiting trader pawn), `S<id>` (orbital ship) or `T<tile>` (a settlement where one of our caravans is). Reply `{"with", "name", "silver", "negotiator", "colony_silver", "buys": [{"item", "count", "price"}], "sells": [{"item", "count", "price"}], "today"}`: `buys` = what the trader sells to us (price each, after the negotiator's bonus), `sells` = what of ours it takes (sellable counts after the never-sell rules), at most 30 each. |
+| `/act/trade` | `{"with": "P5521", "buy": [{"item": "components", "count": 6}], "sell": [{"item": "cloth", "count": 300}]}` | `settings.trade` on; `with` as above; 1..12 lines in all, item 1..60 chars, count 1..100000; the day's deals not used up. The hand runs the deal planner on the live offers (item matching, trader stock, never-sell floors, both sides' silver, the deal and day caps) and executes the game's trade deal without the window. Reply `{"done": "bought 6 components, sold 300 cloth (+120 silver), Ana negotiated", "spent", "got", "net", "value", "today": {"deals", "deals_left", "spent", "got", "value_left"}}`. |
+| `GET /caravan/plan?pawns=101,102&to=T4321&goods=cloth:20&purpose=deliver` | | `pawns`/`animals` comma ids; `to` `T<tile>`, `W<tile>` (site) or `Q<id>` (quest); goods `item:count,...`; `purpose` trade/visit/quest/deliver (default visit). Reply: `{"days", "food_days", "food_need", "mass", "capacity", "food": [{"item", "count"}], "ok", "problems": [...], "to", "rules"}` (`rules` = the who-may-go refusal or null). |
+| `/act/caravan` | `{"op": "form", "pawns": [101, 102], "to": "Q77", "purpose": "deliver"}` / `{"op": "send", "caravan": "C88", "to": "home"}` / `{"op": "cancel", "caravan": "C9001"}` | `settings.caravans` on; op form/send/cancel; form: 1..6 pawns, animals optional, goods ≤ 12 lines, `to` required (no `home`), purpose known, `player_asked` needs a player chat line in the last 2500 ticks; send: `caravan` `C<id>` and `to` (or `home`); cancel: `caravan`. Form replies `{"done": "...", "caravan": "C<lord id>"}` and the route remembers the plan (purpose, to, quest) in `caravan_plans`. |
+
+`GET /vivarium` `settings` carries `trade`, `caravans`, `trade_max_deal`, `trade_max_day`, `trade_deals_per_day`,
+`keep_medicine`, `keep_food_days`, `never_sell`, `caravan_max_pawns`. The save JSON gains `trade_day` and
+`caravan_plans`. The digest gains the `trade`, `caravans` and `quests` blocks.
+
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`
 (severity 0.3 when the letter has no choice). `alert`: `{"type": "alert", "severity": 0.8,

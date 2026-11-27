@@ -32,6 +32,8 @@ next to bridge ports and tokens; they now have their own first tab, and the deve
 | `enabled` | true | P | Master switch: events, art, wants and dial-out stop when off | Connection -> Model |
 | `llmSource` | "local" | P | Built-in engine or My own endpoint | Connection -> Model |
 | `llmBaseUrl`, `llmModel`, `llmApiKey` | "" | PU | Own OpenAI-compatible endpoint; written to bridge.json for the agent (the key only there) | Connection -> Model |
+| `llmEngineId` | "" | - | Internal: the easyEngine (engine_id) the own endpoint was filled from by pairing; "" for a typed endpoint | **new** |
+| `pairedEngines` | "" | - | Internal: JSON list of `{engine_id, token, client_id, name, address}`, one per paired engine; never logged | **new** |
 | `engineAutoStart` | true | P | Start the engine with the game | Connection -> Model |
 | `hideFallbackWarning` | false | P | Hide the small-model (E2B) warning | Connection -> Model |
 | `customGgufPath` | "" | P | Last path typed or picked in Use my own GGUF file | **new** |
@@ -46,6 +48,32 @@ Use my own GGUF file...: path field, Browse (in-game file browser, folders and `
 the header: architecture, parameters, quant, trained context, size, fit verdict, estimated VRAM), Use this file, Stop using
 it. The file is read in place; nothing copies, moves or deletes it. Without a native file dialog: Unity/Mono has no
 reliable one on Windows, Linux and macOS, so the browser is in-game.
+
+#### Finding and pairing an engine (My own endpoint)
+
+For an easyEngine on another computer (the PC with the card): no URL or key to type. In My own endpoint:
+
+1. **Find engines on my network** browses mDNS for `_easy-engine._tcp.local.` for about 2 s (IPv4 first); when nothing
+   answers, it runs the shipped `easy-engine find --json` instead. Each engine is listed with its name, model, phase and
+   address, and `[paired]` when this game already holds a token for its engine_id. **Or its address** takes a typed
+   `host[:port]` (default port 47480) and asks that engine's hello.
+2. **Connect** calls hello. An engine that needs no token (a loopback engine in local mode, or `--open`) is used at once.
+   Otherwise the game asks to pair as "RimWorld on <computer name>" and shows the six-digit code big ("493 201"):
+   compare it with the code on the engine's screen (setup page, tray, or `easy-engine pair`) and press Allow there.
+   Cancel withdraws the request. Denied on the engine ends it; a request the engine ended (it restarted, or a newer
+   request from this computer replaced it) offers Try again once. A dropped connection is retried by itself.
+3. **Paired:** the token is stored per engine_id in `pairedEngines` and the endpoint fields are filled: `llmBaseUrl` =
+   the engine's address + `/v1`, `llmModel` = the model id the engine lists on `/v1/models` (its catalog id, which the
+   agent's model rules need; left as it was when the engine is still loading), `llmApiKey` = the token, and
+   `llmEngineId` = the engine. The token is sent as `Authorization: Bearer` from then on; it never appears in a log.
+4. **Staying connected:** at game start the paired engine is called at its last address with the token; if it moved, it
+   is found again by engine_id over mDNS and the URL follows. A revoked or unknown token (also seen from a 401 with
+   `token_revoked` / `token_invalid` on the Test button or the engine client) is dropped, and the status line says
+   **Pair again** with a button (and a message once, in a running game). Typing another URL by hand lets go of the
+   paired engine (its token stays stored for later).
+
+The typed path is unchanged: any OpenAI-compatible server with a URL, model and key works as before; pairing only fills
+those fields.
 
 ### Colonists
 
@@ -83,11 +111,20 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `chatPanelWidth`, `chatPanelLines` | 420, 10 | - | Old width/lines sliders; still loaded from old saves, no longer shown or read (dragging replaced them) | removed from UI (round 2) |
 | `narratorAnswerDialogs` | true | P | "Narrator plays" group: answer popups when the narrator plays. A choice window or letter the narrator leaves open past the timeout gets the safe default (docs/VIVARIUM.md "Unattended play: dialogs"). Off: popups wait for you | new (unattended dialogs) |
 | `narratorDialogTimeoutS` | 90 | P | Real seconds (not game time: popups pause the game) before a popup gets the safe default; 10..300 in steps of 5. Reaches the agent as `settings.dialog_timeout_s` / `answer_dialogs` on `GET /vivarium` | new (unattended dialogs) |
+| `narratorTrade` | true | P | "Narrator plays" group: the narrator may buy and sell with visiting caravans, orbital traders (powered comms console) and settlements its caravan has reached, within the caps below; mirrored as `settings.trade` | new (vivarium 4) |
+| `narratorCaravans` | true | P | The narrator may form, send and cancel caravans (trade, visits, quest sites, deliveries); mirrored as `settings.caravans` | new (vivarium 4) |
+| `narratorTradeMaxDeal` | 2000 | P | Largest single deal in silver of value (buys + sells), 100..20000 in steps of 100; a bigger deal is refused whole (`trade_max_deal`) | new (vivarium 4) |
+| `narratorTradeMaxDay` | 6000 | P | Silver of value the narrator may trade per game day, 100..50000 (`trade_max_day`) | new (vivarium 4) |
+| `narratorTradeDealsPerDay` | 3 | P | Deals per game day, 1..10 (`trade_deals_per_day`); the day's counters are saved with the game | new (vivarium 4) |
+| `narratorKeepMedicine` | 10 | P | Medicine (all kinds together) the narrator never sells below, 0..50 (`keep_medicine`) | new (vivarium 4) |
+| `narratorKeepFoodDays` | 10 | P | Days of food (from the colony's daily nutrition) the narrator never sells below, 0..30 (`keep_food_days`) | new (vivarium 4) |
+| `narratorNeverSell` | "" | P | Comma-separated item words or defNames the narrator never sells (matched in the label or def, any case); `never_sell` as a list. Worn/equipped gear and forbidden items are never sold anyway | new (vivarium 4) |
+| `narratorCaravanMaxPawns` | 3 | P | Most colonists on one narrator caravan unless the player asks, 1..6 (`caravan_max_pawns`). Rules that always hold: someone stays home, a fighter stays home, no children under 13, no downed/drafted/sick/broken pawns; the best doctor and the only cook stay unless the player asks | new (vivarium 4) |
 | (button) | | | "Narrator plays" group: "Undo the narrator's last build" takes back its last placing action (as `/undo` in the chat); greyed when there is nothing to undo or no game | new (vivarium phase 2) |
 
 The "Narrator plays" switch itself is not a mod setting: it is saved per game (GameComponent, `rwlVivarium`) and
 sits in the bottom-right play-settings row, with a key `RWL_ToggleNarratorPlays` (unbound by default) under
-Options > Controls. The three settings above reach the agent on `GET /vivarium` (`settings`) and `GET /config`
+Options > Controls. The trade and caravan rows show their sliders and the never-sell field only while trading or caravans is on. The three settings above reach the agent on `GET /vivarium` (`settings`) and `GET /config`
 (`vivarium_may_pause`, `vivarium_controls_speed`, `vivarium_heartbeat_hours`). See docs/VIVARIUM.md.
 
 ### Display
