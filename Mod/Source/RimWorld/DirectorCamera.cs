@@ -136,6 +136,7 @@ namespace RimWorldLLM
         /// <summary>Called every frame (also paused) by the game component.</summary>
         public static void Update()
         {
+            if (VisionCapture.Holding) return;   // a picture is being framed: leave the camera alone
             if (WatchCamera.Enabled) { WatchCamera.Update(); return; }   // watch mode drives the camera instead
             WatchCamera.UpdateOff();
             if (!Active) return;

@@ -231,6 +231,7 @@ namespace RimWorldLLM
         // ------------------------------------------------------------------ per frame
         public static void Update()
         {
+            if (VisionCapture.Holding) return;
             try { Step(); } catch (Exception ex) { WarnOnce(ex); }
         }
 

@@ -84,6 +84,7 @@ namespace RimWorldLLM
                 ["dlc"] = new JArray(ActiveDlc()),
                 ["vivarium_may_pause"] = s.narratorMayPauseForEmergencies,
                 ["vivarium_controls_speed"] = s.narratorControlsSpeed,
+                ["vision_allowed"] = s.narratorMayLook,
                 ["vivarium_may_implant_genes"] = s.narratorMayImplantGenes,
                 ["vivarium_heartbeat_hours"] = s.stewardHeartbeatHours,
                 ["llm"] = LlmConfig(s)

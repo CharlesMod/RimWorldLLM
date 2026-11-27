@@ -18,6 +18,7 @@ namespace RimWorldLLM
             r.Add("GET", "/events", false, Events);
             RegisterSnapshots(r);
             RegisterWrites(r);
+            VisionRoutes.Register(r, VisionCapture.Desk, () => RimWorldLLMMod.Settings.narratorMayLook);
             VivariumRoutes.Register(r, () => VivariumGame.State, () => Current.Game != null ? new VivariumHands() : null);
         }
 

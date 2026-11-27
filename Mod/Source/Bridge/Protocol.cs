@@ -59,6 +59,7 @@ namespace RimWorldLLM.Bridge
             {
                 case "unauthorized": return 401;
                 case "not_found": return 404;
+                case "no_target": return 404;
                 case "bad_request": return 400;
                 case "too_large": return 413;
                 case "conflict": return 409;
