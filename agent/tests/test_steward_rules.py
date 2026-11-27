@@ -216,3 +216,74 @@ def test_facts_count_stored_plus_loose_but_not_forbidden():
     ]
     f = sr.derive_facts(d)
     assert f["steel"] == 340 and f["components"] == 7
+
+
+# ---- rules on the narrator-view facts
+def _fired(**f):
+    return {rid for _, rid, _ in sr.fired_rules(f)}
+
+
+@pytest.mark.parametrize("facts,rid", [
+    (dict(loose_unstorable=2), "build.loose_no_stockpile"),
+    (dict(stuck_no_material=1), "build.stuck_no_material"),
+    (dict(stuck_no_builder=True), "build.stuck_no_builder"),
+    (dict(bills_stuck=1), "work.bills_stuck"),
+    (dict(crops_ready=12, food_days=2.0), "food.harvest_before_starving"),
+    (dict(huntable=3, food_days=4.9), "food.hunt_before_starving"),
+    (dict(food_rot_soon=30), "food.rot_soon"),
+    (dict(days_to_winter=8.0), "winter.coming"),
+    (dict(days_to_winter=2.0), "food.last_harvest"),
+    (dict(bleed_out_hours=5.0), "health.bleeding"),
+    (dict(infections_losing=1), "health.infection_losing"),
+])
+def test_new_fact_rules_fire(facts, rid):
+    assert rid in _fired(**facts)
+
+
+@pytest.mark.parametrize("facts,rid", [
+    (dict(loose_unstorable=0), "build.loose_no_stockpile"),
+    (dict(stuck_no_material=0, stuck_no_builder=False, bills_stuck=0), "build.stuck_no_material"),
+    (dict(stuck_no_builder=False), "build.stuck_no_builder"),
+    (dict(bills_stuck=0), "work.bills_stuck"),
+    (dict(crops_ready=12, food_days=9.0), "food.harvest_before_starving"),
+    (dict(crops_ready=0, food_days=2.0), "food.harvest_before_starving"),
+    (dict(huntable=0, food_days=2.0), "food.hunt_before_starving"),
+    (dict(food_rot_soon=0), "food.rot_soon"),
+    (dict(days_to_winter=30.0), "winter.coming"),
+    (dict(days_to_winter=2.0), "winter.coming"),
+    (dict(bleed_out_hours=90.0), "health.bleeding"),
+    (dict(infections_losing=0), "health.infection_losing"),
+])
+def test_new_fact_rules_stay_quiet(facts, rid):
+    assert rid not in _fired(**facts)
+
+
+def test_new_fact_rules_skip_when_the_fact_is_missing():
+    assert not _fired(food_days=2.0) & {"food.harvest_before_starving", "food.hunt_before_starving", "food.rot_soon", "winter.coming",
+                                         "build.loose_no_stockpile", "build.stuck_no_material", "build.stuck_no_builder", "work.bills_stuck", "health.infection_losing"}
+
+
+def test_sample_facts_fire_the_expected_rules():
+    got = _fired(**SAMPLE["facts"])
+    assert {"build.loose_no_stockpile", "build.stuck_no_material", "work.bills_stuck", "food.rot_soon", "food.harvest_before_starving",
+            "food.hunt_before_starving", "winter.coming", "health.bleeding"} <= got
+    assert not got & {"build.stuck_no_builder", "health.infection_losing"}
+    text = sr.alerts_section(SAMPLE)
+    assert "PLAYBOOK ALERTS" in text and len(text) <= sr.SECTION_CAP
+
+
+def test_strategy_covers_the_new_lines_under_the_cap():
+    text = (Path(sr.__file__).parent / "strategy" / "steward_strategy.md").read_text()
+    for word in ("DEADLINES", "STUCK", "LOOSE", "can't:", "IDLE", "FOOD", "do not reorder priorities"):
+        assert word in text, word
+    assert len(text.encode()) <= 12288
+
+
+def test_loose_rule_checks_space_before_making_zones():
+    # keeper 2026-11-27: one live cycle hauled loose steel with no stockpile taking it; the rule now orders zone first
+    rules = json.loads((Path(sr.__file__).parent / "strategy" / "rules.json").read_text())
+    rule = next(r for r in rules["rules"] if r["id"] == "build.loose_no_stockpile")
+    assert "Make space first" in rule["action"] and "widen an existing stockpile" in rule["action"]
+    assert "there is space: just haul" in rule["action"]      # a new zone only when there's no space, not every haul
+    text = (Path(sr.__file__).parent / "strategy" / "steward_strategy.md").read_text()
+    assert "do we have space for this?" in text and "just haul" in text

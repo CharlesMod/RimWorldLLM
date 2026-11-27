@@ -2,6 +2,11 @@
 
     python -m rimworldllm_agent.games.rimworld.steward_try --digest tests/data/steward_digest_sample.json \\
         [--goals goals.json] [--chat "who cooks?"] [--playing] --llm-url http://127.0.0.1:8080/v1 [--model m]
+        [--combat tests/data/combat_pirate_ranged.json [--combat-cycle]]
+
+``--combat`` is a recorded GET /combat body: the game is in a fight (the digest gets it as its ``combat`` block), and with
+--playing the first cycle is the full "combat started" one. ``--combat-cycle`` runs one small combat turn instead (GET /combat
+and the plan line only; no --digest needed). Both print the seconds the cycle took and the prompt size (chars, rough tokens).
 
 Prints the system prompt size, the user turn, each tool call with its arguments and the fake bridge's result, and the
 final chat line. Nothing here touches a real game.
@@ -13,6 +18,7 @@ import asyncio
 import json
 import random
 import tempfile
+import time
 from pathlib import Path
 
 import httpx
@@ -41,16 +47,22 @@ class _Tap:
         await self.inner.aclose()
 
 
-async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, llm_url: str, model: str = "", mode: str = "auto",
+async def try_once(digest: dict | None, goals: dict | None, chat: str, playing: bool, llm_url: str, model: str = "", mode: str = "auto",
+                   combat: dict | None = None, combat_cycle: bool = False, backend=None,
                    dialogs: list[dict] | None = None, paused: bool = False) -> dict:
+    """One cycle against the fake bridge. ``backend`` replaces the real tool backend (tests script one)."""
+    digest = dict(digest or {})
+    if combat is not None and "combat" not in digest:
+        digest["combat"] = combat
     with tempfile.TemporaryDirectory() as tmp:
         cfg = Config(data_dir=Path(tmp), bridge_url="http://fake", bridge_token="tok", wants=False, steward=True,
-                     steward_min_gap_real_s=0.0)
+                     steward_min_gap_real_s=0.0, steward_combat_gap_real_s=0.0)
         cfg.llm.base_url = llm_url
         if model:
             cfg.llm.model = model
         fb = FakeBridge("tok")
         fb.digest = digest
+        fb.combat = combat
         if goals:
             fb.goals_board.update({k: v for k, v in goals.items() if k in ("goals", "plan", "orders", "log")})
         adapter = RimWorldAdapter()
@@ -58,12 +70,14 @@ async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, l
         real = [0.0]
         d = Director(cfg, bridge, FakeLLM(), adapter, clock=lambda: real[0], rng=random.Random(1))
         await d.start()
-        tap = _Tap(make_tool_backend(cfg))
+        tap = _Tap(backend if backend is not None else make_tool_backend(cfg))
         d.tool_backend, d.tool_mode = tap, mode
         try:
             fb.playing = False
             await d.steward.step()                 # first sight: the chat cursor starts here
-            fb.playing = playing
+            fb.playing = playing or combat_cycle
+            if combat_cycle:
+                d.steward.combat_on = True          # as if the "combat started" cycle had run: the next wake is a combat turn
             if dialogs:
                 # the steady state before a window opens: it was already playing and had looked once, then the game paused for the window
                 d.steward.was_playing, d.steward.last_game = True, d.bridge.env.game
@@ -76,13 +90,17 @@ async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, l
                                        "options": [o.get("label") for o in x.get("options") or []], "default": x.get("default"), "timeout_s": 90})
             if chat:
                 fb.add_chat("player", chat)
+            t0 = time.perf_counter()
             await d.step()
             await d.drain()
+            wall = time.perf_counter() - t0
         finally:
             await tap.aclose()
             await bridge.aclose()
         trace = d.steward.stats.trace[-1] if d.steward.stats.trace else {}
-        return {"messages": tap.first, "trace": trace, "chat": list(fb.chat), "acts": list(fb.act_log), "board": fb.goals_board, "dialogs_left": [x["id"] for x in fb.dialogs]}
+        return {"messages": tap.first, "trace": trace, "wall_s": wall, "speed_acts": [a for a in fb.act_log if a[0] == "time"],
+                "requests": list(fb.requests), "chat": list(fb.chat), "acts": list(fb.act_log), "board": fb.goals_board,
+                "dialogs_left": [x["id"] for x in fb.dialogs]}
 
 
 def report(out: dict) -> int:
@@ -90,8 +108,13 @@ def report(out: dict) -> int:
     if not msgs:
         print("no cycle ran:", tr.get("error", "the steward did not wake"))
         return 1
-    print(f"SYSTEM PROMPT: {len(msgs[0]['content'] if isinstance(msgs[0], dict) else msgs[0][1])} chars")
+    sys_n = len(msgs[0]['content'] if isinstance(msgs[0], dict) else msgs[0][1])
+    user_n = len(msgs[1]["content"] if isinstance(msgs[1], dict) else msgs[1][1])
+    print(f"SYSTEM PROMPT: {sys_n} chars")
     print("USER TURN:\n" + (msgs[1]["content"] if isinstance(msgs[1], dict) else msgs[1][1]) + "\n")
+    print(f"PROMPT: {sys_n + user_n} chars, about {(sys_n + user_n) // 4} tokens (system {sys_n}, user {user_n}; the tool list is part of the system prompt)")
+    if "wall_s" in out:
+        print(f"ELAPSED: {out['wall_s']:.2f} s for the cycle ({tr.get('elapsed_s', '?')} s in the tool loop)")
     print(f"CYCLE: {tr.get('reason')} ({'playing' if tr.get('playing') else 'advisor'}), ended {tr.get('outcome')} {tr.get('reason_ended') or ''}")
     for tool, args, result in tr.get("executed", []):
         print(f"TOOL {tool} {json.dumps(args)} -> {json.dumps(result)}")
@@ -111,7 +134,9 @@ def report(out: dict) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="steward_try", description=__doc__.split("\n")[0])
-    ap.add_argument("--digest", required=True, help="a recorded GET /digest body (JSON file)")
+    ap.add_argument("--digest", help="a recorded GET /digest body (JSON file); not needed with --combat-cycle")
+    ap.add_argument("--combat", help="a recorded GET /combat body (JSON file): the game is in this fight")
+    ap.add_argument("--combat-cycle", action="store_true", help="run one combat turn (needs --combat); implies --playing")
     ap.add_argument("--goals", help="a goals board JSON file (goals, plan, orders, log)")
     ap.add_argument("--chat", default="", help="a player chat line to answer")
     ap.add_argument("--playing", action="store_true", help="the narrator is playing (otherwise advisor mode: chat only)")
@@ -119,11 +144,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--model", default="")
     ap.add_argument("--mode", default="auto", choices=["auto", "grammar", "json", "native"])
     a = ap.parse_args(argv)
-    digest = json.loads(Path(a.digest).read_text())
+    if a.combat_cycle and not a.combat:
+        ap.error("--combat-cycle needs --combat")
+    if not a.digest and not a.combat_cycle:
+        ap.error("--digest is required (except with --combat-cycle)")
+    digest = json.loads(Path(a.digest).read_text()) if a.digest else {}
     goals = json.loads(Path(a.goals).read_text()) if a.goals else None
-    if not a.chat and not a.playing:
+    combat = json.loads(Path(a.combat).read_text()) if a.combat else None
+    if not a.chat and not a.playing and not a.combat_cycle:
         ap.error("nothing would wake the steward: give --chat or --playing")
-    out = asyncio.run(try_once(digest, goals, a.chat, a.playing, a.llm_url, a.model, a.mode))
+    out = asyncio.run(try_once(digest, goals, a.chat, a.playing, a.llm_url, a.model, a.mode, combat=combat, combat_cycle=a.combat_cycle))
     return report(out)
 
 

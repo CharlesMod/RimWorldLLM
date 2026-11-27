@@ -14,6 +14,8 @@ namespace RimWorldLLM
             public readonly Dictionary<ThingDef, int> Loose = new Dictionary<ThingDef, int>();
             public readonly Dictionary<ThingDef, int> Forbidden = new Dictionary<ThingDef, int>();
             public readonly List<LooseItem> Items = new List<LooseItem>();
+            /// <summary>The stack behind each Items entry (same index; LooseItem.Ref).</summary>
+            public readonly List<Thing> Things = new List<Thing>();
             public int LooseOf(ThingDef d) { int n; return Loose.TryGetValue(d, out n) ? n : 0; }
         }
 
@@ -32,7 +34,8 @@ namespace RimWorldLLM
                 bool forb = t.IsForbidden(Faction.OfPlayer);
                 var d = forb ? s.Forbidden : s.Loose;
                 int n; d.TryGetValue(t.def, out n); d[t.def] = n + t.stackCount;
-                s.Items.Add(new LooseItem(t.def.label ?? t.def.defName, t.Position.x, t.Position.z, t.stackCount, forb));
+                s.Items.Add(new LooseItem(t.def.label ?? t.def.defName, t.Position.x, t.Position.z, t.stackCount, forb, s.Things.Count));
+                s.Things.Add(t);
             }
             cached = s; cachedMap = map.uniqueID; cachedTick = tick;
             return s;

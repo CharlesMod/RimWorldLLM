@@ -32,6 +32,10 @@ namespace RimWorldLLM.Tests
         public HandResult Bill(BillArgs a, BuildBudget l) { return Next; }
         public JObject Benches() { return new JObject(); }
         public HandResult Undo(IList<NarratorMark> m) { return Next; }
+        public JObject Combat(CombatState s) { return null; }
+        public HandResult Squad(SquadArgs a, CombatState s) { return Next; }
+        public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { return Next; }
+        public HandResult CombatSpeed(int speed, bool restore) { return Next; }
 
         public HandResult MechMode(int m, int g, string mode) { Calls.Add("mech_mode " + m + " " + g + " " + mode); return Next; }
         public HandResult MechGroup(int m, int g) { Calls.Add("mech_group " + m + " " + g); return Next; }
@@ -314,6 +318,10 @@ namespace RimWorldLLM.Tests
             public HandResult Bill(BillArgs a, BuildBudget l) { return null; }
             public JObject Benches() { return null; }
             public HandResult Undo(IList<NarratorMark> m) { return null; }
+            public JObject Combat(CombatState s) { return null; }
+            public HandResult Squad(SquadArgs a, CombatState s) { return null; }
+            public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { return null; }
+            public HandResult CombatSpeed(int speed, bool restore) { return null; }
         }
     }
 

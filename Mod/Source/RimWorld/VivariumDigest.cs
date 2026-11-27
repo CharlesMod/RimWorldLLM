@@ -71,10 +71,14 @@ namespace RimWorldLLM
             Sec(o, "dialogs", () => { var v = VivariumGame.State; return v.Dialogs.Count == 0 ? null : v.Dialogs.ToJson(v.Settings.DialogTimeoutS, Bridge.Vivarium.NowReal())["dialogs"]; });
             Sec(o, "research", Research);
             Sec(o, "threats", () => Threats(map));
+            Sec(o, "combat", () => { var cs = VivariumGame.State.Combat; if (!cs.Active) return null; var c = new VivariumHands().Combat(cs); c["squad"] = cs.Squad.ToJson(); c["speed_rule"] = cs.SpeedRuleJson(); return c; });
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "build", () => VivariumBuildView.Build(map));
             Sec(o, "bio", () => VivariumBioView.Build(map));
+            Sec(o, "stuck", () => Stuck(map));
             Sec(o, "power", () => Power(map));
+            Sec(o, "food", () => VivariumFood.Digest(map));
+            Sec(o, "deadlines", () => VivariumDeadlines.Digest(map));
             Sec(o, "facts", () => VivariumFacts.Build(map));
             return o;
         }
@@ -145,6 +149,16 @@ namespace RimWorldLLM
             return "anything";
         }
 
+        static JToken Stuck(Map map)
+        {
+            return new JArray(VivariumStuck.Stuck(map).Rows.Select(r =>
+            {
+                var j = new JObject { ["what"] = r.What, ["count"] = r.Count, ["reason"] = r.Reason, ["dist"] = r.Dist };
+                if (!string.IsNullOrEmpty(r.Dir)) j["dir"] = r.Dir;
+                return j;
+            }));
+        }
+
         static JToken Pawns(Map map, List<WorkTypeDef> types)
         {
             var arr = new JArray();
@@ -196,8 +210,13 @@ namespace RimWorldLLM
             o["mental"] = p.MentalState != null ? (p.MentalState.def.label ?? p.MentalState.def.defName) : "";
             string job = "";
             try { job = p.jobs?.curDriver?.GetReport() ?? ""; } catch (Exception) { }
-            o["job"] = job;
+            o["job"] = NarratorWork.CutJob(job);
             o["drafted"] = p.Drafted;
+            if (VivariumStuck.IsChild(p)) o["child"] = true;
+            var cannot = VivariumStuck.Cannot(p);
+            if (cannot.Count > 0) o["cannot"] = new JArray(cannot);
+            if (VivariumStuck.IsIdle(p)) o["idle"] = true;
+            try { VivariumExtras.AddPawn(o, p); } catch (Exception e) { LogOnce("pawn_extras", e); }
 
             if (p.timetable != null)
             {

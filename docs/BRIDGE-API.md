@@ -444,7 +444,8 @@ RimWorld schema (`Mod/Source/RimWorld/Vivarium*.cs`). All replies carry the usua
 ### `GET /vivarium` (no game needed)
 ```json
 {"playing": true, "paused_by_narrator": false, "chat_seq": 41, "goals_rev": 7, "actions_seq": 19,
- "settings": {"may_pause_for_emergencies": true, "controls_speed": false, "heartbeat_hours": 6.0}}
+ "undoable": 0, "combat": {"active": false, "hostiles": 0, "since_tick": -1},
+ "settings": {"may_pause_for_emergencies": true, "controls_speed": false, "slow_for_combat": true, "heartbeat_hours": 6.0}}
 ```
 The steward polls this every director step (cheap) to see the switch, new chat and settings.
 
@@ -640,6 +641,20 @@ and caps: docs/VIVARIUM.md "Phase 2".
 
 `GET /vivarium` also carries `undoable` (the ledger's size). The ledger is saved with the vivarium state
 (`ledger` in the save JSON); the caps are not saved. The digest gains a `build` block (docs/VIVARIUM.md).
+
+### Phase 3: combat and defense (game needed)
+Full shapes and behaviour: docs/VIVARIUM.md "Phase 3".
+
+| Route | Example body | Checks before the game is asked |
+| --- | --- | --- |
+| `GET /combat` | | `{"active", "home", "threats": [{"id", "faction", "kind", "count", "where", "dist", "heading", "labels", "ids", "dormant"?}], "fighters", "others", "downed": {"colonists", "enemies"}, "fires": {"count", "home", "where"?}, "defenses", "positions", "squad", "speed_rule": {"slowed", "before"}}` |
+| `/act/squad` | `{"op": "move", "at": "chokepoint"}` / `{"op": "focus", "target": 9201, "pawns": [101, 102]}` / `{"op": "retreat", "below": 0.4}` / `{"op": "undraft"}` | op in draft, move, hold, fire_at_will, focus, retreat, rescue, extinguish, flee, undraft; pawns ≤ 30 positive ids (duplicates dropped); at in cover, chokepoint, door, wall_n/e/s/w, home, inside; at or x,z, not both; move needs one of them; retreat defaults to at inside; room only with at door/inside; focus needs target; below 0.1..0.6. No caps. Reply adds `squad` (and `spots` for move/retreat). |
+| `/act/defend` | `{"kind": "sandbags", "side": "n", "length": 7}` / `{"kind": "turret", "count": 2}` / `{"kind": "killbox", "at": "entrance"}` / `{"kind": "traps", "side": "threat"}` | kind known; side n/e/s/w/threat; at chokepoint/entrance; at or x,z, not both; count turret 1..4, traps 1..8; length 1..20; a killbox is not at a chokepoint; blueprints left. Placed things are `blueprint` marks: `undo_seq`, `left`, `/undo`. |
+| `/act/time` (fight) | `{"speed": 1, "combat": true}` / `{"combat": true, "restore": true}` | combat takes speed 1 or restore, never pause; slow needs **slow_for_combat** or **controls_speed** (the game remembers the old speed, reply `before`); restore needs a remembered speed and the game still at 1x. |
+
+`GET /vivarium` gains `"combat": {"active", "hostiles", "since_tick"}` and `settings.slow_for_combat`. The squad,
+the remembered speed and the last raid side are saved in the vivarium JSON (`combat`). The digest gains `combat`
+(the `GET /combat` object) while a fight is active.
 
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`

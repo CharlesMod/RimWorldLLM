@@ -347,6 +347,26 @@ Use it anyway?</RWL_Fallback_ConfirmText>
   <RWL_Watch_CaptionsTip>One short line per shot of interest, at most one every twelve seconds (four for urgent events). Filler shots get none.</RWL_Watch_CaptionsTip>
   <RWL_Watch_PauseSec>Watch mode: seconds the camera stays still after you move it</RWL_Watch_PauseSec>
   <RWL_Watch_PauseSecTip>Moving, zooming or edge-scrolling the camera pauses the director for this long.</RWL_Watch_PauseSecTip>
+  <RWL_Watch_Zoom>Watch mode: zoom for each shot</RWL_Watch_Zoom>
+  <RWL_Watch_ZoomTip>Close for meals, deathbeds and art, middle for work, wide for raids and battles, always inside your own zoom limits. Your zoom comes back when watch mode turns off.</RWL_Watch_ZoomTip>
+  <RWL_Watch_SelectFollowed>Watch mode: select the pawn the camera follows</RWL_Watch_SelectFollowed>
+  <RWL_Watch_SelectFollowedTip>Off by default: selecting opens the inspect pane, which covers part of the screen. Selecting never drafts or changes anything else.</RWL_Watch_SelectFollowedTip>
+  <RWL_Watch_Pace>Watch mode pace</RWL_Watch_Pace>
+  <RWL_Watch_PaceTip>How long the camera stays on each shot and how soon it may show the same pawn or scene again. Calm: long shots, five minutes before a repeat. Lively: short shots, two and a half minutes.</RWL_Watch_PaceTip>
+  <RWL_Watch_PaceCalm>calm</RWL_Watch_PaceCalm>
+  <RWL_Watch_PaceNormal>normal</RWL_Watch_PaceNormal>
+  <RWL_Watch_PaceLively>lively</RWL_Watch_PaceLively>
+  <RWL_Watch_Scenes>Watch mode: everyday scenes to show when nothing else is happening</RWL_Watch_Scenes>
+  <RWL_Watch_ScenesTip>Events (raids, deaths, births and more) always come first. Scenes fill the quiet stretches.</RWL_Watch_ScenesTip>
+  <RWL_Watch_SceneMeals>Shared meals</RWL_Watch_SceneMeals>
+  <RWL_Watch_SceneRecreation>Recreation together</RWL_Watch_SceneRecreation>
+  <RWL_Watch_SceneWork>Work side by side</RWL_Watch_SceneWork>
+  <RWL_Watch_SceneWorkTip>Fields, kitchen, building, workshop and mining; also prisoners being talked to and animals being tamed.</RWL_Watch_SceneWorkTip>
+  <RWL_Watch_SceneNight>Someone awake alone at night</RWL_Watch_SceneNight>
+  <RWL_Watch_SceneMedical>A doctor tending a patient</RWL_Watch_SceneMedical>
+  <RWL_Watch_SceneChildren>Children playing and learning</RWL_Watch_SceneChildren>
+  <RWL_Watch_SceneRomance>Partners spending time together</RWL_Watch_SceneRomance>
+  <RWL_Watch_SceneRomanceTip>Adults only, and never in bed.</RWL_Watch_SceneRomanceTip>
   <!-- File browser (.gguf picker) -->
   <RWL_FileBrowser_Title>Choose a model file</RWL_FileBrowser_Title>
   <RWL_FileBrowser_Up>Up</RWL_FileBrowser_Up>
@@ -506,6 +526,8 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
   <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
   <RWL_Viv_ImplantGenes>The narrator may implant xenogerms (Biotech)</RWL_Viv_ImplantGenes>
+  <RWL_Viv_SlowForCombat>The narrator slows the game for fights</RWL_Viv_SlowForCombat>
+  <RWL_Viv_SlowForCombatTip>On: when a fight starts the narrator sets normal speed, and puts your speed back when it ends (unless you changed it meanwhile). Works even when the narrator does not control the speed.</RWL_Viv_SlowForCombatTip>
   <RWL_Viv_Commentary>Narrator commentary</RWL_Viv_Commentary>
   <RWL_Viv_CommentaryTip>While Narrator plays is on, the narrator adds a short documentary line at big moments (raids, deaths, births, weddings, masterworks, ship parts) and one recap line a game day, when its slot is free. The lines are under the Story filter.</RWL_Viv_CommentaryTip>
   <RWL_Viv_AnswerDialogs>Answer popups when the narrator plays</RWL_Viv_AnswerDialogs>

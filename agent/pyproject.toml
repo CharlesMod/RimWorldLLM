@@ -23,4 +23,4 @@ testpaths = ["tests"]
 markers = ["gpu: needs a live llama-server (RIMWORLDLLM_TEST_LLM_URL); skipped by default"]
 
 [tool.setuptools.package-data]
-"rimworldllm_agent.games.rimworld" = ["block_a.txt", "steward_system.txt", "strategy/steward_strategy.md", "strategy/rules.json"]
+"rimworldllm_agent.games.rimworld" = ["block_a.txt", "steward_system.txt", "steward_combat.txt", "strategy/steward_strategy.md", "strategy/steward_biotech.md", "strategy/rules.json"]

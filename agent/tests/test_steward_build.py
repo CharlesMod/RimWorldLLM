@@ -245,7 +245,7 @@ def test_prompt_and_size():
     strat = kit.default_strategy()
     assert "## Build order" in strat and len(strat.encode()) <= 12288
     s = session()
-    assert len(tl.render_tools(s.tools)) < 8500   # 7.7k with main's why on every acting tool (13 x ~250 chars)
+    assert len(tl.render_tools(s.tools)) < 8800   # 7.9k with the why on every acting tool (13 x ~250 chars) + defend (0.8k, phase 3)
 
 
 def test_cooler_only_into_a_non_living_room(fb):

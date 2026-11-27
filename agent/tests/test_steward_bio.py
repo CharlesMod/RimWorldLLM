@@ -199,7 +199,8 @@ def test_tool_text_size():
     plain = len(tl.render_tools(sess(load("steward_digest_sample")).tools))
     full = len(tl.render_tools(sess(load("bio_all")).tools))
     assert full - plain < 2600, full - plain
-    assert len(k.default_strategy().encode()) <= 12288 and "## Biotech" in k.default_strategy()
+    assert len(k.default_strategy().encode()) <= 12288 and "## Biotech" not in k.default_strategy()
+    assert "## Biotech" in k.strategy_extra(load("bio_all")) and k.strategy_extra(load("steward_digest_sample")) == ""
 
 
 # ---- rules
@@ -237,7 +238,7 @@ def test_draft_refuses_children():
     with pytest.raises(ValueError, match="children stay out of fights"):
         s._body("order", call(s, "order", pawn="Fay", order="hold", x=0, z=0, target_id=0, hold="yes"))
     verb, b = s._body("draft", call(s, "draft", pawns="all", drafted="yes"))
-    assert 106 not in b["pawns"] and 107 not in b["pawns"] and 101 in b["pawns"]
+    assert 106 not in b["pawns"] and 107 not in b["pawns"] and 102 in b["pawns"]
     assert s._body("draft", call(s, "draft", pawns="Ana", drafted="yes"))[1]["pawns"] == [101]
     # a pawn of 13 can be drafted
     d["pawns"][5]["age"] = 13
