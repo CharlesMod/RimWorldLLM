@@ -18,7 +18,7 @@ C#: `Mod/Source/Mind/BridgeClient/` (BridgeTypes.cs, BridgeClient.cs, BridgeTran
 
 ## Deferred
 - (ported by the contract part, see parity-contract.md: test_core_imports_nothing_from_games and test_core_has_no_game_terms as C# lints over Core/Llm/ToolLoop/BridgeClient, test_core_event_normalised_from_wire, the adapter half of test_adapter_and_transports_satisfy_the_protocols. `ProtocolNames.RimWorld` moved to `RimWorldAdapter.WireNames` for the lint.)
-- test_split: test_gossip_names_a_third_actor_and_downgrades_without_one, test_every_write_carries_an_op_id: need the `world` fixture (Director + FakeLLM). A bridge-level stand-in, EveryWriteCarriesAnOpId, covers the op_id half now.
+- test_split: test_gossip_names_a_third_actor_and_downgrades_without_one and test_every_write_carries_an_op_id are ported in `ContractWorldTests` (Director + FakeLlm); `EveryWriteCarriesAnOpId` in the bridge tests stays as the bridge-level check.
 
 ## Added tests
 BridgeClientTests: wire shapes (field order of say/thought/social/chronicle/recap/art/chat/goals/act/mind bodies, query strings,
