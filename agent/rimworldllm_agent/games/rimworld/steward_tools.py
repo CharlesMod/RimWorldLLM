@@ -16,7 +16,8 @@ from ...core.bridge import BridgeError
 from ...core.toolloop import Param, ToolSpec
 from .steward_build import BuildKit
 from .steward_combat import CombatKit, render_combat
-from .steward_digest import pawn_names, render_digest
+from .steward_digest import pawn_names, render_digest, trade_view
+from .steward_rules import derive_facts
 from .steward_rules import alerts_section
 from .steward_trade import LOOKS, TradeKit
 
@@ -36,6 +37,8 @@ _WHY = Param("why", "text", "a brief reason in your own words, starting with sin
              "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order")
 COMBAT_TOOLS = ("squad", "defend", "draft", "note", "do_nothing")        # what a combat turn may use (core/steward.py)
+TRADE_TOOLS = ("trade_offer", "trade", "note", "do_nothing")             # what a trade turn may use (core/steward.py)
+FOOD_CRITICAL_DAYS = 3                                                   # the playbook's starvation rule (food_days < 3): no trade turn
 
 ADVISOR_NOTE = (
     "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
@@ -82,7 +85,7 @@ class Session:
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
         self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
-        self.trade = TradeKit(digest)                        # trade_offer, trade, caravan_plan, caravan: only with a trade block
+        self.trade = TradeKit(digest)                        # trade_offer, trade: only with a trade block (caravans are off)
         tools = self._tools()
         if self.combat.tools and any(t.name == "squad" for t in self.combat.tools):
             tools = [t for t in tools if t.name != "order"]   # in a fight squad orders replace single orders (cells by name, not x/z)
@@ -307,6 +310,7 @@ class StewardKit:
     """What core/steward.py asks of the RimWorld adapter."""
 
     combat_tools = COMBAT_TOOLS
+    trade_tools = TRADE_TOOLS
     silent_events = frozenset({"letter", "alert", "dialog"})          # the director never voices these; the steward reads them
 
     def wake(self, e: dict) -> str | None:
@@ -365,6 +369,28 @@ class StewardKit:
             if isinstance(c, dict) and c.get("id") and c.get("name"):
                 pawns.append({"id": c["id"], "name": c["name"], "role": "colonist", "incapable": ["Violent"]})
         return Session({"pawns": pawns, "combat": view}, bridge, False)
+
+    def trade_session(self, digest: dict, bridge) -> Session:
+        return Session(digest, bridge, False)
+
+    def trade_system_prompt(self) -> str:
+        return (_HERE / "steward_trade.txt").read_text()
+
+    def trade_skip(self, digest: dict) -> str:
+        """Why a trade turn is not worth running now ("" when it is): the colony is starving (food_days under 3, or a critical
+        starvation alert), so the routine cycle handles food first."""
+        fd = derive_facts(digest).get("food_days")
+        if isinstance(fd, (int, float)) and not isinstance(fd, bool) and fd < FOOD_CRITICAL_DAYS:
+            return f"food is critical ({fd:g} days)"
+        for a in digest.get("alerts") or []:
+            if isinstance(a, dict) and a.get("critical") and "starv" in f"{a.get('alert', '')} {a.get('label', '')}".lower():
+                return "a critical starvation alert"
+        return ""
+
+    def render_trade(self, digest: dict, arrived: list[str]) -> tuple[str, str]:
+        """(the trade view naming the arrivals, the food line)."""
+        fd = derive_facts(digest).get("food_days")
+        return trade_view(digest, arrived), (f"FOOD: about {fd:g} days of food" if isinstance(fd, (int, float)) and not isinstance(fd, bool) else "")
 
     def combat_system_prompt(self) -> str:
         return (_HERE / "steward_combat.txt").read_text()

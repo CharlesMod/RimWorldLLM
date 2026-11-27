@@ -20,6 +20,7 @@ namespace RimWorldLLM.Tests
         {
             var j = body is string s ? JObject.Parse(s) : JObject.FromObject(body);
             j["op_id"] = "t" + (++op);
+            if (path == "/act/caravan" && j["script"] == null) j["script"] = true;   // caravans are off for the narrator unless script is set
             return H.Call("POST", path, j.ToString());
         }
         static void Bad(ApiResult r, string contains)
@@ -196,13 +197,13 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void CaravanPlanParsesAndAsksTheHand()
         {
-            var r = H.Call("GET", "/caravan/plan?pawns=3,5&animals=9&to=t4321&goods=cloth:20,steel%20bar:5&purpose=TRADE", null);
+            var r = H.Call("GET", "/caravan/plan?pawns=3,5&animals=9&to=t4321&goods=cloth:20,steel%20bar:5&purpose=TRADE&script=true", null);
             Assert.True(r.Ok); Assert.True((bool)r.Body["ok"]);
             var a = Hands.LastCaravan;
             Assert.Equal(new[] { 3, 5 }, a.Pawns.ToArray()); Assert.Equal(new[] { 9 }, a.Animals.ToArray());
             Assert.Equal("T4321", a.To); Assert.Equal("trade", a.Purpose);
             Assert.Equal(2, a.Goods.Count); Assert.Equal("steel bar", a.Goods[1].Item); Assert.Equal(5, a.Goods[1].Count);
-            H.Call("GET", "/caravan/plan?pawns=3&to=Q77", null);
+            H.Call("GET", "/caravan/plan?pawns=3&to=Q77&script=true", null);
             Assert.Equal("visit", Hands.LastCaravan.Purpose); Assert.Equal("Q77", Hands.LastCaravan.To);
         }
 
@@ -210,12 +211,12 @@ namespace RimWorldLLM.Tests
         public void CaravanPlanGateAndRefusal()
         {
             Hands.PlanJson = new JObject { ["refused"] = "Bram is downed" };
-            Refused(H.Call("GET", "/caravan/plan?pawns=3&to=T4", null), "Bram is downed");
+            Refused(H.Call("GET", "/caravan/plan?pawns=3&to=T4&script=true", null), "Bram is downed");
             Assert.Equal(0, V.Chat.LastSeq);   // not an action: no chat line
             V.Settings.Caravans = false; Hands.Calls.Clear();
-            Refused(H.Call("GET", "/caravan/plan?pawns=3&to=T4", null), "caravans are off in the settings");
+            Refused(H.Call("GET", "/caravan/plan?pawns=3&to=T4&script=true", null), "caravans are off in the settings");
             Assert.Empty(Hands.Calls);
-            Assert.Equal("no_game", H.Call("GET", "/caravan/plan?pawns=3&to=T4", null, GameState.Menu).Error);
+            Assert.Equal("no_game", H.Call("GET", "/caravan/plan?pawns=3&to=T4&script=true", null, GameState.Menu).Error);
         }
 
         // ------------------------------------------------------------ POST /act/caravan
@@ -304,9 +305,9 @@ namespace RimWorldLLM.Tests
             var h2 = new Harness(); var v2 = new Vivarium();
             VivariumRoutes.Register(h2.Router, () => v2, () => (IVivariumHands)typeof(VivariumTests).GetNestedType("Throwing", System.Reflection.BindingFlags.NonPublic).GetConstructor(System.Type.EmptyTypes).Invoke(null));
             Assert.Equal("internal", h2.Call("GET", "/trade/offer?with=P1", null).Error);
-            Assert.Equal("internal", h2.Call("GET", "/caravan/plan?pawns=1&to=T1", null).Error);
+            Assert.Equal("internal", h2.Call("GET", "/caravan/plan?pawns=1&to=T1&script=true", null).Error);
             Assert.Equal("internal", h2.Call("POST", "/act/trade", "{\"op_id\":\"a\",\"with\":\"P1\",\"buy\":[{\"item\":\"a\",\"count\":1}]}").Error);
-            Assert.Equal("internal", h2.Call("POST", "/act/caravan", "{\"op_id\":\"b\",\"op\":\"cancel\",\"caravan\":\"C1\"}").Error);
+            Assert.Equal("internal", h2.Call("POST", "/act/caravan", "{\"op_id\":\"b\",\"script\":true,\"op\":\"cancel\",\"caravan\":\"C1\"}").Error);
             Assert.Equal(0, v2.TradeDay.Deals);
         }
     }

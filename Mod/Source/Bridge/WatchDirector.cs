@@ -42,6 +42,7 @@ namespace RimWorldLLM.Bridge
                 case SceneKinds.Child: return 2.6;
                 case SceneKinds.Recreation: return 2.5;
                 case SceneKinds.Prisoner: return 2.4;
+                case SceneKinds.Trade: return 2.5;
                 case SceneKinds.Taming: return 2.2;
                 case SceneKinds.Night: return 2.0;
                 case SceneKinds.Work: return 1.8;

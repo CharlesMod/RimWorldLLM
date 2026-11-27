@@ -366,6 +366,8 @@ namespace RimWorldLLM
                     var tp = job.targetA.Thing as Pawn;
                     if (tp != null) { sp.TargetId = tp.thingIDNumber; sp.TargetName = tp.LabelShort; }
                 }
+                var walk = VivariumGame.State != null ? VivariumGame.State.TradeWalk : null;
+                if (walk != null && walk.NegotiatorId == p.thingIDNumber) sp.TradeWith = walk.Trader;
                 sp.Awake = p.Awake();
                 sp.InBed = p.InBed();
                 var lord = p.GetLord();

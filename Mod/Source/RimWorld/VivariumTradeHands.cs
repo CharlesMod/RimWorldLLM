@@ -34,7 +34,7 @@ namespace RimWorldLLM
         static JObject Refused(string why) { return new JObject { ["refused"] = why }; }
 
         /// <summary>Finds the trader and the negotiator for an id, or returns the refusal.</summary>
-        static string FindTrader(string with, Map map, out TradeCtx cx)
+        static string FindTrader(string with, Map map, out TradeCtx cx, int prefer = 0)
         {
             cx = new TradeCtx { Map = map };
             char kind; int num;
@@ -47,7 +47,7 @@ namespace RimWorldLLM
                 if (TradeUtil.Hostile(tp.Faction)) return tp.LabelShort + "'s faction is hostile";
                 if (!tp.trader.CanTradeNow) return tp.LabelShort + " cannot trade now";
                 cx.Trader = tp; cx.Name = tp.LabelShort;
-                cx.Negotiator = TradeUtil.BestNegotiator(map);
+                cx.Negotiator = Preferred(map, prefer, null) ?? TradeUtil.BestNegotiator(map);
                 if (cx.Negotiator == null) return "no colonist can negotiate (all are downed, drafted, in a mental state or cannot talk)";
                 return null;
             }
@@ -61,7 +61,7 @@ namespace RimWorldLLM
                 string cs = TradeUtil.CommsStatus(map, out console);
                 if (cs == "none") return "no comms console";
                 if (cs == "no power") return "the console has no power";
-                cx.Negotiator = TradeUtil.BestNegotiator(map, console);
+                cx.Negotiator = Preferred(map, prefer, console) ?? TradeUtil.BestNegotiator(map, console);
                 if (cx.Negotiator == null) return "no free colonist can reach the comms console and talk";
                 cx.Trader = ship; cx.Name = ship.TraderName;
                 return null;
@@ -80,6 +80,16 @@ namespace RimWorldLLM
                 return null;
             }
             return "bad trader id " + with;
+        }
+
+        /// <summary>The walking trade's negotiator (by thing id) when they can still talk (and reach the console).</summary>
+        static Pawn Preferred(Map map, int id, Thing reach)
+        {
+            if (id <= 0) return null;
+            foreach (var p in map.mapPawns.FreeColonistsSpawned)
+                if (p.thingIDNumber == id)
+                    return TradeUtil.CanTalk(p) && (reach == null || p.CanReach(reach, PathEndMode.InteractionCell, Danger.Some)) ? p : null;
+            return null;
         }
 
         static bool WornOrWielded(Thing t) { return t.ParentHolder is Pawn_EquipmentTracker || t.ParentHolder is Pawn_ApparelTracker; }
@@ -202,7 +212,7 @@ namespace RimWorldLLM
                 var map = HomeMap();
                 if (map == null) return HandResult.No("no home map");
                 TradeCtx cx;
-                string no = FindTrader(a.With, map, out cx);
+                string no = FindTrader(a.With, map, out cx, a.Negotiator);
                 if (no != null) return HandResult.No(no);
                 try
                 {
@@ -224,11 +234,180 @@ namespace RimWorldLLM
                     bool ok = TradeSession.deal.TryExecute(out traded);
                     if (!ok || !traded) return HandResult.No("the game did not complete the deal (the colony may lack silver, or the trader refused)");
                     string note = plan.Note + ", " + cx.Negotiator.LabelShort + " negotiated";
-                    return HandResult.Done(note, new JObject { ["spent"] = plan.Spent, ["got"] = plan.Got, ["net"] = plan.Net, ["value"] = plan.Value });
+                    return HandResult.Done(note, new JObject { ["spent"] = plan.Spent, ["got"] = plan.Got, ["net"] = plan.Net, ["value"] = plan.Value, ["deal"] = plan.Note });
                 }
                 finally { TradeSession.Close(); }
             }
             catch (Exception e) { return Failed(e); }
+        }
+
+        // ------------------------------------------------------------------------------------------ walking trades
+        static bool GiveGoto(Pawn n, IntVec3 cell)
+        {
+            var job = JobMaker.MakeJob(JobDefOf.Goto, cell);
+            job.playerForced = true;   // as the right-click "Go here" does
+            if (!n.jobs.TryTakeOrderedJob(job, JobTag.Misc)) return false;
+            // then stand there a while, so the pawn is still at the spot when the watch (every 60 ticks) looks
+            var wait = JobMaker.MakeJob(JobDefOf.Wait);
+            wait.expiryInterval = WaitTicks;
+            wait.playerForced = true;
+            n.jobs.jobQueue.EnqueueLast(wait, JobTag.Misc);
+            return true;
+        }
+
+        const int WaitTicks = 600;
+
+        /// <summary>The Goto we gave, or the wait queued after it.</summary>
+        static bool OurWalkJob(Job job) { return job != null && job.playerForced && (job.def == JobDefOf.Goto || job.def == JobDefOf.Wait); }
+
+        /// <summary>A standable cell next to the trader that `who` can reach, the one nearest to them; Invalid when none.</summary>
+        static IntVec3 CellNextTo(Pawn trader, Pawn who)
+        {
+            var best = IntVec3.Invalid; float bd = float.MaxValue;
+            foreach (var c in GenAdj.CellsAdjacent8Way(trader))
+            {
+                if (!c.InBounds(trader.Map) || !c.Standable(trader.Map)) continue;
+                float d = c.DistanceToSquared(who.Position);
+                if (d < bd && who.CanReach(c, PathEndMode.OnCell, Danger.Some)) { best = c; bd = d; }
+            }
+            return best;
+        }
+
+        static Pawn ColonistById(Map map, int id)
+        {
+            foreach (var p in map.mapPawns.FreeColonistsSpawned) if (p.thingIDNumber == id) return p;
+            return null;
+        }
+
+        public HandResult TradeStart(TradeArgs a, TradeLimits limits, TradeDay day, out PendingTrade p, out string cannotWalk)
+        {
+            p = null; cannotWalk = null;
+            try
+            {
+                var map = HomeMap();
+                if (map == null) return HandResult.No("no home map");
+                TradeCtx cx;
+                string no = FindTrader(a.With, map, out cx);
+                if (no != null) return Described(HandResult.No(no), () => "trade with " + a.With);
+                Pawn walker = null; IntVec3 dest = IntVec3.Invalid; string kind, target;
+                var tp = cx.Trader as Pawn;
+                if (tp != null)
+                {
+                    kind = PendingTrade.ToTrader; target = cx.Name;
+                    foreach (var c in map.mapPawns.FreeColonistsSpawned.Where(TradeUtil.CanTalk).OrderByDescending(x => x.GetStatValue(StatDefOf.TradePriceImprovement)))
+                    {
+                        dest = CellNextTo(tp, c);
+                        if (dest.IsValid) { walker = c; break; }
+                    }
+                    if (walker == null) { cannotWalk = "no one could walk to " + cx.Name; return null; }
+                }
+                else
+                {
+                    kind = PendingTrade.ToConsole; target = "the comms console";
+                    Building_CommsConsole console;
+                    TradeUtil.CommsStatus(map, out console);
+                    if (console == null || cx.Negotiator == null) { cannotWalk = "no one could walk to the comms console"; return null; }
+                    walker = cx.Negotiator; dest = console.InteractionCell;
+                }
+                cx.Negotiator = walker;
+                try
+                {
+                    TradeSession.SetupWith(cx.Trader, walker, false);
+                    var d = ReadDeal(cx);
+                    var plan = DealPlanner.Plan(a, d.Sit, limits, day, VivariumGame.NowTick);
+                    if (!plan.Ok) return Described(HandResult.No(plan.Reason), () => "trade with " + cx.Name);
+                }
+                finally { TradeSession.Close(); }
+                if (!GiveGoto(walker, dest)) { cannotWalk = walker.LabelShort + " could not take the order"; return null; }
+                var tk = cx.Trader.TraderKind;
+                p = PendingTrade.Start(a, VivariumGame.NowTick);
+                p.NegotiatorId = walker.thingIDNumber; p.Negotiator = walker.LabelShort;
+                p.TargetKind = kind; p.Target = target;
+                p.Trader = tk != null && !string.IsNullOrEmpty(tk.label) ? "the " + tk.label : cx.Name;
+                p.GoalX = dest.x; p.GoalZ = dest.z;
+                return HandResult.Done(p.StartNote, new JObject { ["status"] = "walking", ["negotiator"] = p.Negotiator, ["to"] = p.Target });
+            }
+            catch (Exception e) { return Failed(e); }
+        }
+
+        /// <summary>Where the negotiator should stand now: the console's interaction cell, or a cell next to the trader. Sets `trader`
+        /// (null with `why` when it is gone or cannot trade).</summary>
+        static IntVec3 WalkDest(Map map, PendingTrade p, Pawn n, out Pawn traderPawn, out string why)
+        {
+            traderPawn = null; why = null;
+            char kind; int num;
+            if (!TradeKeys.TryParse(p.With, out kind, out num)) { why = "the trade is not valid any more"; return IntVec3.Invalid; }
+            if (kind == 'S')
+            {
+                TradeShip ship = null;
+                foreach (var s in TradeUtil.Ships(map)) if (TradeUtil.ShipNum(s) == num) { ship = s; break; }
+                if (ship == null || !ship.CanTradeNow) return IntVec3.Invalid;
+                Building_CommsConsole console;
+                string cs = TradeUtil.CommsStatus(map, out console);
+                if (cs == "none") { why = "there is no comms console"; return IntVec3.Invalid; }
+                if (cs == "no power" || console == null) { why = "the console has no power"; return IntVec3.Invalid; }
+                return console.InteractionCell;
+            }
+            foreach (var x in map.mapPawns.AllPawnsSpawned) if (x.thingIDNumber == num) { traderPawn = x; break; }
+            if (traderPawn == null || traderPawn.trader == null || TradeUtil.Hostile(traderPawn.Faction) || !traderPawn.trader.CanTradeNow) { traderPawn = null; return IntVec3.Invalid; }
+            return n != null ? CellNextTo(traderPawn, n) : traderPawn.Position;
+        }
+
+        static string CannotWhy(Pawn n)
+        {
+            if (n == null || !n.Spawned) return "is gone";
+            if (n.Dead) return "died";
+            if (n.Downed) return "was downed";
+            if (n.Drafted) return "was drafted";
+            if (n.InMentalState) return "had a mental break";
+            return "can't talk now";
+        }
+
+        public WalkObs TradeObserve(PendingTrade p)
+        {
+            var o = new WalkObs();
+            var map = HomeMap();
+            if (map == null) return o;
+            Pawn n = ColonistById(map, p.NegotiatorId);
+            o.NegotiatorOk = n != null && TradeUtil.CanTalk(n);
+            if (!o.NegotiatorOk) o.NegotiatorWhy = CannotWhy(n);
+            Pawn tp; string why;
+            var dest = WalkDest(map, p, o.NegotiatorOk ? n : null, out tp, out why);
+            bool consoleTrade = p.TargetKind == PendingTrade.ToConsole;
+            o.TraderPresent = consoleTrade ? why == null && dest.IsValid : tp != null;
+            o.TraderWhy = why;
+            if (!o.TraderPresent || !o.NegotiatorOk) return o;
+            var job = n.CurJob;
+            o.HasOurJob = OurWalkJob(job);
+            if (consoleTrade)
+            {
+                o.Arrived = n.Position.DistanceToSquared(dest) <= 2;
+                o.CanReach = o.Arrived || n.CanReach(dest, PathEndMode.OnCell, Danger.Some);
+            }
+            else
+            {
+                o.CanReach = n.CanReach(tp, PathEndMode.Touch, Danger.Some);
+                o.Arrived = o.CanReach && n.Position.DistanceToSquared(tp.Position) <= 4;
+                // the trader pawn wanders: aim the Goto again when it has moved more than 3 cells from where we aimed
+                if (!o.Arrived && o.HasOurJob)
+                {
+                    if (p.GoalX < 0) { p.GoalX = tp.Position.x; p.GoalZ = tp.Position.z; }
+                    else if (Math.Abs(tp.Position.x - p.GoalX) + Math.Abs(tp.Position.z - p.GoalZ) > 3 && dest.IsValid && GiveGoto(n, dest))
+                    { p.GoalX = tp.Position.x; p.GoalZ = tp.Position.z; }
+                }
+            }
+            return o;
+        }
+
+        public void TradeReissue(PendingTrade p)
+        {
+            var map = HomeMap();
+            if (map == null) return;
+            var n = ColonistById(map, p.NegotiatorId);
+            if (n == null || !TradeUtil.CanTalk(n)) return;
+            Pawn tp; string why;
+            var dest = WalkDest(map, p, n, out tp, out why);
+            if (dest.IsValid && GiveGoto(n, dest)) { p.GoalX = tp != null ? tp.Position.x : dest.x; p.GoalZ = tp != null ? tp.Position.z : dest.z; }
         }
     }
 }

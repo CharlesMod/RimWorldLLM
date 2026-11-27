@@ -2,15 +2,19 @@
 
     python -m rimworldllm_agent.games.rimworld.steward_try --digest tests/data/steward_digest_sample.json \\
         [--goals goals.json] [--chat "who cooks?"] [--playing] --llm-url http://127.0.0.1:8080/v1 [--model m]
-        [--combat tests/data/combat_pirate_ranged.json [--combat-cycle]]
+        [--combat tests/data/combat_pirate_ranged.json [--combat-cycle]] [--trade-turn]
 
 ``--combat`` is a recorded GET /combat body: the game is in a fight (the digest gets it as its ``combat`` block), and with
 --playing the first cycle is the full "combat started" one. ``--combat-cycle`` runs one small combat turn instead (GET /combat
 and the plan line only; no --digest needed). Both print the seconds the cycle took and the prompt size (chars, rough tokens).
 
+``--trade-turn`` runs one trade turn (a trader arrived): the fake bridge's GET /vivarium lists the digest's trade.traders that can
+trade, the steward is playing, and the first wake is the small trade turn (try tests/data/steward_digest_orbital.json). It prints
+``SKIPPED`` when food is critical or a fight is on, as the live steward would.
+
 Phase 4 samples: --digest tests/data/steward_digest_trader.json | steward_digest_orbital.json | steward_digest_settlement.json
 (a visiting bulk trader; an exotic orbital trader; no traders and an accepted delivery quest to Rivermouth). The fake bridge
-answers /trade/offer and /caravan/plan from the digest and accepts trade and caravan acts.
+answers /trade/offer from the digest and accepts trade acts (caravans are off: refused).
 
 Prints the system prompt size, the user turn, each tool call with its arguments and the fake bridge's result, and the
 final chat line. Nothing here touches a real game.
@@ -53,7 +57,7 @@ class _Tap:
 
 async def try_once(digest: dict | None, goals: dict | None, chat: str, playing: bool, llm_url: str, model: str = "", mode: str = "auto",
                    combat: dict | None = None, combat_cycle: bool = False, backend=None,
-                   dialogs: list[dict] | None = None, paused: bool = False) -> dict:
+                   dialogs: list[dict] | None = None, paused: bool = False, trade_turn: bool = False) -> dict:
     """One cycle against the fake bridge. ``backend`` replaces the real tool backend (tests script one)."""
     digest = dict(digest or {})
     if combat is not None and "combat" not in digest:
@@ -79,7 +83,7 @@ async def try_once(digest: dict | None, goals: dict | None, chat: str, playing: 
         try:
             fb.playing = False
             await d.steward.step()                 # first sight: the chat cursor starts here
-            fb.playing = playing or combat_cycle
+            fb.playing = playing or combat_cycle or trade_turn
             if combat_cycle:
                 d.steward.combat_on = True          # as if the "combat started" cycle had run: the next wake is a combat turn
             if dialogs:
@@ -110,7 +114,7 @@ async def try_once(digest: dict | None, goals: dict | None, chat: str, playing: 
 def report(out: dict) -> int:
     msgs, tr = out["messages"], out["trace"]
     if not msgs:
-        print("no cycle ran:", tr.get("error", "the steward did not wake"))
+        print("no cycle ran:", tr.get("error") or ("trade turn skipped: " + tr["skipped"] if tr.get("skipped") else "the steward did not wake"))
         return 1
     sys_n = len(msgs[0]['content'] if isinstance(msgs[0], dict) else msgs[0][1])
     user_n = len(msgs[1]["content"] if isinstance(msgs[1], dict) else msgs[1][1])
@@ -131,6 +135,8 @@ def report(out: dict) -> int:
         print("DIALOGS STILL OPEN:", ", ".join(out["dialogs_left"]) or "none")
     if out["acts"]:
         print("BRIDGE ACTS:", json.dumps(out["acts"]))
+    if tr.get("skipped"):
+        print("SKIPPED:", tr["skipped"])
     if tr.get("error"):
         print("ERROR:", tr["error"])
     return 0
@@ -141,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--digest", help="a recorded GET /digest body (JSON file); not needed with --combat-cycle")
     ap.add_argument("--combat", help="a recorded GET /combat body (JSON file): the game is in this fight")
     ap.add_argument("--combat-cycle", action="store_true", help="run one combat turn (needs --combat); implies --playing")
+    ap.add_argument("--trade-turn", action="store_true", help="run one trade turn on the digest (needs --digest); implies --playing")
     ap.add_argument("--goals", help="a goals board JSON file (goals, plan, orders, log)")
     ap.add_argument("--chat", default="", help="a player chat line to answer")
     ap.add_argument("--playing", action="store_true", help="the narrator is playing (otherwise advisor mode: chat only)")
@@ -155,9 +162,12 @@ def main(argv: list[str] | None = None) -> int:
     digest = json.loads(Path(a.digest).read_text()) if a.digest else {}
     goals = json.loads(Path(a.goals).read_text()) if a.goals else None
     combat = json.loads(Path(a.combat).read_text()) if a.combat else None
-    if not a.chat and not a.playing and not a.combat_cycle:
+    if a.trade_turn and not a.digest:
+        ap.error("--trade-turn needs --digest")
+    if not a.chat and not a.playing and not a.combat_cycle and not a.trade_turn:
         ap.error("nothing would wake the steward: give --chat or --playing")
-    out = asyncio.run(try_once(digest, goals, a.chat, a.playing, a.llm_url, a.model, a.mode, combat=combat, combat_cycle=a.combat_cycle))
+    out = asyncio.run(try_once(digest, goals, a.chat, a.playing, a.llm_url, a.model, a.mode, combat=combat, combat_cycle=a.combat_cycle,
+                                   trade_turn=a.trade_turn))
     return report(out)
 
 
