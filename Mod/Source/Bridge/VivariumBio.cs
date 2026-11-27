@@ -230,7 +230,7 @@ namespace RimWorldLLM.Bridge
             if (i.Mechs > 0 && i.Rechargers == 0) o.Add("mech recharger");
             if (i.Mechanitors > 0 && i.Gestators == 0 && i.BasicMechtech) o.Add("mech gestator");
             if (i.Children > 0 && i.SchoolDesks == 0) o.Add("school desk");
-            if (i.Babies > 0 && i.Cribs == 0) o.Add("crib");
+            if (i.Babies > i.Cribs) o.Add("crib");
             if (i.Wastepacks > 0 && !i.WasteStockpile) o.Add("waste stockpile");
             if (i.HemogenCarriers > 0 && i.HemogenPacks == 0) o.Add("hemogen packs");
             if (i.UnstoredGenepacks > 0 && i.GeneBanks == 0) o.Add("gene bank");
