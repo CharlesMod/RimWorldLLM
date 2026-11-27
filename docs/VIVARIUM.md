@@ -363,3 +363,29 @@ harvest|haul|deconstruct|cancel: ore; deconstruct only when the player asked thi
 count/until). The prompt carries the playbook's build order (shelter → beds → food storage → stove → freezer →
 table → research bench) and the safety lines: never build over beds or graves, never tear down player-made
 buildings unless the player asked in chat, prefer the planners over coordinates.
+
+### Phase 2 status (what is built)
+- Mod: the routes, caps, ledger and undo (`VivariumBuild.cs`, `VivariumRoutesBuild.cs`; tests `VivariumBuildTests.cs`),
+  the game bodies and site finder (`VivariumBuildHands.cs`, pure parts in `VivariumBuildHelpers.cs`, tests
+  `VivariumBuildHelpersTests.cs`), the digest build view (`VivariumBuildView.cs`, pure `BuildView.cs`, tests
+  `BuildViewTests.cs`), the chat's `/undo [n]` and the settings button. The game bodies are compile-checked against
+  the 1.7 reference assemblies only; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section C) is their first run.
+- Agent: `steward_build.py` (tests `test_steward_build.py`), the BUILD lines in `steward_digest.py`, the build order
+  in `strategy/steward_strategy.md`, the amended `food.no_freezer` rule. The steward gets no deconstruct or cancel
+  (tearing down is the player's call); `player_asked` exists for scripts and later phases.
+- Not yet: furnishing a planned room in the same turn (it has no id until built), power layout (conduits,
+  generators placement), temperature control beyond one cooler, trade, caravans.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
+2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge).** System prompt about 24 k chars
+(tools 7.7 k of it, a third being the `why` description repeated on 13 tools); a cycle took about 20 s.
+- Day 2, nothing built (3 colonists, sleeping spots): a goal, a plan, then a medium wood barracks, a bed, a stove,
+  a small food stockpile (and once a research bench): the playbook's order.
+- Day 5 (bedrooms and barracks, campfire, no freezer): a freezer room (small, steel), a table and chairs (in the
+  barracks), a research bench, a "simple meal x30" bill at the campfire, research batteries.
+- Advisor "we need a freezer, can you build one?": exactly one small steel freezer room and a line saying so.
+  Advisor "tear down Bram's bedroom": it says it has no tool to tear buildings down.
+- Fixed from this check: the model filled `thing` on a room call (the grammar writes every parameter) and lost a
+  step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
+  the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
+  and the game hand mounts coolers and vents in the room's wall, cold side in.
