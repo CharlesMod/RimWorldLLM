@@ -12,7 +12,12 @@ Wakes (one cycle at a time; a chat that arrives mid-cycle is answered by the nex
   heartbeat  while playing and unpaused: ``heartbeat_hours`` of game time since the last cycle (counted in game units, so a
              fast game wakes it more often in real time)
   paused     while playing: the narrator's own emergency pause is on (once per pause), so it can resume
-Non-chat wakes keep ``steward_min_gap_real_s`` real seconds between cycles. Against a mod without ``/vivarium`` (404) the
+  combat     while playing and unpaused, when GET /vivarium says ``combat.active``: one full "combat started" cycle (and, in code,
+             the speed rule: slow to 1x when the setting ``slow_for_combat`` is on), then a small combat turn every
+             ``steward_combat_gap_game_s`` game seconds and ``steward_combat_gap_real_s`` real seconds after the last turn ended
+             (GET /combat only, a small prompt, the combat tools, 3 steps); other wakes wait. When ``combat.active`` turns false:
+             one full "combat over" cycle, and the speed is put back if we slowed it. Not in advisor mode.
+Non-chat wakes keep ``steward_min_gap_real_s`` real seconds between cycles (combat has its own gaps). Against a mod without ``/vivarium`` (404) the
 steward switches itself off quietly.
 
 Everything game-specific comes from ``adapter.steward_kit``: which events wake, the prompt files, the digest text, the game tools.
@@ -39,6 +44,10 @@ CATCH_UP_LINES = 3                         # at most this many unanswered player
 MAX_NOTES = 3
 STEPS, BUDGET_S, STEP_TIMEOUT_S = 8, 120.0, 60.0
 FINAL_MAX = 300
+# a combat turn is small: the combat view and the plan line, the combat tools only, three steps (the last is the closing line)
+COMBAT_STEPS, COMBAT_BUDGET_S, COMBAT_STEP_TIMEOUT_S, COMBAT_MAX_TOKENS, COMBAT_FINAL_MAX = 3, 40.0, 30.0, 160, 120
+TICKS_PER_GAME_S = 60
+COMBAT_START_STEPS = 5                     # the "combat started" cycle: draft, place, flee, one defence, the line; the combat turns follow
 ENV_STRATEGY = "RIMWORLDLLM_STEWARD_STRATEGY"
 STRATEGY_HEADING = "## Strategy notes"
 _NO_LINE = {"", "done", "nothing", "nothing to say", "none", "n/a", "ok"}
@@ -104,6 +113,10 @@ class Steward:
         self.was_playing = False                      # the switch was on at the last step (an off→on flip wakes at once)
         self.switched_on = False
         self.pause_woken = False
+        self.combat_on = False                        # a fight is running and the combat loop owns the cadence
+        self.combat_start = False                     # the "combat started" cycle is due
+        self.combat_over = False                      # the "combat over" cycle is due
+        self.slowed = False                           # we put the game on 1x for the fight
         self.dialog_pending = False                   # a choice window opened: wakes even while the game is paused
         self.vv = {}
         if self.d.leases.narrator_owner == "steward":
@@ -166,6 +179,7 @@ class Steward:
             self.events.clear()
             self.urgent.clear()
             self.dialog_pending = False
+        await self._combat_state(playing)
         if not vv.get("paused_by_narrator"):
             self.pause_woken = False
         if self.active():
@@ -173,6 +187,40 @@ class Steward:
         reason = self._wake(playing)
         if reason:
             self._start(reason, playing)
+
+    async def _combat_state(self, playing: bool) -> None:
+        """Follow GET /vivarium combat.active: a fight starting (speed rule in code, a full cycle), ending (a full cycle, the
+        speed put back). Only while the narrator plays and the kit has combat; advisor mode has no combat loop."""
+        if not hasattr(self.kit, "combat_session"):
+            return
+        active = playing and bool((self.vv.get("combat") or {}).get("active"))
+        if active and not self.combat_on:
+            self.combat_on, self.combat_start, self.combat_over = True, True, False
+            self.switched_on = False                  # the combat cycle is the first look
+            st = self.vv.get("settings") or {}
+            env = self.d.bridge.env
+            if st.get("slow_for_combat") and env.speed > 1 and not self.slowed:
+                try:
+                    await self.d.bridge.act("time", {"speed": 1, "combat": True})
+                    self.slowed = True
+                except BridgeError as e:
+                    log.info("steward: speed not slowed for the fight: %s", e)
+        elif not active and self.combat_on:
+            self.combat_on, self.combat_start = False, False
+            self.combat_over = playing                # a fight that ended because the player took over needs no cycle
+            await self._restore_speed()
+
+    async def _restore_speed(self) -> None:
+        """Put the speed back if we slowed it and the player has not changed it since (still 1x)."""
+        if not self.slowed:
+            return
+        self.slowed = False
+        if self.d.bridge.env.speed != 1:
+            return                                    # the player changed it: leave it
+        try:
+            await self.d.bridge.act("time", {"combat": True, "restore": True})
+        except BridgeError as e:
+            log.info("steward: speed not restored after the fight: %s", e)
 
     async def _catch_up(self, seq: int) -> None:
         """First sight of a chat log: queue the player's lines after the last narrator line (typed while the agent
@@ -201,6 +249,14 @@ class Steward:
             self.switched_on = False
             if self.last_game is not None:            # never looked yet: the heartbeat below fires anyway
                 return "switched on"
+        if self.dialog_pending and (self.combat_on or self.combat_over) and (
+                self.last_real is None or d.clock() - self.last_real >= d.cfg.steward_combat_gap_real_s):
+            self.dialog_pending = False
+            return "dialog"                           # a choice in a fight (a ransom, a joiner) is not starved by the combat turns
+        if not env.paused:
+            fight = self._combat_wake()
+            if fight is not None:
+                return fight or None
         if self.last_real is not None and d.clock() - self.last_real < d.cfg.steward_min_gap_real_s:
             return None
         if self.dialog_pending:
@@ -218,11 +274,32 @@ class Steward:
             return "heartbeat"
         return None
 
+    def _combat_wake(self) -> str | None:
+        """The combat wakes. "" = a fight is on and nothing is due (nothing else wakes); None = not in a fight, carry on."""
+        d, env = self.d, self.d.bridge.env
+        if not (self.combat_on or self.combat_over):
+            return None
+        if self.last_real is not None and d.clock() - self.last_real < d.cfg.steward_combat_gap_real_s:
+            return ""
+        if self.combat_start:
+            self.combat_start = False
+            return "combat started"
+        if self.combat_over:
+            self.combat_over = False
+            return "combat over"
+        gap = d.cfg.steward_combat_gap_game_s * TICKS_PER_GAME_S
+        if self.last_game is None or env.game < self.last_game or env.game - self.last_game >= gap:
+            return "combat"
+        return ""
+
     def _start(self, reason: str, playing: bool) -> None:
         d = self.d
         chat, self.pending_chat = self.pending_chat, []
-        events = self.events if playing else []
-        self.events, self.urgent = [], []
+        if reason == "combat":                         # a combat turn leaves the events for the full cycle that follows the fight
+            events = []
+        else:
+            events = self.events if playing else []
+            self.events, self.urgent = [], []
         d.leases.narrator_owner = "steward"            # idle narrator work yields from here on
         if d.idle.active() and d.idle.kind in ("chronicle", "art"):
             d.idle.preempt("steward")                  # a running slot-0 job is cancelled; nothing it made is applied
@@ -280,6 +357,8 @@ class Steward:
     async def _run(self, reason: str, chat: list[dict], events: list[str], playing: bool, t: dict) -> None:
         d, kit = self.d, self.kit
         advisor = not playing
+        if reason == "combat":
+            return await self._run_combat(t)
         try:
             digest, board = await d.bridge.digest(), await d.bridge.goals()
         except BridgeError as e:
@@ -294,7 +373,7 @@ class Steward:
             if snote:
                 log.info("steward: %s", snote)
         system = kit.system_prompt(advisor) + ("\n\n" + STRATEGY_HEADING + "\n" + strategy if strategy else "") + "\n\n" + gd.DATA_RULE
-        session = kit.session(digest, d.bridge, advisor)
+        session = kit.session(digest, d.bridge, advisor, after_fight=True) if reason == "combat over" else kit.session(digest, d.bridge, advisor)
         tools = session.tools + board_tools(board, advisor)
         allowed = {x.name for x in session.tools} | {"note", "add_order", "do_nothing"} if advisor else {x.name for x in tools}
         alerts = ""
@@ -349,7 +428,8 @@ class Steward:
                 self.stats.refused += 1
             return out.result
 
-        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=STEPS, time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
+        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=COMBAT_START_STEPS if reason == "combat started" else STEPS,
+                              time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
         self._streams += 1
         stream_id = f"steward-{os.getpid()}-{self._streams}"
         await self._status("thinking", stream_id)
@@ -375,8 +455,65 @@ class Steward:
         if edits or acts:
             await self._save_board(board, edits, reason, chat, acts, t)
 
+    async def _run_combat(self, t: dict) -> None:
+        """A combat turn: GET /combat and the plan line, the small combat prompt, the combat tools, three steps. No digest, no
+        board edits (notes only), no closing chat line (the game prints each act and its why as greentext)."""
+        d, kit = self.d, self.kit
+        try:
+            view, board = await d.bridge.combat(), await d.bridge.goals()
+        except BridgeError as e:
+            t["error"] = f"read failed: {e}"
+            self.stats.failed += 1
+            return
+        if not view.get("active"):
+            t["skipped"] = "the fight is over"          # the next step sees combat.active false and starts the "combat over" cycle
+            return
+        system = kit.combat_system_prompt() + "\n\n" + gd.DATA_RULE
+        session = kit.combat_session(view, d.bridge)
+        allowed = set(kit.combat_tools)
+        tools = [x for x in session.tools + board_tools(board) if x.name in allowed]
+        user = "\n".join([
+            "=== COMBAT TURN ===\nA fight is on. Look at the fight below and give the orders it needs now, or call do_nothing if the squad is fine.\n",
+            "=== YOUR PLAN ===\n" + (plain(board.get("plan") or "", 300) or "none") + "\n",
+            "=== THE FIGHT ===\n" + gd.data_section("combat", kit.render_combat(view)),
+            "Decide now: call at most a couple of tools, then end with done."])
+        t["system_chars"], t["user_chars"] = len(system), len(user)
+        used = {"notes": 0}
+
+        def validator(tool: str, v: dict) -> str | None:
+            if tool == "note" and used["notes"] >= MAX_NOTES:
+                return f"at most {MAX_NOTES} notes per turn"
+            if agegate.violation(" ".join(str(x) for x in v.values() if isinstance(x, str)), minor_names=d.minor_tokens()):
+                return "not allowed: nothing romantic or sexual involving a minor"
+            return None
+
+        async def executor(tool: str, v: dict):
+            if tool == "do_nothing":
+                return None
+            if tool == "note":
+                line = self._clean_line(v["text"], 160)
+                if line is None:
+                    return {"error": "empty note"}
+                used["notes"] += 1
+                if await self._say("note", line):
+                    self.stats.notes += 1
+                return {"done": "note posted"}
+            out = await session.run(tool, v)
+            if out.ok:
+                self.stats.acts += 1
+            elif "refused" in out.result:
+                self.stats.refused += 1
+            return out.result
+
+        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=COMBAT_STEPS, time_budget_s=COMBAT_BUDGET_S,
+                              step_timeout_s=COMBAT_STEP_TIMEOUT_S)
+        res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
+                                slot=d.cfg.narrator_slot, final_max=COMBAT_FINAL_MAX, max_tokens=COMBAT_MAX_TOKENS)
+        t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, failures=res.failures[-4:],
+                 executed=[(e.tool, e.args, e.result) for e in res.executed], elapsed_s=round(res.elapsed_s, 2))
+
     def _log_line(self, reason: str, chat: list[dict], acts: list[tuple[str, str]], edits: Edits) -> str:
-        label = {"chat": "Asked", "heartbeat": "Routine look", "paused": "After my pause"}.get(reason, "On " + reason)
+        label = {"chat": "Asked", "heartbeat": "Routine look", "paused": "After my pause", "combat over": "After the fight"}.get(reason, "On " + reason)
         if reason == "chat" and chat:
             label += f" ({plain(chat[-1].get('text', ''), 50)})"
         did = [n for _, n in acts] + (["updated the goals board"] if edits else [])
@@ -417,6 +554,12 @@ class Steward:
             why.append("Routine look: time has passed since you last checked. Look for what needs doing.")
         elif reason == "event":
             why.append("Something important happened (see below). Deal with it first.")
+        elif reason == "combat started":
+            why.append("A fight has started (see COMBAT in the state below). Act now: draft the fighters and put them in cover or at the chokepoint, "
+                       "send non-fighters indoors, then plan defences if there is time. Leave the long-term work for later.")
+        elif reason == "combat over":
+            why.append("The fight is over. Undraft the fighters (squad undraft), rescue the downed, make sure the wounded are tended, "
+                       "check fires, and send everyone back to work. Then the routine look.")
         elif reason == "dialog":
             why.append("A window or letter is waiting for a choice (see OPEN DIALOGS in the state). Answer it with choose.")
         elif reason == "paused":

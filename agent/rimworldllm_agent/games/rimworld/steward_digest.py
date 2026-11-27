@@ -7,16 +7,18 @@ and as a last resort the text is cut with a marker.
 from __future__ import annotations
 
 from ...core import gamedata as gd
+from .steward_combat import DIGEST_CAPS, render_combat, view_active
 
 CAP = 6000
 _SCHED_WORD = {"A": "any", "W": "work", "J": "joy", "S": "sleep", "M": "meditate"}
 
-# detail levels, most to least: skills per pawn, resources, research options, beds, letter text chars, thoughts of schedule per pawn
+# detail levels, most to least: skills per pawn, resources, research options, beds, letter text chars, thoughts of schedule per pawn,
+# combat = the character cap of the COMBAT lines (after ALERTS)
 _LEVELS = [
-    dict(skills=4, resources=25, research=15, beds=20, letter=280, alerts=10, stuck=6, deadlines=6, rot=3, harvest=3, game=3, cannot=3, why=2),
-    dict(skills=3, resources=16, research=8, beds=12, letter=160, alerts=8, stuck=4, deadlines=6, rot=3, harvest=3, game=2, cannot=3, why=2),
-    dict(skills=2, resources=10, research=5, beds=8, letter=100, alerts=5, stuck=2, deadlines=4, rot=2, harvest=2, game=1, cannot=2, why=1),
-    dict(skills=1, resources=6, research=3, beds=4, letter=60, alerts=3, stuck=0, deadlines=3, rot=1, harvest=1, game=0, cannot=1, why=0),
+    dict(skills=4, resources=25, research=15, beds=20, letter=280, alerts=10, stuck=6, deadlines=6, rot=3, harvest=3, game=3, cannot=3, why=2, combat=DIGEST_CAPS[0]),
+    dict(skills=3, resources=16, research=8, beds=12, letter=160, alerts=8, stuck=4, deadlines=6, rot=3, harvest=3, game=2, cannot=3, why=2, combat=DIGEST_CAPS[1]),
+    dict(skills=2, resources=10, research=5, beds=8, letter=100, alerts=5, stuck=2, deadlines=4, rot=2, harvest=2, game=1, cannot=2, why=1, combat=DIGEST_CAPS[2]),
+    dict(skills=1, resources=6, research=3, beds=4, letter=60, alerts=3, stuck=0, deadlines=3, rot=1, harvest=1, game=0, cannot=1, why=0, combat=DIGEST_CAPS[3]),
 ]
 # the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
 # plants, ores, loose piles, room flags (temp, mountain, dirty). The last step keeps just BUILD/missing and a short ROOMS.
@@ -321,7 +323,7 @@ def _res_entry(r: dict) -> str:
     return f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}" + (f" ({', '.join(extra)})" if extra else "")
 
 
-def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
+def _render(d: dict, lv: dict, bl: dict | None = None, combat: bool = True) -> str:
     bl = bl or _BUILD[0]
     out = ["DATE: " + _date(d)]
     dl = _deadlines_line(d, lv["deadlines"])
@@ -366,6 +368,8 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
                                         (f" ({gd.clean(b['owner'], 'name')})" if b.get("owner") else " (free)") for b in beds))
     al = (d.get("alerts") or [])[:lv["alerts"]]
     out.append("ALERTS: " + ("; ".join(gd.clean(a.get("label", ""), "label") + (" [CRITICAL]" if a.get("critical") else "") for a in al) or "none"))
+    if combat and view_active(d.get("combat")):                    # never shrunk away: the combat block only loses detail (steward_combat.render_combat)
+        out.append(render_combat(d["combat"], lv["combat"]))
     th = d.get("threats") or []
     out.append("THREATS: " + ("; ".join(f"{t.get('count', '?')} {gd.clean(t.get('label', ''), 'label')}" + ("" if t.get("hostile", True) else " (not hostile)") for t in th[:6]) or "none"))
     out.extend(dialog_lines(d, lv))
@@ -406,4 +410,8 @@ def render_digest(d: dict, cap: int = CAP) -> str:
         text = _render(d, _LEVELS[base], _BUILD[bld])
         if len(text) <= cap:
             return text
+    if view_active(d.get("combat")):                   # the cut takes the tail of the rest, never the fight
+        fight = render_combat(d["combat"], DIGEST_CAPS[-1])
+        rest = _render(d, _LEVELS[-1], _BUILD[-1], combat=False)
+        return rest[:max(cap - len(fight) - 40, 0)].rsplit("\n", 1)[0] + "\n" + fight + "\n(digest cut: too long)"
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

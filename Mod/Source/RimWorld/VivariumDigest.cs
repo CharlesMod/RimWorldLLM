@@ -71,6 +71,7 @@ namespace RimWorldLLM
             Sec(o, "dialogs", () => { var v = VivariumGame.State; return v.Dialogs.Count == 0 ? null : v.Dialogs.ToJson(v.Settings.DialogTimeoutS, Bridge.Vivarium.NowReal())["dialogs"]; });
             Sec(o, "research", Research);
             Sec(o, "threats", () => Threats(map));
+            Sec(o, "combat", () => { var cs = VivariumGame.State.Combat; if (!cs.Active) return null; var c = new VivariumHands().Combat(cs); c["squad"] = cs.Squad.ToJson(); c["speed_rule"] = cs.SpeedRuleJson(); return c; });
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "build", () => VivariumBuildView.Build(map));
             Sec(o, "stuck", () => Stuck(map));
