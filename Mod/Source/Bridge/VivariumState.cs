@@ -60,10 +60,10 @@ namespace RimWorldLLM.Bridge
         }
     }
 
-    /// <summary>The conversation, capped (300). Game thread.</summary>
+    /// <summary>The chat log (every generated line), capped (600). Game thread.</summary>
     public sealed class ChatLog
     {
-        public const int Max = 300;
+        public const int Max = 600;   // every generated line lands here now (speech, thoughts, actions...), so more room than the talk alone needed
         public const int MaxText = 500;
         readonly List<ChatEntry> _entries = new List<ChatEntry>();
         int _seq;

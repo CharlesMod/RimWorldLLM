@@ -114,11 +114,11 @@ namespace RimWorldLLM.Tests
             Assert.Equal(0, V.Chat.LastSeq);
             var e = V.Chat.Add("player", new string('b', 800), 5, 7, "Ana");
             Assert.Equal(500, e.Text.Length); Assert.Equal(7, e.To); Assert.Equal("Ana", e.Name);
-            for (int i = 0; i < 400; i++) V.Chat.Add("note", "n" + i, i);
+            for (int i = 0; i < ChatLog.Max + 100; i++) V.Chat.Add("note", "n" + i, i);
             Assert.Equal(ChatLog.Max, V.Chat.Entries.Count);
-            Assert.Equal(401, V.Chat.LastSeq);
+            Assert.Equal(ChatLog.Max + 101, V.Chat.LastSeq);
             Assert.Equal(102, V.Chat.Entries[0].Seq);
-            Assert.Equal(300, H.Call("GET", "/chat?since=0").Body["entries"].Count());
+            Assert.Equal(ChatLog.Max, H.Call("GET", "/chat?since=0").Body["entries"].Count());
         }
 
         // ------------------------------------------------------------ goals
