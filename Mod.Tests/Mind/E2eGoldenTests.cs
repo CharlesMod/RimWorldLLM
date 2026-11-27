@@ -9,7 +9,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
+using RimWorldLLM.Harness;
 using RimWorldLLM.Mind;
+using RimWorldLLM.Mind.ToolLoop;
 using RimWorldLLM.Tests.Mind.Fakes;
 using RimWorldLLM.Tests.Mind.ReplayTool;
 using Xunit;
@@ -40,7 +43,10 @@ namespace RimWorldLLM.Tests.Mind
         static string Data(string file) { return Path.Combine(AppContext.BaseDirectory, "Mind", "Data", file); }
 
         /// <summary>Order-sensitive text of a token (object keys in order; Newtonsoft compact form).</summary>
-        static string Text(JToken t) { return t == null ? "null" : t.ToString(Formatting.None); }
+        static string Text(JToken t) { return t == null ? "null" : Norm(t.ToString(Formatting.None)); }
+
+        /// <summary>The steward's stream ids carry the process id (steward-PID-n): the same format on both sides, different numbers.</summary>
+        static string Norm(string s) { return Regex.Replace(s, @"steward-\d+-", "steward-PID-"); }
 
         /// <summary>The first difference between two logs, or null when they are the same.</summary>
         public static string FirstDiff(string what, JArray want, List<JObject> got)
@@ -91,6 +97,50 @@ namespace RimWorldLLM.Tests.Mind
                 FirstDiff("llm", (JArray)g["llm"], llm),
                 FirstDiff("bridge", (JArray)g["bridge"], bridge),
                 FirstDiff("out", (JArray)g["out"], o),
+            }.Where(d => d != null).ToList();
+            Assert.True(diffs.Count == 0, string.Join("\n", diffs));
+        }
+
+        // ---- the vivarium steward: steward_try over the recorded digest with a scripted tool backend --------------------------------------
+        static JObject DigestSample()
+        {
+            using var s = typeof(E2eGoldenTests).Assembly.GetManifestResourceStream("RimWorldLLM.Tests.steward_digest_sample.json");
+            using var r = new StreamReader(s);
+            return (JObject)BridgeJson.Parse(r.ReadToEnd());
+        }
+
+        [Theory(Skip = "needs delta2 steward_system.txt (OPEN DIALOGS line) + steward_strategy.md (loose materials); matched 4/4 with those synced")]
+        [InlineData("grammar")]
+        [InlineData("advisor")]
+        [InlineData("json")]
+        [InlineData("native")]
+        public async Task StewardTryMatchesThePythonCallForCall(string name)
+        {
+            JObject g;
+            using (var s = typeof(E2eGoldenTests).Assembly.GetManifestResourceStream("RimWorldLLM.Tests.e2e-steward-" + name + ".json"))
+            using (var r = new StreamReader(s)) g = JObject.Parse(r.ReadToEnd());
+            // the golden's own replies are the script: the C# steward must make the same requests and act on the same answers
+            var script = ((JArray)g["backend"]).Select(b =>
+            {
+                var rep = new Reply { Text = (string)b["reply"]["text"] };
+                foreach (var c in (JArray)b["reply"]["tool_calls"]) rep.ToolCalls.Add(new ToolCall { Id = (string)c["id"], Name = (string)c["name"], Arguments = c["arguments"] });
+                return rep;
+            }).ToList();
+            RecordingBackend rb = null; RecordingTransport tap = null;
+            var args = (JObject)g["args"];
+            var o = await StewardTry.TryOnceAsync(DigestSample(), null, (string)args["chat"], (bool)args["playing"], "http://x/v1", "", (string)args["mode"],
+                                                  cfg => rb = new RecordingBackend(script), t => tap = new RecordingTransport(t));
+            var sw = new StringWriter();
+            int rc = StewardTry.Report(o, sw);
+            Assert.True(((JArray)g["backend"]).Count > 0 && ((JArray)g["bridge"]).Count > 0);
+            var diffs = new[]
+            {
+                FirstDiff("backend", (JArray)g["backend"], rb.Log),
+                FirstDiff("bridge", (JArray)g["bridge"], tap.Log),
+                FirstDiff("chat", (JArray)g["result"]["chat"], o.Chat),
+                Text(g["result"]["board"]) == Text(o.Board) ? null : "board differs:\n" + Around(Text(g["result"]["board"]), Text(o.Board)),
+                (string)g["report"] == sw.ToString().Replace("\r\n", "\n") ? null : "report differs:\n" + Around(Norm((string)g["report"]), Norm(sw.ToString())),
+                (int)g["rc"] == rc ? null : "rc " + rc,
             }.Where(d => d != null).ToList();
             Assert.True(diffs.Count == 0, string.Join("\n", diffs));
         }

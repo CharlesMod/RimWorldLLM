@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind;
+using RimWorldLLM.Mind.ToolLoop;
 
 namespace RimWorldLLM.Tests.Mind.ReplayTool
 {
@@ -70,6 +71,31 @@ namespace RimWorldLLM.Tests.Mind.ReplayTool
                 lock (Log) { Log.Add(e); }
             }
             return r;
+        }
+    }
+
+    /// <summary>A tool backend that answers from a script of Replys (the last one repeats) and logs each chat call like the Python capture does:
+    /// messages, grammar, tools, tool_choice, max_tokens, temperature, timeout, slot, reply {text, tool_calls}.</summary>
+    public sealed class RecordingBackend : IBackend
+    {
+        readonly List<Reply> _script;
+        public readonly List<JObject> Log = new List<JObject>();
+        public RecordingBackend(IEnumerable<Reply> script) { _script = script.ToList(); }
+
+        public Task<Reply> ChatAsync(IReadOnlyList<JObject> messages, string grammar = null, JArray tools = null, string toolChoice = null,
+                                     int maxTokens = 160, double temperature = 0.2, double timeout = 30.0, int? slot = null)
+        {
+            Reply r;
+            if (_script.Count > 1) { r = _script[0]; _script.RemoveAt(0); } else r = _script[0];
+            var calls = new JArray();
+            foreach (var c in r.ToolCalls) calls.Add(new JObject { ["id"] = c.Id, ["name"] = c.Name, ["arguments"] = c.Arguments == null ? JValue.CreateNull() : c.Arguments.DeepClone() });
+            Log.Add(new JObject
+            {
+                ["messages"] = new JArray(messages.Select(m => m.DeepClone())), ["grammar"] = grammar, ["tools"] = tools == null ? JValue.CreateNull() : tools.DeepClone(),
+                ["tool_choice"] = toolChoice, ["max_tokens"] = maxTokens, ["temperature"] = temperature, ["timeout"] = timeout, ["slot"] = slot,
+                ["reply"] = new JObject { ["text"] = r.Text, ["tool_calls"] = calls },
+            });
+            return Task.FromResult(r);
         }
     }
 }

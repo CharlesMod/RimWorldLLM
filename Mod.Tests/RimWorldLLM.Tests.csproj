@@ -17,6 +17,7 @@
         <Compile Remove="PreviewEmit/**" />
         <Compile Include="../Mod/Source/Bridge/**/*.cs" />
         <Compile Include="../Mod/Source/Mind/**/*.cs" />
+        <Compile Include="../tools/MindHarness/*.cs" Exclude="../tools/MindHarness/Program.cs" />
         <Compile Include="../Mod/Source/RimWorld/Rules.cs" />
         <Compile Include="../Mod/Source/RimWorld/Effects.cs" />
         <Compile Include="../Mod/Source/RimWorld/BubbleLayout.cs" />
@@ -47,6 +48,7 @@
         <EmbeddedResource Include="Mind/Data/e2e-mixed.json" LogicalName="RimWorldLLM.Tests.e2e-mixed.json" />
         <None Include="Mind/Data/e2e-mixed.jsonl" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/e2e-chitchat.json" LogicalName="RimWorldLLM.Tests.e2e-chitchat.json" />
+        <EmbeddedResource Include="Mind/Data/e2e-steward-*.json" LogicalName="RimWorldLLM.Tests.%(Filename)%(Extension)" />
         <None Include="Mind/Data/e2e-chitchat.jsonl" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/core_golden.json" LogicalName="RimWorldLLM.Tests.core_golden.json" />
         <EmbeddedResource Include="Mind/Data/jobs-art-golden.json" LogicalName="RimWorldLLM.Tests.jobs-art-golden.json" />
