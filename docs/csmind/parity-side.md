@@ -52,7 +52,9 @@ Goldens are generated from the Python by `~/.local/share/rimworld-hermes-engine/
   test_user_turn_has_alerts calls the private `Steward.UserText` by reflection (as the Python calls `_user`).
 - test_steward_more: test_steward_try_cli_runs_one_cycle is NOT ported: it drives the Python CLI (games/rimworld/steward_try.py, `main(argv)`)
   and there is no C# CLI.
-- test_creative_ground: art queue/prompt, lore, ceremony, inner, aim, sampler routing, art v2 (art.py, lore.py, group.py, inner.py, Director).
+- test_creative_ground: all 15 `world` tests ported to Mod.Tests/Mind/CreativeWorldTests.cs (w7) over the real Director (art flag on/off, lore, ceremony details,
+  aim tension, inner kw, just-want drop, aim sampler through the Director, flags-off one call, plan/best-of, per-kind ground, art v2).
+  `test_art_queue_reads_material_and_tale`, `test_aim_sampler_header_replaces_structured...`, `test_intent_request...`, config defaults stay in ArtTests/SamplerTests/InnerMonologueTests/ConfigTests.
 - test_diary_chronicle_pacing: ported to Mod.Tests/Mind/JobsWorldTests.cs (diary, chronicle through the Director, bridge on/off, narrator coverage,
   pacing/idle tests, the chronicle client contract).
 - Not applicable: test_package_data_lists_strategy_files (pyproject; the files are embedded).

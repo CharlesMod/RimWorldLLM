@@ -37,8 +37,7 @@ test_steward_chat_status 4/5, the 15 test_creative_ground tests touching these m
 ## Deferred (reason: needs Director internals, no `world` fixture in C#)
 - (ported by helper w5 into Mod.Tests/Mind/JobsWorldTests.cs over the World fixture: art preempted-job put back, pending art due/starving, starved art vs reactive work,
   dream preempted by actor work, lore SHARED NAMES + epoch-change reload, recap through the Director, recap waits for slot 0.)
-- test_creative_ground's `world` tests (art flag on/off prompt, lore referents/compose, ceremony, aim tension/sampler, inner kw, flags-off one call, art v2 prompts,
-  recap ground per kind): not ported by w5 (out of its time; they need FakeLlm prompt inspection of the grounding blocks that the pure ArtTests/LoreTests/GroundingTests already cover at the unit level).
+- (test_creative_ground's 15 `world` tests ported by helper w7 into Mod.Tests/Mind/CreativeWorldTests.cs over the World fixture; nothing of it is deferred any more.)
 - steward: all ported over the real Director in StewardWorldTests.cs (recap waits, wants off, idle yield incl. the preemption, letters/alerts through
   Director.ingest) except `test_steward_try_cli_runs_one_cycle` (no C# CLI: it drives games/rimworld/steward_try.py); the two digest tests are
   covered by StewardToolsTests and `test_client_bodies` by BridgeClientTests.
