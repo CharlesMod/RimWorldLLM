@@ -27,6 +27,7 @@ from .art import ArtQueue, enabled as art_enabled
 from .config import Config
 from .model_tier import ModelTier, feature_on
 from .conversation import Conversation, template_memory, template_relation
+from .commentary import Commentary
 from .idle import IdleRunner
 from .steward import Steward
 from .ledger import Ledger
@@ -118,6 +119,7 @@ class Director:
         self.concerns = ConcernEngine(self)        # core/concerns.py
         self.grudges = GrudgeEngine(self)          # core/grudges.py
         self.idle = IdleRunner(self)
+        self.commentary = Commentary(self)         # core/commentary.py: documentary voice on the narrator slot
         self.steward = Steward(self)               # core/steward.py: the narrator plays the game (vivarium)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
@@ -259,6 +261,7 @@ class Director:
         await asyncio.gather(*self.tasks, return_exceptions=True)
         self.tasks.clear()
         self.idle.preempt("reload")
+        self.commentary.reset()
         self.minds.clear(); self.revs.clear(); self.dirty.clear()
         self._upkeep_day = -1
         self.ledger.clear()
@@ -302,6 +305,7 @@ class Director:
         await self.take_talk()
         await self.steward.step()                    # one GET /vivarium when idle; may start a cycle that owns slot 0
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
+        self.commentary.preempt_if_wanted()          # ... and commentary yields to a steward cycle
         self.daily_upkeep()
         self.grudges.advance()
         self.leases.expire(self.now())
@@ -340,6 +344,7 @@ class Director:
         silent = getattr(self.adapter, "silent_events", ())
         for e in events:
             self.steward.observe(e)
+            self.commentary.note(e)
             if e.get("type") in silent:
                 continue                                 # for the steward only: no memory, no chronicle, no speech
             self.ledger.apply(e, [int(a["id"]) for a in e.get("actors", [])])
@@ -484,6 +489,7 @@ class Director:
                 self._last_cover = now
                 self._spawn(self.narrator_cover(item))
         self.idle.run_once()
+        self.commentary.run_once()
 
     def _cover_allowed(self, item: WorkItem, now: Now) -> bool:
         """The narrator speaks rarely: a minimum gap on both clocks, bypassed by deaths and major threats."""

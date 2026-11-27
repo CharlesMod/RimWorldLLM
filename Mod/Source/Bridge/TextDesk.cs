@@ -118,6 +118,7 @@ namespace RimWorldLLM.Bridge
         public readonly List<TextItem> Queue = new List<TextItem>();
         readonly Dictionary<string, TextEntry> _book = new Dictionary<string, TextEntry>();
         readonly LinkedList<string> _bookOrder = new LinkedList<string>();
+        readonly Dictionary<string, int> _kindCount = new Dictionary<string, int>();   // texts stored per kind (Count is called on every store)
         readonly HashSet<string> _tried = new HashSet<string>();
         readonly Queue<string> _triedOrder = new Queue<string>();
         long _seq;
@@ -206,8 +207,10 @@ namespace RimWorldLLM.Bridge
 
         void Store(TextEntry e)
         {
-            if (_book.ContainsKey(e.Id)) _bookOrder.Remove(e.Id);
+            TextEntry old;
+            if (_book.TryGetValue(e.Id, out old)) { _bookOrder.Remove(e.Id); _kindCount[old.Kind] = Count(old.Kind) - 1; }
             _book[e.Id] = e;
+            _kindCount[e.Kind] = Count(e.Kind) + 1;
             _bookOrder.AddLast(e.Id);
             var kind = TextKinds.Get(e.Kind);
             int cap = kind == null ? 100 : kind.StoreCap;
@@ -215,18 +218,19 @@ namespace RimWorldLLM.Bridge
             for (var node = _bookOrder.First; node != null; node = node.Next)
             {
                 if (_book[node.Value].Kind != e.Kind) continue;
+                _kindCount[e.Kind] = Count(e.Kind) - 1;
                 _book.Remove(node.Value);
                 _bookOrder.Remove(node);
                 break;
             }
         }
 
-        public int Count(string kind) { return _book.Values.Count(e => e.Kind == kind); }
+        public int Count(string kind) { int n; return _kindCount.TryGetValue(kind ?? "", out n) ? n : 0; }
         public int Queued(string kind) { return Queue.Count(i => i.Kind == kind); }
 
         public void Clear()
         {
-            Queue.Clear(); _book.Clear(); _bookOrder.Clear(); _tried.Clear(); _triedOrder.Clear(); Dropped = 0;
+            Queue.Clear(); _book.Clear(); _bookOrder.Clear(); _kindCount.Clear(); _tried.Clear(); _triedOrder.Clear(); Dropped = 0;
         }
 
         /// <summary>Wire shape of a queued item (GET /text/queue).</summary>

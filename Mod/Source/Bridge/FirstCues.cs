@@ -63,7 +63,8 @@ namespace RimWorldLLM.Bridge
         /// <summary>Remembers which (key, cue) pairs were already reported, so a poller emits each once.</summary>
         public sealed class Seen
         {
-            readonly HashSet<string> set = new HashSet<string>(StringComparer.Ordinal);
+            public const int Cap = 5000;
+            readonly BoundedSet set = new BoundedSet(Cap);   // oldest pairs are forgotten, never unbounded
             /// <summary>True the first time a pair is offered.</summary>
             public bool First(int key, string cue) { return set.Add(key + ":" + cue); }
             public void Clear() { set.Clear(); }

@@ -126,7 +126,7 @@ namespace RimWorldLLM
     {
         static readonly Dictionary<int, Pawn> Lodgers = new Dictionary<int, Pawn>();
         static readonly Dictionary<int, Pawn> Prisoners = new Dictionary<int, Pawn>();
-        static readonly Dictionary<int, QuestState> Quests = new Dictionary<int, QuestState>();
+        static readonly BoundedMap<QuestState> Quests = new BoundedMap<QuestState>(500);   // capped: quest ids only ever grow
         static readonly Dictionary<int, string> Weather = new Dictionary<int, string>(); // map index -> ledger key label
         static readonly HashSet<int> Funerals = new HashSet<int>();
 
@@ -148,6 +148,9 @@ namespace RimWorldLLM
             PollFunerals(now, quiet);
             EventPayload.Safe("gatherings", () => GatheringEvents.Poll(now, quiet));
             PollRaids(now);
+            // facts that can stick open (a raider that never dies, a weather entry of a map we left): old ones go
+            EventBus.Ledger.PruneOlderThan(now, 4 * 60000, "raid");
+            EventBus.Ledger.PruneOlderThan(now, 6 * 60000, "weather");
             PollSleep(now, quiet);
             if (!quiet) PollFirsts();
         }

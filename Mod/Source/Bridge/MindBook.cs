@@ -24,13 +24,35 @@ namespace RimWorldLLM.Bridge
 
         public static bool KnownKind(string kind) { return kind == KindThought || kind == KindDiary || kind == KindDream; }
 
+        /// <summary>Most pawns' records kept; past it the least recently touched one goes (dead and departed pawns, in practice).</summary>
+        public const int MaxRecords = 400;
+
         public readonly Dictionary<int, MindRecord> Records = new Dictionary<int, MindRecord>();
+        readonly Dictionary<int, long> _touched = new Dictionary<int, long>();
+        long _clock;
 
         MindRecord Rec(int id)
         {
             MindRecord r;
-            if (!Records.TryGetValue(id, out r)) Records[id] = r = new MindRecord();
+            if (!Records.TryGetValue(id, out r))
+            {
+                Records[id] = r = new MindRecord();
+                if (Records.Count > MaxRecords) EvictOldest(id);
+            }
+            _touched[id] = ++_clock;
             return r;
+        }
+
+        void EvictOldest(int keep)
+        {
+            int victim = 0; long best = long.MaxValue; bool found = false;
+            foreach (var id in Records.Keys)
+            {
+                if (id == keep) continue;
+                long t; _touched.TryGetValue(id, out t);   // records loaded from a save have no touch: oldest
+                if (!found || t < best) { found = true; best = t; victim = id; }
+            }
+            if (found) { Records.Remove(victim); _touched.Remove(victim); }
         }
 
         public JObject Get(int id)
@@ -75,6 +97,6 @@ namespace RimWorldLLM.Bridge
             while (r.Diaries.Count > MaxDiaries) r.Diaries.RemoveAt(0);
         }
 
-        public void Clear() { Records.Clear(); }
+        public void Clear() { Records.Clear(); _touched.Clear(); }
     }
 }

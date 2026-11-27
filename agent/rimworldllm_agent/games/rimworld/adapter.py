@@ -13,7 +13,7 @@ from ...core.lease import Cls
 from ...core.minds import FixedBio, VoiceCard
 from ...core.prompt import Scene
 from ...core.sanitize import name_tokens
-from . import builders, concern_rules, register
+from . import builders, concern_rules, moments, register
 from .steward_tools import StewardKit
 
 _HERE = Path(__file__).parent
@@ -25,7 +25,7 @@ _EVENT_CLASS = {
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
     "first_cue": Cls.REACTIVE,
-    "letter": Cls.IDLE, "alert": Cls.IDLE,           # the steward reads these; nobody speaks about them (silent_events)
+    "letter": Cls.IDLE, "alert": Cls.IDLE, "dialog": Cls.IDLE,           # the steward reads these; nobody speaks about them (silent_events)
 }
 # First-time reactions (core/firsts.py): what a pawn may react to once, and the words for "the first time you have ever ...".
 _FIRST_CUES = {
@@ -75,6 +75,16 @@ class RimWorldAdapter:
     common_words = {"colony", "colonist", "colonists", "rimworld", "pirates", "tribals", "mechanoids"}
     narrator_prompt = ("You are a dry narrator of a RimWorld colony. Write one short third-person line "
                        "about what just happened. No speech, no invention.")
+    # documentary voice (core/commentary.py)
+    commentary_prompt = ("You are the narrator of a nature documentary about a small colony of stranded humans on a "
+                         "rim world: dry, wry and warm, in present tense, third person, the way a calm naturalist "
+                         "watches animals. One sentence, at most 30 words. No dialogue, no quotes, no lists, no "
+                         "invention beyond what you are told, and use only names you are given.")
+    commentary_request = "Write the narrator's one sentence about it."
+    commentary_recap_request = "Write one sentence that sums up this day for the audience."
+
+    def commentary_moment(self, event: dict, director=None):
+        return moments.moment(event, director)
 
     reflection_system = (
         "You are the quiet part of one RimWorld colonist that looks back over recent days and decides who they "

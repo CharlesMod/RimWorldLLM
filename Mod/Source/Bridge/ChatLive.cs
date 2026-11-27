@@ -53,6 +53,7 @@ namespace RimWorldLLM.Bridge
         readonly HashSet<string> _ended = new HashSet<string>();
         readonly List<Final> _finals = new List<Final>();
         int _auto;
+        int _version;
 
         public ChatLive() : this(null) { }
 
@@ -94,6 +95,7 @@ namespace RimWorldLLM.Bridge
                 if (s == null || s.Typing) return false;
                 s.Progress = Clamp01(progress);
                 s.Updated = _clock();
+                _version++;
                 return true;
             }
         }
@@ -107,6 +109,7 @@ namespace RimWorldLLM.Bridge
                 if (s == null) return false;
                 s.Typing = true; s.Progress = -1f;
                 s.Updated = _clock();
+                _version++;
                 return true;
             }
         }
@@ -121,6 +124,7 @@ namespace RimWorldLLM.Bridge
                 s.Typing = true; s.Progress = -1f;
                 s.Text = VivJson.Clean(text, ChatLog.MaxText);
                 s.Updated = _clock();
+                _version++;
                 return true;
             }
         }
@@ -138,6 +142,7 @@ namespace RimWorldLLM.Bridge
                 if (s == null) { MarkEnded(streamId); return false; }
                 string text = VivJson.Clean(finalText, ChatLog.MaxText);
                 MarkEnded(streamId);
+                _version++;
                 if (text.Length == 0) { _streams.Remove(s); return true; }
                 s.Typing = true; s.Progress = -1f; s.Text = text; s.Drawn = text; s.Updated = _clock();
                 _finals.Add(new Final { Who = s.Who, To = s.To, Name = s.Name, Text = text });
@@ -159,6 +164,7 @@ namespace RimWorldLLM.Bridge
                 finals = new List<Final>(_finals);
                 _finals.Clear();
                 _streams.RemoveAll(x => x.Id == null);
+                _version++;
             }
             foreach (var f in finals)
                 log.Add(f.Who == "narrator" ? "narrator" : "colonist", f.Text, tick, f.Who == "narrator" ? 0 : f.To, f.Who == "narrator" ? null : f.Name);
@@ -195,6 +201,7 @@ namespace RimWorldLLM.Bridge
                 }
                 s.Name = VivJson.Clean(name, 40);
                 s.Updated = now;
+                _version++;
                 if (state == "typing") { s.Typing = true; s.Progress = -1f; }
                 else if (!s.Typing) s.Progress = float.IsNaN(progress) ? -1f : Clamp01(progress);
                 return null;
@@ -222,6 +229,29 @@ namespace RimWorldLLM.Bridge
             return res;
         }
 
+        /// <summary>
+        /// The panel's per-frame read: no allocation unless something changed. Applies the time rules (timed-out streams go, the
+        /// drawn text catches up every DrawIntervalSec), and when the stream state differs from <paramref name="seenVersion"/>
+        /// refills <paramref name="dest"/> with fresh lines and updates seenVersion. Returns true when dest was refilled.
+        /// </summary>
+        public bool Refresh(ref int seenVersion, List<LiveLine> dest)
+        {
+            lock (_lock)
+            {
+                double now = _clock();
+                for (int i = _streams.Count - 1; i >= 0; i--)
+                    if (_streams[i].Id != null && now - _streams[i].Updated > TimeoutSec) { MarkEnded(_streams[i].Id); _streams.RemoveAt(i); _version++; }
+                foreach (var s in _streams)
+                    if (s.Drawn != s.Text && now - s.DrawnAt >= DrawIntervalSec) { s.Drawn = s.Text; s.DrawnAt = now; _version++; }
+                if (seenVersion == _version) return false;
+                seenVersion = _version;
+                dest.Clear();
+                foreach (var s in _streams)
+                    dest.Add(new LiveLine { StreamId = s.Id, Who = s.Who, To = s.To, Name = s.Name, Typing = s.Typing, Progress = s.Progress, Text = s.Drawn, Started = s.Started });
+                return true;
+            }
+        }
+
         public int Count { get { lock (_lock) return _streams.Count; } }
 
         /// <summary>True when ended streams wait for <see cref="Pump"/> to append their final lines.</summary>
@@ -229,7 +259,7 @@ namespace RimWorldLLM.Bridge
 
         public void Clear()
         {
-            lock (_lock) { _streams.Clear(); _finals.Clear(); _ended.Clear(); _endedOrder.Clear(); }
+            lock (_lock) { _streams.Clear(); _finals.Clear(); _ended.Clear(); _endedOrder.Clear(); _version++; }
         }
 
         // ------------------------------------------------------------------ helpers (call under the lock)

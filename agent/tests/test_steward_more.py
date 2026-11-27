@@ -178,7 +178,7 @@ def test_letters_and_alerts_are_not_voiced_or_remembered(world):
         w.fb.add_event("alert", [], "Low food", [], severity=0.4, data={"alert": "Alert_LowFood", "label": "Low food", "critical": False})
         await w.d.step()
         await w.d.drain()
-        assert set(w.d.adapter.silent_events) == {"letter", "alert"}
+        assert set(w.d.adapter.silent_events) == {"letter", "alert", "dialog"}
         assert w.d.adapter.priority("letter") == Cls.IDLE and w.d.adapter.priority("alert") == Cls.IDLE
         assert not any("A quest came" in x.text or "Low food" in x.text for x in w.d.chronicle.state.recent)
         assert w.d.dropped == [] or all("letter" not in str(x) for x in w.d.dropped)

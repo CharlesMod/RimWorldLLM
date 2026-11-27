@@ -41,7 +41,8 @@ class _Tap:
         await self.inner.aclose()
 
 
-async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, llm_url: str, model: str = "", mode: str = "auto") -> dict:
+async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, llm_url: str, model: str = "", mode: str = "auto",
+                   dialogs: list[dict] | None = None, paused: bool = False) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         cfg = Config(data_dir=Path(tmp), bridge_url="http://fake", bridge_token="tok", wants=False, steward=True,
                      steward_min_gap_real_s=0.0)
@@ -63,6 +64,16 @@ async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, l
             fb.playing = False
             await d.steward.step()                 # first sight: the chat cursor starts here
             fb.playing = playing
+            if dialogs:
+                # the steady state before a window opens: it was already playing and had looked once, then the game paused for the window
+                d.steward.was_playing, d.steward.last_game = True, d.bridge.env.game
+                await d.steward.step()             # it sees "playing" (no cycle is due), so it collects the event below
+                fb.paused = paused
+                fb.dialogs = list(dialogs)
+                for x in dialogs:
+                    fb.add_event("dialog", [], "Needs an answer: " + str(x.get("title", "")), [], severity=0.6,
+                                 data={"dialog": x["id"], "kind": x.get("kind"), "title": x.get("title"),
+                                       "options": [o.get("label") for o in x.get("options") or []], "default": x.get("default"), "timeout_s": 90})
             if chat:
                 fb.add_chat("player", chat)
             await d.step()
@@ -71,7 +82,31 @@ async def try_once(digest: dict, goals: dict | None, chat: str, playing: bool, l
             await tap.aclose()
             await bridge.aclose()
         trace = d.steward.stats.trace[-1] if d.steward.stats.trace else {}
-        return {"messages": tap.first, "trace": trace, "chat": list(fb.chat), "acts": list(fb.act_log), "board": fb.goals_board}
+        return {"messages": tap.first, "trace": trace, "chat": list(fb.chat), "acts": list(fb.act_log), "board": fb.goals_board, "dialogs_left": [x["id"] for x in fb.dialogs]}
+
+
+def report(out: dict) -> int:
+    msgs, tr = out["messages"], out["trace"]
+    if not msgs:
+        print("no cycle ran:", tr.get("error", "the steward did not wake"))
+        return 1
+    print(f"SYSTEM PROMPT: {len(msgs[0]['content'] if isinstance(msgs[0], dict) else msgs[0][1])} chars")
+    print("USER TURN:\n" + (msgs[1]["content"] if isinstance(msgs[1], dict) else msgs[1][1]) + "\n")
+    print(f"CYCLE: {tr.get('reason')} ({'playing' if tr.get('playing') else 'advisor'}), ended {tr.get('outcome')} {tr.get('reason_ended') or ''}")
+    for tool, args, result in tr.get("executed", []):
+        print(f"TOOL {tool} {json.dumps(args)} -> {json.dumps(result)}")
+    for e in out["chat"]:
+        if e["who"] != "player":
+            print(f"CHAT [{e['who']}] {e['text']}")
+    for f in tr.get("failures") or []:
+        print("REJECTED:", f)
+    if "dialogs_left" in out:
+        print("DIALOGS STILL OPEN:", ", ".join(out["dialogs_left"]) or "none")
+    if out["acts"]:
+        print("BRIDGE ACTS:", json.dumps(out["acts"]))
+    if tr.get("error"):
+        print("ERROR:", tr["error"])
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -89,25 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     if not a.chat and not a.playing:
         ap.error("nothing would wake the steward: give --chat or --playing")
     out = asyncio.run(try_once(digest, goals, a.chat, a.playing, a.llm_url, a.model, a.mode))
-    msgs, tr = out["messages"], out["trace"]
-    if not msgs:
-        print("no cycle ran:", tr.get("error", "the steward did not wake"))
-        return 1
-    print(f"SYSTEM PROMPT: {len(msgs[0]['content'] if isinstance(msgs[0], dict) else msgs[0][1])} chars")
-    print("USER TURN:\n" + (msgs[1]["content"] if isinstance(msgs[1], dict) else msgs[1][1]) + "\n")
-    print(f"CYCLE: {tr.get('reason')} ({'playing' if tr.get('playing') else 'advisor'}), ended {tr.get('outcome')} {tr.get('reason_ended') or ''}")
-    for tool, args, result in tr.get("executed", []):
-        print(f"TOOL {tool} {json.dumps(args)} -> {json.dumps(result)}")
-    for e in out["chat"]:
-        if e["who"] != "player":
-            print(f"CHAT [{e['who']}] {e['text']}")
-    for f in tr.get("failures") or []:
-        print("REJECTED:", f)
-    if out["acts"]:
-        print("BRIDGE ACTS:", json.dumps(out["acts"]))
-    if tr.get("error"):
-        print("ERROR:", tr["error"])
-    return 0
+    return report(out)
 
 
 if __name__ == "__main__":

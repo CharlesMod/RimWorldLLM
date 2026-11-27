@@ -269,6 +269,43 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
 _STORE = {"none": "no stockpile takes it", "full": "stockpiles full", "far": "only far stockpile"}
 
 
+def dialog_lines(d: dict, lv: dict | None = None) -> list[str]:
+    """OPEN DIALOGS: the windows and letters that wait for a player's choice (GET /dialogs), answered with the choose tool."""
+    dl = [x for x in (d.get("dialogs") or []) if isinstance(x, dict) and x.get("id")][:8]
+    if not dl:
+        return []
+    cap = (lv or {}).get("letter", 280)
+    out = ["OPEN DIALOGS (answer each with choose; one left open is answered with its default after the timeout):"]
+    for x in dl:
+        opts = "; ".join(f"{o.get('index')}: {gd.clean(o.get('label', ''), 'label')}" + (f" [{gd.clean(o['risk'], 'label')}]" if o.get("risk") else "")
+                         for o in x.get("options") or [] if not o.get("disabled"))
+        g = x.get("growth") if isinstance(x.get("growth"), dict) else None
+        flds = ", ".join(gd.clean(f.get("label") or f.get("name", ""), "label") + f" (max {f.get('max_len', 40)} chars)" for f in x.get("fields") or [])
+        out.append(f"- {x['id']} ({x.get('kind', '')}): {gd.clean(x.get('title', ''), 'label')}"
+                   + (f" [options: {opts}]" if opts and not g else "")
+                   + (_growth(g) if g else "")
+                   + (f" [type a name: {flds}; invent your own fitting names]" if flds else "")
+                   # a naming dialog's fallback stays hidden: shown, the model copied it instead of naming the colony
+                   + (f" [default: {gd.clean(x['default'], 'label')}]" if x.get("default") and not flds else ""))
+        if x.get("text") and cap:
+            out.append("    " + gd.clean(x["text"], max_len=cap))
+    return out
+
+
+def _growth(g: dict) -> str:
+    """A growth moment's real choices in words: the child, the passions (and how many), the traits with a short description."""
+    c = lambda v, n="label": gd.clean(str(v or ""), n)  # noqa: E731
+    who = c(g.get("child")) + (f", {c(g.get('age'))}" if g.get("age") else "")
+    cur = "; ".join(p for p in (f"skills: {c(g['skills'])}" if g.get("skills") else "", f"traits: {c(g['traits'])}" if g.get("traits") else "") if p)
+    pas = ", ".join(c(p) for p in g.get("passions") or [])
+    tr = "; ".join(c(t.get("label")) + (f" ({gd.clean(t['description'], 'label')})" if t.get("description") else "")
+                   for t in g.get("trait_choices") or [] if isinstance(t, dict))
+    return (f" [child: {who}" + (f"; {cur}" if cur else "") + "]"
+            + (f" [pick {int(g.get('max_passions') or 1)} passion(s) of: {pas}]" if pas else "")
+            + (f" [pick 1 trait of: {tr}]" if tr else "")
+            + " [answer with passions and trait; option 0 takes the first choices]")
+
+
 def _pile(p: dict) -> str:
     where = f"{_num(p.get('dist'))} cells" + (f" {gd.clean(p['dir'], 'label')}" if p.get("dir") else "")
     store = _STORE.get(p.get("store"), "") if isinstance(p.get("store"), str) else ""
@@ -331,6 +368,7 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
     out.append("ALERTS: " + ("; ".join(gd.clean(a.get("label", ""), "label") + (" [CRITICAL]" if a.get("critical") else "") for a in al) or "none"))
     th = d.get("threats") or []
     out.append("THREATS: " + ("; ".join(f"{t.get('count', '?')} {gd.clean(t.get('label', ''), 'label')}" + ("" if t.get("hostile", True) else " (not hostile)") for t in th[:6]) or "none"))
+    out.extend(dialog_lines(d, lv))
     lt = (d.get("letters") or [])[:10]
     if lt:
         out.append("LETTERS NEEDING AN ANSWER:")

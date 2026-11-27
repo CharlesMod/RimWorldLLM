@@ -18,4 +18,10 @@
     <label>toggle "Narrator plays"</label>
     <category>RWL_Keys</category>
   </KeyBindingDef>
+
+  <KeyBindingDef>
+    <defName>RWL_ToggleWatchMode</defName>
+    <label>toggle watch mode (camera director)</label>
+    <category>RWL_Keys</category>
+  </KeyBindingDef>
 </Defs>

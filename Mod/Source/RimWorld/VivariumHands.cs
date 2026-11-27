@@ -370,6 +370,11 @@ namespace RimWorldLLM
             catch (Exception e) { return Failed(e); }
         }
 
+        public HandResult Choose(DialogRecord dialog, int option, IDictionary<string, string> texts)
+        {
+            return Described(VivariumDialogHost.Answer(dialog, option, texts), () => "answer the dialog \"" + (dialog != null ? dialog.Title : "") + "\"");
+        }
+
         static string Describe(List<DiaOption> opts)
         {
             return string.Join(", ", opts.Select((o, i) => "#" + i + " " + OptText(o)));
