@@ -380,5 +380,241 @@ namespace RimWorldLLM.Tests.Mind
             Assert.DoesNotContain("left over", p);
             Assert.True(!kw.Aim && kw.FreshAim == null && kw.AimExtra == null && !kw.DropJustWant && kw.IntentLlm == null);   // Python: kw == {}
         }
+
+        // ---------------- test_delivery_thought (world tests) ----------------
+
+        [Fact]
+        public async Task TheDeliveryCostsNoExtraCall()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Get out of my kitchen." };
+            w.Llm.Script["intent"] = new List<string> { "insult shout" };
+            Social(w);
+            await Step(w);
+            var calls = w.Llm.Calls.Where(c => c.Kind == "intent").ToList();
+            Assert.True(calls.Count > 0 && calls.All(c => c.Grammar.StartsWith("root ::= intent \" \" delivery", StringComparison.Ordinal)));
+            Assert.DoesNotContain(w.Llm.Calls, c => c.Kind == "thought");
+        }
+
+        [Fact]
+        public async Task SayCarriesKindFromTheIntentPass()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Keep it down, they will hear." };
+            w.Llm.Script["intent"] = new List<string> { "confide whisper" };
+            Social(w);
+            await Step(w);
+            Assert.True(w.Fb.SayLog.Count > 0 && (string)w.Fb.SayLog[0]["kind"] == "whisper");
+        }
+
+        [Fact]
+        public async Task MissingDeliverySendsNoKind()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Nice day for it." };
+            w.Llm.Script["intent"] = new List<string> { "none" };                    // an old model reply / custom endpoint
+            Social(w);
+            await Step(w);
+            Assert.True(w.Fb.SayLog.Count > 0 && w.Fb.SayLog[0]["kind"] == null);
+        }
+
+        [Fact]
+        public async Task AShoutInACalmSceneIsSaidNormally()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = Enumerable.Repeat("Pass the salt.", 4).ToList();
+            w.Llm.Script["intent"] = Enumerable.Repeat("none shout", 4).ToList();
+            Social(w);
+            await Step(w);
+            Assert.True(w.Fb.SayLog.Count > 0 && w.Fb.SayLog.All(s => (string)s["kind"] == "normal"));
+        }
+
+        [Fact]
+        public async Task AShoutNeedsTheSceneAndAPause()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = Enumerable.Repeat("You useless fool.", 6).ToList();
+            w.Llm.Script["intent"] = Enumerable.Repeat("insult shout", 6).ToList();
+            Social(w);
+            await Step(w);
+            foreach (int pawn in w.Fb.SayLog.Select(s => (int)s["pawn"]).Distinct())
+            {
+                var kinds = w.Fb.SayLog.Where(s => (int)s["pawn"] == pawn).Select(s => (string)s["kind"]).ToList();
+                Assert.True(kinds[0] == "shout" && !kinds.Skip(1).Contains("shout"));    // an insult justifies one; the gap stops a burst
+            }
+        }
+
+        [Fact]
+        public async Task CombatJustifiesAShout()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Get down!" };
+            w.Llm.Script["intent"] = new List<string> { "none shout" };
+            w.Fb.AddEvent("injury", Who((1, "victim")), "Ana was shot.", new[] { 1 }, 0.9);
+            await Step(w);
+            Assert.Contains(w.Fb.SayLog, s => (bool)s["combat"] && (s["kind"] == null || (string)s["kind"] == "shout"));
+        }
+
+        static void InjectMemory(World w, int aid, string text, long game, string visibility = null, List<int> people = null)
+        {
+            var m = new Memory { Id = w.D.Minds[aid].NextMemId(), Game = game, Text = text };
+            if (visibility != null) m.Visibility = visibility;
+            if (people != null) m.People = people;
+            w.D.Minds[aid].Memories.Add(m);
+        }
+
+        static List<JObject> ThoughtsOfKind(World w) { return w.Fb.ThoughtLog.Where(t => (string)t["kind"] == "thought").ToList(); }
+
+        [Fact]
+        public async Task ThoughtIsShortSentWithSurfaceAndPaced()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I saw Bram eat alone.", 1000, people: new List<int> { 2 });
+            w.Llm.Script["thought"] = new List<string> { "Bram should not eat alone." };
+            await Step(w);
+            var first = ThoughtsOfKind(w);
+            Assert.True(first.Count == 1 && (int)first[0]["pawn"] == 1);
+            Assert.Equal("Bram should not eat alone.", (string)first[0]["surface"]);
+            Assert.Equal((string)first[0]["text"], (string)first[0]["surface"]);
+            Assert.True(((string)first[0]["surface"]).Length <= 90);
+            InjectMemory(w, 1, "I found a ripe berry bush.", 2000);                   // new material, but too soon
+            await Step(w); await Step(w);
+            Assert.Single(ThoughtsOfKind(w));
+            w.Real += w.D.Cfg.ThoughtEveryRealS + 1;
+            await Step(w);
+            Assert.Equal(2, ThoughtsOfKind(w).Count);
+        }
+
+        [Fact]
+        public async Task ALongThoughtNeverReachesTheMapAndPrivateMemoriesAreNotUsed()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I hid a secret from Bram.", 1000, visibility: "private");
+            await Step(w);
+            Assert.DoesNotContain(w.Llm.Calls, c => c.Kind == "thought");              // nothing public to think about
+            InjectMemory(w, 1, "I saw Bram eat alone.", 1000, people: new List<int> { 2 });
+            w.Llm.Script["thought"] = new List<string> { "I keep going over how he sat there with his plate and nobody came and nobody asked and it nags me." };
+            await Step(w);
+            Assert.Empty(ThoughtsOfKind(w));
+            Assert.Contains(w.D.Dropped, d => d.Reason.StartsWith("thought:", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task ThoughtsOffBySetting()
+        {
+            using var w = new World(); await w.GoAsync();
+            InjectMemory(w, 1, "I saw Bram eat alone.", 1000, people: new List<int> { 2 });
+            await Step(w);
+            Assert.DoesNotContain(w.Llm.Calls, c => c.Kind == "thought");
+        }
+
+        [Theory]
+        [InlineData(12, false)]
+        [InlineData(30, true)]
+        public async Task ARomanticThoughtAboutAMinorNeverReachesTheMap(int age, bool shown)
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            w.D.Ages[1] = 30; w.D.Ages[2] = age;
+            InjectMemory(w, 1, "I saw Bram by the fire.", 1000, people: new List<int> { 2 });
+            w.Llm.Script["thought"] = new List<string> { "I want to kiss Bram tonight." };
+            await Step(w);
+            Assert.Equal(shown, ThoughtsOfKind(w).Count > 0);
+            if (!shown) Assert.Contains((1, "thought:minor_safety"), w.D.Dropped);
+        }
+
+        // ---------------- test_vanilla_social (world tests) ----------------
+
+        static JObject Vanilla(World w, string interaction = "Insult", string label = "insult", string text = "Ana insulted Bram's cooking.", string tier = "high", string r = "v1-1")
+        {
+            return w.Fb.AddEvent("social", Who((1, "initiator"), (2, "recipient")), "Ana -> Bram: " + label + ".", new[] { 1, 2 }, 0.5, null,
+                new JObject { ["interaction"] = interaction, ["interaction_label"] = label, ["vanilla"] = true, ["ref"] = r, ["tier"] = tier, ["vanilla_text"] = text });
+        }
+
+        [Fact]
+        public async Task InsultLinePromptSaysInsultAndSubjectAndCarriesRef()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Your stew is slop, Bram." };
+            Vanilla(w);
+            await Step(w);
+            Assert.Single(w.Fb.SayLog);
+            var s = w.Fb.SayLog[0];
+            Assert.True((int)s["pawn"] == 1 && (int)s["listener"] == 2 && (string)s["vanilla_ref"] == "v1-1" && (string)s["intent"] == "none");
+            var lineCalls = w.Llm.Calls.Where(c => c.Kind == "line").ToList();
+            Assert.Single(lineCalls);
+            string user = lineCalls[0].Messages[lineCalls[0].Messages.Count - 1].Text;
+            Assert.Contains("an insult", user); Assert.Contains("Ana insulted Bram's cooking.", user);
+            Assert.DoesNotContain(w.Llm.Calls, c => c.Kind == "intent");                // no intent pass, so no second effect
+        }
+
+        [Fact]
+        public async Task PlainSocialEventIsNotVanilla()
+        {
+            using var w = new World(); await w.GoAsync();
+            var e = w.Adapter.NormalizeEvent(w.Fb.AddEvent("social", Who((1, "initiator"), (2, "recipient")), "x", new[] { 1, 2 }, 0.5, null, new JObject { ["interaction"] = "Insult" }));
+            Assert.Null(w.Adapter.VanillaSocial(e));
+        }
+
+        [Fact]
+        public async Task TierSetsPriorityChitchatIsAmbient()
+        {
+            using var w = new World(); await w.GoAsync();
+            var seen = new List<(string, Cls, string)>();
+            w.D.Leases.SubmitHook = item => seen.Add((item.Kind, item.Cls, item.Payload["vanilla"] == null ? null : (string)item.Payload["vanilla"]["ref"]));
+            Vanilla(w, "Insult", "insult", r: "a");
+            Vanilla(w, "Chitchat", "chitchat", text: "Ana chatted with Bram.", tier: "idle", r: "b");
+            await w.D.StepAsync();
+            Assert.Contains(("vanilla_social", Cls.Social, "a"), seen);
+            Assert.Contains(("vanilla_social", Cls.Ambient, "b"), seen);
+        }
+
+        [Fact]
+        public async Task DroppedLineSaysNothing()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "" };                            // sanitised away
+            Vanilla(w);
+            await Step(w);
+            Assert.Empty(w.Fb.SayLog);
+        }
+
+        [Fact]
+        public async Task AMetaThoughtIsDroppedAndCounted()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            w.D.Minds[1].Memories.Add(new Memory { Id = w.D.Minds[1].NextMemId(), Game = 1000, People = new List<int> { 2 }, Text = "I was part of it: Ana and Bram had a passing exchange." });
+            w.Llm.Script["thought"] = new List<string> { "I wish people would cut this chitchat." };
+            await Step(w);
+            Assert.Empty(ThoughtsOfKind(w));
+            Assert.Contains(w.D.Dropped, d => d.Reason == "thought:meta_talk");
+        }
+
+        static async Task<World> OneVanilla(string interaction, string label, string tier, string r, string text)
+        {
+            var w = new World(); await w.GoAsync();
+            w.Llm.Script["line"] = new List<string> { "Enough chitchat, Bram." };
+            Vanilla(w, interaction, label, text, tier, r);
+            await Step(w);
+            return w;
+        }
+
+        [Fact]
+        public async Task AMetaVanillaLineIsDroppedForChitchat()
+        {
+            using var w = await OneVanilla("Chitchat", "chitchat", "idle", "c1", "Ana chatted with Bram.");
+            Assert.Empty(w.Fb.SayLog);
+            Assert.Contains(w.D.Dropped, d => d.Reason == "meta_talk");
+        }
+
+        [Fact]
+        public async Task TheSameWordsAreKeptForAnInsult()
+        {
+            using var w = await OneVanilla("Insult", "insult", "high", "i1", "Ana insulted Bram's cooking.");
+            Assert.Equal(new List<string> { "i1" }, w.Fb.SayLog.Select(s => (string)s["vanilla_ref"]).ToList());
+        }
     }
 }
