@@ -716,25 +716,6 @@ namespace RimWorldLLM.Mind
             return words >= 2 && words <= 40 ? t : null;
         }
 
-        // ---- narrator -------------------------------------------------------
-        /// <summary>All windows busy and nothing preemptable: one third-person line on the narrator slot.</summary>
-        public async Task NarratorCoverAsync(WorkItem item)
-        {
-            Leases.NarratorBusy = true;
-            try
-            {
-                string summary = item.Event == null ? item.Kind : JobsJson.Str(item.Event, "summary", item.Kind);
-                Completion c = await Llm.CompleteAsync(new[]
-                {
-                    new LlmMessage("system", Adapter.NarratorPrompt),
-                    new LlmMessage("user", "What just happened: " + summary + "\nWrite the narrator's one line."),
-                }, Cfg.NarratorSlot, "narrator", 48, new[] { "\n" });
-                if (!item.Expired(Now())) NarratorLines.Add(PyStr.Strip(c.Text));
-            }
-            catch (LlmError) { }
-            finally { Leases.NarratorBusy = false; }
-        }
-
         // ---- saving ---------------------------------------------------------
         public async Task SaveDirtyAsync()
         {

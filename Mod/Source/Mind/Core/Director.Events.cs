@@ -59,6 +59,7 @@ namespace RimWorldLLM.Mind
             foreach (JObject e in events)
             {
                 Steward.Observe(e);
+                Commentary.Note(e);
                 if (silent.Contains(EType(e))) continue;           // for the steward only: no memory, no chronicle, no speech
                 Ledger.Apply(e, ActorsOf(e).Select(IdOf).ToList());
                 var wit = e["witnesses"] as JArray;
@@ -248,26 +249,8 @@ namespace RimWorldLLM.Mind
                 else if (it.Payload["gathering"] != null && BridgeJson.Truthy(it.Payload["gathering"], false)) _ = Spawn(() => RimWorldLLM.Mind.Group.RunAsync(this, it, ls));
                 else Spawn(() => ServeAsync(it, ls));
             }
-            foreach (WorkItem item in Leases.Queue.ToList())
-            {
-                if (Leases.NarratorShouldCover(item, now) && CoverAllowed(item, now))
-                {
-                    Leases.Queue.Remove(item);
-                    _lastCover = now;
-                    WorkItem it = item;
-                    _ = Spawn(() => NarratorCoverAsync(it));
-                }
-            }
             Idle.RunOnce();
-        }
-
-        /// <summary>The narrator speaks rarely: a minimum gap on both clocks, bypassed by deaths and major threats.</summary>
-        private bool CoverAllowed(WorkItem item, Now now)
-        {
-            if (item.Event != null && Adapter.IsMajorThreat(item.Event)) return true;
-            Now last = _lastCover;
-            if (last == null) return true;
-            return now.Game - last.Game >= Cfg.NarratorMinGapGame || now.Real - last.Real >= Cfg.NarratorMinGapRealS;
+            Commentary.RunOnce();
         }
 
         /// <summary>Once per game day: merge similar old memories and drop decayed ones, for every mind.</summary>

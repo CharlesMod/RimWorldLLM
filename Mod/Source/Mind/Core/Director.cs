@@ -21,7 +21,7 @@ using RimWorldLLM.Mind.ToolLoop;
 
 namespace RimWorldLLM.Mind
 {
-    public sealed partial class Director : IDisposable, IGroupHost, IIdleHost, IConcernsHost, IGrudgesHost, IStewardHost, IRecapHost
+    public sealed partial class Director : IDisposable, IGroupHost, IIdleHost, IConcernsHost, IGrudgesHost, IStewardHost, IRecapHost, ICommentaryHost
     {
         /// <summary>After a PUT /mind conflict: the player's edits in the game's blob win over ours (director's notes and notes_rev, an
         /// edited voice card); every other field stays ours. True if anything was taken.</summary>
@@ -69,7 +69,6 @@ namespace RimWorldLLM.Mind
         public LeaseManager Leases { get; }
         private readonly HashSet<Task> _tasks = new HashSet<Task>();
         public JObject BridgeCfg { get; private set; } = new JObject();
-        public readonly List<string> NarratorLines = new List<string>();
         public readonly List<JObject> Said = new List<JObject>();
         public readonly Dictionary<int, double> ShoutUntil = new Dictionary<int, double>();
         public List<(int Actor, string Reason)> Dropped { get; } = new List<(int Actor, string Reason)>();
@@ -97,8 +96,9 @@ namespace RimWorldLLM.Mind
         public GrudgeEngine Grudges { get; }
         public IdleRunner Idle { get; }
         public readonly Steward Steward;
+        /// <summary>core/commentary.py: the documentary voice on the narrator slot.</summary>
+        public Commentary Commentary { get; }
         private int _upkeepDay = -1;
-        private Now _lastCover;
         private double? _rawLast;
         private double _play;
         private int _speedSeen = 1;
@@ -140,6 +140,7 @@ namespace RimWorldLLM.Mind
             Concerns = new ConcernEngine(this);
             Grudges = new GrudgeEngine(this);
             Idle = new IdleRunner(this);
+            Commentary = new Commentary(this);
             Steward = new Steward(this);
             if (streaming) Steward.Live = new BridgeChatLive(bridge);
         }
@@ -361,6 +362,7 @@ namespace RimWorldLLM.Mind
                 await Task.WhenAny(Task.WhenAll(old), Task.Delay(TimeSpan.FromSeconds(2)));
             lock (_tasks) _tasks.Clear();
             Idle.Preempt("reload");
+            Commentary.Reset();
             Minds.Clear(); Revs.Clear(); _dirty.Clear();
             _upkeepDay = -1;
             Ledger.Clear();
@@ -406,6 +408,7 @@ namespace RimWorldLLM.Mind
             await TakeTalkAsync();
             await Steward.StepAsync();                         // one GET /vivarium when idle; may start a cycle that owns slot 0
             Idle.PreemptIfWanted();                            // idle work yields to actor windows at once
+            Commentary.PreemptIfWanted();                      // ... and commentary yields to a steward cycle
             DailyUpkeep();
             Grudges.Advance();
             Leases.Expire(Now());

@@ -31,6 +31,9 @@ namespace RimWorldLLM.Mind
         void IGrudgesHost.Spawn(Func<Task> work) { _ = Spawn(work); }
         IList<(int Actor, string Reason)> IDreamHost.Dropped { get { return Dropped; } }
         IList<(int Actor, string Reason)> IStewardHost.Dropped { get { return Dropped; } }
+        IList<(int Actor, string Reason)> ICommentaryHost.Dropped { get { return Dropped; } }
+        bool ICommentaryHost.IdleActive { get { return Idle.Active(); } }
+        JObject ICommentaryHost.StewardVv { get { return Steward.Vv; } }
         IList<(int Actor, string Reason)> IGroupHost.Dropped { get { return Dropped; } }
         IList<JObject> IDreamHost.IdleLog { get { return Idle.Log; } }
         IStewardIdle IStewardHost.Idle { get { return Idle; } }

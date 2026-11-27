@@ -192,6 +192,13 @@ namespace RimWorldLLM.Mind
         /// <summary>"Previously on..." recap after a save load (core/recap.py; also the mod's recap setting)</summary>
         public bool RecapEnabled { get; set; } = true;
         public int NarratorContextTokens { get; set; } = 6000;
+        /// <summary>documentary voice (core/commentary.py): one wry line at big moments, on the narrator slot</summary>
+        public bool Commentary { get; set; } = true;
+        public double CommentaryMinGapRealS { get; set; } = 180.0;
+        /// <summary>6 game hours; urgent moments skip this gap but keep a 30 s floor</summary>
+        public int CommentaryMinGapGame { get; set; } = 15000;
+        /// <summary>one recap line per finished game day</summary>
+        public bool CommentaryRecap { get; set; } = true;
         /// <summary>coverage lines: min gap on both clocks; major events bypass</summary>
         public int NarratorMinGapGame { get; set; } = 6000;
         /// <summary>one speaker shouts at most this often (a calm scene cannot burst every line)</summary>
@@ -374,6 +381,10 @@ namespace RimWorldLLM.Mind
             o["chronicle_max_tokens"] = new JValue(ChronicleMaxTokens);
             o["recap_enabled"] = new JValue(RecapEnabled);
             o["narrator_context_tokens"] = new JValue(NarratorContextTokens);
+            o["commentary"] = new JValue(Commentary);
+            o["commentary_min_gap_real_s"] = new JValue(CommentaryMinGapRealS);
+            o["commentary_min_gap_game"] = new JValue(CommentaryMinGapGame);
+            o["commentary_recap"] = new JValue(CommentaryRecap);
             o["narrator_min_gap_game"] = new JValue(NarratorMinGapGame);
             o["shout_gap_real_s"] = new JValue(ShoutGapRealS);
             o["thought_enabled"] = new JValue(ThoughtEnabled);
@@ -497,6 +508,10 @@ namespace RimWorldLLM.Mind
                 case "chronicle_max_tokens": ChronicleMaxTokens = ConfigCoerce.Int(v, "chronicle_max_tokens"); break;
                 case "recap_enabled": RecapEnabled = ConfigCoerce.Bool(v, "recap_enabled"); break;
                 case "narrator_context_tokens": NarratorContextTokens = ConfigCoerce.Int(v, "narrator_context_tokens"); break;
+                case "commentary": Commentary = ConfigCoerce.Bool(v, "commentary"); break;
+                case "commentary_min_gap_real_s": CommentaryMinGapRealS = ConfigCoerce.Float(v, "commentary_min_gap_real_s"); break;
+                case "commentary_min_gap_game": CommentaryMinGapGame = ConfigCoerce.Int(v, "commentary_min_gap_game"); break;
+                case "commentary_recap": CommentaryRecap = ConfigCoerce.Bool(v, "commentary_recap"); break;
                 case "narrator_min_gap_game": NarratorMinGapGame = ConfigCoerce.Int(v, "narrator_min_gap_game"); break;
                 case "shout_gap_real_s": ShoutGapRealS = ConfigCoerce.Float(v, "shout_gap_real_s"); break;
                 case "thought_enabled": ThoughtEnabled = ConfigCoerce.Bool(v, "thought_enabled"); break;

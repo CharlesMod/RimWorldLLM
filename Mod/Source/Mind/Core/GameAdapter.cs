@@ -80,6 +80,12 @@ namespace RimWorldLLM.Mind
         string ArtSystem { get; }
         string ArtRequest { get; }
         string ArtRequestGround { get; }
+        // documentary voice (core/commentary.py); null = the adapter has none
+        string CommentaryPrompt { get; }
+        string CommentaryRequest { get; }
+        string CommentaryRecapRequest { get; }
+        /// <summary>commentary_moment(event, director): the documentary moment of an event, or null.</summary>
+        Moment CommentaryMoment(JObject e, ICommentaryHost director);
         string RecapRequestGround { get; }
         string LoreRequestGround { get; }
         /// <summary>(pattern, weight): what makes a chronicle entry worth a recap line.</summary>
@@ -199,6 +205,10 @@ namespace RimWorldLLM.Mind
         public virtual string ArtSystem { get { return null; } }
         public virtual string ArtRequest { get { return null; } }
         public virtual string ArtRequestGround { get { return null; } }
+        public virtual string CommentaryPrompt { get { return null; } }
+        public virtual string CommentaryRequest { get { return null; } }
+        public virtual string CommentaryRecapRequest { get { return null; } }
+        public virtual Moment CommentaryMoment(JObject e, ICommentaryHost director) { return null; }
         public virtual string RecapRequestGround { get { return null; } }
         public virtual string LoreRequestGround { get { return null; } }
         public virtual IReadOnlyList<(string Pattern, int Weight)> RecapImportance { get { return new (string, int)[0]; } }

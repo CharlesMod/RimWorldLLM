@@ -503,24 +503,6 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Empty(await w.D.Bridge.GetChronicleAsync(1));
         }
 
-        [Fact]
-        public async Task NarratorCoverageMinGapBypassedByDeathsAndMajorThreats()
-        {
-            using var w = new World(); await w.GoAsync();
-            var d = w.D;
-            var inj = d.Leases.MakeItem(1, "injury", d.Now(), JObject.Parse("{\"type\": \"injury\", \"severity\": 0.5}"));
-            var death = d.Leases.MakeItem(1, "death", d.Now(), JObject.Parse("{\"type\": \"death\", \"severity\": 1.0}"));
-            bool Allowed(WorkItem it, Now n) { return Priv<bool>(d, "CoverAllowed", it, n); }
-            void SetLast(Now n) { typeof(Director).GetField("_lastCover", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(d, n); }
-            Assert.True(Allowed(inj, new Now(1000, 0.0)));                                    // nothing covered yet
-            SetLast(new Now(1000, 0.0));
-            Assert.False(Allowed(inj, new Now(1500, 10.0)));                                  // too soon on both clocks
-            Assert.True(Allowed(death, new Now(1500, 10.0)));                                 // a death bypasses
-            Assert.True(Allowed(d.Leases.MakeItem(1, "raid_start", d.Now(), JObject.Parse("{\"type\": \"raid_start\"}")), new Now(1500, 10.0)));
-            Assert.True(Allowed(inj, new Now(1500 + d.Cfg.NarratorMinGapGame, 10.0)));        // game clock allows
-            Assert.True(Allowed(inj, new Now(1500, 10.0 + d.Cfg.NarratorMinGapRealS)));       // real clock allows
-        }
-
         // ---- step 6: pacing
         [Fact]
         public async Task IdleJobIsCancelledTheMomentAnActorWindowIsWanted()

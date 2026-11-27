@@ -102,6 +102,7 @@ namespace RimWorldLLM.Mind.Fakes
         public bool ChronicleSupported = true;    // POST/GET /chronicle; false models an older mod (404)
         public List<JObject> Chronicle = new List<JObject>();   // what the mod holds (cap 120)
         public List<JObject> RecapLog = new List<JObject>();
+        public bool RefuseComment;               // models a mod that answers who=comment with 400 (an older mod)
         public string RecapRefuse;                // "expired"/"conflict" models the mod refusing
         public bool ArtSupported = true;
         public List<JObject> ArtLog = new List<JObject>();
@@ -508,6 +509,7 @@ namespace RimWorldLLM.Mind.Fakes
                 string text = PyStr(body["text"]).Trim();
                 string who = body["who"] != null && body["who"].Type == JTokenType.String ? body.Value<string>("who") : null;
                 if (who != "narrator" && who != "note" && who != "comment") return Err(400, "bad_request", "who must be narrator, note or comment");
+                if (who == "comment" && RefuseComment) return Err(400, "bad_request", "who");
                 int len = CpLen(text);
                 if (len < 1 || len > 500) return Err(400, "bad_request", "text 1..500 chars");
                 var e = AddChat(who, text);

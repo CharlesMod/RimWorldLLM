@@ -14,6 +14,8 @@ namespace RimWorldLLM.Mind.RimWorld
 {
     public sealed partial class RimWorldAdapter : GameAdapterBase
     {
+        public override Moment CommentaryMoment(JObject e, ICommentaryHost director) { return Moments.ForEvent(e, director); }
+
         private static readonly Dictionary<string, Cls> EventClass = new Dictionary<string, Cls>
         {
             { "player_talk", Cls.Player },
