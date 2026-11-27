@@ -321,6 +321,23 @@ namespace RimWorldLLM.Mind.Py
             }
         }
 
+        /// <summary>bool(value) for a decoded JSON value: null, false, 0, 0.0, "", [] and {} are falsy.</summary>
+        public static bool Truthy(JToken t)
+        {
+            if (t == null) return false;
+            switch (t.Type)
+            {
+                case JTokenType.Null: case JTokenType.Undefined: return false;
+                case JTokenType.Boolean: return (bool)t;
+                case JTokenType.Integer: return !(((JValue)t).Value is BigInteger bi ? bi.IsZero : Convert.ToDecimal(((JValue)t).Value, CultureInfo.InvariantCulture) == 0m);
+                case JTokenType.Float: return Convert.ToDouble(((JValue)t).Value, CultureInfo.InvariantCulture) != 0.0;
+                case JTokenType.String: return ((string)t).Length > 0;
+                case JTokenType.Array: return ((JArray)t).Count > 0;
+                case JTokenType.Object: return ((JObject)t).Count > 0;
+                default: return true;
+            }
+        }
+
         /// <summary>repr() of a str.</summary>
         public static string StrRepr(string s)
         {
