@@ -131,7 +131,10 @@ namespace RimWorldLLM.Mind
         Task<JObject> VivariumAsync();
         Task<JObject> DigestAsync();
         Task<JObject> ChatSinceAsync(int seq);
-        Task<JObject> PostChatAsync(string who, string text, string opId = null);
+        /// <summary>POST /chat {who, text, stream_id?}: a streamId ends that /chat/status stream.</summary>
+        Task<JObject> PostChatAsync(string who, string text, string opId = null, string streamId = null);
+        /// <summary>POST /chat/status {who, state, stream_id, to?, progress?}; an older mod answers 404 not_found.</summary>
+        Task<JObject> PostChatStatusAsync(string who, string state, string streamId, int? to = null, double? progress = null, string opId = null);
         Task<JObject> GoalsAsync();
         /// <summary>PUT /goals {rev, ...fields}: a stale rev is BridgeError code "conflict" (Body["board"] holds the current board).</summary>
         Task<JObject> PutGoalsAsync(int rev, JObject fields = null, string opId = null);

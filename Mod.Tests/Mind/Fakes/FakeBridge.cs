@@ -121,6 +121,9 @@ namespace RimWorldLLM.Mind.Fakes
         public JObject VivSettings = J(@"{""may_pause_for_emergencies"": true, ""controls_speed"": false, ""heartbeat_hours"": 6.0}");
         public List<JObject> Chat = new List<JObject>();   // entries, oldest first (cap 300)
         public int ChatSeq;
+        public List<JObject> ChatStatus = new List<JObject>();     // POST /chat/status bodies (minus op_id), in order
+        public List<string> ChatStreams = new List<string>();      // stream_id of each POST /chat, in order (null when absent)
+        public bool ChatStatusEnabled = true;                      // false: answer 404 like an older mod
         public JObject GoalsBoard = J(@"{""rev"": 0, ""goals"": [], ""plan"": """", ""orders"": [], ""log"": []}");
         int _goalIds;
         public List<JObject> Actions = new List<JObject>();
@@ -471,8 +474,29 @@ namespace RimWorldLLM.Mind.Fakes
                 int len = CpLen(text);
                 if (len < 1 || len > 500) return Err(400, "bad_request", "text 1..500 chars");
                 var e = AddChat(who, text);
+                ChatStreams.Add(body["stream_id"] == null || body["stream_id"].Type == JTokenType.Null ? null : (string)body["stream_id"]);
                 SeenOps[body.Value<string>("op_id")] = new JObject { ["seq"] = e["seq"].DeepClone() };
                 return Ok(("seq", e["seq"].DeepClone()));
+            }
+            if (path == "/chat/status" && method == "POST")
+            {
+                if (!ChatStatusEnabled) return Err(404, "not_found");
+                string who = body["who"] != null && body["who"].Type == JTokenType.String ? (string)body["who"] : null;
+                string state = body["state"] != null && body["state"].Type == JTokenType.String ? (string)body["state"] : null;
+                var sidTok = body["stream_id"]; var to = body["to"]; var prog = body["progress"];
+                if ((who != "narrator" && who != "colonist") || (state != "thinking" && state != "typing" && state != "idle"))
+                    return Err(400, "bad_request", "who/state invalid");
+                if (sidTok == null || sidTok.Type != JTokenType.String
+                    || !System.Text.RegularExpressions.Regex.IsMatch((string)sidTok, @"\A[A-Za-z0-9_.:-]{1,64}\z"))
+                    return Err(400, "bad_request", "stream_id 1..64 of [A-Za-z0-9_.:-]");
+                if (who == "colonist" && !Pos(to)) return Err(400, "bad_request", "colonist needs to > 0");
+                if (prog != null && prog.Type != JTokenType.Null
+                    && ((prog.Type != JTokenType.Integer && prog.Type != JTokenType.Float) || prog.Value<double>() < 0 || prog.Value<double>() > 1))
+                    return Err(400, "bad_request", "progress 0..1");
+                var kept = (JObject)body.DeepClone(); kept.Remove("op_id");
+                ChatStatus.Add(kept);
+                SeenOps[body.Value<string>("op_id")] = new JObject();
+                return Ok(("stream_id", sidTok.DeepClone()), ("state", state));
             }
             if (path == "/goals") return Goals(method, body);
             if (path == "/actions" && method == "GET")

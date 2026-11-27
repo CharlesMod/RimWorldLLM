@@ -240,6 +240,23 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal("mine", (string)t.Body["op_id"]);
         }
 
+        // test_steward_chat_status: test_client_bodies
+        [Fact]
+        public async Task ClientBodiesChatStatusAndStreamId()
+        {
+            var t = new Rec();
+            var b = new BridgeClient(t, ProtocolNames.RimWorld);
+            await b.PostChatStatusAsync("narrator", "thinking", "s1");
+            Assert.Equal("POST", t.Last.Method); Assert.Equal("/chat/status", t.Last.Path);
+            Assert.Equal(new[] { "who", "state", "stream_id", "op_id" }, t.Body.Properties().Select(p => p.Name).ToArray());
+            await b.PostChatStatusAsync("colonist", "typing", "s2", 4, 0.5, "o1");
+            Assert.Equal("{\"who\":\"colonist\",\"state\":\"typing\",\"stream_id\":\"s2\",\"to\":4,\"progress\":0.5,\"op_id\":\"o1\"}", t.Last.JsonBody);
+            await b.PostChatAsync("narrator", "hi", "o");
+            Assert.Equal("{\"who\":\"narrator\",\"text\":\"hi\",\"op_id\":\"o\"}", t.Last.JsonBody);
+            await b.PostChatAsync("narrator", "hi", "o", "s1");
+            Assert.Equal("{\"who\":\"narrator\",\"text\":\"hi\",\"stream_id\":\"s1\",\"op_id\":\"o\"}", t.Last.JsonBody);
+        }
+
         [Fact]
         public async Task OtherWritesAndReadsHaveTheContractShapes()
         {

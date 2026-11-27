@@ -195,9 +195,19 @@ namespace RimWorldLLM.Mind
         public Task<JObject> DigestAsync() { return Req("GET", "/digest"); }
         public Task<JObject> ChatSinceAsync(int seq) { return Req("GET", "/chat", null, true, Q("since", seq)); }
 
-        public Task<JObject> PostChatAsync(string who, string text, string opId = null)
+        public Task<JObject> PostChatAsync(string who, string text, string opId = null, string streamId = null)
         {
-            return Req("POST", "/chat", WriteBody(new JObject { ["who"] = who, ["text"] = text }, null, opId));
+            var body = new JObject { ["who"] = who, ["text"] = text };
+            if (streamId != null) body["stream_id"] = streamId;
+            return Req("POST", "/chat", WriteBody(body, null, opId));
+        }
+
+        public Task<JObject> PostChatStatusAsync(string who, string state, string streamId, int? to = null, double? progress = null, string opId = null)
+        {
+            var body = new JObject { ["who"] = who, ["state"] = state, ["stream_id"] = streamId };
+            if (to != null) body["to"] = to.Value;
+            if (progress != null) body["progress"] = progress.Value;
+            return Req("POST", "/chat/status", WriteBody(body, null, opId));
         }
 
         public Task<JObject> GoalsAsync() { return Req("GET", "/goals"); }
