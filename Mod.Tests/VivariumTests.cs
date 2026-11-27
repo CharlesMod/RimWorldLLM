@@ -510,6 +510,7 @@ namespace RimWorldLLM.Tests
             public HandResult SetResearch(string p) { throw new InvalidOperationException("boom"); }
             public HandResult AnswerLetter(int l, string c) { throw new InvalidOperationException("boom"); }
             public HandResult Draft(IList<int> p, bool d) { throw new InvalidOperationException("boom"); }
+            public HandResult Choose(DialogRecord d, int o, IDictionary<string, string> t) { throw new InvalidOperationException("boom"); }
             public HandResult Order(int p, string o, int x, int z, int t, bool h) { throw new InvalidOperationException("boom"); }
             public HandResult Designate(DesignateArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
             public HandResult Build(BuildArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
