@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace RimWorldLLM.Bridge
@@ -22,6 +23,8 @@ namespace RimWorldLLM.Bridge
         public int StatusCode = 500;
         public string Response = "";
         public readonly ManualResetEventSlim Done = new ManualResetEventSlim(false);
+        /// <summary>In-process submissions only: completed alongside Done, with continuations run off the game thread.</summary>
+        public TaskCompletionSource<bool> Async;
 
         int _state;
 
@@ -36,6 +39,8 @@ namespace RimWorldLLM.Bridge
             StatusCode = status;
             Response = body ?? "";
             Done.Set();
+            var a = Async;
+            if (a != null) a.TrySetResult(true);
         }
 
         public void Dispose() { Done.Dispose(); }
@@ -109,7 +114,7 @@ namespace RimWorldLLM.Bridge
 
         public bool Start()
         {
-            Stop();
+            StopCore();   // closes a previous listener; keeps the in-process door as it was
             LastError = "";
             _token = (_opt.Token ?? "").Trim();
             if (_token.Length == 0)
@@ -164,7 +169,14 @@ namespace RimWorldLLM.Bridge
             catch (Exception e) { LogError("[RimWorldLLM] Could not write bridge.json: " + e.Message); }
         }
 
+        /// <summary>Stops everything: the HTTP listener and the in-process door. Queued requests are answered 503 no_game.</summary>
         public void Stop()
+        {
+            StopCore();
+            _inProcess = false;
+        }
+
+        void StopCore()
         {
             var l = _listener;
             _listener = null;
@@ -175,6 +187,80 @@ namespace RimWorldLLM.Bridge
         }
 
         public void Dispose() { Stop(); }
+
+        volatile bool _inProcess;
+
+        /// <summary>True when requests may be submitted without HTTP (see SubmitAsync). Independent of the listener.</summary>
+        public bool InProcessEnabled { get { return _inProcess; } }
+
+        /// <summary>Opens the in-process door: SubmitAsync works from now on, with or without the HTTP listener. Any thread.</summary>
+        public void EnableInProcess() { _inProcess = true; }
+
+        /// <summary>
+        /// Submits a request without HTTP and awaits its answer without blocking a thread. It takes the same road as an
+        /// HTTP request: the pending queue, Pump() on the game thread, ApiRouter.Handle and the same envelope. The
+        /// same refusals apply (413 too_large, 503 busy while the game thread is stalled, 504 timeout with abandon).
+        /// In-process callers are trusted: no token. Returns the status and the raw JSON body, as the HTTP reply would carry them.
+        /// Throws OperationCanceledException (after abandoning the request) when ct is cancelled.
+        /// </summary>
+        public async Task<KeyValuePair<int, string>> SubmitAsync(string method, string path, string query, string body, CancellationToken ct = default(CancellationToken))
+        {
+            var clock = Stopwatch.StartNew();
+            int status = 0;
+            try
+            {
+                var r = SubmitCore(method, path ?? "/", query ?? "", body ?? "", ct);
+                var pair = await r.ConfigureAwait(false);
+                status = pair.Key;
+                return pair;
+            }
+            finally { Requests.Add(method, path, status, clock.Elapsed.TotalMilliseconds, true); }
+        }
+
+        async Task<KeyValuePair<int, string>> SubmitCore(string method, string path, string query, string body, CancellationToken ct)
+        {
+            if (!_inProcess)
+                return Reply(503, ApiResult.Fail("no_game", "bridge stopped"));
+            if (method == "GET" && path.TrimEnd('/') == "/health")
+                return Reply(200, ApiResult.Success(HealthBody()));
+            if (Encoding.UTF8.GetByteCount(body) > Const.MaxBodyBytes)
+                return Reply(413, ApiResult.Fail("too_large", "body over 64 KiB"));
+            if (GameThreadStalled)
+                return Reply(503, ApiResult.Fail("busy", "the game is not running frames (window in the background, loading or frozen); retry shortly"));
+            using (var req = new InboundRequest { Method = method, Path = path, Query = query, Body = body })
+            {
+                req.Async = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _pending.Enqueue(req);
+                try
+                {
+                    if (!await WaitAsync(req.Async.Task, ct).ConfigureAwait(false))
+                    {
+                        if (req.TryAbandon())
+                            return Reply(504, ApiResult.Fail("timeout", "the game did not answer in time; the request was dropped"));
+                        // claimed by the game thread, so completion is imminent; but never wait for ever on the game
+                        if (!await WaitAsync(req.Async.Task, ct).ConfigureAwait(false))
+                            return Reply(504, ApiResult.Fail("timeout", "the game did not finish the request in time"));
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    req.TryAbandon();
+                    throw;
+                }
+                return new KeyValuePair<int, string>(req.StatusCode, req.Response);
+            }
+        }
+
+        async Task<bool> WaitAsync(Task t, CancellationToken ct)
+        {
+            try { await t.WaitAsync(_opt.GameThreadTimeout, ct).ConfigureAwait(false); return true; }
+            catch (TimeoutException) { return false; }
+        }
+
+        KeyValuePair<int, string> Reply(int status, ApiResult r)
+        {
+            return new KeyValuePair<int, string>(status, Envelope.Json(_state, r));
+        }
 
         /// <summary>
         /// Game thread: answer queued requests until the budget is spent (always at least one if any waits).
