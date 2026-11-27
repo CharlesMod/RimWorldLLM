@@ -74,7 +74,8 @@ namespace RimWorldLLM
         internal static bool Fighter(Pawn p)
         {
             return p.Spawned && !p.Dead && !p.Downed && p.drafter != null && !p.WorkTagIsDisabled(WorkTags.Violent)
-                && (p.ageTracker == null || p.ageTracker.AgeBiologicalYears >= 13);
+                && (p.ageTracker == null || p.ageTracker.AgeBiologicalYears >= 13)
+                && !(p.health != null && HealthAIUtility.ShouldSeekMedicalRest(p));
         }
 
         static string NonFighterWhy(Pawn p)
@@ -178,6 +179,32 @@ namespace RimWorldLLM
             return null;
         }
 
+        /// <summary>The base's outer wall on a side: walking out from home, the last player-owned impassable cell whose next
+        /// outward cell is outdoors (or off the map), within 45 cells; Invalid when there is none. dist = cells from home.</summary>
+        static IntVec3 OuterWall(Map map, IntVec3 home, string side, out int dist)
+        {
+            var step = Step(side);
+            var c = home; IntVec3 found = IntVec3.Invalid; dist = 0;
+            for (int k = 1; k <= 45; k++)
+            {
+                c += step;
+                if (!c.InBounds(map)) break;
+                var e = c.GetEdifice(map);
+                if (e == null || e.def.passability != Traversability.Impassable || e.Faction != Faction.OfPlayer) continue;
+                var next = c + step;
+                var r = next.InBounds(map) ? next.GetRoom(map) : null;
+                if (!next.InBounds(map) || (r != null && r.PsychologicallyOutdoors)) { found = c; dist = k; break; }
+            }
+            return found;
+        }
+
+        /// <summary>A cell inset cells back from the wall toward home, never at or behind home.</summary>
+        static IntVec3 Inset(IntVec3 wall, string side, int dist, int inset)
+        {
+            int back = Math.Max(1, Math.Min(inset, dist - 1));
+            return wall - Step(side) * back;
+        }
+
         static IntVec3 Step(string side)
         {
             switch (side) { case "n": return IntVec3.North; case "e": return IntVec3.East; case "s": return IntVec3.South; default: return IntVec3.West; }
@@ -216,6 +243,7 @@ namespace RimWorldLLM
             public List<HostileInfo> All; public HashSet<int> Dormant; public List<ThreatGroup> Groups;
             public ThreatGroup Nearest;           // nearest awake group, or null
             public List<int[]> Path;              // nearest group's centroid → home (walkable path or a straight line)
+            public bool PathReal;                 // Path is a walking path (false: the straight-line fallback; no chokepoint on it)
         }
 
         static Fight ReadFight(Map map, bool withGrid)
@@ -230,7 +258,8 @@ namespace RimWorldLLM
             {
                 var start = NearestWalkable(f.Grid, f.Nearest.X, f.Nearest.Z);
                 var home = NearestWalkable(f.Grid, f.Home.x, f.Home.z);
-                f.Path = start != null && home != null ? Approach.Path(f.Grid, start[0], start[1], home[0], home[1]) : null;
+                f.Path = start != null && home != null ? Approach.Path(f.Grid, start[0], start[1], home[0], home[1], f.Grid.W * f.Grid.H) : null;
+                f.PathReal = f.Path != null;
                 if (f.Path == null) f.Path = LineOfFire.Line(f.Nearest.X, f.Nearest.Z, f.Home.x, f.Home.z).ToList();
             }
             return f;
@@ -257,6 +286,18 @@ namespace RimWorldLLM
         // ---------------------------------------------------------------- GET /combat
         public JObject Combat(CombatState state)
         {
+            try { return CombatDo(state); }
+            catch (Exception e)
+            {
+                Failed(e);
+                return new JObject { ["active"] = state != null && state.Active, ["error"] = "the combat view failed: " + e.Message };
+            }
+        }
+
+        internal static IntVec3 HomeCenterOf(Map map) { return HomeCenter(map); }
+
+        JObject CombatDo(CombatState state)
+        {
             var map = HomeMap();
             if (map == null) return new JObject { ["active"] = false, ["error"] = "no colony map" };
             var f = ReadFight(map, true);
@@ -282,6 +323,7 @@ namespace RimWorldLLM
             {
                 if (p.Downed)
                 {
+                    if (p.InBed()) continue;   // already in a bed: no rescue needed
                     downedCols.Add(new JObject
                     {
                         ["id"] = p.thingIDNumber, ["name"] = Name(p), ["bleeding"] = p.health.hediffSet.BleedRateTotal > 0.01f,
@@ -373,7 +415,7 @@ namespace RimWorldLLM
             if (f.Grid != null)
             {
                 d.Enclosed = d.WallCells > 0 && Enclosed(f.Grid, f.Home);
-                if (f.Path != null && f.Nearest != null)
+                if (f.Path != null && f.PathReal && f.Nearest != null)
                 {
                     int w;
                     var cp = Approach.Chokepoint(f.Grid, f.Path, 3, out w);
@@ -411,6 +453,7 @@ namespace RimWorldLLM
                 case "chokepoint":
                 {
                     if (threat.Count == 0 || path.Count == 0) { why = "no enemy approach to hold; try home"; return null; }
+                    if (!f.PathReal) { why = "the enemy has no walking path to home (walled in?); try door or cover"; return null; }
                     int w;
                     var cp = Approach.Chokepoint(g, path, 3, out w);
                     if (cp == null || w > 3) { why = "no chokepoint between the enemy and home; try cover"; return null; }
@@ -438,15 +481,10 @@ namespace RimWorldLLM
                 {
                     string side = at.Substring(5);
                     var step = Step(side);
-                    IntVec3 c = home, wall = IntVec3.Invalid;
-                    for (int k = 0; k < 45; k++)
-                    {
-                        c += step;
-                        if (!c.InBounds(map)) break;
-                        if (IsImpassableEdifice(map, c)) { wall = c; break; }
-                    }
-                    if (!wall.IsValid) { why = "no wall on the " + CombatText.SideWord(side) + " side of the base; try cover"; return null; }
-                    var anchor = wall - step * 2;
+                    int dist;
+                    var wall = OuterWall(map, home, side, out dist);
+                    if (!wall.IsValid) { why = "no outer wall on the " + CombatText.SideWord(side) + " side of the base; try cover"; return null; }
+                    var anchor = Inset(wall, side, dist, 2);
                     var enemy = threat.Count > 0 ? threat : new List<int[]> { new[] { (wall + step * 15).x, (wall + step * 15).z } };
                     var l = CoverFinder.Find(g, anchor.x, anchor.z, 6, enemy, path, range, n);
                     if (l.Count == 0) { why = "no cover behind the " + CombatText.SideWord(side) + " wall"; return null; }
@@ -579,8 +617,7 @@ namespace RimWorldLLM
                         if (want.Count == 0) return HandResult.No(skipped.Count > 0 ? string.Join("; ", skipped) : "nobody here can fight");
                         foreach (var p in want) if (!p.Drafted) p.drafter.Drafted = true;
                         foreach (var p in want) p.drafter.FireAtWill = true;
-                        state.Squad.Members = want.Select(p => p.thingIDNumber).ToList();
-                        state.Squad.Stance = "fire_at_will"; state.Squad.Fell.Clear(); state.Squad.SinceTick = tick;
+                        state.Squad = new SquadState { Members = want.Select(p => p.thingIDNumber).ToList(), SinceTick = tick };
                         return Squadded(WithSkipped("drafted " + CombatText.Names(want.Select(Name).ToList()) + " as the squad", skipped), state);
                     }
                     case "move":
@@ -595,6 +632,7 @@ namespace RimWorldLLM
                         if (spots == null || spots.Count == 0) return HandResult.No(why ?? "no spot found");
                         var moved = MoveTo(pawns, spots, skipped);
                         if (moved.Count == 0) return HandResult.No(string.Join("; ", skipped));
+                        if (a.Op == "move") foreach (var p in pawns) state.Squad.Fell.Remove(p.thingIDNumber);
                         if (a.Op == "retreat")
                         {
                             state.Squad.RetreatX = spots[0][0]; state.Squad.RetreatZ = spots[0][1];
@@ -666,9 +704,10 @@ namespace RimWorldLLM
             var pawns = SquadPawns(a, state, skipped, out no);
             if (no != null) return no;
             var f = ReadFight(map, false);
-            var live = f.All.Where(h => !h.Downed).ToList();
-            if (live.Count == 0) return HandResult.No("no hostiles on the map to focus");
+            var live = f.All.Where(h => !h.Downed && !f.Dormant.Contains(h.Id)).ToList();
+            if (live.Count == 0) return HandResult.No(f.All.Any(h => !h.Downed) ? "the only hostiles are dormant; leave them asleep unless ready" : "no hostiles on the map to focus");
             var group = f.Groups.FirstOrDefault(g => g.Id == a.Target);
+            if (group != null && group.Ids.All(f.Dormant.Contains)) return HandResult.No("that group is dormant; attacking wakes it");
             HostileInfo one = group == null ? live.FirstOrDefault(h => h.Id == a.Target) : null;
             if (group == null && one == null)
                 return HandResult.No("no threat group or hostile " + a.Target + " (groups: " + string.Join(", ", f.Groups.Take(6).Select(g => "#" + g.Id + " " + g.Kind)) + ")");
@@ -686,6 +725,8 @@ namespace RimWorldLLM
                 var act = FloatMenuUtility.GetAttackAction(p, t, out fail);
                 if (act == null) { skipped.Add(Name(p) + " cannot attack " + t.LabelShort + (fail.NullOrEmpty() ? "" : ": " + fail)); continue; }
                 act();
+                var cj = p.CurJob;
+                if (cj == null || cj.targetA.Thing != t) { skipped.Add(Name(p) + " can't hit " + t.LabelShort + " from there (range or sight)"); continue; }
                 done.Add(Name(p));
             }
             if (done.Count == 0) return HandResult.No(skipped.Count > 0 ? string.Join("; ", skipped) : "nobody could attack");
@@ -736,7 +777,9 @@ namespace RimWorldLLM
             int i = 0;
             foreach (var p in crew)
             {
-                var fire = fires.OrderBy(x => x.Position.DistanceToSquared(p.Position)).Skip(i % Math.Max(1, Math.Min(fires.Count, crew.Count))).First();
+                var reach = fires.Where(x => p.CanReach(x, PathEndMode.Touch, Danger.Deadly)).ToList();
+                if (reach.Count == 0) continue;
+                var fire = reach.OrderBy(x => x.Position.DistanceToSquared(p.Position)).Skip(i % Math.Max(1, Math.Min(reach.Count, crew.Count))).First();
                 i++;
                 var job = JobMaker.MakeJob(JobDefOf.BeatFire, fire);
                 job.playerForced = true;
@@ -748,7 +791,7 @@ namespace RimWorldLLM
 
         HandResult Flee(Map map, int room)
         {
-            var who = map.mapPawns.FreeColonistsSpawned.Where(p => !p.Downed && NonFighterWhy(p) != null).ToList();
+            var who = map.mapPawns.FreeColonistsSpawned.Where(p => !p.Downed && !p.InBed() && NonFighterWhy(p) != null).ToList();
             if (who.Count == 0) return HandResult.No("everyone who is up can fight; nobody needs to flee");
             var f = ReadFight(map, true);
             string why, words;
@@ -794,14 +837,10 @@ namespace RimWorldLLM
         static IntVec3 SideAnchor(Fight f, string side, out bool walled)
         {
             var map = f.Map; var step = Step(side);
-            var c = f.Home; walled = false;
-            for (int k = 0; k < 45; k++)
-            {
-                c += step;
-                if (!c.InBounds(map)) break;
-                var e = c.GetEdifice(map);
-                if (e != null && e.def.passability == Traversability.Impassable && e.Faction == Faction.OfPlayer) { walled = true; return c - step * 3; }
-            }
+            int dist;
+            var wall = OuterWall(map, f.Home, side, out dist);
+            walled = wall.IsValid;
+            if (walled) return Inset(wall, side, dist, 3);
             var a = f.Home + step * 10;
             return new IntVec3(Math.Max(1, Math.Min(map.Size.x - 2, a.x)), 0, Math.Max(1, Math.Min(map.Size.z - 2, a.z)));
         }
@@ -869,10 +908,10 @@ namespace RimWorldLLM
                 string side = ResolveSide(f, a.Side, state) ?? "n";
                 IntVec3 anchor; string where; string facing = side;
                 bool walled = false;
-                if (a.X != null) { anchor = new IntVec3(a.X.Value, 0, a.Z.Value); where = "at (" + a.X + "," + a.Z + ")"; }
+                if (a.X != null && a.Kind != "killbox") { anchor = new IntVec3(a.X.Value, 0, a.Z.Value); where = "at (" + a.X + "," + a.Z + ")"; }
                 else if (a.At == "chokepoint")
                 {
-                    if (f.Path == null || f.Nearest == null) return HandResult.No("no enemy approach to find a chokepoint on; give a side");
+                    if (f.Path == null || f.Nearest == null || !f.PathReal) return HandResult.No("no enemy walking path to find a chokepoint on; give a side");
                     int w;
                     var cp = Approach.Chokepoint(f.Grid, f.Path, 3, out w);
                     if (cp == null || w > 3) return HandResult.No("no chokepoint between the enemy and home; give a side");
@@ -887,13 +926,13 @@ namespace RimWorldLLM
                     var doors = ExteriorDoors(map);
                     if (doors.Count == 0) return HandResult.No("the base has no outside door to " + (a.Kind == "killbox" ? "build a killbox in front of" : "defend"));
                     var step = Step(side);
-                    var toward = f.Home + step * 30;
+                    var toward = a.X != null ? new IntVec3(a.X.Value, 0, a.Z.Value) : f.Home + step * 30;   // killbox at x,z: the door nearest it
                     var door = doors.OrderBy(d => BuildHelpers.Dist2(d.Position.x, d.Position.z, toward.x, toward.z)).First();
                     string outSide = OutwardSide(map, door.Position) ?? side;
                     facing = outSide;
                     anchor = door.Position - Step(outSide) * 3;
                     where = "inside the " + Approach.Compass(f.Home.x, f.Home.z, door.Position.x, door.Position.z) + " door";
-                    if (a.Kind == "killbox") return Killbox(map, door.Position, outSide, a, left, mb, where);
+                    if (a.Kind == "killbox") return Killbox(map, f.Grid, door.Position, outSide, a, left, mb, where);
                 }
                 else { anchor = SideAnchor(f, side, out walled); where = (walled ? "inside the " : "on the ") + CombatText.SideWord(side) + " side"; }
 
@@ -936,7 +975,19 @@ namespace RimWorldLLM
                         }
                         var spots = DefenseLayout.TurretSpots(f.Grid, anchor.x, anchor.z, 8, f.Path ?? new List<int[]>(), 25, a.Count * 4);
                         if (need > 0f)
-                            spots = spots.Where(s => PowerConnectionMaker.BestTransmitterForConnector(V(s), map) != null).ToList();
+                        {
+                            float per = need / a.Count;
+                            int inReach = 0;
+                            spots = spots.Where(s =>
+                            {
+                                var tr = PowerConnectionMaker.BestTransmitterForConnector(V(s), map);
+                                if (tr == null || tr.PowerNet == null) return false;
+                                inReach++;
+                                var net = tr.PowerNet;
+                                return net.CurrentEnergyGainRate() / CompPower.WattsToWattDaysPerTick >= per || net.CurrentStoredEnergy() > 1f;
+                            }).ToList();
+                            if (spots.Count == 0 && inReach > 0) return HandResult.No("the power net near " + where + " can't spare " + (int)per + " W for a turret");
+                        }
                         if (spots.Count == 0)
                             return HandResult.No(need > 0f ? "no spot " + where + " is in reach of a power conduit; run a conduit there first" : "no spot for a turret " + where);
                         var stuff = ResolveStuff(map, def, a.Stuff, false, 0, out no);
@@ -975,10 +1026,9 @@ namespace RimWorldLLM
             catch (Exception e) { return Failed(e); }
         }
 
-        HandResult Killbox(Map map, IntVec3 door, string outward, DefendArgs a, BuildBudget left, BuildHelpers.MarkBuilder mb, string where)
+        HandResult Killbox(Map map, CombatGrid g, IntVec3 door, string outward, DefendArgs a, BuildBudget left, BuildHelpers.MarkBuilder mb, string where)
         {
             HandResult no = null;
-            var g = Grid(map);
             var lay = DefenseLayout.Killbox(door.x, door.z, outward);
             int d1, d2, d3;
             var walls = DefenseLayout.Buildable(g, lay.Walls, out d1);
@@ -1048,14 +1098,14 @@ namespace RimWorldLLM
         /// <summary>Hostile positions one pass ago (id → x,z).</summary>
         public static readonly Dictionary<int, int[]> Prev = new Dictionary<int, int[]>();
         static readonly Dictionary<int, int[]> Last = new Dictionary<int, int[]>();
-        static bool _warned;
+        static int _failures, _prevAwake;
 
         public static void Tick()
         {
             try { TickDo(); }
             catch (Exception e)
             {
-                if (!_warned) { _warned = true; Log.Warning("[RimWorldLLM] vivarium combat tick failed: " + e); }
+                if (_failures++ % 100 == 0) Log.Warning("[RimWorldLLM] vivarium combat tick failed (" + _failures + "x): " + e);
             }
         }
 
@@ -1076,20 +1126,19 @@ namespace RimWorldLLM
                 if (VivariumHands.IsHostile(p)) Last[p.thingIDNumber] = new[] { p.Position.x, p.Position.z };
             var homeArea = map.areaManager.Home;
             bool fire = homeArea != null && map.listerThings.ThingsOfDef(ThingDefOf.Fire).Any(x => homeArea[x.Position]);
-            bool flip = v.Combat.Update(awake.Count > 0 || fire, awake.Count, tick);
-            if (flip && awake.Count > 0)
+            v.Combat.Update(awake.Count > 0 || fire, awake.Count, tick);
+            if (_prevAwake == 0 && awake.Count > 0)
             {
                 int x, z;
                 if (BuildHelpers.Mean(awake.Select(p => new[] { p.Position.x, p.Position.z }), out x, out z))
                 {
-                    var home = map.Center;
-                    var hb = map.listerBuildings.allBuildingsColonist.OfType<Building_Bed>().Select(b => new[] { b.Position.x, b.Position.z }).ToList();
-                    int hx, hz;
-                    if (BuildHelpers.Mean(hb, out hx, out hz)) home = new IntVec3(hx, 0, hz);
+                    var home = VivariumHands.HomeCenterOf(map);
                     v.Combat.LastSide = Approach.CompassKey(home.x, home.z, x, z);
                 }
             }
+            _prevAwake = awake.Count;
             var sq = v.Combat.Squad;
+            if (awake.Count == 0) sq.Fell.Clear();   // a new fight starts with nobody marked as fallen back
             if (!sq.Active || awake.Count == 0) return;
             Control(v, map, sq, tick);
         }
@@ -1098,7 +1147,8 @@ namespace RimWorldLLM
         {
             HashSet<int> dorm;
             var hostiles = VivariumHands.Hostiles(map, out dorm).Where(h => !dorm.Contains(h.Id)).ToList();
-            var groups = CombatWords.Group(hostiles, map.Center.x, map.Center.z);
+            var hc = VivariumHands.HomeCenterOf(map);
+            var groups = CombatWords.Group(hostiles, hc.x, hc.z);
             var members = new List<SquadMember>();
             var pawns = new Dictionary<int, Pawn>();
             foreach (int id in sq.Members)
@@ -1111,10 +1161,14 @@ namespace RimWorldLLM
                 if (job != null && (job.def == JobDefOf.AttackStatic || job.def == JobDefOf.AttackMelee) && job.targetA.Thing != null) target = job.targetA.Thing.thingIDNumber;
                 if (job != null && job.def == JobDefOf.Rescue && job.targetA.Thing != null) target = job.targetA.Thing.thingIDNumber;
                 bool busy = job != null && job.playerForced && (job.def == JobDefOf.Goto || job.def == JobDefOf.Rescue || job.def == JobDefOf.BeatFire);
+                if (p.stances != null && p.stances.curStance is Stance_Busy) busy = true;   // mid-burst: don't interrupt
+                float hp = p.health.summaryHealth.SummaryHealthPercent;
+                bool bleed = p.health.hediffSet.BleedRateTotal > 0.1f;
+                if (sq.Fell.Contains(id) && hp >= sq.RetreatBelow + 0.2f && !bleed) sq.Fell.Remove(id);   // patched up: back in the fight
                 members.Add(new SquadMember
                 {
                     Id = id, Health = p.health.summaryHealth.SummaryHealthPercent, Downed = p.Downed, Drafted = p.Drafted,
-                    Bleeding = p.health.hediffSet.BleedRateTotal > 0.1f, Fleeing = sq.Fell.Contains(id),
+                    Bleeding = bleed, Fleeing = sq.Fell.Contains(id),
                     X = p.Position.x, Z = p.Position.z, TargetId = target, Busy = busy
                 });
             }
@@ -1145,7 +1199,7 @@ namespace RimWorldLLM
                 else if (o.Kind == "rescue")
                 {
                     var d = Routes.FindPawn(o.Target);
-                    if (d == null || !d.Downed) continue;
+                    if (d == null || !d.Downed || !p.CanReserveAndReach(d, PathEndMode.OnCell, Danger.Deadly)) continue;
                     var bed = RestUtility.FindBedFor(d, p, false, false, null);
                     if (bed == null) continue;
                     var job = JobMaker.MakeJob(JobDefOf.Rescue, d, bed); job.count = 1; job.playerForced = true;
