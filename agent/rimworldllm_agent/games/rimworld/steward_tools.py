@@ -21,7 +21,7 @@ from .steward_rules import alerts_section
 _HERE = Path(__file__).parent
 
 # events that wake the steward at once while the narrator plays
-_WAKE_TYPES = ("raid_start", "mental_break", "death")
+_WAKE_TYPES = ("raid_start", "mental_break", "death", "dialog")
 _WAKE_ALERT_WORDS = ("fire", "starvation", "rescue")        # beside any alert the game marks critical
 # events never listed in "since last time": chatter the colonists have among themselves
 _QUIET_TYPES = frozenset({"social", "thought", "level_up", "first_cue", "gathering", "gathering_end", "player_talk",
@@ -32,7 +32,7 @@ WORK_FALLBACK = ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Cons
 WHY_MAX = 80
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
              "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
-ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "draft", "order")
+ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order")
 
 ADVISOR_NOTE = (
     "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
@@ -72,6 +72,7 @@ class Session:
         self.roles = {gd.name(p.get("name")): p.get("role", "colonist") for p in digest.get("pawns") or []}
         self.beds = {str(b["id"]): b for b in digest.get("beds") or [] if isinstance(b, dict) and b.get("id")}
         self.letters = {str(l["id"]): l for l in digest.get("letters") or [] if isinstance(l, dict) and l.get("id")}
+        self.dialogs = {str(x["id"]): x for x in digest.get("dialogs") or [] if isinstance(x, dict) and x.get("id")}
         self.work = [str(w) for w in digest.get("work_types") or []] or WORK_FALLBACK
         self.policies = {k: [str(x) for x in v] for k, v in (digest.get("policies") or {}).items() if isinstance(v, list)}
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
@@ -115,6 +116,13 @@ class Session:
             out.append(ToolSpec("answer_letter", "Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.",
                                 [Param("letter_id", "enum", "the letter's id", choices=list(self.letters)),
                                  Param("choice", "text", "one of the letter's choices, or dismiss", max_len=80), _WHY]))
+        if self.dialogs and not self.advisor:
+            out.append(ToolSpec("choose", "Answer an open dialog or choice letter (see OPEN DIALOGS) with one of its options; for a naming "
+                                "dialog give text instead: pick a fitting short name yourself (for the colony, a plain evocative place or family name; "
+                                "for two names write faction | settlement).",
+                                [Param("dialog", "enum", "the dialog's id", choices=list(self.dialogs)),
+                                 Param("option", "text", "the option's number or label; leave empty for a naming dialog", max_len=120, required=False),
+                                 Param("text", "text", "naming dialogs only: the name", max_len=80, required=False), _WHY]))
         return out
 
     # ---- running a tool ---------------------------------------------------------------
@@ -135,6 +143,39 @@ class Session:
         note = str(r.get("done", ""))
         extra = {k: x for k, x in r.items() if k not in ("ok", "tick", "save_epoch", "paused", "speed", "done")}
         return Outcome({"done": note, **extra}, verb, note)
+
+    def _choose(self, v: dict) -> dict:
+        dlg = self.dialogs.get(v["dialog"])
+        if dlg is None:
+            raise ValueError("no such dialog; the open dialogs are: " + ", ".join(self.dialogs))
+        body: dict = {"dialog": v["dialog"]}
+        text, opt = str(v.get("text") or "").strip(), str(v.get("option") or "").strip()
+        fields = [str(f.get("name")) for f in dlg.get("fields") or [] if f.get("name")]
+        if fields:                                          # a naming dialog
+            text = text or opt
+            if not text:
+                raise ValueError("this dialog asks for a name: give text")
+            parts = [x.strip() for x in text.split("|") if x.strip()]
+            if len(fields) == 1:
+                body["text"] = parts[0] if parts else text
+            elif len(parts) == len(fields):
+                body["text"] = dict(zip(fields, parts))
+            else:
+                raise ValueError("this dialog needs " + " | ".join(fields) + " (write the names separated by |)")
+            return body
+        live = [o for o in dlg.get("options") or [] if not o.get("disabled")]
+        if not opt:
+            raise ValueError("give option: " + ", ".join(f"{o.get('index')} {o.get('label')}" for o in live))
+        labels = {str(o.get("label", "")).lower(): o.get("index") for o in live}
+        idx = {str(o.get("index")) for o in live}
+        o = opt.lstrip("#").strip()
+        if o in idx:
+            body["option"] = int(o)
+        elif opt.lower() in labels:
+            body["option"] = int(labels[opt.lower()])
+        else:
+            raise ValueError("that dialog's options are: " + ", ".join(f"{x.get('index')} {x.get('label')}" for x in live))
+        return body
 
     def _pawn(self, name: str) -> int:
         if name not in self.pawns:
@@ -193,6 +234,8 @@ class Session:
             if pick is None:
                 raise ValueError(f"that letter's choices are: " + ", ".join(ch + ["dismiss"]))
             return "letter", {"letter": int(v["letter_id"]), "choice": pick}
+        if tool == "choose":
+            return "choose", self._choose(v)
         if tool == "draft":
             raw = v["pawns"].strip()
             if raw.lower() == "all":
@@ -224,7 +267,7 @@ class Session:
 class StewardKit:
     """What core/steward.py asks of the RimWorld adapter."""
 
-    silent_events = frozenset({"letter", "alert"})          # the director never voices these; the steward reads them
+    silent_events = frozenset({"letter", "alert", "dialog"})          # the director never voices these; the steward reads them
 
     def wake(self, e: dict) -> str | None:
         """A short reason when this event wakes the steward at once, else None."""
@@ -240,6 +283,7 @@ class StewardKit:
             return "letter"
         return None
 
+
     def event_line(self, e: dict) -> str | None:
         """One line for the "since last time" list, or None for chatter that is not worth the steward's attention."""
         t, data = e.get("type", ""), e.get("data") or {}
@@ -248,6 +292,8 @@ class StewardKit:
         if t not in ("letter", "alert", "quest", "injury") + _WAKE_TYPES and float(e.get("severity", 0)) < 0.4:
             return None
         text = e.get("summary") or data.get("label") or ""
+        if t == "dialog":
+            return f"dialog {data.get('dialog')}: " + gd.clean(str(data.get("title", text)), "event") + f" (options: {', '.join(str(c) for c in data.get('options') or [])})"
         if t == "letter" and data.get("choices"):
             text = f"{data.get('label', text)} (choices: {', '.join(str(c) for c in data['choices'])}; letter #{data.get('letter')})"
         return f"{t}: " + gd.clean(text, "event") if text else t

@@ -104,6 +104,7 @@ class Steward:
         self.was_playing = False                      # the switch was on at the last step (an off→on flip wakes at once)
         self.switched_on = False
         self.pause_woken = False
+        self.dialog_pending = False                   # a choice window opened: wakes even while the game is paused
         self.vv = {}
         if self.d.leases.narrator_owner == "steward":
             self.d.leases.narrator_owner = None
@@ -121,7 +122,9 @@ class Steward:
             self.events.append(line)
             del self.events[:-MAX_EVENT_LINES]
         why = self.kit.wake(e)
-        if why:
+        if why == "dialog":
+            self.dialog_pending = True                # modal windows pause the game: handled in _wake, not as an urgent event
+        elif why:
             self.urgent.append(why)
             del self.urgent[:-MAX_EVENT_LINES]
 
@@ -162,6 +165,7 @@ class Steward:
         if not playing:
             self.events.clear()
             self.urgent.clear()
+            self.dialog_pending = False
         if not vv.get("paused_by_narrator"):
             self.pause_woken = False
         if self.active():
@@ -191,7 +195,7 @@ class Steward:
         d, env = self.d, self.d.bridge.env
         if self.pending_chat:
             return "chat"
-        if not playing or env.paused and not self.vv.get("paused_by_narrator"):
+        if not playing or env.paused and not self.vv.get("paused_by_narrator") and not self.dialog_pending:
             return None
         if self.switched_on:
             self.switched_on = False
@@ -199,6 +203,9 @@ class Steward:
                 return "switched on"
         if self.last_real is not None and d.clock() - self.last_real < d.cfg.steward_min_gap_real_s:
             return None
+        if self.dialog_pending:
+            self.dialog_pending = False
+            return "dialog"                           # also while paused: the window is why the game is paused
         if self.urgent and not env.paused:
             return "event"
         if env.paused:
@@ -410,6 +417,8 @@ class Steward:
             why.append("Routine look: time has passed since you last checked. Look for what needs doing.")
         elif reason == "event":
             why.append("Something important happened (see below). Deal with it first.")
+        elif reason == "dialog":
+            why.append("A window or letter is waiting for a choice (see OPEN DIALOGS in the state). Answer it with choose.")
         elif reason == "paused":
             why.append("The game is paused because you paused it for an emergency. If it is handled, unpause with set_time (pause no); otherwise carry on.")
         if events:

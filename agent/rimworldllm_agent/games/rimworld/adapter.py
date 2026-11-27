@@ -25,7 +25,7 @@ _EVENT_CLASS = {
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
     "first_cue": Cls.REACTIVE,
-    "letter": Cls.IDLE, "alert": Cls.IDLE,           # the steward reads these; nobody speaks about them (silent_events)
+    "letter": Cls.IDLE, "alert": Cls.IDLE, "dialog": Cls.IDLE,           # the steward reads these; nobody speaks about them (silent_events)
 }
 # First-time reactions (core/firsts.py): what a pawn may react to once, and the words for "the first time you have ever ...".
 _FIRST_CUES = {

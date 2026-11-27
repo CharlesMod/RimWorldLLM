@@ -68,6 +68,7 @@ namespace RimWorldLLM
             Sec(o, "beds", () => Beds(map));
             Sec(o, "alerts", () => new JArray(ActiveAlerts().Take(MaxAlerts).Select(a => new JObject { ["alert"] = a.Name, ["label"] = a.Label, ["critical"] = a.Critical })));
             Sec(o, "letters", Letters);
+            Sec(o, "dialogs", () => { var v = VivariumGame.State; return v.Dialogs.Count == 0 ? null : v.Dialogs.ToJson(v.Settings.DialogTimeoutS, Bridge.Vivarium.NowReal())["dialogs"]; });
             Sec(o, "research", Research);
             Sec(o, "threats", () => Threats(map));
             Sec(o, "rooms", () => Rooms(map));

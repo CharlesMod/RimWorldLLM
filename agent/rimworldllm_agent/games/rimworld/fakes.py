@@ -107,6 +107,7 @@ class FakeBridge:
         self.goals_board = {"rev": 0, "goals": [], "plan": "", "orders": [], "log": []}
         self._goal_ids = 0
         self.actions: list[dict] = []
+        self.dialogs: list[dict] = []            # what GET /dialogs lists; POST /act/choose removes the answered one
         self.digest: dict | None = None          # what GET /digest returns (None: 409 no_game)
         self.act_log: list[tuple[str, dict]] = []    # (verb, body) of every accepted /act/<verb>
         self.act_refuse: dict[str, str] = {}     # verb -> reason: that verb is refused 409 "refused" with this detail
@@ -306,7 +307,9 @@ class FakeBridge:
         if path == "/digest" and req.method == "GET":
             if self.digest is None:
                 return self._err(409, "no_game", "no game loaded")
-            return self._ok(**self.digest)
+            return self._ok(**{**self.digest, **({"dialogs": list(self.dialogs)} if self.dialogs else {})})
+        if path == "/dialogs" and req.method == "GET":
+            return self._ok(dialogs=list(self.dialogs), timeout_s=90)
         if path == "/chat":
             if req.method == "GET":
                 since = int(req.url.params.get("since", 0))
@@ -374,7 +377,7 @@ class FakeBridge:
             return self._ok(actions=[a for a in self.actions if a["seq"] > since], next_seq=len(self.actions) + 1)
         if path.startswith("/act/") and req.method == "POST":
             verb = path[5:]
-            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill"):
+            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose"):
                 return None
             bad = self._act_shape(verb, body)
             if bad:
@@ -420,6 +423,11 @@ class FakeBridge:
         elif verb == "letter":
             if not pos(b.get("letter")) or not 1 <= len(str(b.get("choice", ""))) <= 80:
                 return "letter id and choice required"
+        elif verb == "choose":
+            if not isinstance(b.get("dialog"), str) or not b["dialog"]:
+                return "dialog required"
+            if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)):
+                return "option or text required"
         elif verb == "draft":
             ids = b.get("pawns")
             if not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids) or not isinstance(b.get("drafted"), bool):
@@ -452,6 +460,12 @@ class FakeBridge:
             if "speed" in b:
                 self.speed = b["speed"]
             return "", "time: " + ", ".join(f"{k} {b[k]}" for k in ("pause", "speed") if k in b)
+        if verb == "choose":
+            hit = next((d for d in self.dialogs if d.get("id") == b["dialog"]), None)
+            if hit is None:
+                return f"no open dialog {b['dialog']}", ""
+            self.dialogs.remove(hit)
+            return "", f"choose {b['dialog']}: " + json.dumps(b.get("option", b.get("text")))
         notes = {"work": lambda: "set " + ", ".join(f"{k} {v}" for k, v in b["priorities"].items()) + f" for pawn {b['pawn']}",
                  "schedule": lambda: f"schedule {b['from_hour']}-{b['to_hour']} {b['assignment']} for pawn {b['pawn']}",
                  "policy": lambda: f"{b['kind']} policy {b['name']} for pawn {b['pawn']}",
