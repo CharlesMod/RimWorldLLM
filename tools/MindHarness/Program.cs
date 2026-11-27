@@ -24,6 +24,7 @@ namespace RimWorldLLM.Harness
             "      and replay-requests.jsonl (every raw HTTP request body and reply, plus one 'decision' row per LLM call).",
             "  speedsim [--speed N | --all] [--events FILE] [--slots N] [--seed N]   (virtual-time speed simulation)",
             "  steward-try --digest FILE --llm-url URL [--goals FILE] [--chat TEXT] [--playing] [--model M] [--mode auto|grammar|json|native] [--combat FILE [--combat-cycle]] [--trade-turn]",
+            "  stream-try --llm-url URL [--model M] [--key K]   (one streamed request; prints every stream event with its time)",
             "  comment-try --events FILE [--llm-url URL --model M --key K]   (documentary voice on sample events; FakeLlm without --llm-url)");
 
         static int Main(string[] a)
@@ -42,6 +43,7 @@ namespace RimWorldLLM.Harness
                 case "steward-try": return await StewardTry.MainAsync(rest, Console.Out, Console.Error);
                 case "speedsim": return SpeedSim.Run(rest, Console.Out, Console.Error);
                 case "comment-try": return await CommentTryAsync(rest);
+                case "stream-try": return await StreamTryAsync(rest);
                 default: Console.Error.WriteLine("MindHarness: unknown command " + a[0] + "\n" + Usage()); return 2;
             }
         }
@@ -72,6 +74,38 @@ namespace RimWorldLLM.Harness
             else llm = new RimWorldLLM.Tests.Mind.Fakes.FakeLlm();
             foreach (var row in await RimWorldLLM.Tests.Mind.CommentTry.TryEventsAsync(list, llm))
                 Console.Out.WriteLine(RimWorldLLM.Tests.Mind.CommentTry.Format(row));
+            return 0;
+        }
+
+        static async Task<int> StreamTryAsync(string[] a)
+        {
+            string url = null, model = "", key = "";
+            for (int i = 0; i < a.Length; i++)
+            {
+                string Next() { if (i + 1 >= a.Length) throw new ArgumentException("expected a value after " + a[i]); return a[++i]; }
+                switch (a[i])
+                {
+                    case "--llm-url": url = Next(); break;
+                    case "--model": model = Next(); break;
+                    case "--key": key = Next(); break;
+                    default: throw new ArgumentException("unknown option " + a[i]);
+                }
+            }
+            if (url == null) { Console.Error.WriteLine("stream-try: --llm-url is required"); return 2; }
+            var lc = new LlmConfig { BaseUrl = url, Model = model, ApiKey = key };
+            var llm = new HttpLlm(lc, null, new HttpClient { Timeout = Timeout.InfiniteTimeSpan });
+            var t0 = System.Diagnostics.Stopwatch.StartNew();
+            var opts = new CallOptions
+            {
+                Sink = new StreamSink(e => Console.Out.WriteLine(
+                    $"{t0.Elapsed.TotalSeconds,7:F3}s {e.Kind}" + (e.Kind == StreamEventKind.Progress ? $" {e.Processed}/{e.Total} cache {e.Cache}" : "") +
+                    (e.Kind == StreamEventKind.Partial || e.Kind == StreamEventKind.Done || e.Kind == StreamEventKind.Error ? " " + e.Text : ""))),
+            };
+            var msgs = new List<LlmMessage> { new LlmMessage("system", "You are the narrator of a small colony. Answer in one short sentence."),
+                                              new LlmMessage("user", "The player asks: what should we build first?") };
+            var c = await llm.CompleteAsync(msgs, 0, "steward", 60, new string[0], null, null, null, null, opts);
+            Console.Out.WriteLine("FINAL: " + c.Text);
+            Console.Out.WriteLine("STATS: " + PyJson.Dumps(c.Stats.ToDict()));
             return 0;
         }
 
@@ -134,7 +168,7 @@ namespace RimWorldLLM.Harness
                     var http = new HttpClient(new LoggingHandler(sink)) { Timeout = TimeSpan.FromSeconds(cfg.Llm.TimeoutS + 30) };
                     var inner = new HttpLlm(cfg.Llm, new CallLog(Path.Combine(dataDir, "replay-calls.jsonl")), http);
                     rec = new RecordingLlm(inner);
-                    rec.OnEntry = e => sink(new JObject { ["type"] = "decision", ["kind"] = e["kind"], ["slot"] = e["slot"], ["actor"] = e["actor"], ["reply"] = e["reply"], ["error"] = e["error"] });
+                    rec.OnEntry = e => sink(new JObject { ["type"] = "decision", ["kind"] = e["kind"], ["slot"] = e["slot"], ["actor"] = e["actor"], ["reply"] = e["reply"], ["error"] = e["error"], ["trace"] = e["trace"] });
                     llm = rec;
                 }
                 var items = await Replay.RunAsync(path, cfg, llm);

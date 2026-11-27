@@ -39,7 +39,7 @@ namespace RimWorldLLM.Tests.Mind.ReplayTool
                 e["reply"] = c.Text;
                 return c;
             }
-            catch (Exception ex) { e["error"] = ex.GetType().Name + ": " + ex.Message; throw; }
+            catch (Exception ex) { e["error"] = ex.GetType().Name + ": " + ex.Message; e["trace"] = ex.StackTrace; throw; }
             finally { lock (Log) { Log.Add(e); } OnEntry?.Invoke(e); }
         }
     }

@@ -106,7 +106,7 @@ namespace RimWorldLLM.Mind.Py
                     case JTokenType.Undefined:
                         _sb.Append("null"); return;
                     case JTokenType.Boolean: _sb.Append((bool)t ? "true" : "false"); return;
-                    case JTokenType.String: WriteString((string)t); return;
+                    case JTokenType.String: { var str = (string)t; if (str == null) _sb.Append("null"); else WriteString(str); return; }
                     case JTokenType.Integer:
                         {
                             object o = ((JValue)t).Value;

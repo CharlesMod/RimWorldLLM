@@ -93,5 +93,13 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal(1, (int)PyJson.Loads(new byte[] { 0xEF, 0xBB, 0xBF, (byte)'1' }));
             Assert.Throws<PyJsonException>(() => PyJson.Loads(new byte[] { 0xff, 0xfe, 0x00 }));
         }
+
+        [Fact]
+        public void ANullStringValueIsWrittenAsNull()
+        {
+            // found live: a JObject built with ["request"] = (string)null holds a String token whose value is null
+            var o = new JObject { ["a"] = (string)null, ["b"] = "x" };
+            Assert.Equal("{\"a\": null, \"b\": \"x\"}", PyJson.Dumps(o));
+        }
     }
 }
