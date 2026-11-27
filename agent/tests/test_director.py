@@ -163,3 +163,29 @@ def test_gossip_creates_told_memory_only_if_applied(world):
     # conversation ran; if gossip was spoken by Ana the listener has a lower-confidence told memory
     if any(s["intent"] == "gossip" for s in w.d.said if s["actor"] == 1):
         assert told and told[0].confidence < 1 and told[0].told_by == "Ana"
+
+
+def test_run_waits_for_a_game_instead_of_exiting(world, monkeypatch):
+    import asyncio
+    from rimworldllm_agent.core import director as dmod
+    from rimworldllm_agent.core.bridge import BridgeError
+
+    async def go():
+        d = world.d
+        tries = {"n": 0}
+        stop = asyncio.Event()
+
+        async def start():
+            tries["n"] += 1
+            if tries["n"] < 3:
+                raise BridgeError("no_game", "no game is loaded", 409)
+            stop.set()                                   # started: end the run loop at once
+
+        async def no_sleep(_):
+            return None
+
+        monkeypatch.setattr(d, "start", start)
+        monkeypatch.setattr(dmod.asyncio, "sleep", no_sleep)
+        await d.run(stop)
+        assert tries["n"] == 3
+    run(go())

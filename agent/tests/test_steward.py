@@ -85,6 +85,7 @@ def test_old_history_and_named_lines_are_not_answered(world):
     async def go():
         w = world
         w.fb.add_chat("player", "an old line from before the agent connected")
+        w.fb.tick += 5000                         # more than an in-game hour ago: history, not caught up
         w, st, fake = await boot(world, playing=False)
         await cycle(w)
         assert fake.calls == []                   # the cursor started at the current seq
@@ -109,8 +110,9 @@ def test_chat_cursor_resets_on_a_new_world(world):
         w.fb.chat, w.fb.chat_seq = [], 0         # the loaded save has its own chat log
         await w.d.step()
         assert st.cursor is None                 # reset by the epoch change
-        chat(w, "typed before the agent looked at the new log")
-        await w.d.steward.step()                 # first sight of the new world: that line is history now
+        w.fb.add_chat("player", "typed long before the agent looked at the new log")
+        w.fb.tick += 5000
+        await w.d.steward.step()                 # first sight of the new world: an old unanswered line is history
         assert fake.cycles == 1
         chat(w, "after the load")
         await cycle(w)
@@ -439,4 +441,17 @@ def test_a_wordless_final_line_on_a_chat_gets_a_plain_reply(world):
         await cycle(w)
         got = lines(w, "narrator")
         assert len(got) == 1 and ":" != got[0] and "couldn't think that through" in got[0]
+    run(go())
+
+
+def test_recent_unanswered_lines_are_caught_up_on_first_sight(world):
+    async def go():
+        w = world
+        w.fb.add_chat("player", "answered earlier")
+        w.fb.add_chat("narrator", "an earlier answer")
+        w.fb.add_chat("player", "typed while the agent was restarting")
+        w, st, fake = await boot(world, [final("Here now.")], playing=False)
+        await cycle(w)
+        assert lines(w, "narrator")[-1] == "Here now."
+        assert "typed while the agent was restarting" in fake.calls[0]["messages"][1]["content"]
     run(go())

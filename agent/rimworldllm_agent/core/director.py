@@ -309,7 +309,17 @@ class Director:
 
     async def run(self, stop: asyncio.Event | None = None) -> None:
         stop = stop or asyncio.Event()
-        await self.start()
+        while not stop.is_set():                     # wait for a world: the host may not have one loaded yet
+            try:
+                await self.start()
+                break
+            except BridgeError as e:
+                if e.code not in ("no_game", "unreachable"):
+                    raise
+                log.info("waiting for a world (%s)", e.code)
+                await asyncio.sleep(2.0)
+        if stop.is_set():
+            return
         while not stop.is_set():
             try:
                 await self.step()
