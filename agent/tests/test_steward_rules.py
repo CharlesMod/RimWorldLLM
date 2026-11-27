@@ -270,3 +270,10 @@ def test_sample_facts_fire_the_expected_rules():
     assert not got & {"build.stuck_no_builder", "health.infection_losing"}
     text = sr.alerts_section(SAMPLE)
     assert "PLAYBOOK ALERTS" in text and len(text) <= sr.SECTION_CAP
+
+
+def test_strategy_covers_the_new_lines_under_the_cap():
+    text = (Path(sr.__file__).parent / "strategy" / "steward_strategy.md").read_text()
+    for word in ("DEADLINES", "STUCK", "LOOSE", "can't:", "IDLE", "FOOD", "do not reorder priorities"):
+        assert word in text, word
+    assert len(text.encode()) <= 12288
