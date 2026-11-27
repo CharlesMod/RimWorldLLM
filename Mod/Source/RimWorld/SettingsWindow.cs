@@ -322,6 +322,8 @@ namespace RimWorldLLM
             Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
             s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
+            int undoable = Current.Game != null ? VivariumGame.State.Ledger.Count : 0;
+            if (Button(l, "RWL_Viv_Undo", "RWL_Viv_UndoTip", undoable > 0)) VivariumChat.UndoNarrator(1);
             Check(l, "RWL_Chat_Show", ref s.chatPanelShow, "RWL_Chat_ShowTip");
             Check(l, "RWL_Chat_Right", ref s.chatPanelRight, "RWL_Chat_RightTip");
             Check(l, "RWL_Chat_Medium", ref s.chatPanelMedium, "RWL_Chat_MediumTip");

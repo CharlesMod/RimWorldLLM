@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 namespace RimWorldLLM.Bridge
 {
     /// <summary>Registers the vivarium routes. hands may be null in tests of the non-game routes.</summary>
-    public static class VivariumRoutes
+    public static partial class VivariumRoutes
     {
         static readonly string[] Assignments = { "anything", "work", "joy", "sleep", "meditate" };
         static readonly string[] Kinds = { "outfit", "food", "drug" };
@@ -38,6 +38,7 @@ namespace RimWorldLLM.Bridge
             router.Add("POST", "/act/letter", true, c => Act(c, vivarium, hands, "letter", Letter));
             router.Add("POST", "/act/draft", true, c => Act(c, vivarium, hands, "draft", Draft));
             router.Add("POST", "/act/order", true, c => Act(c, vivarium, hands, "order", Order));
+            RegisterBuild(router, vivarium, hands);
         }
 
         static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }
@@ -115,6 +116,7 @@ namespace RimWorldLLM.Bridge
             string name = b["name"] != null && b["name"].Type == JTokenType.String ? b.Value<string>("name") : null;
             string err = v.Live.Status(sid, who, to, name, state, progress);
             if (err != null) return Bad(err);
+            if (state == "thinking" && who == "narrator") v.Budget.NewCycle(c.State.Tick);   // a steward cycle starts: fresh build caps
             return ApiResult.Success(new JObject { ["stream_id"] = sid, ["state"] = state, ["live"] = v.Live.IsLive(sid) });
         }
 
@@ -203,7 +205,9 @@ namespace RimWorldLLM.Bridge
         sealed class Plan
         {
             public Func<Vivarium, HandResult> Gate;                     // null = nothing to refuse; else a refusal or null
+            public Func<Vivarium, int, HandResult> GateAt;              // the same, with the game tick
             public Func<IVivariumHands, HandResult> Run;
+            public Func<IVivariumHands, BuildBudget, HandResult> RunLeft; // phase 2: gets what the cycle caps still allow
             public Action<Vivarium> OnOk;
             public Func<string> What;                                   // plain English of what is attempted, from the parsed args ("pause the game")
         }
@@ -233,7 +237,17 @@ namespace RimWorldLLM.Bridge
                     return ApiResult.Fail("refused", refusal.Reason);
                 }
             }
-            var r = plan.Run(h);
+            if (plan.GateAt != null)
+            {
+                var refusal = plan.GateAt(v, c.State.Tick);
+                if (refusal != null)
+                {
+                    ChatFeed.Refused(v.Chat, c.State.Tick, plan.What != null ? plan.What() : verb, refusal.Reason);
+                    return ApiResult.Fail("refused", refusal.Reason);
+                }
+            }
+            v.Budget.Tick(c.State.Tick);
+            var r = plan.RunLeft != null ? plan.RunLeft(h, v.Budget.Left()) : plan.Run(h);
             if (r == null) return ApiResult.Fail("refused", "the game gave no answer");
             if (!r.Ok)
             {
@@ -246,6 +260,13 @@ namespace RimWorldLLM.Bridge
             v.Actions.Add(verb, note, c.State.Tick, "narrator", why);
             ChatFeed.Action(v.Chat, c.State.Tick, note, why);
             var body = new JObject { ["done"] = note };
+            if (r.Marks != null && r.Marks.Count > 0)
+            {
+                v.Budget.Charge(r.Marks);
+                var e = v.Ledger.Add(verb, note, c.State.Tick, r.Marks);
+                body["undo_seq"] = e.Seq;
+                body["left"] = v.Budget.ToJson();
+            }
             if (r.Extra != null)
                 foreach (var p in r.Extra.Properties())
                     if (body[p.Name] == null) body[p.Name] = p.Value;

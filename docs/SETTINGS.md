@@ -74,6 +74,7 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `chatPanelX`, `chatPanelY`, `chatPanelW`, `chatPanelH` | -1 | U | The panel's box as fractions of the screen, set by dragging its strip/grip and its corner; negative = default placement. "Reset chat panel position" sets them back to -1 | new (chat panel round 2) |
 | `chatShowTalk`, `chatShowThoughts`, `chatShowNarrator`, `chatShowActions`, `chatShowStory` | true | U | The panel's five filters (also the chips on its hover strip): Talk = player + colonist lines; Thoughts = thoughts, dreams, diary; Narrator = narrator + notes; Actions = greentext acts + refusals; Story = chronicle, recap, art. They hide lines on the panel only | new (chat panel round 2) |
 | `chatPanelWidth`, `chatPanelLines` | 420, 10 | - | Old width/lines sliders; still loaded from old saves, no longer shown or read (dragging replaced them) | removed from UI (round 2) |
+| (button) | | | "Narrator plays" group: "Undo the narrator's last build" takes back its last placing action (as `/undo` in the chat); greyed when there is nothing to undo or no game | new (vivarium phase 2) |
 
 The "Narrator plays" switch itself is not a mod setting: it is saved per game (GameComponent, `rwlVivarium`) and
 sits in the bottom-right play-settings row, with a key `RWL_ToggleNarratorPlays` (unbound by default) under

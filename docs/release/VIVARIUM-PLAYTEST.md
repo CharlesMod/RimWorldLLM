@@ -124,5 +124,39 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
 17. **Speed.** At 3x and 4x the game must not stutter from the steward (it reads the digest at most every ~20 s).
 18. **Turn it off** mid-cycle: it finishes the current look and then only answers chat.
 
+## C. Phase 2: building, zones, bills, designations
+
+Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). `$B` and `$T` as above.
+
+19. **Digest build view.** `curl -s -H "Authorization: Bearer $T" $B/digest | jq .build`: `home` near your beds;
+    `rooms` lists your real rooms with the right role, size, bed/door/roofed; `missing` matches what the colony
+    lacks (try: no stove → "stove"); `benches` shows each bench with its bills; `zones`, `can_build` (only researched
+    things), `stuff` (your stock), `plants` (sowable now), `ores` (visible steel/components near home).
+20. **Room.** `-X POST $B/act/room -d '{"op_id":"r1","purpose":"bedroom"}'`: a 5x5 ring of wall blueprints with one
+    door facing the base appears on open ground near home, not over a bed, grave, tree, zone or building. The reply
+    says where and of what. Try `"x":<a cell in a mountain>,"z":...`: refused with a reason, nothing placed.
+21. **Thing.** `{"thing":"stove","room":<kitchen id from rooms>}` → a fueled stove blueprint inside that room against
+    a wall, not in the doorway. `{"thing":"stoev"}` → refused, lists known things. `{"thing":"stove","stuff":"cloth"}`
+    → refused ("can't be made of"). A thing needing research you lack → refused naming the project.
+22. **Zones.** `{"kind":"grow","plant":"rice","size":"small"}` → a 5x5 rice field on fertile, unroofed soil. In winter
+    → refused (season). `{"kind":"stockpile","preset":"food","room":<id>}` fills that room's free floor, food only.
+    `{"kind":"dump"}` → a small dumping stockpile 12-30 cells away.
+23. **Designations.** `{"kind":"mine","ore":"steel","max":10}` → 10 steel cells nearest home marked. `{"kind":"chop"}`
+    with a blueprint on a tree → that tree marked to cut, and it yields wood. `{"kind":"harvest"}` → ripe wild
+    berries/plants near home. `{"kind":"haul"}` → loose items near home. `{"kind":"deconstruct","target":<your
+    wall>}` → refused/skipped ("player-made buildings"); with `"player_asked":true` and no chat line → refused.
+24. **Bills.** `GET $B/benches`; `/act/bill {"op":"add","bench":<stove>,"recipe":"simple meal","until":10}` → the
+    bill shows "Do until you have 10". suspend/resume/remove by `index`.
+25. **Undo.** After 20-24, type `/undo` in the chat: the last action's things vanish (blueprints cancelled, zone gone,
+    bill gone) and a note says what. `/undo 3` takes back three. A wall already built stays ("already built"). The
+    settings button "Undo the narrator's last build" (Colonists → Narrator plays) does the same; greyed when there is
+    nothing to undo. Save, load, `/undo` still works for actions before the save.
+26. **Caps.** Place rooms until refused: after about 50 blueprints in one steward cycle (or one game hour) the next
+    is refused "used up"; after an hour it works again.
+27. **Steward builds.** Switch on, early colony missing a stove and a freezer: over a few looks it should follow the
+    build order (shelter, beds, food stockpile, stove, freezer, table, research bench), one room or zone per look,
+    never over beds/graves, never tearing anything down. Chat "build a freezer": a freezer room, then a cooler in it.
+    Note anything silly (rooms in odd places, fields on rock, rooms overlapping planned rooms).
+
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).

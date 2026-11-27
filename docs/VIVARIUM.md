@@ -222,7 +222,7 @@ The system prompt is built from files shipped in `games/rimworld/`:
 The user turn carries why it woke (chat text, events), the goals board, and the rendered digest.
 
 ### Phase 1 limits
-No designations, building, zones, bills, trade or caravans yet; draft orders are single commands
+(Phase 2 below adds designations, building, zones and bills.) No trade or caravans yet; draft orders are single commands
 (no tactical controller). The digest is capped (about 6 KB rendered) and lists the top items only.
 
 ## Phase 1 status (what is built)
@@ -281,3 +281,111 @@ a bed for Eli, research Batteries, two notes, a line. In advisor mode a question
 (after a prompt fix; before it, it rejected the quest), "put Bram on hunting first" did exactly that one task, and
 "build a freezer" got "I can't build yet". Fixed from this check: advisor questions vs requests, priority churn,
 doubled notes, and a grammar detail that sometimes made the final line a scrap (":").
+
+## Phase 2: the builder's hands
+
+Phase 2 gives the narrator designations, blueprints, a room planner, zones and areas, and bills, with a build
+view in the digest so it can see what the colony lacks. The model states intent ("a medium bedroom", "a stove in
+the kitchen", "a potato field"); C# planners pick the cells. Everything it places is tagged for undo.
+
+### Pieces and where they live
+- `Mod/Source/Bridge/VivariumBuild.cs` (Verse-free, tested): the argument records (`DesignateArgs`, `BuildArgs`,
+  `RoomArgs`, `ZoneArgs`, `AreaArgs`, `BillArgs`, `Where`, `CellBox`), `NarratorMark` + `NarratorLedger` (undo, saved
+  in the vivarium JSON as `ledger`), `BuildBudget` (per-cycle caps), `BuildPure` (room footprint, door side, sizes,
+  site-candidate rings, the thing/stuff/plant word lists).
+- `Mod/Source/Bridge/VivariumRoutesBuild.cs`: the routes below, shape checks, the cap gates, `UndoLast`.
+- `Mod/Source/RimWorld/VivariumBuildHands.cs`: the game bodies (`IVivariumHands.Designate/Build/Room/Zone/Area/Bill/
+  Benches/Undo`), the buildable-site finder.
+- `Mod/Source/RimWorld/VivariumBuildView.cs`: the digest's `build` block.
+- Agent: `games/rimworld/steward_build.py` (the `build`, `zone`, `designate`, `bill` tools), the digest renderer's
+  BUILD lines, the playbook's build order in the steward prompt.
+
+### Routes (POST bodies also take `op_id` and the optional `why`, as every `/act/*`)
+Each hand replies like phase 1 (`{"done": "<plain what>"}` or 409 refused with the reason) and, when it placed
+something, `undo_seq` (its ledger entry) and `left` (what the cycle caps still allow).
+
+| Route | Body | Notes |
+|---|---|---|
+| `POST /act/designate` | `kind` mine\|chop\|harvest\|haul\|deconstruct\|cancel; where: `x,z,w,h` box, or `x,z,radius`, or `target` thing id; `ore` (mine only); `max` 1..200 (40); `player_asked` | Without a place: mine needs `ore` and takes the nearest such cells to home; chop takes trees blocking the narrator's blueprints and zones; harvest takes ripe wild plants near home; haul takes unstored items near home. deconstruct/cancel need a place. Deconstruct never touches player-made buildings unless `player_asked` (and the player wrote to the narrator in the last game hour), nor colonists' beds or graves. Cancel removes designations and the narrator's own blueprints. |
+| `POST /act/build` | `thing` (word or defName), `stuff`?, `rot`? (0..3 / north..west), `x,z`? or `room`? | No place: a valid cell near home. In a room: an inside cell, against a wall if it fits; a cooler or vent goes into one of the room's plain walls, cold side in, with open air or another room behind it. Refuses unknown things, unfinished research, missing/invalid stuff, bad cells (with why), and footprints over beds or graves. |
+| `POST /act/room` | `purpose` bedroom\|barracks\|kitchen\|dining\|storage\|freezer\|hospital\|workshop\|rec; `size` small\|medium\|large or `w,h` 3..11 (outer, walls included); `stuff`?; `door` n\|e\|s\|w\|auto; `x,z`? (south-west corner) | No corner: the site finder walks rings out from home for a box whose inside is clear and buildable (existing walls on the edge are reused). Checks every cell first and places nothing if any fails. Walls + one door (auto: facing home). |
+| `POST /act/zone` | `kind` grow\|stockpile\|dump; `plant` (grow); `preset` food\|meds\|raw\|all; `priority`?; `size` or `w,h` ≤ 20; `x,z`? or `room`? | Grow: fertile, unroofed soil near home; refuses a plant that needs research or cannot grow here now. Stockpile in a room: its free inside cells. Dump: away from the rooms. |
+| `POST /act/area` | `kind` home\|allowed; `op` add\|remove; `x,z,w,h`; `name` (allowed); `assign` [pawn ids] | Not a steward tool (home grows as colonists build; allowed areas are the player's); for scripts and later phases. |
+| `POST /act/bill` | `op` add\|remove\|suspend\|resume; `bench`; `recipe` (add; or to pick a bill); `index` 1-based; `count` or `until`; `radius` | Add: the recipe must be one the bench takes. Until = "do until you have X". |
+| `GET /benches` | | Every workbench: id, label, room, bills (index, recipe, mode, suspended), recipes it can take. |
+| `GET /vivarium/undo` | | The newest 10 ledger entries and the count. No game needed. |
+| `POST /vivarium/undo` | `n` 1..20 (1) | Takes back the narrator's last n placing actions where they still exist: blueprints and frames cancelled (materials drop), designations removed, its zones and zone/area cells removed, its bills deleted. Finished buildings stay. The player's: from the chat ("/undo", "/undo 3") or the settings button. |
+
+**Caps (per steward cycle).** 50 blueprints, 200 zone/area cells, 150 designations, 4 bills. A cycle starts
+when the steward posts `/chat/status` thinking (who narrator), or at the latest an in-game hour after the last
+start. A room or zone that would go over is refused whole; designations stop at what is left.
+
+**Marks.** A hand returns `NarratorMark`s: `blueprint` (thing defName + root cells; undo also finds the frame
+that replaced the blueprint), `designation` (designation defName + things/cells), `zone` (a zone it made),
+`zone_cells` (cells it added to an existing zone), `area_cells` (area label + cells it set), `bill` (bench id +
+the bill's load id). The ledger keeps the newest 50 placing actions and is saved with the game.
+
+### Digest `build` block
+```json
+"build": {
+  "home": {"x": 120, "z": 98},
+  "rooms": [{"id": 12, "role": "bedroom", "label": "Ana's bedroom", "w": 3, "h": 3, "cells": 9,
+             "impressiveness": 24, "bed": true, "door": true, "roofed": true, "x": 118, "z": 101}],
+  "missing": ["beds for 2 colonists", "stove", "freezer", "dining table", "food stockpile"],
+  "benches": [{"id": 4410, "label": "fueled stove", "room": "Kitchen",
+               "bills": ["cook simple meal x10", "cook simple meal until 15 (suspended)"],
+               "recipes": ["simple meal", "fine meal", "pemmican"]}],
+  "zones": [{"id": 3, "kind": "grow", "label": "Growing zone 1", "cells": 64, "plant": "potatoes"},
+            {"id": 4, "kind": "stockpile", "label": "Stockpile zone 1", "cells": 36, "preset": "all", "priority": "normal"}],
+  "can_build": ["wall", "door", "bed", "table", "chair", "stove", "campfire", "cooler"],
+  "stuff": [{"stuff": "wood", "count": 280}, {"stuff": "steel", "count": 410}],
+  "plants": ["potatoes", "rice", "corn", "healroot", "haygrass", "cotton"],
+  "ores": [{"ore": "steel", "cells": 34, "dist": 18}, {"ore": "components", "cells": 4, "dist": 40}]
+}
+```
+- `home`: the centre of the home area (beds, else the colonists' mean position).
+- `rooms`: indoor rooms with a role (not outdoors, not tiny corridors), biggest-impressiveness first, at most 12;
+  `x,z` is a cell inside the room; `w,h` the room's bounding box.
+- `missing` (at most 8), from the playbook's build order: shelter (colonists without a roofed room), beds for N
+  colonists, stove (or campfire), food stockpile, freezer (no room below 0 °C with food storage, when there is a
+  cooler to build), dining table, growing zone, research bench. Computed by the Verse-free `BuildView.Missing`.
+- `benches` at most 8 (bills at most 5 each, recipes at most 8 each); `zones` at most 10; `can_build` the
+  `BuildPure.ThingAliases` words whose first buildable def is researched; `stuff` the building materials in stock
+  (count > 0), most first, at most 8; `plants` the `BuildPure.PlantAliases` words sowable now, at most 10;
+  `ores` resource rock within 60 cells of home (steel, components, silver, gold, plasteel, uranium, jade), nearest
+  first.
+- The agent renders it as a few BUILD lines inside the 6 KB digest cap (it shrinks first under pressure).
+
+### Steward
+Four tools, `why` on each (as the panel's acting tools): `build` (kind room|thing: purpose+size, or thing + room
+id; stuff from `stuff`), `zone` (kind grow|stockpile|dump: plant, preset, size, room), `designate` (kind mine|chop|
+harvest|haul|deconstruct|cancel: ore; deconstruct only when the player asked this cycle), `bill` (op, bench, recipe,
+count/until). The prompt carries the playbook's build order (shelter → beds → food storage → stove → freezer →
+table → research bench) and the safety lines: never build over beds or graves, never tear down player-made
+buildings unless the player asked in chat, prefer the planners over coordinates.
+
+### Phase 2 status (what is built)
+- Mod: the routes, caps, ledger and undo (`VivariumBuild.cs`, `VivariumRoutesBuild.cs`; tests `VivariumBuildTests.cs`),
+  the game bodies and site finder (`VivariumBuildHands.cs`, pure parts in `VivariumBuildHelpers.cs`, tests
+  `VivariumBuildHelpersTests.cs`), the digest build view (`VivariumBuildView.cs`, pure `BuildView.cs`, tests
+  `BuildViewTests.cs`), the chat's `/undo [n]` and the settings button. The game bodies are compile-checked against
+  the 1.7 reference assemblies only; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section C) is their first run.
+- Agent: `steward_build.py` (tests `test_steward_build.py`), the BUILD lines in `steward_digest.py`, the build order
+  in `strategy/steward_strategy.md`, the amended `food.no_freezer` rule. The steward gets no deconstruct or cancel
+  (tearing down is the player's call); `player_asked` exists for scripts and later phases.
+- Not yet: furnishing a planned room in the same turn (it has no id until built), power layout (conduits,
+  generators placement), temperature control beyond one cooler, trade, caravans.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
+2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge).** System prompt about 24 k chars
+(tools 7.7 k of it, a third being the `why` description repeated on 13 tools); a cycle took about 20 s.
+- Day 2, nothing built (3 colonists, sleeping spots): a goal, a plan, then a medium wood barracks, a bed, a stove,
+  a small food stockpile (and once a research bench): the playbook's order.
+- Day 5 (bedrooms and barracks, campfire, no freezer): a freezer room (small, steel), a table and chairs (in the
+  barracks), a research bench, a "simple meal x30" bill at the campfire, research batteries.
+- Advisor "we need a freezer, can you build one?": exactly one small steel freezer room and a line saying so.
+  Advisor "tear down Bram's bedroom": it says it has no tool to tear buildings down.
+- Fixed from this check: the model filled `thing` on a room call (the grammar writes every parameter) and lost a
+  step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
+  the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
+  and the game hand mounts coolers and vents in the room's wall, cold side in.

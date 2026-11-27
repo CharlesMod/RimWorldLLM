@@ -181,7 +181,7 @@
    "id": "food.no_freezer",
    "category": "food",
    "condition": "freezer_temp_c == null and 'Electricity' in research_done and day > 5",
-   "action": "Build a roofed freezer room next to the kitchen with a cooler at -5C, hot side outdoors, double doors.",
+   "action": "Build a roofed freezer room next to the kitchen (build room freezer, then build thing cooler in it) with a cooler at -5C, hot side outdoors, double doors.",
    "priority": 2,
    "sources": [
     "W-cooler",

@@ -479,6 +479,10 @@ namespace RimWorldLLM.Bridge
         public readonly ActionLog Actions = new ActionLog();
         /// <summary>Live "is thinking / is typing" statuses. Never saved.</summary>
         public readonly ChatLive Live = new ChatLive();
+        /// <summary>Phase 2: the narrator's world changes, for undo. Saved.</summary>
+        public readonly NarratorLedger Ledger = new NarratorLedger();
+        /// <summary>Phase 2: per-cycle caps on blueprints, zone/area cells, designations and bills. Never saved.</summary>
+        public readonly BuildBudget Budget = new BuildBudget();
 
         public JObject StatusJson()
         {
@@ -489,6 +493,7 @@ namespace RimWorldLLM.Bridge
                 ["chat_seq"] = Chat.LastSeq,
                 ["goals_rev"] = Goals.Rev,
                 ["actions_seq"] = Actions.LastSeq,
+                ["undoable"] = Ledger.Count,
                 ["settings"] = Settings.ToJson()
             };
         }
@@ -504,7 +509,8 @@ namespace RimWorldLLM.Bridge
                 ["chat_seq"] = Chat.LastSeq,
                 ["goals"] = Goals.Export(),
                 ["actions"] = Actions.Export(),
-                ["actions_seq"] = Actions.LastSeq
+                ["actions_seq"] = Actions.LastSeq,
+                ["ledger"] = Ledger.Export()
             };
         }
 
@@ -519,12 +525,13 @@ namespace RimWorldLLM.Bridge
             Goals.Import(saved["goals"] as JObject);
             Actions.Import(saved["actions"] as JArray);
             Actions.RestoreSeq(VivJson.Int(saved["actions_seq"]));
+            Ledger.Import(saved["ledger"] as JArray);
         }
 
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear();
         }
     }
 }
