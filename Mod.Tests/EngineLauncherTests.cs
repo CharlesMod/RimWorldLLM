@@ -40,10 +40,10 @@ namespace RimWorldLLM.Tests
         }
 
         [Theory]
-        [InlineData("linux", "amd64", "linux-amd64", "hermes-engine")]
-        [InlineData("windows", "amd64", "windows-amd64", "hermes-engine.exe")]
-        [InlineData("darwin", "arm64", "darwin-arm64", "hermes-engine")]
-        [InlineData("darwin", "amd64", "darwin-amd64", "hermes-engine")]
+        [InlineData("linux", "amd64", "linux-amd64", "easy-engine")]
+        [InlineData("windows", "amd64", "windows-amd64", "easy-engine.exe")]
+        [InlineData("darwin", "arm64", "darwin-arm64", "easy-engine")]
+        [InlineData("darwin", "amd64", "darwin-amd64", "easy-engine")]
         public void BinaryChoicePerPlatform(string os, string arch, string dir, string name)
         {
             var p = new EnginePlatform(os, arch);
@@ -121,12 +121,26 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
+        public void BinaryPathFallsBackToAnOldHermesEngineBuildOnly()
+        {
+            using (var t = new Temp())
+            {
+                var p = new EnginePlatform("linux", "amd64");
+                string old = t.Touch("Engine", "linux-amd64", "hermes-engine");
+                Assert.Equal(old, EngineLauncher.BinaryPath(t.Dir, p));
+                string nu = t.Touch("Engine", "linux-amd64", "easy-engine");
+                Assert.Equal(nu, EngineLauncher.BinaryPath(t.Dir, p));
+                Assert.Equal("hermes-engine.exe", new EnginePlatform("windows", "amd64").LegacyBinaryName);
+            }
+        }
+
+        [Fact]
         public async Task RunningEngineGetsAttachNotSpawn()
         {
             using (var t = new Temp())
             using (var f = new FakeEngine((m, p) => m == "GET" ? (200, "{\"phase\":\"ready\"}") : (200, "{}")))
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter();
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult(f.Client)));
                 Assert.Equal(LaunchOutcome.Attached, r.Outcome);
@@ -144,7 +158,7 @@ namespace RimWorldLLM.Tests
             using (var t = new Temp())
             using (var f = new FakeEngine((m, p) => (200, "{\"phase\":\"not_installed\"}")))
             {
-                string bin = t.Touch("Engine", "linux-amd64", "hermes-engine");
+                string bin = t.Touch("Engine", "linux-amd64", "easy-engine");
                 t.Touch("Engine", "agent", "a-0.1-py3-none-any.whl");
                 var s = new FakeStarter();
                 int polls = 0;
@@ -182,7 +196,7 @@ namespace RimWorldLLM.Tests
         {
             using (var t = new Temp())
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter { Throw = new InvalidOperationException("boom") };
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult<EngineClient>(null)));
                 Assert.Equal(LaunchOutcome.SpawnFailed, r.Outcome);
@@ -195,7 +209,7 @@ namespace RimWorldLLM.Tests
         {
             using (var t = new Temp())
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter();
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult<EngineClient>(null)));
                 Assert.Equal(LaunchOutcome.Spawned, r.Outcome);

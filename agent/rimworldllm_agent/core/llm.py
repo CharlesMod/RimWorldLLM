@@ -152,7 +152,7 @@ def engine_status_url(base: str) -> str:
 
 
 async def detect_engine(http: httpx.AsyncClient, base: str, headers: dict | None = None) -> bool | None:
-    """Is ``base`` the hermes engine? True/False when answered; None when the server could not be
+    """Is ``base`` easyEngine? True/False when answered; None when the server could not be
     reached (do not cache that)."""
     try:
         r = await http.get(engine_status_url(base), headers=headers or {}, timeout=3.0)
@@ -210,7 +210,7 @@ class HttpLLM:
         engine's profile for the call's kind decides, or the config when it forces a value."""
         eng = await self.is_engine()
         fields = sampler_fields(self.cfg, engine=eng, kind=kind)
-        return fields, ({"X-Hermes-Sampler": sampler_profile(kind, grammar=grammar, json_schema=json_schema)} if eng else {})
+        return fields, ({"X-Easy-Sampler": sampler_profile(kind, grammar=grammar, json_schema=json_schema)} if eng else {})
 
     async def complete(self, messages: Messages, *, slot: int | None, kind: str = "line",
                        max_tokens: int = 48, stop: list[str] | None = None,

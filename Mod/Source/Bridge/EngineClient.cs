@@ -267,12 +267,12 @@ namespace RimWorldLLM.Bridge
     /// <summary>
     /// Client for the engine's control API (<c>/engine/v1/*</c>, docs/ENGINE.md §7). No game references.
     /// Every call is async with a short timeout and returns an <see cref="EngineResult{T}"/>; non-GET calls carry
-    /// the anti-CSRF header <c>X-Hermes-Engine: 1</c>.
+    /// the anti-CSRF header <c>X-Easy-Engine: 1</c>.
     /// </summary>
     public sealed class EngineClient
     {
         public const int FirstPort = 47480, LastPort = 47489;
-        public const string CsrfHeader = "X-Hermes-Engine";
+        public const string CsrfHeader = "X-Easy-Engine";
 
         static readonly HttpClient Http = MakeHttp();
         static HttpClient MakeHttp()
@@ -399,6 +399,31 @@ namespace RimWorldLLM.Bridge
         /// <summary>The engine data dir (docs/ENGINE.md §2). <paramref name="env"/> reads environment variables (injectable).</summary>
         public static string DataDir(string os, Func<string, string> env, string home)
         {
+            string over = env("EASY_ENGINE_HOME");
+            if (!string.IsNullOrWhiteSpace(over)) return over;
+            switch (os)
+            {
+                case "windows":
+                    {
+                        string la = env("LOCALAPPDATA");
+                        if (string.IsNullOrWhiteSpace(la)) la = Path.Combine(home ?? "", "AppData", "Local");
+                        return Path.Combine(la, "EasyEngine");
+                    }
+                case "darwin":
+                    return Path.Combine(home ?? "", "Library", "Application Support", "EasyEngine");
+                default:
+                    {
+                        string x = env("XDG_DATA_HOME");
+                        if (string.IsNullOrWhiteSpace(x)) x = Path.Combine(home ?? "", ".local", "share");
+                        return Path.Combine(x, "easy-engine");
+                    }
+            }
+        }
+
+        /// <summary>The engine data dir under its old name (hermes-engine / HermesEngine, HERMES_ENGINE_HOME). The engine moves it
+        /// to <see cref="DataDir"/> on start; the mod looks here only as a fallback for the lock on that first run.</summary>
+        public static string LegacyDataDir(string os, Func<string, string> env, string home)
+        {
             string over = env("HERMES_ENGINE_HOME");
             if (!string.IsNullOrWhiteSpace(over)) return over;
             switch (os)
@@ -418,6 +443,14 @@ namespace RimWorldLLM.Bridge
                         return Path.Combine(x, "hermes-engine");
                     }
             }
+        }
+
+        /// <summary>The port in engine.lock: the data dir's first, then the old-named dir's; 0 when neither is readable.</summary>
+        public static int LockPort(string os, Func<string, string> env, string home)
+        {
+            int port = ReadLockPort(Path.Combine(DataDir(os, env, home), "engine.lock"));
+            if (port > 0) return port;
+            return ReadLockPort(Path.Combine(LegacyDataDir(os, env, home), "engine.lock"));
         }
 
         /// <summary>Reads the port from engine.lock. Accepts JSON ({"pid":1,"port":47480}) or "pid port" / "port=N" text. 0 when unreadable.</summary>

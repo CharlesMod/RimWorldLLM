@@ -52,7 +52,7 @@ class OpenAIBackend:
         self.model, self.api_key = model, api_key
         self.http = client or httpx.AsyncClient()
         self.extra = {"cache_prompt": True, "chat_template_kwargs": {"enable_thinking": False}, **(extra or {})}
-        # Sampling: tool-loop steps are the engine's "structured" profile (X-Hermes-Sampler). The
+        # Sampling: tool-loop steps are the engine's "structured" profile (X-Easy-Sampler). The
         # per-call ``temperature`` is sent only with honor_temperature=True (benches); otherwise the
         # engine decides. ``sampler`` forces fields. Against a non-engine endpoint the official
         # Gemma 4 values go out only when ``model`` is a known Gemma 4 build, else nothing.
@@ -78,7 +78,7 @@ class OpenAIBackend:
                 samp.setdefault(k, v)
         body: dict[str, Any] = {"messages": messages, "max_tokens": max_tokens, **samp, **self.extra}
         if self._engine:
-            headers["X-Hermes-Sampler"] = "structured"
+            headers["X-Easy-Sampler"] = "structured"
         if self.model:
             body["model"] = self.model
         if grammar:

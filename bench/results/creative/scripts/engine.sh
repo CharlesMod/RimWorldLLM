@@ -5,8 +5,8 @@ case "$1" in
 start)
   P=${2:-$C/profile.json}
   sleep 86400 & echo $! > $C/sleep.pid
-  export HERMES_ENGINE_HOME=$C/home CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0
-  nohup $C/hermes-engine serve --profile "$P" --parent-pid $(cat $C/sleep.pid) >> $C/logs/engine.log 2>&1 < /dev/null &
+  export EASY_ENGINE_HOME=$C/home CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0
+  nohup $C/easy-engine serve --profile "$P" --parent-pid $(cat $C/sleep.pid) >> $C/logs/engine.log 2>&1 < /dev/null &
   echo $! > $C/engine.pid
   for i in $(seq 240); do curl -sf http://127.0.0.1:47480/engine/v1/status | grep -q '"phase":"ready"' && break; sleep 1; done
   echo started engine $(cat $C/engine.pid); curl -s http://127.0.0.1:47480/engine/v1/status | head -c 600; echo ;;

@@ -18,7 +18,7 @@ can do or decide; the rest the coordinator can do.
    - Nexus adult-content flag: the mod's adult setting is off by default, but the model cards are tagged
      not-for-all-audiences.
    - Uninstall: settled. Storage has one "Remove downloaded files" button that also offers to delete the helper's memory and logs.
-   - Code signing for `hermes-engine.exe` (for example Azure Trusted Signing): the only reliable fix for Windows 11
+   - Code signing for `easy-engine.exe` (for example Azure Trusted Signing): the only reliable fix for Windows 11
      Smart App Control, which can refuse an unsigned engine unpacked from a downloaded zip.
 3. Build the zip on a clean tree: `scripts/package-release.sh` (builds under `nice -n 19`). Every line must say PASS.
    Keep the printed size and sha256.

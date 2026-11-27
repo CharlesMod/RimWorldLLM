@@ -25,7 +25,7 @@ def default_data_dir() -> Path:
     if env:
         return Path(env)
     if _windows():
-        # Windows: %LOCALAPPDATA%\rimworldllm-agent, beside the engine's %LOCALAPPDATA%\HermesEngine
+        # Windows: %LOCALAPPDATA%\rimworldllm-agent, beside the engine's %LOCALAPPDATA%\EasyEngine
         # (not a Linux-style %USERPROFILE%\.local\share).
         local = os.environ.get("LOCALAPPDATA")
         return Path(local if local else Path.home() / "AppData" / "Local") / "rimworldllm-agent"
@@ -68,7 +68,7 @@ class LLMConfig(BaseModel):
     # hand-built Gemma turn format, which gives id_slot control and cache stats.
     mode: str = "openai"
     # Sampler overrides. None (the default) means "let the engine decide": the engine applies the
-    # model's own profile (X-Hermes-Sampler: rp | structured). Set a value only to force it; the
+    # model's own profile (X-Easy-Sampler: rp | structured). Set a value only to force it; the
     # engine's sampler policy may still replace it. Against a non-engine endpoint the agent sends
     # Google's official Gemma 4 values itself, but only when ``model`` names a known Gemma 4 build.
     temperature: float | None = None
@@ -76,7 +76,7 @@ class LLMConfig(BaseModel):
     top_p: float | None = None
     min_p: float | None = None
     repeat_penalty: float | None = None
-    # True: the endpoint is the hermes engine (sends X-Hermes-Sampler). False: it is not.
+    # True: the endpoint is easyEngine (sends X-Easy-Sampler). False: it is not.
     # None: detect it by asking for the engine's /engine/v1/status once.
     engine: bool | None = None
     line_max_tokens: int = 48

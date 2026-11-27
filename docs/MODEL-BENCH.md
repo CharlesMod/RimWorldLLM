@@ -49,15 +49,9 @@ Method notes: grammar and spelling are checked offline with `pyspellchecker` plu
 | **Voice** pawn-ID accuracy (chance 17%) / slop rate | 82% / 0% | 85% / 0% | 85% / 0% | 78% / 0% |
 | engine shape (slots x ctx, KV) | 3 x 65536, q4_0 | 3 x 65536, q4_0 | 3 x 65536, q4_0 | 3 x 65536, q4_0 |
 | VRAM used with model loaded (MiB) | 12680 | 6146 | 5628 | 3180 |
-| **Verdict** | FIT as is | FIT with caveats | FIT with caveats | FIT with caveats |
+| **Verdict** | pending | pending | pending | pending |
 
 ## gemma4-rp-maxxed-q3kxl
-
-**Verdict: FIT as is.** Cleanest output on every check: 100% of raw lines pass all checks, no refusal or moralising on the grim set, intent 97% (the only model above 80%), no repetition loops, best conversation turn-taking, 100% right tool in both tool_choice modes, and the reflection JSON always parses. It is the slowest of the four (about 137 tok/s decode, 0.31 s cold first token, 0.08 s warm) but a 12-17 token line is still back in under 0.25 s warm even with three slots busy.
-
-- Its 6% sanitizer drop rate is not the model's fault: all 6 drops are the agent sanitizer rejecting sentence-initial 'It' (see Findings, F1). It also loses 5% of reflection runs to a possessive ('Hana's') the same sanitizer rejects (F2).
-- Tool arguments ignore the numeric ranges 20% of the time (importance 100, delta -20); clamp them in the tool executor (F4).
-- 12.7 GB of VRAM with the shape the engine chose (3 x 65536, q4_0 KV); the size worker owns whether that leaves the game its room.
 
 ### Lines
 
@@ -178,14 +172,6 @@ Pawn-ID accuracy from lines alone 82% (chance 17%), slop-phrase rate 0%, duplica
 - lux: 'Of course the one person who provides my meals is currently bleeding out on the dirt.' / 'Of course, the evening concludes with my dear Ash performing a rather undignified dance in the dirt.' / 'Naturally, my dear Nate, your gut seems to be hosting a rather unseemly party of its own.'
 
 ## ling3-tiny-q4km
-
-**Verdict: FIT with caveats.** Fastest model by a wide margin (about 310 tok/s decode, 0.035 s warm first token) and the best tool-call behaviour (100% of arguments validate, round-2 works). The `--jinja` template is not a problem: no thinking leaks, no template residue, tool calls parse. Its weakness is language use, not plumbing.
-
-- Intent labelling is poor: 43% against 30 labelled lines (kind read as comfort, insult as slight). Do not trust the intent label from Ling; either give the intent pass a stronger model or accept noisy relationship effects.
-- 4% of raw lines are not in first-person speech: third-person narration ('Tuk feels the bandage. Tuk does not like it.', 'Tuk is crouched, bow drawn...') and '- ' bullets. The sanitizer does not catch either (F3).
-- Low diversity: 17 of 100 lines are exact duplicates ("I think, well, probably it's fine." eight times) and 2 of 10 conversations loop.
-- 10% of reflections are rejected (possessive 'Hana's', F2).
-- Over-eager tool use: it calls say() on prompts that say no action is needed (40% of no-tool prompts).
 
 ### Lines
 
@@ -320,13 +306,6 @@ Pawn-ID accuracy from lines alone 85% (chance 17%), slop-phrase rate 0%, duplica
 
 ## gemma4-e4b-q4km
 
-**Verdict: FIT with caveats.** 100% of raw lines pass every check, no refusals, no loops, no cross-speaker writing, intent 80%, and about 130 tok/s. A sound mid-size choice, held back by tool-call plumbing and weaker reflection acceptance.
-
-- Gemma-format tool calls leak into content on 2 of 30 auto-mode prompts (the text `remember{fact:<|"|>...<|"|>,importance:2}`), so llama-server's parser missed them.
-- Tool arguments out of range 16% of the time (importance 10, delta -10).
-- After a tool result it answers with an empty reply in 64% of round-two turns (HTTP fine, `finish_reason: stop`, no content). That is acceptable for a game that treats the call as the action, but a loop that waits for text will stall.
-- Only 85% of reflections are accepted (possessive 'Hana's', F2); two-call prompts 80% right.
-
 ### Lines
 
 100 lines (40 grim). Raw pass rate per check:
@@ -445,13 +424,6 @@ Pawn-ID accuracy from lines alone 85% (chance 17%), slop-phrase rate 0%, duplica
 - lux: 'Naturally, my dear Rook, your current trajectory towards morbidity is quite dramatic.' / 'Naturally, my dear Ash, one hopes the conflagration is not quite so dramatic.' / 'Naturally, I find this sterile atmosphere quite offensive to the sensibilities.'
 
 ## gemma4-e2b-q4km
-
-**Verdict: FIT with caveats.** Plausible lines (99% raw pass, 0 refusals) at 190 tok/s with 3 GB of VRAM, so it is the fallback for small cards. Everything beyond a single line is weak.
-
-- Conversations repeat: 4 of 10 exchanges loop, typically a speaker repeating its own earlier line verbatim; 5 duplicate lines of 100 singles.
-- Intent 60% with the agent's grammar; json_schema enum mode is unusable (30% valid) though the agent does not use it.
-- Tool use is the least reliable: 80% right tool in auto mode, 5 of 30 tool calls left as raw Gemma syntax in content, 68% of arguments in range, and round two returns an empty reply 100% of the time.
-- 85% of reflections accepted; some bios start with 'Quiet is easier now.' and trip the name check.
 
 ### Lines
 
@@ -586,166 +558,3 @@ Pawn-ID accuracy from lines alone 78% (chance 17%), slop-phrase rate 0%, duplica
 - tuk: 'Lux is bleeding. Get help now.' / 'Pip is burning. Go get water now.' / 'Lux is sick. We need more herbs.'
 - lux: 'Naturally, the poor fool is bleeding onto the sandbags again.' / 'Naturally, another catastrophe to mar this dreary evening.' / 'Naturally, this dismal room offers no solace for a weary soul.'
 
-## Findings: what to change in the agent, engine or settings
-
-None of these were changed in this branch.
-
-**F1. Sanitizer drops sentence-initial "It" (agent bug). FIXED in bc053c2:** a capitalised sentence-initial word is a name candidate only if it is not in `core/common_words.py` (function words and everyday vocabulary), so "It", "Stance", "Quiet" pass while `Zed`/`Nutmeg` still drop. Recomputed offline over the saved lines: all 15 drops (e2b 4, e4b 3, Q3 6, Ling 2) are now kept; 0 drops remain. Original text: `core/sanitize.py` `_bad_name`: at a sentence start only a vocative (`Zed, ...`) or a capitalised word followed by a verb counts as a name, and "It" is not in `_COMMON` (only "it's" is). So "It is good meat, Pip." is dropped as `unknown_name:It`. This was 6 of the 100 Q3 lines (every drop for that model), 1 for e4b and 1 for e2b. Fix: add "it" (and "its", "this", "these", "those", "they're") to `_COMMON`. Repro: `bench/models/tests/test_agent_findings.py`.
-
-**F2. Sanitizer drops possessives of known names (agent bug). FIXED in bc053c2:** the `'s`/`’s`/`'ll` tail is stripped (and `s'` tried) before comparing, in `sanitize_line`, `prompt_cap_words` and so in the reflection validator. Offline over the saved raw reflections: e2b 17/20 to 20/20, e4b 17/20 to 20/20, Q3 19/20 to 20/20, Ling 18/20 to 20/20. Original text: `_NAME_TOKEN` captures `Hana's`, and `lower_ok` holds `hana`, so "I keep Hana's shelf exact." and "Okay so Moth's panicking" are dropped as `unknown_name:Moth's`. It also rejects reflection bios (`run_reflection` returns None): all but one of the 5-15% reflection rejections in this bench are this (the other: a bio starting 'Quiet is easier now.', the same sentence-initial rule as F1). Fix: compare the token with a trailing `'s` removed. Repro in the same test file.
-
-**F3. Third-person narration and bullets pass the sanitizer (agent gap, Ling). FIXED in bc053c2:** new drop reason `self_narration` (line starts with the speaker's own name plus a verb), applied by `line_pass` unless the voice card speaks of itself by name (`VoiceCard.third_person`, or inferred when an example starts with the speaker's name; Tuk's card does, so Tuk's lines are kept), and a leading `- `/`* ` bullet is stripped. Original text: "Tuk feels the bandage. Tuk does not like it." and "- Six minutes. No sound." are kept by `sanitize_line` (it strips only a leading dash). A cheap guard: drop or re-ask when the line starts with the speaker's own name followed by a verb. The leading `- ` is already stripped by the sanitizer, so only the narration is the real gap.
-
-**F4. Tool-argument ranges are not enforced (engine/llama.cpp behaviour, prompt).** `minimum`/`maximum` in the tool schema do not reach the tool-call grammar of this llama-server build, and the Gemma models often ignore them when they sit only in the schema (importance 10 or 100, delta 10 or -20). Fix: state the range in the tool description text, and clamp in the executor. Ling did not need it (100% valid).
-
-**F5. Gemma tool calls sometimes stay as raw text (engine/llama.cpp b12680 parser).** With `tool_choice=auto`, e2b left 5 and e4b 2 of 30 calls as `remember{fact:<|"|>...<|"|>,importance:2}` in `content` and no `tool_calls`. With `tool_choice=required` this never happened (0 of 60). If the mod ever relies on tools, use `required` (with `do_nothing` as the "nothing to do" call) for Gemma.
-
-**F6. Repetition in conversations (settings).** The agent samples with temperature 0.8, top_k 64, top_p 0.95, min_p 0.05 and no repetition control. A speaker repeating its own earlier line verbatim appeared in 4 of 10 e2b and 2 of 10 Ling conversations, and Ling repeats the same line across scenes (17% duplicates). The M0 study already tried DRY (`dry_multiplier 0.8, dry_base 1.75, dry_allowed_length 2, dry_penalty_last_n 512`); passing those in `HttpLLM._sampler` for the line pass would likely remove it. Not tried here.
-
-**F7. `json_schema` with a bare `enum` is unreliable on /v1/chat/completions (engine/llama.cpp).** The intent pass in the agent uses a GBNF grammar, which works for every model (the schema mode scored 30% valid on e2b, 93% on Ling, 100% on the other two). A single probe without a system message on e2b also produced a `reasoning_content` of "Thinking Process" under `--reasoning off`; the agent's own request (system turn plus `enable_thinking: false`) never leaked a thought in 400 lines. No action needed unless the agent moves the intent pass to `json_schema`.
-
-**F8. The real line is 11-17 tokens, not 24-40.** The agent's prompt ("One line only", `stop: ["\n"]`) yields a median 12-17 token line. The speed table therefore also shows a 24-40 token case made by asking for two or three sentences (rows `long_*`); it is not what the agent sends today.
-
-**F9. Ling and `--jinja`.** No chat-template problem found: 0 thinking leaks, no template residue in 100 lines, tool calls parse in 100% of runs, and a tool result fed back gets a sensible answer in 100% of rounds. The Ling issues are about writing style (F3, F6), not the template.
-
-**F10. Tools and the "nothing to do" case.** With `tool_choice=required` the models must call something; `do_nothing` was used correctly 40-60% of the time on the five no-tool prompts. With `auto`, Ling called `say()` on 2 of 5 such prompts.
-
-### Update 2026-11-25: tool harness (toolharness branch)
-
-Cause of the silent round 2: the model ends its turn at once after the tool result (first token is end-of-turn, P 0.70 on E4B, 0.40-0.98 on E2B, 0.00 on gemma4-rp-maxxed for byte-identical prompt tails). Details and request shapes: docs/TOOL-ROUND2.md. The fix is structural, not a patch: `core/toolloop` (docs/TOOL-HARNESS.md) decodes every step under a grammar built from the tools, owns the tool-result turn as plain text, uses ordinal word scales for magnitudes, validates, retries at most twice and falls back deterministically.
-
-`bench/models/conformance.py`, 61 scenarios (30 from tools.py extended, 12 chains of 2-3 calls, 9 no-tool, 10 injection, 4 unknown-name), through the harness:
-
-| | gemma4-rp-maxxed | gemma4-e4b | gemma4-e2b |
-|---|---|---|---|
-| bench before: round 2 non-empty / args valid / right tool (single) | 100% / 78% / 100% | 36% / 84% / 100% | 0% / 68% / 80% |
-| harness, grammar: round 2 valid first try / empty replies / invalid args | 100% / 0 / 0 | 100% / 0 / 0 | 100% / 0 / 0 |
-| harness, grammar: right tool all kinds / loops with a retry / fallbacks | 91.2% / 0 / 0 | 91.2% / 0 / 0 | 71.9% / 0 / 0 |
-| harness, tolerant (no grammar): protocol chosen by probe | native | json | json |
-| harness, tolerant: round 2 first try / empty / invalid args | 100% / 0 / 0 | 95.8% / 0 / 0 | 100% / 0 / 0 |
-| harness, tolerant: right tool / loops with a retry / fallbacks | 86.0% / 3 / 0 | 89.5% / 4 / 0 | 71.9% / 3 / 0 |
-| step latency median / p90 (grammar) | 225 / 292 ms | 214 / 306 ms | 146 / 208 ms |
-
-All hard invariants held on all six runs. What stays model-limited: E2B stops after the first of several requested calls (two- and three-call kinds 40-50%) and picks the wrong tool on 1 of 4 mood prompts; on injected instructions in scene text all three models comply 50-60% of the time (the harness only guarantees the resulting call is valid). F4 and F5 are closed by the harness for any caller that uses it (ranges are scales or grammar alternatives; raw Gemma syntax cannot be emitted under the grammar and is salvaged in tolerant mode); F7 stands (the harness uses GBNF too).
-
-**F6 follow-up (DRY, 2026-11-25).** `LLMConfig.line_dry` (default False; `dry_multiplier 0.8, dry_base 1.75, dry_allowed_length 2, dry_penalty_last_n 512`, line pass only). `bench/models/dry.py`: lines (100) plus 3x the 10-exchange conversation set (30 exchanges), off/on/off/on per model. Repetition-loop exchanges per 60 (two runs each) and duplicate lines per 200:
-
-| Model | loop exchanges off / on | duplicate lines off / on | distinct-2 (conv) off / on | raw all-pass off / on |
-|---|---|---|---|---|
-| gemma4-e2b | 14 / 11 | 13 / 12 | 0.60-0.62 / 0.63-0.64 | 0.99-1.0 / 1.0 |
-| gemma4-e4b | 0 / 0 | 0 / 0 | 0.76-0.77 / 0.76-0.78 | 0.99 / 0.98-0.99 |
-| gemma4-rp-maxxed | 1 / 0 | 1 / 0 | 0.70-0.73 / 0.71-0.72 | 0.98-0.99 / 0.99 |
-
-Only E2B has a loop problem (about 23% of exchanges); DRY lowers it to about 18%, which is inside the run-to-run spread (7/30 vs 4/30 on the two runs with it). No quality cost was visible (spelling, grammar, in-character, drop rate, words per line unchanged; answers-previous 0.79 to 0.80-0.84). Not clear-cut, so the default stays off in this branch. Recommendation: leave off for E4B and rp-maxxed (nothing to fix); turn on for E2B if it is ever shipped, since it did no harm. A stronger test needs more exchanges (about 100 per arm).
-
-### Method notes and limits
-
-- Grammar and spelling: no Java here, so `language_tool_python` was not run. `pyspellchecker` plus a rule set stood in; it found no faults in any model's lines, so treat 100% as "no obvious faults", not "perfect grammar".
-- Fixtures drive the prompt, so the dead colonist Hana Brandt is a known name only through the relations in block C.
-- Conversation "answers the previous turn" is a lexical heuristic (shared content word, direct address, yes/no opener); read the quoted exchanges.
-- Voice distinctness: the M0 venv (`~/.local/share/rimworld-hermes-m0/venv`) has no numpy or scikit-learn, and `q4_voice.py` generates through a Gemma-only raw template, so the same TF-IDF char n-gram scorer was run from the bench venv on lines made through the agent's real line path. Lines per pawn: 12 neutral scenes.
-- Speed uses the agent's exact request body, streamed; "cold (slot erased)" erases the slot first; "cold, new pawn prefix" leaves another pawn's prefix in the slot (block A still matches).
-- Tool tests use temperature 0.2 and a six-line system prompt; all five tools have JSON schemas with required fields and numeric ranges.
-- Reproduce: `bench/models/run_all.sh` (engine up on 47480), `rescore.py`, `report.py <results> verdicts.json extra.md`. Raw per-model JSON lives in `~/.local/share/rimworld-hermes-engine/bench/results/<model>/`.
-
-## GPU bench 2026-11-25: rp E builds, sampler A/B, conformance (gpubench branch)
-
-Run on sprinter's RTX 5080 (llama.cpp b12680) through the engine's proxy with `sampler_policy: enforce`, from a private engine home whose `catalog.json` (version 6) adds `gemma4-e4b-rp-q40` (`gemma-4-E4B-it-qat-rp-Q4_0.gguf`, sha f272d8be...) and `gemma4-e2b-rp-q40` (sha 6a4e36a2...); the easyEngine catalog was not edited. Partway through, the keeper moved sprinter to gaming. The last structured runs (greedy on E4B-rp, plus a temp 1.0 control) were redone on poe's spare Tesla P40 (`CUDA_VISIBLE_DEVICES=0`, PCI order) against a bare llama-server with the same flags and sampler defaults. Only latency differs there; those latency numbers are marked P40. One 26B greedy rep ran while the game held the card (VRAM 15.9 GB, reflection timeouts); it is excluded. Raw data is under `bench/results/` (`footprints/`, `sampler-ab/`, `struct/`, `struct-poe-P40/`, `suite/`, `conformance/`, `prefill/`) and the scripts are in `bench/results/scripts/`.
-
-### Footprints of the rp E builds
-
-The sweep used `sweep.py` (1-3 slots x 8k-64k ctx at q4_0, plus 3 x 16k/64k at q8_0 and 3 x 16k at f16; 60 rows, all ok). The stock files were re-measured in the same session. `tools/fitcheck -fit -emit` read the rp GGUF headers. Entries in the catalog `Footprint` shape: `~/.local/share/rimworld-hermes-engine/bench/rp-footprints.json` (copy in `bench/results/footprints/`). The predictor error on the rp rows is 2.3% mean / 3.2% max (E4B) and 2.7% / 4.3% (E2B), always an under-prediction.
-
-| | E4B rp | E4B stock | E2B rp | E2B stock |
-|---|---|---|---|---|
-| fixed MiB | 2994 | 3318 | 1649 | 1803 |
-| MiB per 1k ctx q4_0 / q8_0 / f16 | 8.915 / 12.833 / 16.111 | same | 4.054 / 5.528 / 6.410 | 4.054 / 5.528 / 6.368 |
-| per-slot state q8_0 / f16 MiB | 11.9 / 34.1 | same | 1.4 / 3.9 | same |
-| host (RAM) MiB, per-layer embeddings | 912 | 1848 | 760 | 1540 |
-| VRAM at 3 x 65536 q4_0 (measured) | 4752 | 5076 | 2472 | 2626 |
-| decode tok/s per stream, 1 / 2 / 3 slots | 143 / 135 / 120 | 130 / 105 / 92 | 228 / 208 / 179 | 201 / 160 / 126 |
-| prompt tok/s, 1 / 3 slots | 11873 / 4857 | 11112 / 4672 | 22350 / 9603 | 21747 / 9963 |
-
-The fresh stock rows match the catalog's `measured.json` to within 1-3% on speed and exactly on the terms. The rp builds cost about 320 MiB (E4B) and 150 MiB (E2B) less VRAM, need half the RAM, and decode 30-40% faster at 3 slots, because the pruned 158k vocabulary shrinks the output layer. The KV terms are identical.
-
-### Sampler A/B: the rp profile
-
-Arms: `official` is the engine's rp profile today (temp 1.0, top_k 64, top_p 0.95, min_p 0). `old` is the earlier agent setting (temp 0.8, top_k 64, top_p 0.95, min_p 0.05), applied through a game profile `samplers.rp` override, which the engine enforces. I checked it in llama-server's `/slots` params. Each arm got 3 alternating reps of lines (100), conversations (10) and voice (72 lines). Loops are counted twice: by the bench heuristic and by replaying every turn through `core/loopguard.find_repeat`.
-
-| | 26B official | 26B old | E4B-rp official | E4B-rp old |
-|---|---|---|---|---|
-| lines raw all-pass (300) | 99.7% | 99.3% | 92.7% | 95.0% |
-| same, after the intent-label cut (main 94c33f4) | 99.7% | 99.3% | **99.3%** | 97.7% |
-| trailing intent label leaked (of 300 lines) | 0 | 0 | 20 | 8 |
-| sanitizer drop rate | 0.3% | 0% | 1.0% | 0.7% |
-| spelling / grammar / in-character fails | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 1 / 0 / 2 |
-| duplicate lines / distinct-2 (lines) | 2 / 0.80 | 0 / 0.80 | 0 / 0.88 | 2 / 0.85 |
-| conversation loops (bench / loopguard), of 30 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
-| answers previous turn / turn drop | 87% / 1.7% | 81% / 1.7% | 80% / 4.2% | 88% / 2.5% |
-| distinct-2 (conversations) | 0.76 | 0.73 | 0.85 | 0.83 |
-| voice pawn-ID accuracy (3 reps) | 0.851 (0.83-0.88) | 0.860 (0.82-0.91) | 0.852 (0.82-0.89) | 0.863 (0.86-0.87) |
-| slop rate | 0 | 0 | 0.5% | 0 |
-
-**The all-pass gap on E4B-rp (92.7% vs 95.0%) came from the intent-label leak, and the sanitiser now fixes it.** E4B-rp sometimes ends a finished line with a bare intent label ("Hold knife steady, little morsel. gossip"). That failed the `terminal` check, and the sanitiser at the time kept it. The label is not in the prompt; the model adds it. Main 94c33f4 (`intent_labels` in `sanitize_line`) cuts it. Rescored offline with that cut (`scripts/rescore_labels.py`), the official arm passes 99.3% and the old arm 97.7%. Stock E4B leaks too, 2 of 300 lines in the suite below.
-
-Otherwise the two arms are within run-to-run spread on both models: no loops either way, the same voice accuracy, and no grammar or format failures that track the sampler. Official gives slightly more varied text (distinct-2 +0.03); old answers the previous turn slightly more often on E4B-rp and slightly less on the 26B.
-
-### Structured profile: temp 1.0 against greedy
-
-These are the intent (30 labelled lines; GBNF grammar, json_schema and free modes) and reflection (20 runs) suites. Greedy is a game profile `samplers.structured = {temperature: 0}` on the engine, or the server default `--temp 0` on the P40.
-
-| | 26B temp 1.0 (3 reps) | 26B greedy | E4B-rp temp 1.0 (3 reps, 5080) | E4B-rp temp 1.0 (P40) | E4B-rp greedy (2 reps, P40) |
-|---|---|---|---|---|---|
-| intent accuracy, grammar (the agent's mode) | 96.7% | 96.7% | 82.2% (80-83) | 80.0% | **86.7%** (both reps) |
-| intent accuracy, json_schema / valid | 87.8% / 90% | 96.7% / 100% | 63.3% / 85.6% | 63.3% / 83.3% | 80.0% / 100% |
-| intent accuracy, free / valid | 94.4% / 100% | 96.7% / 100% | 80.0% / 98.9% | 80.0% / 96.7% | 86.7% / 100% |
-| reflection parse / schema / accepted | 100 / 100 / 100% | 100 / 100 / 100% | 100 / 100 / 96.7% | 100 / 100 / 95% | 100 / 100 / 97.5% |
-| reflection latency median | 2.6 s | 3.0 s | 2.0 s | 5.5 s (P40) | 5.3 s (P40) |
-
-On both machines greedy beats temp 1.0 on every intent mode for E4B-rp, and it removes every invalid schema and free reply on both models. In the agent's grammar mode the 26B is already at its ceiling, so greedy changes nothing there. Reflection is unchanged. A grammar or schema leaves several tokens legal, and sampling at temp 1.0 among them only adds noise to a classification.
-
-**Recommendation:** keep `rp` = official (no reason left to change it once the label cut is in). Make `structured` greedy (temperature 0; top_k, top_p and min_p as official, which have no effect at temp 0). The profiles are unchanged in this branch. The proposed SAMPLERS.md wording is in the branch report.
-
-### Conformance and injection under the enforced samplers
-
-These runs used the `structured` profile (temp 1.0) and both harness modes on 75 scenarios (24 injection). The tables are in docs/TOOL-HARNESS.md ("Injection, measured"). In short: hard invariants held on all 16 runs. Injected tool calls were followed on 62-79% of injection scenarios by 26B, E4B-rp and stock E4B, and 21-33% by E2B-rp, which mostly fails to act at all. Hardened (`--sanitize --scene-allowed`), every model followed 0%. These ran before main 44a9b9d, so E4B-rp's 12-17 retries come from repeating `do_nothing` into the repeat rule, which 44a9b9d now ends at once.
-
-### rp against stock E models (the final E4B pass)
-
-This is the MODEL-BENCH suite through the engine at the official profiles: lines, conversations and voice x3 reps, and structured, tools and speed x1. Speed and VRAM are 5080 numbers (the game was not running yet).
-
-| | E4B rp | E4B stock | E2B rp | E2B stock |
-|---|---|---|---|---|
-| lines raw all-pass (300) / after label cut | 91.3% / **98.0%** | 97.7% / 98.3% | 95.0% / 95.0% | 99.0% / 99.0% |
-| check fails (300): terminal / grammar / spelling / in-character / invented | 20 / 0 / 2 / 2 / 2 | 2 / 0 / 4 / 1 / 0 | 5 / 7 / 2 / 0 / 1 | 3 / 0 / 0 / 0 / 0 |
-| sanitizer drop rate / duplicate lines | 0.3% / 0 | 0.7% / 0 | 1.0% / 2 | 0% / 9 |
-| words per line (median) / distinct-2 | 10.7 / 0.88 | 10.7 / 0.85 | 9.2 / 0.84 | 8.7 / 0.75 |
-| conversation loops (bench / loopguard exchanges), of 30 | 0 / 0 | 0 / 0 | 2 / 3 | 5 / 8 |
-| answers previous turn / turn drop | 81% / 4.2% | 77% / 1.7% | 80% / 1.7% | 74% / 0% |
-| **voice pawn-ID accuracy** (chance 17%) | **0.905** (0.86-0.93) | 0.839 | 0.735 | 0.771 |
-| intent accuracy grammar / schema / free | 76.7 / 56.7 / 76.7% | 80.0 / 60.0 / 76.7% | 56.7 / 30.0 / 40.0% | 56.7 / 30.0 / 56.7% |
-| E4B-rp intent grammar over 4 reps (3 structured-A/B reps + this one) | 80.8% | | | |
-| reflection accepted | 95% | 95% | 95% (1 unparseable) | 100% |
-| tools (native) right tool single, auto / required | 100 / 100% | 100 / 100% | 80 / 75% | 85 / 95% |
-| tools args valid auto / required | 80 / 87% | 72 / 83% | 79 / 79% | 74 / 80% |
-| tools round 2 non-empty, auto (native; the harness owns this turn) | 16% | 44% | 17% | 0% |
-| harness conformance, grammar: right tool / two- and three-call kinds | 74.6% (98.6% hardened) / 100% | 71.8% (97.2%) / 100% | 62.0% (77.5%) / 0-42% | 71.9% (earlier run) / 40-50% |
-| warm TTFT / decode tok/s, 1 stream | 0.028 s / 142 | 0.029 s / 131 | 0.019 s / 222 | 0.021 s / 191 |
-| decode tok/s, 3 slots warm | 120 | 89 | 187 | 137 |
-| VRAM, 3 x 65536 q4_0 (planner shape / GPU total) | 4696 / 5382 MiB | 5020 / 5706 | 2418 / 3104 | 2572 / 3258 |
-
-**E4B-rp: ship it with the label cut.** It is the most distinct voice of all the E models (0.905 against 0.839 stock, close to the 26B's 0.85-0.86 on this scorer), has no loops, writes more varied lines, is 35% faster at 3 slots, and uses 324 MiB less VRAM. Its only line-quality regression is the trailing intent label, which main 94c33f4 cuts; after the cut it passes 98.0%, level with stock. Intent and reflection match stock within noise (80.8% over 4 reps vs 80%). With the greedy structured profile above it reaches 86.7%. Its native round 2 is quieter than stock's (16% vs 44%), but the harness owns that turn (TOOL-ROUND2.md), and under the harness it matches stock on every kind.
-
-**E2B-rp: no clear win, and a tool-use regression.** It loops less than stock E2B (2-3 of 30 exchanges vs 5-8), writes fewer duplicates (2 vs 9) and more varied text, and decodes 37% faster. But its voice accuracy is lower (0.735 vs 0.771). It has 7 grammar faults in 300 lines (stock 0), plus one empty line and one unparseable reflection. Its tool use is worse in the harness: double calls 0-20%, mood 25-75%, convo 50-100%, against stock's 40/75/100. If E2B ships only as the low-VRAM fallback, the stock build is the safer pick on behaviour, and the rp build the better pick on repetition and speed.
-
-### M0_NOTHOUGHT: does the agent have the prefill problem with E models?
-
-It does not in its default mode, and it does in the opt-in native mode. `bench/results/prefill/*.json` (`scripts/prefill_probe.py`) sends 20 short in-character requests each way, through the engine at the official rp profile:
-
-| model | template's own generation prompt (`/apply-template`, `enable_thinking: false`) | chat completions (agent `mode="openai"`, the default) | agent native `gemma_prompt` (prefills `<|channel>thought\n<channel|>`) | bare `<|turn>model\n` prefill |
-|---|---|---|---|---|
-| E4B-rp | ends in `<|turn>model\n` | 0/20 leaks, 20/20 in voice | **15/20 leak** (`<channel|>` or a written plan); 2/20 in voice | 0/20 leaks, 20/20 in voice |
-| E2B-rp | ends in `<|turn>model\n` | 0/20, 20/20 | **18/20 leak** ("Constraint Checklist & Confidence Score: ..."); 1/20 in voice | 0/20, 20/20 |
-| 26B | ends in `<|turn>model\n<|channel>thought\n<channel|>` | 0/20, 20/20 | 0/20, 20/20 | 20/20 emit `<|channel>thought\n<channel|>` as text |
-
-`core/llm.py` `gemma_prompt` (lines 51-63) always adds the empty thought block (the 26B convention). It is used only when `LLMConfig.mode == "native"` (`--llm-mode native` or `RIMWORLDLLM_LLM_MODE=native`; the default is `"openai"`, config.py:31). The openai path sends messages to `/chat/completions` with `enable_thinking: false`, and llama-server's own template renders the right ending per model. So the shipped agent is fine. Native mode with an E model would leak thoughts into most lines. If native mode is kept, its generation prompt should follow the model, or copy the template's (`/apply-template`). A bare `<|turn>model\n` is not right for the 26B either: it prints the channel markers as text. `core/llm.py` is not changed here.

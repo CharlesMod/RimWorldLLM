@@ -14,7 +14,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 - Save the logs at the end of the session (before the next game start rotates them):
   - RimWorld `Player.log` (Linux `~/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log`).
   - `engine.log`, `llama-server.log`, `agent.log` from the engine folder's `logs/`
-    (Linux `~/.local/share/hermes-engine/logs/`).
+    (Linux `~/.local/share/easy-engine/logs/`).
   - `calls.jsonl` from `~/.local/share/rimworldllm-agent/` (every model call, with timings).
 - Write down the machine: OS, card and its memory, RAM, free disk, and the model and slots the settings line shows.
 - Use a fresh engine folder for the first-run part (rename the old one aside first; never delete someone else's).
@@ -23,7 +23,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 ## A. Install and first start
 
 1. **Zip layout.** Unzip `RimWorldLLM-2.1.0-beta.zip` into `Mods/`. Look for `Mods/RimWorldLLM/About/About.xml`,
-   `1.7/Assemblies/`, `Engine/<os>-<arch>/hermes-engine`, `Engine/agent/*.whl`. Report any extra top folder.
+   `1.7/Assemblies/`, `Engine/<os>-<arch>/easy-engine`, `Engine/agent/*.whl`. Report any extra top folder.
 2. **Mod list.** RimWorldLLM shows "2.1.0", author Charleszard, the new description (no Tailscale or bridge text), and a
    Harmony dependency warning if Harmony is missing.
 3. **Clean start.** The main menu loads with no red errors mentioning RimWorldLLM in the log (open the dev log).
@@ -121,11 +121,11 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 
 ## I. Quit, restart, uninstall
 
-39. **Quit.** Quit RimWorld: hermes-engine, llama-server and the agent all exit within a few seconds (check the process
+39. **Quit.** Quit RimWorld: easy-engine, llama-server and the agent all exit within a few seconds (check the process
     list). Kill the game process instead: they still exit.
 40. **Restart.** Start again: no download, the 26B serves within a minute or so.
-41. **Uninstall.** Use Settings, Storage, Remove downloaded files with the memory box ticked, then follow the README's Uninstall steps (the by-hand list too, on a spare install). Afterwards nothing named hermes-engine,
-    HermesEngine or rimworldllm-agent remains, and the game starts cleanly without the mod. Note anything the steps
+41. **Uninstall.** Use Settings, Storage, Remove downloaded files with the memory box ticked, then follow the README's Uninstall steps (the by-hand list too, on a spare install). Afterwards nothing named easy-engine,
+    EasyEngine or rimworldllm-agent remains, and the game starts cleanly without the mod. Note anything the steps
     missed.
 42. **RimTalk.** (If available.) With RimTalk loaded too: both load, no errors, no pawn speaks twice for the same moment.
 
@@ -170,10 +170,10 @@ W2. **llama.cpp CUDA download.** The CUDA 12.4 build plus its cudart zip (CUDA 1
     and pass the smoke test; the model runs on the GPU (llama-server.log shows CUDA and layers offloaded).
 W3. **uv and the agent.** uv downloads, creates the Python 3.12 environment, installs the wheel, and the agent starts
     (agent.log). Note where the agent's own folder lands (expected `%LOCALAPPDATA%\rimworldllm-agent`).
-W4. **Engine with the game.** hermes-engine.exe starts hidden (no console window) with the game and exits when the game
+W4. **Engine with the game.** easy-engine.exe starts hidden (no console window) with the game and exits when the game
     exits or is killed from Task Manager.
 W5. **Paths with spaces.** A Windows user name with a space, and RimWorld installed under a path with spaces
     (`C:\Program Files (x86)\Steam\...`): install, start and the agent all work.
 W6. **Defender and SmartScreen.** Note every prompt: SmartScreen on first start, Defender scanning or quarantining
-    hermes-engine.exe, llama-server.exe or uv.exe, a firewall prompt (there should be none: everything listens on
+    easy-engine.exe, llama-server.exe or uv.exe, a firewall prompt (there should be none: everything listens on
     127.0.0.1). Screenshot each prompt's exact wording for the Nexus page.

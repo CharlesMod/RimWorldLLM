@@ -1,6 +1,6 @@
 """Experiment hook (cfg.aim_sampler): route one call kind to a named engine sampler profile.
 
-``HttpLLM._sampling`` sends ``X-Hermes-Sampler: structured`` for the intent pass. A client made here sends the named
+``HttpLLM._sampling`` sends ``X-Easy-Sampler: structured`` for the intent pass. A client made here sends the named
 profile instead, so the engine applies the game profile's sampler of that name to the aim-carrying intent pass. It
 shares the original's config, call log and http client; core/llm.py is untouched.
 """
@@ -24,7 +24,7 @@ class NamedSamplerLLM(HttpLLM):
     async def _sampling(self, kind: str, grammar: str | None, json_schema: dict | None) -> tuple[dict, dict]:
         eng = await self.is_engine()
         fields = sampler_fields(self.cfg, engine=eng, kind=kind)
-        return fields, ({"X-Hermes-Sampler": self.sampler_name} if eng else {})
+        return fields, ({"X-Easy-Sampler": self.sampler_name} if eng else {})
 
 
 def route(llm: LLMClient, name: str) -> LLMClient | None:

@@ -14,7 +14,9 @@ namespace RimWorldLLM.Bridge
         public string Os;
         public string Arch;
         public string Dir { get { return Os + "-" + Arch; } }
-        public string BinaryName { get { return Os == "windows" ? "hermes-engine.exe" : "hermes-engine"; } }
+        public string BinaryName { get { return Os == "windows" ? "easy-engine.exe" : "easy-engine"; } }
+        /// <summary>The engine's name before it became easy-engine; used only when an old build is all there is.</summary>
+        public string LegacyBinaryName { get { return Os == "windows" ? "hermes-engine.exe" : "hermes-engine"; } }
         public bool IsUnix { get { return Os != "windows"; } }
 
         public EnginePlatform(string os, string arch) { Os = os; Arch = arch; }
@@ -146,7 +148,10 @@ namespace RimWorldLLM.Bridge
 
         public static string BinaryPath(string modRoot, EnginePlatform p)
         {
-            return Path.Combine(modRoot, "Engine", p.Dir, p.BinaryName);
+            string bin = Path.Combine(modRoot, "Engine", p.Dir, p.BinaryName);
+            if (File.Exists(bin)) return bin;
+            string old = Path.Combine(modRoot, "Engine", p.Dir, p.LegacyBinaryName);
+            return File.Exists(old) ? old : bin;
         }
 
         /// <summary>The agent wheel under Engine/agent/*.whl (highest name when several), or null.</summary>
@@ -230,8 +235,7 @@ namespace RimWorldLLM.Bridge
         public static Task<EngineClient> DefaultDiscoverAsync(EnginePlatform p)
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string data = EngineClient.DataDir(p.Os, n => Environment.GetEnvironmentVariable(n), home);
-            return EngineClient.DiscoverAsync(EngineClient.ReadLockPort(Path.Combine(data, "engine.lock")));
+            return EngineClient.DiscoverAsync(EngineClient.LockPort(p.Os, n => Environment.GetEnvironmentVariable(n), home));
         }
 
         /// <summary>POST /engine/v1/host; an older engine (404) or any failure is ignored.</summary>

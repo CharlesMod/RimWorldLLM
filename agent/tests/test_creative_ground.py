@@ -264,8 +264,8 @@ def test_aim_sampler_header_replaces_structured_for_the_routed_client():
     assert isinstance(routed, NamedSamplerLLM) and routed.http is base.http and routed.cfg is base.cfg
     run(routed.complete([("user", "x")], slot=1, kind="intent", grammar="root ::= a\na ::= \"x\""))
     run(base.complete([("user", "x")], slot=1, kind="intent", grammar="root ::= a\na ::= \"x\""))
-    assert seen[0][0]["x-hermes-sampler"] == "rp"
-    assert seen[1][0]["x-hermes-sampler"] == "structured"
+    assert seen[0][0]["x-easy-sampler"] == "rp"
+    assert seen[1][0]["x-easy-sampler"] == "structured"
     assert route(base, "") is None and route(object(), "rp") is None      # pass through
 
 

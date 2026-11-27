@@ -38,7 +38,7 @@ ALL_TOKENS = set().union(*NAME_TOKENS.values())
 
 # ---------------- engine control ----------------
 def eng(method, path, **kw):
-    h = {"X-Hermes-Engine": "1"} if method != "GET" else {}
+    h = {"X-Easy-Engine": "1"} if method != "GET" else {}
     r = httpx.request(method, f"{ENGINE}/engine/v1/{path}", headers=h, timeout=kw.pop("timeout", 30), **kw)
     return r.json() if r.content else {}
 

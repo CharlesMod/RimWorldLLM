@@ -23,9 +23,9 @@ What is downloaded
 Disk space with an NVIDIA card: about 12 GB in all on a 16 GB card once setup is done (about 16 GB at the peak, while the starter and the full model are both on disk), about 6 GB with E4B RP.
 
 Where it lives and how to remove it
-- Windows: %LOCALAPPDATA%\HermesEngine
-- Linux: ~/.local/share/hermes-engine
-- macOS: ~/Library/Application Support/HermesEngine
+- Windows: %LOCALAPPDATA%\EasyEngine
+- Linux: ~/.local/share/easy-engine
+- macOS: ~/Library/Application Support/EasyEngine
 The helper's memory and log are in %LOCALAPPDATA%\rimworldllm-agent on Windows and ~/.local/share/rimworldllm-agent elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, Remove downloaded files (it also offers to delete the helper's memory and logs), then unsubscribe or delete the mod. Or quit RimWorld and delete those two folders by hand.
 
 Hardware

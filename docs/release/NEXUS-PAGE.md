@@ -67,13 +67,13 @@ Measured: the 26B writes about 105 tokens per second per conversation on an RTX 
 Every download is checked against a fixed SHA-256 and resumes if interrupted. With an NVIDIA card expect about 12 GB on disk for the 26B (about 16 GB at the peak, while the starter is still there), or about 6 GB for E4B RP.
 
 [size=4][b]About the executable in this mod[/b][/size]
-The zip contains a small program, [b]hermes-engine[/b] ([font=Courier New]Engine/<os>-<arch>/hermes-engine[/font], [font=Courier New]hermes-engine.exe[/font] on Windows), plus the helper as a Python wheel ([font=Courier New]Engine/agent/rimworldllm_agent-*.whl[/font]). hermes-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases and uv from uv's, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
+The zip contains a small program, [b]easy-engine[/b] ([font=Courier New]Engine/<os>-<arch>/easy-engine[/font], [font=Courier New]easy-engine.exe[/font] on Windows), plus the helper as a Python wheel ([font=Courier New]Engine/agent/rimworldllm_agent-*.whl[/font]). easy-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases and uv from uv's, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
 
 [size=4][b]Where it lives and how to remove it[/b][/size]
 [list]
-[*]Windows: [font=Courier New]%LOCALAPPDATA%\HermesEngine[/font]
-[*]Linux: [font=Courier New]~/.local/share/hermes-engine[/font]
-[*]macOS: [font=Courier New]~/Library/Application Support/HermesEngine[/font]
+[*]Windows: [font=Courier New]%LOCALAPPDATA%\EasyEngine[/font]
+[*]Linux: [font=Courier New]~/.local/share/easy-engine[/font]
+[*]macOS: [font=Courier New]~/Library/Application Support/EasyEngine[/font]
 [/list]
 The helper keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\rimworldllm-agent[/font] on Windows and [font=Courier New]~/.local/share/rimworldllm-agent[/font] elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, [b]Remove downloaded files[/b] (tick the box to delete the helper's memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those two folders by hand.
 

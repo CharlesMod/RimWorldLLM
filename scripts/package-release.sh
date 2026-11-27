@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the RimWorldLLM release zip: mod DLLs, agent wheel, four hermes-engine binaries,
+# Builds the RimWorldLLM release zip: mod DLLs, agent wheel, four easy-engine binaries,
 # licenses, BUILD and SHA256SUMS, then verifies the result and prints PASS/FAIL per check.
 set -euo pipefail
 
@@ -151,7 +151,7 @@ TARGETS="linux-amd64 windows-amd64 darwin-arm64 darwin-amd64"
 EE_UNTRACKED_OK=0
 if [ -z "$(git -C "$EE_DIR" status --porcelain | grep -vE '^\?\? \.claude/$' || true)" ]; then EE_UNTRACKED_OK=1; fi
 mod_ok() { grep -q 'vcs.modified=false$' <<<"$1" || { [ "$EE_UNTRACKED_OK" = 1 ] && grep -q 'vcs.modified=true$' <<<"$1"; }; }
-engine_bin() { case "$1" in windows-*) echo hermes-engine.exe;; *) echo hermes-engine;; esac; }
+engine_bin() { case "$1" in windows-*) echo easy-engine.exe;; *) echo easy-engine;; esac; }
 engine_fresh() {
   local t b out
   for t in $TARGETS; do
@@ -174,7 +174,7 @@ for t in $TARGETS; do
   mkdir -p "$ROOT/Engine/$t"
   cp "$EE_DIR/dist/$t/$(engine_bin "$t")" "$ROOT/Engine/$t/"
 done
-chmod 755 "$ROOT/Engine/linux-amd64/hermes-engine" "$ROOT/Engine/darwin-arm64/hermes-engine" "$ROOT/Engine/darwin-amd64/hermes-engine"
+chmod 755 "$ROOT/Engine/linux-amd64/easy-engine" "$ROOT/Engine/darwin-arm64/easy-engine" "$ROOT/Engine/darwin-amd64/easy-engine"
 
 # --- 5. licenses ---
 mkdir -p "$ROOT/Licenses"
@@ -245,14 +245,14 @@ nw=$(find "$V/Engine/agent" -name '*.whl' | wc -l)
 tops=$(grep -vE '^RimWorldLLM/' <<<"$LIST" || true)
 [ -z "$tops" ] && pass "single top folder RimWorldLLM/" || fail "entries outside RimWorldLLM/: $(head -3 <<<"$tops")"
 for t in linux-amd64 darwin-arm64 darwin-amd64; do
-  p=$(zipinfo "$ZIP" "RimWorldLLM/Engine/$t/hermes-engine" | awk '{print $1}')
+  p=$(zipinfo "$ZIP" "RimWorldLLM/Engine/$t/easy-engine" | awk '{print $1}')
   [ "$p" = "-rwxr-xr-x" ] && pass "exec bit $t ($p)" || fail "exec bit $t ($p)"
 done
 
 # binary formats
 ft() { file -b "$V/Engine/$1/$(engine_bin "$1")"; }
 grep -q 'ELF 64-bit.*x86-64' <<<"$(ft linux-amd64)" && pass "linux-amd64 is ELF x86-64" || fail "linux-amd64: $(ft linux-amd64)"
-{ grep -q 'PE32' <<<"$(ft windows-amd64)" && [ "$(head -c2 "$V/Engine/windows-amd64/hermes-engine.exe")" = MZ ]; } && pass "windows-amd64 is PE (MZ)" || fail "windows-amd64: $(ft windows-amd64)"
+{ grep -q 'PE32' <<<"$(ft windows-amd64)" && [ "$(head -c2 "$V/Engine/windows-amd64/easy-engine.exe")" = MZ ]; } && pass "windows-amd64 is PE (MZ)" || fail "windows-amd64: $(ft windows-amd64)"
 grep -q 'Mach-O.*arm64' <<<"$(ft darwin-arm64)" && pass "darwin-arm64 is Mach-O arm64" || fail "darwin-arm64: $(ft darwin-arm64)"
 grep -q 'Mach-O.*x86_64' <<<"$(ft darwin-amd64)" && pass "darwin-amd64 is Mach-O x86_64" || fail "darwin-amd64: $(ft darwin-amd64)"
 

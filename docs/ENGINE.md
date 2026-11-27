@@ -11,7 +11,7 @@ then `agent/build-wheel.sh` here.
 
 ## In game (`Mod/`)
 
-- The mod ships the binaries in `Engine/<os>-<arch>/hermes-engine[.exe]` and the agent wheel
+- The mod ships the binaries in `Engine/<os>-<arch>/easy-engine[.exe]` and the agent wheel
   in `Engine/agent/`. `build.sh` in the easyEngine checkout cross-compiles them into `dist/<os>-<arch>/`; the csproj deploy target copies them from `$(EasyEngineDir)` (default `../easyEngine`, a sibling checkout).
 - `Mod/Source/Bridge/EngineLauncher.cs` and `EngineClient.cs` (no Verse references): pick the
   binary for the platform, set the exec bit on Unix, write the profile next to `bridge.json`,

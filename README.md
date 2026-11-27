@@ -126,9 +126,9 @@ or delete `Mods/RimWorldLLM`.
 To do it by hand instead: quit RimWorld (the engine stops with it) and delete
 
 - the engine folder:
-  - Windows: `%LOCALAPPDATA%\HermesEngine`
-  - Linux: `~/.local/share/hermes-engine`
-  - macOS: `~/Library/Application Support/HermesEngine`
+  - Windows: `%LOCALAPPDATA%\EasyEngine`
+  - Linux: `~/.local/share/easy-engine`
+  - macOS: `~/Library/Application Support/EasyEngine`
 - the helper's folder (its memory and logs):
   - Windows: `%LOCALAPPDATA%\rimworldllm-agent`
   - Linux and macOS: `~/.local/share/rimworldllm-agent` (or `$XDG_DATA_HOME/rimworldllm-agent` if you set it)
@@ -146,7 +146,7 @@ To free some space, delete single models you no longer use in Settings, Storage.
 | Colonists are quiet | Check the status line in Settings, Model. At 3x and 4x speed many moments pass before a line can be written; that is by design. |
 | Speech is simple or repeats | You are on the starter (wait for the download) or on E2B (see Hardware). |
 | The game stutters or runs out of video memory | The engine shrinks when the game needs memory. If it persists, choose a smaller model. |
-| Antivirus warns about `hermes-engine` | It is the engine program shipped with the mod, built from the public [easyEngine](https://github.com/CharlesMod/easyEngine) source. See the checksums in the zip's `SHA256SUMS`. |
+| Antivirus warns about `easy-engine` | It is the engine program shipped with the mod, built from the public [easyEngine](https://github.com/CharlesMod/easyEngine) source. See the checksums in the zip's `SHA256SUMS`. |
 | It says the engine does not answer | The setup window shows the engine's log. Logs are in the engine folder's `logs` subfolder. |
 
 ### Reporting a problem
