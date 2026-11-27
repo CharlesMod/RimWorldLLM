@@ -72,6 +72,10 @@ namespace RimWorldLLM.Mind.RimWorld
             Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n)), StringComparer.Ordinal);
         }
 
+        public const int WhyMax = 80;
+        private static Param NewWhy() => new Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
+            + "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);
+
         // ---- the tool list for this digest ----------------------------------------------
         private List<ToolSpec> BuildTools()
         {
@@ -84,25 +88,25 @@ namespace RimWorldLLM.Mind.RimWorld
                         new Param("pause", "enum", "pause the game, unpause it, or leave it", choices: new[] { "leave", "yes", "no" }),
                         new Param("speed", "enum", "game speed 1 to 4, or leave", choices: new[] { "leave", "1", "2", "3", "4" }),
                         new Param("emergency", "enum", "yes only for a real emergency pause", choices: new[] { "no", "yes" }),
-                        new Param("reason", "text", "why, a few words", maxLen: 120),
+                        NewWhy(),
                     }),
             };
             if (names.Count > 0)
             {
                 Func<Param> pawn = () => new Param("pawn", "enum", "which colonist, by name", choices: names);
                 outl.Add(new ToolSpec("set_work", "Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.",
-                    new[] { pawn(), new Param("work", "enum", "work type", choices: Work), new Param("priority", "int", "0 off, 1 highest, 4 lowest", lo: 0, hi: 4) }));
+                    new[] { pawn(), new Param("work", "enum", "work type", choices: Work), new Param("priority", "int", "0 off, 1 highest, 4 lowest", lo: 0, hi: 4), NewWhy() }));
                 outl.Add(new ToolSpec("set_schedule", "Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).",
                     new[]
                     {
                         pawn(), new Param("from_hour", "int", "first hour, 0 to 23", lo: 0, hi: 23), new Param("to_hour", "int", "end hour, 0 to 24", lo: 0, hi: 24),
-                        new Param("assignment", "enum", "what they do in those hours", choices: new[] { "anything", "work", "joy", "sleep", "meditate" }),
+                        new Param("assignment", "enum", "what they do in those hours", choices: new[] { "anything", "work", "joy", "sleep", "meditate" }), NewWhy(),
                     }));
                 outl.Add(new ToolSpec("draft", "Draft or undraft colonists. pawns is a comma-separated list of names, or all.",
                     new[]
                     {
                         new Param("pawns", "text", "names separated by commas, or all", maxLen: 160),
-                        new Param("drafted", "enum", "draft or undraft", choices: new[] { "yes", "no" }),
+                        new Param("drafted", "enum", "draft or undraft", choices: new[] { "yes", "no" }), NewWhy(),
                     }));
                 outl.Add(new ToolSpec("order", "Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.",
                     new[]
@@ -110,27 +114,27 @@ namespace RimWorldLLM.Mind.RimWorld
                         pawn(), new Param("order", "enum", "the order", choices: new[] { "move", "attack", "hold" }),
                         new Param("x", "int", "move: cell x (0 if unused)", lo: 0, hi: 999), new Param("z", "int", "move: cell z (0 if unused)", lo: 0, hi: 999),
                         new Param("target_id", "int", "attack: the target's id (0 if unused)", lo: 0, hi: 999999),
-                        new Param("hold", "enum", "hold: yes to hold, no to stop holding", choices: new[] { "yes", "no" }),
+                        new Param("hold", "enum", "hold: yes to hold, no to stop holding", choices: new[] { "yes", "no" }), NewWhy(),
                     }));
                 if (new[] { "outfit", "food", "drug" }.Any(k => Policies.TryGetValue(k, out var l) && l.Count > 0))
                     outl.Add(new ToolSpec("set_policy", "Give one colonist an outfit, food or drug policy by name (see POLICIES).",
                         new[]
                         {
                             pawn(), new Param("kind", "enum", "which policy", choices: new[] { "outfit", "food", "drug" }),
-                            new Param("name", "text", "the policy's name", maxLen: 60),
+                            new Param("name", "text", "the policy's name", maxLen: 60), NewWhy(),
                         }));
                 if (Beds.Count > 0)
                     outl.Add(new ToolSpec("assign_bed", "Assign one colonist to a bed (by the bed's id in BEDS).",
-                        new[] { pawn(), new Param("bed_id", "enum", "the bed's id", choices: Beds.Keys.ToList()) }));
+                        new[] { pawn(), new Param("bed_id", "enum", "the bed's id", choices: Beds.Keys.ToList()), NewWhy() }));
             }
             outl.Add(new ToolSpec("set_research", "Choose the research project to work on, by name (see RESEARCH).",
-                new[] { new Param("project", "text", "the project's name", maxLen: 80) }));
+                new[] { new Param("project", "text", "the project's name", maxLen: 80), NewWhy() }));
             if (Letters.Count > 0)
                 outl.Add(new ToolSpec("answer_letter", "Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.",
                     new[]
                     {
                         new Param("letter_id", "enum", "the letter's id", choices: Letters.Keys.ToList()),
-                        new Param("choice", "text", "one of the letter's choices, or dismiss", maxLen: 80),
+                        new Param("choice", "text", "one of the letter's choices, or dismiss", maxLen: 80), NewWhy(),
                     }));
             return outl;
         }
@@ -190,6 +194,15 @@ namespace RimWorldLLM.Mind.RimWorld
 
         private (string verb, JObject body) Body(string tool, JObject v)
         {
+            var (verb, body) = VerbBody(tool, v);
+            JToken w = v.TryGetValue("why", out JToken wt) ? wt : null;
+            string why = PyStr.Strip(GameData.Clean(w != null && DigestJson.Truthy(w) ? PyJson.Str(w) : "", "why", WhyMax));
+            if (why.Length > 0) body["why"] = why;
+            return (verb, body);
+        }
+
+        private (string verb, JObject body) VerbBody(string tool, JObject v)
+        {
             switch (tool)
             {
                 case "set_time":
@@ -199,7 +212,6 @@ namespace RimWorldLLM.Mind.RimWorld
                         if (S(v, "speed") != "leave") b["speed"] = I(v, "speed");
                         if (b.Count == 0) throw new PyValueError("nothing to change: set pause or speed");
                         b["emergency"] = S(v, "emergency") == "yes";
-                        b["reason"] = S(v, "reason");
                         return ("time", b);
                     }
                 case "set_work":
