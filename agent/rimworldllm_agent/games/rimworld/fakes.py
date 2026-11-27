@@ -90,6 +90,20 @@ class FakeBridge:
                        "pause_ambient_at_speed": 4, "dlc": []}
         self.ledger: list[dict] = []
         self.requests: list[tuple[str, str]] = []
+        # ---- vivarium (docs/BRIDGE-API.md "Vivarium routes"); a test sets these to drive the steward ----
+        self.vivarium_supported = True           # False models an older mod: every vivarium route answers 404
+        self.playing = False
+        self.paused_by_narrator = False
+        self.viv_settings = {"may_pause_for_emergencies": True, "controls_speed": False, "heartbeat_hours": 6.0}
+        self.chat: list[dict] = []               # entries, oldest first (cap 300)
+        self.chat_seq = 0
+        self.goals_board = {"rev": 0, "goals": [], "plan": "", "orders": [], "log": []}
+        self._goal_ids = 0
+        self.actions: list[dict] = []
+        self.digest: dict | None = None          # what GET /digest returns (None: 409 no_game)
+        self.act_log: list[tuple[str, dict]] = []    # (verb, body) of every accepted /act/<verb>
+        self.act_refuse: dict[str, str] = {}     # verb -> reason: that verb is refused 409 "refused" with this detail
+        self.act_extra: dict[str, dict] = {}     # verb -> extra fields in the success reply
         self.transport = httpx.MockTransport(self._handle)
 
     # ---- test helpers ---------------------------------------------------
@@ -246,7 +260,169 @@ class FakeBridge:
             del self.chronicle[:-120]
             self.seen_ops[body["op_id"]] = {}
             return self._ok(stored=True, count=len(self.chronicle))
+        if self.vivarium_supported:
+            r = self._vivarium(req, path, body)
+            if r is not None:
+                return r
         return self._err(404, "not_found", path)
+
+    # ---- vivarium routes --------------------------------------------------
+    def add_chat(self, who: str, text: str, to: int = 0, name: str = "") -> dict:
+        """A chat entry as the game's chat bar (player) or the steward (narrator/note) would add it."""
+        self.chat_seq += 1
+        e = {"seq": self.chat_seq, "tick": self.tick, "who": who, "to": to, "name": name, "text": text}
+        self.chat.append(e)
+        del self.chat[:-300]
+        return e
+
+    def _log_action(self, verb: str, note: str) -> None:
+        self.actions.append({"seq": len(self.actions) + 1, "tick": self.tick, "verb": verb, "note": note, "by": "narrator"})
+
+    def _vivarium(self, req: httpx.Request, path: str, body: dict) -> httpx.Response | None:
+        if path == "/vivarium" and req.method == "GET":
+            return self._ok(playing=self.playing, paused_by_narrator=self.paused_by_narrator, chat_seq=self.chat_seq,
+                            goals_rev=self.goals_board["rev"], actions_seq=len(self.actions), settings=dict(self.viv_settings))
+        if path == "/digest" and req.method == "GET":
+            if self.digest is None:
+                return self._err(409, "no_game", "no game loaded")
+            return self._ok(**self.digest)
+        if path == "/chat":
+            if req.method == "GET":
+                since = int(req.url.params.get("since", 0))
+                return self._ok(entries=[e for e in self.chat if e["seq"] > since], next_seq=self.chat_seq)
+            text = str(body.get("text", "")).strip()
+            if body.get("who") not in ("narrator", "note"):
+                return self._err(400, "bad_request", "who must be narrator or note")
+            if not 1 <= len(text) <= 500:
+                return self._err(400, "bad_request", "text 1..500 chars")
+            e = self.add_chat(body["who"], text)
+            self.seen_ops[body["op_id"]] = {"seq": e["seq"]}
+            return self._ok(seq=e["seq"])
+        if path == "/goals":
+            b = self.goals_board
+            if req.method == "GET":
+                return self._ok(**b)
+            if body.get("rev") != b["rev"]:
+                return self._err(409, "conflict", "stale rev", board=dict(b))
+            for key, cap in (("goals", 20), ("orders", 20)):
+                if key in body and (not isinstance(body[key], list) or len(body[key]) > cap):
+                    return self._err(400, "bad_request", f"{key}: at most {cap}")
+            for key in ("goals", "orders"):
+                if key in body:
+                    items = []
+                    for it in body[key]:
+                        it = dict(it)
+                        if not str(it.get("text", "")).strip() or len(it["text"]) > 300:
+                            return self._err(400, "bad_request", "text 1..300 chars")
+                        if not it.get("id"):
+                            self._goal_ids += 1
+                            it["id"] = ("g" if key == "goals" else "o") + str(self._goal_ids)
+                            it.setdefault("by", "narrator")
+                        if key == "goals":
+                            it.setdefault("horizon", "short")
+                            it.setdefault("status", "open")
+                        items.append(it)
+                    b[key] = items
+            if "plan" in body:
+                b["plan"] = str(body["plan"])
+            for line in body.get("log_add", []):
+                b["log"].append({"tick": self.tick, "text": str(line)})
+            del b["log"][:-50]
+            b["rev"] += 1
+            self.seen_ops[body["op_id"]] = {"rev": b["rev"]}
+            return self._ok(**b)
+        if path == "/actions" and req.method == "GET":
+            since = int(req.url.params.get("since", 0))
+            return self._ok(actions=[a for a in self.actions if a["seq"] > since], next_seq=len(self.actions) + 1)
+        if path.startswith("/act/") and req.method == "POST":
+            verb = path[5:]
+            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order"):
+                return None
+            bad = self._act_shape(verb, body)
+            if bad:
+                return self._err(400, "bad_request", bad)
+            if verb in self.act_refuse:
+                return self._err(409, "refused", self.act_refuse[verb])
+            refusal, note = self._act_apply(verb, body)
+            if refusal:
+                return self._err(409, "refused", refusal)
+            self.act_log.append((verb, {k: v for k, v in body.items() if k not in ("op_id", "expires_tick")}))
+            self._log_action(verb, note)
+            self.seen_ops[body["op_id"]] = {"done": note}
+            return self._ok(done=note, **self.act_extra.get(verb, {}))
+        return None
+
+    @staticmethod
+    def _act_shape(verb: str, b: dict) -> str:
+        pos = lambda v: isinstance(v, int) and not isinstance(v, bool) and v > 0
+        if verb == "time":
+            if "pause" not in b and "speed" not in b:
+                return "pause or speed required"
+            if "speed" in b and b["speed"] not in (1, 2, 3, 4):
+                return "speed 1..4"
+        elif verb == "work":
+            pr = b.get("priorities")
+            if not pos(b.get("pawn")) or not isinstance(pr, dict) or not 1 <= len(pr) <= 20 \
+                    or not all(isinstance(v, int) and 0 <= v <= 4 for v in pr.values()):
+                return "pawn and priorities {work: 0..4} (1..20 entries) required"
+        elif verb == "schedule":
+            if not pos(b.get("pawn")) or not (isinstance(b.get("from_hour"), int) and 0 <= b["from_hour"] <= 23) \
+                    or not (isinstance(b.get("to_hour"), int) and 0 <= b["to_hour"] <= 24) \
+                    or b.get("assignment") not in ("anything", "work", "joy", "sleep", "meditate"):
+                return "pawn, from_hour 0..23, to_hour 0..24, assignment required"
+        elif verb == "policy":
+            if not pos(b.get("pawn")) or b.get("kind") not in ("outfit", "food", "drug") or not 1 <= len(str(b.get("name", ""))) <= 60:
+                return "pawn, kind outfit/food/drug, name required"
+        elif verb == "bed":
+            if not pos(b.get("pawn")) or not pos(b.get("bed")):
+                return "pawn and bed ids required"
+        elif verb == "research":
+            if not 1 <= len(str(b.get("project", ""))) <= 80:
+                return "project 1..80 chars"
+        elif verb == "letter":
+            if not pos(b.get("letter")) or not 1 <= len(str(b.get("choice", ""))) <= 80:
+                return "letter id and choice required"
+        elif verb == "draft":
+            ids = b.get("pawns")
+            if not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids) or not isinstance(b.get("drafted"), bool):
+                return "pawns [1..30 ids] and drafted required"
+        elif verb == "order":
+            o = b.get("order")
+            if not pos(b.get("pawn")) or o not in ("move", "attack", "hold"):
+                return "pawn and order move/attack/hold required"
+            if o == "move" and not (isinstance(b.get("x"), int) and isinstance(b.get("z"), int) and b["x"] >= 0 and b["z"] >= 0):
+                return "move needs x, z >= 0"
+            if o == "attack" and not pos(b.get("target")):
+                return "attack needs target > 0"
+        return ""
+
+    def _act_apply(self, verb: str, b: dict) -> tuple[str, str]:
+        """The settings checks of /act/time and a short success note. (refusal, note)."""
+        st = self.viv_settings
+        if verb == "time":
+            if "speed" in b and not st["controls_speed"]:
+                return "the player has not allowed the narrator to change speed", ""
+            if b.get("pause") is True and not (st["controls_speed"] or (b.get("emergency") and st["may_pause_for_emergencies"])):
+                return "pausing needs an emergency and the emergency-pause setting", ""
+            if b.get("pause") is False and not (st["controls_speed"] or self.paused_by_narrator):
+                return "the narrator may only unpause its own pause", ""
+            if b.get("pause") is True:
+                self.paused_by_narrator = bool(b.get("emergency")) and not st["controls_speed"] or self.paused_by_narrator
+                self.paused = True
+            if b.get("pause") is False:
+                self.paused, self.paused_by_narrator = False, False
+            if "speed" in b:
+                self.speed = b["speed"]
+            return "", "time: " + ", ".join(f"{k} {b[k]}" for k in ("pause", "speed") if k in b)
+        notes = {"work": lambda: "set " + ", ".join(f"{k} {v}" for k, v in b["priorities"].items()) + f" for pawn {b['pawn']}",
+                 "schedule": lambda: f"schedule {b['from_hour']}-{b['to_hour']} {b['assignment']} for pawn {b['pawn']}",
+                 "policy": lambda: f"{b['kind']} policy {b['name']} for pawn {b['pawn']}",
+                 "bed": lambda: f"bed {b['bed']} for pawn {b['pawn']}",
+                 "research": lambda: f"research {b['project']}",
+                 "letter": lambda: f"letter {b['letter']}: {b['choice']}",
+                 "draft": lambda: ("drafted" if b["drafted"] else "undrafted") + f" {len(b['pawns'])} pawn(s)",
+                 "order": lambda: f"{b['order']} order for pawn {b['pawn']}"}
+        return "", notes[verb]()
 
     def _mind(self, req: httpx.Request, pid: int, body: dict) -> httpx.Response:
         blob, rev = self.minds.get(pid, (None, 0))

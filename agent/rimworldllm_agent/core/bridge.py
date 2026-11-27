@@ -216,6 +216,39 @@ class BridgeClient:
         b = await self._req("GET", "/chronicle", params={"since_day": since_day})
         return list(b.get("entries", []))
 
+    # ---- vivarium (docs/BRIDGE-API.md "Vivarium routes"; an older mod answers 404) -------------------
+    async def vivarium(self) -> dict:
+        """GET /vivarium: playing, settings, chat_seq, goals_rev, actions_seq, paused_by_narrator."""
+        return await self._req("GET", "/vivarium")
+
+    async def digest(self) -> dict:
+        """GET /digest: the compact world digest (needs a loaded game)."""
+        return await self._req("GET", "/digest")
+
+    async def chat_since(self, seq: int) -> dict:
+        """GET /chat?since=N -> {"entries": [...], "next_seq": N}."""
+        return await self._req("GET", "/chat", params={"since": seq})
+
+    async def post_chat(self, who: str, text: str, op_id: str | None = None) -> dict:
+        """POST /chat {who: narrator|note, text}; -> {"seq": N}."""
+        return await self._req("POST", "/chat", json_body=self._write_body({"who": who, "text": text}, None, op_id))
+
+    async def goals(self) -> dict:
+        """GET /goals: the goals board with its rev."""
+        return await self._req("GET", "/goals")
+
+    async def put_goals(self, rev: int, op_id: str | None = None, **fields: Any) -> dict:
+        """PUT /goals {rev, goals?, plan?, orders?, log_add?}; a stale rev is BridgeError code "conflict" (body["board"] holds the current board)."""
+        return await self._req("PUT", "/goals", json_body=self._write_body({"rev": rev, **fields}, None, op_id))
+
+    async def actions_since(self, seq: int) -> dict:
+        """GET /actions?since=N -> {"actions": [...], "next_seq": N}."""
+        return await self._req("GET", "/actions", params={"since": seq})
+
+    async def act(self, verb: str, body: dict, expires_at: int | None = None, op_id: str | None = None) -> dict:
+        """POST /act/<verb>: returns the reply body ({"done": note, ...}); a refusal is BridgeError code "refused" (status 409, detail = the reason)."""
+        return await self._req("POST", f"/act/{verb}", json_body=self._write_body(body, expires_at, op_id))
+
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int:
         b = await self._req("PUT", f"{self.protocol.mind_path}/{actor_id}",
                             json_body=self._write_body({"rev": rev, "mind": mind}, None, op_id))

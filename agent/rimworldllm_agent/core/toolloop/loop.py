@@ -108,7 +108,8 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                    protocol: str = "grammar", validator: Validator | None = None, fallback: Fallback = None,
                    max_steps: int = 4, max_retries: int = 2, time_budget_s: float = 40.0, step_timeout_s: float = 20.0,
                    final_max: int = 200, max_tokens: int = 200, temperature: float = 0.2,
-                   fallback_after_actions: bool = False, allowed: Iterable[str] | None = None) -> LoopResult:
+                   fallback_after_actions: bool = False, allowed: Iterable[str] | None = None,
+                   slot: int | None = None) -> LoopResult:
     """``allowed``: the tool names this scene may use. The grammar, the prompt and the validator see only those, so
     text in the scene that asks for another tool cannot widen the set. Names not registered are ignored."""
     if protocol not in PROTOCOLS:
@@ -122,6 +123,7 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
     by_name = {t.name: t for t in tools}
     tolerant = protocol != "grammar"
     native_tools = [t.openai_tool() for t in tools] if protocol == "native" else None
+    pin = {} if slot is None else {"slot": slot}       # only a caller that pins a slot sends it, so plain backends need no new argument
     if protocol == "native":
         hist: list[dict] = [{"role": "system", "content": system}, {"role": "user", "content": user}]
     else:
@@ -157,7 +159,7 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                 try:
                     reply = await asyncio.wait_for(
                         backend.chat(step_msgs, grammar=grammar, tools=native_tools, tool_choice="auto" if native_tools else None,
-                                     max_tokens=max_tokens, temperature=temperature, timeout=min(step_timeout_s, remaining)),
+                                     max_tokens=max_tokens, temperature=temperature, timeout=min(step_timeout_s, remaining), **pin),
                         timeout=min(step_timeout_s, remaining) + 1.0)
                 except asyncio.TimeoutError:
                     tr.kind, tr.error = "timeout", "the model took too long"
