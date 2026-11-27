@@ -336,7 +336,7 @@ namespace RimWorldLLM.Tests.Mind
             foreach (var (pid, other) in new[] { (1, 2), (2, 1) })
             {
                 var mind = w.D.Minds[pid];
-                Assert.Single(mind.Memories.Where(m => m.Etype == "conversation"));   // one memory per pawn
+                Assert.Single(mind.Memories, m => m.Etype == "conversation");   // one memory per pawn
                 Assert.True(mind.Relations.ContainsKey(other.ToString()) && !string.IsNullOrEmpty(mind.Relations[other.ToString()].Feeling));
             }
             Assert.Empty(w.D.Leases.Leases);                                          // both leases ended
