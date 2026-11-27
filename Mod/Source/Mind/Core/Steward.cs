@@ -872,7 +872,7 @@ namespace RimWorldLLM.Mind
 
         /// <summary>A trade turn: GET /digest, a short prompt with the trade view first, trade_offer and trade, four steps. Skipped (and
         /// the trader stays seen) when food is critical or a fight is on. No board edits, no closing chat line.</summary>
-        private async Task RunTradeAsync(JObject t)
+        internal async Task RunTradeAsync(JObject t)
         {
             var d = D;
             var kit = (IStewardTradeKit)Kit;
