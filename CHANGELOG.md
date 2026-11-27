@@ -13,6 +13,12 @@ Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are inclu
 - The narrator keeps a goals board (Voices → Goals) you can read and edit, and logs every action it takes.
 - Settings (Colonists → Narrator plays): it may pause for emergencies (on), it controls the speed (off), and how
   often it looks over the colony (every 6 game hours). Building, zones, bills, trade and combat micro come later.
+- The chat panel can be dragged anywhere (hover strip) and resized (corner grip); "Reset chat panel position" in
+  settings. Every generated line goes into it: colonist speech, thoughts, dreams, diary, chronicle, recap letters,
+  art. Five filter chips (Talk, Thoughts, Narrator, Actions, Story) on the hover strip and in settings.
+- Each thing the narrator does shows as its own greentext line, `> set Ana's Cooking to 1st, since meals are running
+  low`; refused acts show dim with the reason.
+- Colonists no longer remark on the act of chatting itself after a chitchat ("cut this chitchat").
 
 ### New name: RimWorldLLM
 - The mod was called HermesVoice in test builds; it is now **RimWorldLLM** (packageId `charleszard.rimworldllm`,
