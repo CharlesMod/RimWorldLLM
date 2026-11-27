@@ -126,6 +126,15 @@ namespace RimWorldLLM
         public bool narratorAutosave = true;
         public float narratorAutosaveDays = 1f;
         public int narratorAutosaveKeep = 5;
+        public bool narratorTrade = true;
+        public bool narratorCaravans = true;
+        public int narratorTradeMaxDeal = 2000;      // 100..20000
+        public int narratorTradeMaxDay = 6000;       // 100..50000
+        public int narratorTradeDealsPerDay = 3;     // 1..10
+        public int narratorKeepMedicine = 10;        // 0..50
+        public int narratorKeepFoodDays = 10;        // 0..30
+        public string narratorNeverSell = "";
+        public int narratorCaravanMaxPawns = 3;      // 1..6
         public int narratorRestartMode = 0;   // 0 ask, 1 auto, 2 off (Bridge.RestartMode)
 
         // The chat panel (always on, MOBA style).
@@ -244,6 +253,15 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorAutosaveDays, "narratorAutosaveDays", 1f);
             Scribe_Values.Look(ref narratorAutosaveKeep, "narratorAutosaveKeep", 5);
             Scribe_Values.Look(ref narratorRestartMode, "narratorRestartMode", 0);
+            Scribe_Values.Look(ref narratorTrade, "narratorTrade", true);
+            Scribe_Values.Look(ref narratorCaravans, "narratorCaravans", true);
+            Scribe_Values.Look(ref narratorTradeMaxDeal, "narratorTradeMaxDeal", 2000);
+            Scribe_Values.Look(ref narratorTradeMaxDay, "narratorTradeMaxDay", 6000);
+            Scribe_Values.Look(ref narratorTradeDealsPerDay, "narratorTradeDealsPerDay", 3);
+            Scribe_Values.Look(ref narratorKeepMedicine, "narratorKeepMedicine", 10);
+            Scribe_Values.Look(ref narratorKeepFoodDays, "narratorKeepFoodDays", 10);
+            Scribe_Values.Look(ref narratorNeverSell, "narratorNeverSell", "");
+            Scribe_Values.Look(ref narratorCaravanMaxPawns, "narratorCaravanMaxPawns", 3);
             Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
             Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
             Scribe_Values.Look(ref chatPanelMedium, "chatPanelMedium", false);

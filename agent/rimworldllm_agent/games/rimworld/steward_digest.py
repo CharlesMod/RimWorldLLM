@@ -28,8 +28,16 @@ _BUILD = [
     dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2, loose=2, flags=1),
     dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0, loose=0, flags=0),
 ]
-# (base level, build level): the build block shrinks all the way before the rest loses detail
-_STEPS = [(0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (3, 3)]
+# the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
+# trader, settlements, caravans, quests. The last step keeps the TRADE line and the few traders and quests.
+_TRADE = [
+    dict(stock=10, needs=8, never=8, traders=6, sells=6, buys=4, places=6, caravans=4, quests=6),
+    dict(stock=6, needs=5, never=5, traders=4, sells=4, buys=3, places=4, caravans=3, quests=4),
+    dict(stock=3, needs=3, never=3, traders=3, sells=3, buys=2, places=2, caravans=2, quests=3),
+    dict(stock=0, needs=2, never=0, traders=2, sells=2, buys=0, places=1, caravans=2, quests=2),
+]
+# (base level, build level, trade level): the build block shrinks all the way first, then the trade blocks, then the rest
+_STEPS = [(0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 3, 0), (0, 3, 1), (0, 3, 2), (0, 3, 3), (1, 3, 3), (2, 3, 3), (3, 3, 3)]
 
 
 def pawn_names(digest: dict) -> dict[str, int]:
@@ -268,6 +276,116 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     return out
 
 
+def _dict_list(x: object, n: int) -> list[dict]:
+    return [i for i in (x if isinstance(x, list) else [])[:n] if isinstance(i, dict)]
+
+
+def _trader_line(t: dict, tl: dict) -> str:
+    bits = [f"- {gd.clean(t.get('id', ''), 'label')} {gd.clean(t.get('kind', ''), 'label')} {gd.clean(t.get('name', ''), 'name')}".replace("  ", " ")]
+    if t.get("faction"):
+        bits[0] += f" ({gd.clean(t['faction'], 'label')})"
+    if t.get("leaves_h") is not None:
+        bits.append(f"leaves in {_num(t['leaves_h'])} h")
+    if t.get("silver") is not None:
+        bits.append(f"silver {_num(t['silver'])}")
+    bits.append("can trade" if t.get("can_trade", True) else "CANNOT trade: " + (gd.clean(t.get("why_not", ""), "label") or "no"))
+    sells, buys = _words(t.get("sells"), tl["sells"]), _words(t.get("buys"), tl["buys"])
+    if sells:
+        bits.append("sells " + ", ".join(sells))
+    if buys:
+        bits.append("buys " + ", ".join(buys))
+    return ", ".join(bits)
+
+
+def _place_line(s: dict) -> str:
+    head = f"{gd.clean(s.get('id', ''), 'label')} {gd.clean(s.get('name', ''), 'name')}"
+    d = [gd.clean(s[k], "label") for k in ("faction", "relation") if s.get(k) is not None]
+    if s.get("goodwill") is not None:
+        d.append(f"goodwill {_num(s['goodwill'])}")
+    bits = [head + (" (" + ", ".join(d) + ")" if d else "")]
+    if s.get("days") is not None:
+        bits.append(f"{_num(s['days'])} days")
+    if s.get("trader"):
+        bits.append(gd.clean(s["trader"], "label"))
+    return ", ".join(bits)
+
+
+def _caravan_line(c: dict) -> str:
+    names = ", ".join(_words(c.get("pawns"), 6))
+    bits = [f"- {gd.clean(c.get('id', ''), 'label')} {gd.clean(c.get('name', ''), 'name')}: {names}"
+            + (f" + {_num(c['animals'])} animals" if c.get("animals") else "")]
+    if c.get("at") or c.get("to"):
+        bits.append(f"at {gd.clean(c.get('at', '?'), 'label')} -> {gd.clean(c.get('to', '?'), 'label')}")
+    for k, fmt in (("days_left", "{} days left"), ("food_days", "food {} days"), ("mass", "mass {}")):
+        if c.get(k) is not None:
+            bits.append(fmt.format(_num(c[k])))
+    for k in ("danger", "purpose"):
+        if c.get(k) not in (None, "", "none"):
+            bits.append(f"{k} {gd.clean(c[k], 'label')}")
+    if c.get("can_trade"):
+        bits.append("can trade here: " + gd.clean(c["can_trade"], "label"))
+    return ", ".join(bits) + (" (yours)" if c.get("narrator") else "")
+
+
+def _quest_line(q: dict) -> str:
+    bits = [f"- {gd.clean(q.get('id', ''), 'label')} [{gd.clean(q.get('state', ''), 'label')}] {gd.clean(q.get('kind', ''), 'label')}: "
+            + gd.clean(q.get("what") or q.get("name", ""), "label", max_len=80)]
+    if q.get("reward"):
+        bits.append("reward " + gd.clean(q["reward"], "label", max_len=60))
+    if q.get("expires_h") is not None:
+        bits.append(f"expires in {_num(q['expires_h'])} h")
+    if q.get("days") is not None:
+        bits.append(f"{_num(q['days'])} days away")
+    if q.get("danger") not in (None, "", "none"):
+        bits.append("danger " + gd.clean(q["danger"], "label"))
+    bits.append("can" if q.get("can") else "CANNOT: " + (gd.clean(q.get("why_not", ""), "label", max_len=80) or "no"))
+    return ", ".join(bits)
+
+
+def trade_lines(d: dict, tl: dict) -> list[str]:
+    """TRADE / NEEDS / STOCK / NEVER SELL / TRADERS / SETTLEMENTS from the trade block, CARAVANS and QUESTS from their own."""
+    out: list[str] = []
+    t = d.get("trade")
+    if isinstance(t, dict) and t:
+        head = [f"silver {_num(t.get('silver'))}"]
+        ng = t.get("negotiator")
+        if isinstance(ng, dict) and ng.get("name"):
+            pct = round(float(ng["price_bonus"]) * 100) if isinstance(ng.get("price_bonus"), (int, float)) else 0
+            head.append(f"negotiator {gd.name(ng['name'])} (social {_num(ng.get('social'))}, prices +{pct}%)")
+        else:
+            head.append("no negotiator")
+        head.append("comms " + gd.clean(t.get("comms", "?"), "label"))
+        head.append("beacon " + ("yes" if t.get("beacon") else "no"))
+        td = t.get("today")
+        if isinstance(td, dict):
+            head.append(f"today {_num(td.get('deals', 0))} deals, {_num(td.get('deals_left', '?'))} left, value left {_num(td.get('value_left', '?'))}")
+        out.append("TRADE: " + "; ".join(head))
+        needs = _words(t.get("needs"), tl["needs"])
+        if needs:
+            out.append("NEEDS: " + "; ".join(needs))
+        stock = _dict_list(t.get("stock"), tl["stock"])
+        if stock:
+            out.append("STOCK: " + ", ".join(f"{gd.clean(x.get('item', ''), 'label')} {_num(x.get('count'))}"
+                                             + (f" (surplus {_num(x['surplus'])})" if x.get("surplus") else "") for x in stock))
+        never = _words(t.get("never_sell"), tl["never"])
+        if never:
+            out.append("NEVER SELL: " + "; ".join(never))
+        traders = _dict_list(t.get("traders"), tl["traders"])
+        if traders:
+            out.append("TRADERS (look with trade_offer, then trade; by id):")
+            out.extend(_trader_line(x, tl) for x in traders)
+        places = _dict_list(t.get("settlements"), tl["places"])
+        if places:
+            out.append("SETTLEMENTS: " + "; ".join(_place_line(x) for x in places))
+    cs = _dict_list(d.get("caravans"), tl["caravans"])
+    if cs:
+        out.append("CARAVANS:")
+        out.extend(_caravan_line(c) for c in cs)
+    qs = _dict_list(d.get("quests"), tl["quests"])
+    if qs:
+        out.append("QUESTS (an offer is answered with choose):")
+        out.extend(_quest_line(q) for q in qs)
+    return out
 _STORE = {"none": "no stockpile takes it", "full": "stockpiles full", "far": "only far stockpile"}
 
 
@@ -323,8 +441,9 @@ def _res_entry(r: dict) -> str:
     return f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}" + (f" ({', '.join(extra)})" if extra else "")
 
 
-def _render(d: dict, lv: dict, bl: dict | None = None, combat: bool = True) -> str:
+def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, combat: bool = True) -> str:
     bl = bl or _BUILD[0]
+    tl = tl or _TRADE[0]
     out = ["DATE: " + _date(d)]
     dl = _deadlines_line(d, lv["deadlines"])
     if dl:
@@ -397,6 +516,7 @@ def _render(d: dict, lv: dict, bl: dict | None = None, combat: bool = True) -> s
         out.extend(built)
     elif counts:
         out.append("ROOMS: " + counts)
+    out.extend(trade_lines(d, tl))
     pw = d.get("power")
     if pw:
         out.append(f"POWER: produced {pw.get('produced', 0)}, used {pw.get('used', 0)}, stored {pw.get('stored', 0)}")
@@ -406,12 +526,12 @@ def _render(d: dict, lv: dict, bl: dict | None = None, combat: bool = True) -> s
 def render_digest(d: dict, cap: int = CAP) -> str:
     """The digest as compact text of at most ``cap`` characters (detail shrinks level by level, then a hard cut)."""
     text = ""
-    for base, bld in _STEPS:
-        text = _render(d, _LEVELS[base], _BUILD[bld])
+    for base, bld, trd in _STEPS:
+        text = _render(d, _LEVELS[base], _BUILD[bld], _TRADE[trd])
         if len(text) <= cap:
             return text
     if view_active(d.get("combat")):                   # the cut takes the tail of the rest, never the fight
         fight = render_combat(d["combat"], DIGEST_CAPS[-1])
-        rest = _render(d, _LEVELS[-1], _BUILD[-1], combat=False)
+        rest = _render(d, _LEVELS[-1], _BUILD[-1], _TRADE[-1], combat=False)
         return rest[:max(cap - len(fight) - 40, 0)].rsplit("\n", 1)[0] + "\n" + fight + "\n(digest cut: too long)"
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

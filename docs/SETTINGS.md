@@ -110,11 +110,20 @@ those fields.
 | `chatPanelWidth`, `chatPanelLines` | 420, 10 | - | Old width/lines sliders; still loaded from old saves, no longer shown or read (dragging replaced them) | removed from UI (round 2) |
 | `narratorAnswerDialogs` | true | P | "Narrator plays" group: answer popups when the narrator plays. A choice window or letter the narrator leaves open past the timeout gets the safe default (docs/VIVARIUM.md "Unattended play: dialogs"). Off: popups wait for you | new (unattended dialogs) |
 | `narratorDialogTimeoutS` | 90 | P | Real seconds (not game time: popups pause the game) before a popup gets the safe default; 10..300 in steps of 5. Reaches the agent as `settings.dialog_timeout_s` / `answer_dialogs` on `GET /vivarium` | new (unattended dialogs) |
+| `narratorTrade` | true | P | "Narrator plays" group: the narrator may buy and sell with visiting caravans, orbital traders (powered comms console) and settlements its caravan has reached, within the caps below; mirrored as `settings.trade` | new (vivarium 4) |
+| `narratorCaravans` | true | P | The narrator may form, send and cancel caravans (trade, visits, quest sites, deliveries); mirrored as `settings.caravans` | new (vivarium 4) |
+| `narratorTradeMaxDeal` | 2000 | P | Largest single deal in silver of value (buys + sells), 100..20000 in steps of 100; a bigger deal is refused whole (`trade_max_deal`) | new (vivarium 4) |
+| `narratorTradeMaxDay` | 6000 | P | Silver of value the narrator may trade per game day, 100..50000 (`trade_max_day`) | new (vivarium 4) |
+| `narratorTradeDealsPerDay` | 3 | P | Deals per game day, 1..10 (`trade_deals_per_day`); the day's counters are saved with the game | new (vivarium 4) |
+| `narratorKeepMedicine` | 10 | P | Medicine (all kinds together) the narrator never sells below, 0..50 (`keep_medicine`) | new (vivarium 4) |
+| `narratorKeepFoodDays` | 10 | P | Days of food (from the colony's daily nutrition) the narrator never sells below, 0..30 (`keep_food_days`) | new (vivarium 4) |
+| `narratorNeverSell` | "" | P | Comma-separated item words or defNames the narrator never sells (matched in the label or def, any case); `never_sell` as a list. Worn/equipped gear and forbidden items are never sold anyway | new (vivarium 4) |
+| `narratorCaravanMaxPawns` | 3 | P | Most colonists on one narrator caravan unless the player asks, 1..6 (`caravan_max_pawns`). Rules that always hold: someone stays home, a fighter stays home, no children under 13, no downed/drafted/sick/broken pawns; the best doctor and the only cook stay unless the player asks | new (vivarium 4) |
 | (button) | | | "Narrator plays" group: "Undo the narrator's last build" takes back its last placing action (as `/undo` in the chat); greyed when there is nothing to undo or no game | new (vivarium phase 2) |
 
 The "Narrator plays" switch itself is not a mod setting: it is saved per game (GameComponent, `rwlVivarium`) and
 sits in the bottom-right play-settings row, with a key `RWL_ToggleNarratorPlays` (unbound by default) under
-Options > Controls. The three settings above reach the agent on `GET /vivarium` (`settings`) and `GET /config`
+Options > Controls. The trade and caravan rows show their sliders and the never-sell field only while trading or caravans is on. The three settings above reach the agent on `GET /vivarium` (`settings`) and `GET /config`
 (`vivarium_may_pause`, `vivarium_controls_speed`, `vivarium_heartbeat_hours`). See docs/VIVARIUM.md.
 
 ### Display

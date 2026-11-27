@@ -65,7 +65,9 @@
   "components": "int",
   "silver": "int",
   "dlc": "list of strings: royalty|ideology|biotech|anomaly|odyssey",
-  "quest_offer_threat": "float or null, threat points of a pending quest's danger (if known)",
+  "traders_ready": "int, traders in TRADERS that can trade now (digest trade block)",
+  "trade_needs": "int, entries in the trade block's needs",
+  "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block",
   "loose_unstorable": "int, loose piles that no stockpile accepts or has room for (not forbidden)",
   "stuck_no_material": "int, groups of blueprints/frames waiting on a material",
   "stuck_no_builder": "bool, blueprints exist but no one can build (construction off or incapable)",
@@ -851,9 +853,9 @@
   {
    "id": "growth.trade",
    "category": "economy",
-   "condition": "silver > 1500 and 'MicroelectronicsBasics' in research_done",
-   "action": "Spend silver (it counts as wealth): buy components, industrial medicine, armor and good guns from traders via the comms console.",
-   "priority": 3,
+   "condition": "traders_ready > 0 and (trade_needs > 0 or silver > 1500)",
+   "action": "A trader is here and leaves soon: look at trade_offer, then trade for what NEEDS lists (components, medicine, then armor and guns) and sell STOCK surplus; keep 500 silver.",
+   "priority": 2,
    "sources": [
     "W-trade",
     "W-wman"
@@ -862,7 +864,7 @@
   {
    "id": "growth.quest_accept",
    "category": "economy",
-   "condition": "quest_offer_threat != null and quest_offer_threat < 0.6 * threat and food_days >= 10 and colonists_downed == 0 and colonists_sick == 0",
+   "condition": "quest_offer_can == true and food_days >= 10 and colonists_downed == 0 and colonists_sick == 0",
    "action": "Quest acceptable if its reward fixes a current bottleneck; avoid threatened joiner, peace talks without a top negotiator, hospitality/pawn lending during disease.",
    "priority": 3,
    "sources": [

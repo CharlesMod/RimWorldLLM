@@ -113,6 +113,8 @@ class FakeBridge:
         self.act_log: list[tuple[str, dict]] = []    # (verb, body) of every accepted /act/<verb>
         self.act_refuse: dict[str, str] = {}     # verb -> reason: that verb is refused 409 "refused" with this detail
         self.act_extra: dict[str, dict] = {}     # verb -> extra fields in the success reply
+        self.looks: list[tuple[str, dict]] = []  # (path, query) of every GET /trade/offer and /caravan/plan
+        self.offers: dict[str, dict] = {}        # trader id -> a canned /trade/offer reply that replaces the one built from the digest
         self.combat: dict | None = None          # what GET /combat returns (None: {"active": false}); a test sets a recorded view
         self.combat_since = 0                    # tick the fight began (GET /vivarium combat.since_tick)
         self.speed_before_combat: int | None = None   # /act/time {combat: true, speed: 1} remembers the speed here
@@ -317,6 +319,10 @@ class FakeBridge:
             if self.digest is None:
                 return self._err(409, "no_game", "no game loaded")
             return self._ok(**{**self.digest, **({"dialogs": list(self.dialogs)} if self.dialogs else {})})
+        if path in ("/trade/offer", "/caravan/plan") and req.method == "GET":
+            q = dict(req.url.params)
+            self.looks.append((path, q))
+            return self._trade_offer(q) if path == "/trade/offer" else self._caravan_plan(q)
         if path == "/dialogs" and req.method == "GET":
             return self._ok(dialogs=list(self.dialogs), timeout_s=90)
         if path == "/chat":
@@ -386,7 +392,7 @@ class FakeBridge:
             return self._ok(actions=[a for a in self.actions if a["seq"] > since], next_seq=len(self.actions) + 1)
         if path.startswith("/act/") and req.method == "POST":
             verb = path[5:]
-            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose"):
+            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan"):
                 return None
             bad = self._act_shape(verb, body)
             if bad:
@@ -401,6 +407,33 @@ class FakeBridge:
             self.seen_ops[body["op_id"]] = {"done": note}
             return self._ok(done=note, **self.act_extra.get(verb, {}))
         return None
+
+    def _trade_offer(self, q: dict) -> httpx.Response:
+        """A deterministic offer from the digest's trade block: the trader's sells at 2.0 each, our surplus stock at 1.0."""
+        w = q.get("with", "")
+        if w in self.offers:
+            return self._ok(**self.offers[w])
+        t = (self.digest or {}).get("trade") or {}
+        tr = next((x for x in t.get("traders") or [] if x.get("id") == w), None)
+        if tr is None:
+            return self._err(404, "not_found", f"no trader {w}")
+
+        def line(text: str) -> dict:
+            *item, n = str(text).rsplit(" ", 1)
+            return {"item": " ".join(item) if item and n.isdigit() else str(text), "count": int(n) if item and n.isdigit() else 1, "price": 2.0}
+
+        ours = [{"item": x["item"], "count": x["surplus"], "price": 1.0} for x in t.get("stock") or [] if x.get("surplus")]
+        return self._ok(**{"with": w, "name": tr.get("name", w), "silver": tr.get("silver", 0), "negotiator": (t.get("negotiator") or {}).get("name"),
+                           "buys": [line(x) for x in tr.get("sells") or []], "sells": ours, "left": 3})
+
+    def _caravan_plan(self, q: dict) -> httpx.Response:
+        d = self.digest or {}
+        known = [*((d.get("trade") or {}).get("settlements") or []), *(d.get("quests") or [])]
+        days = next((x.get("days") for x in known if isinstance(x, dict) and x.get("id") == q.get("to")), None) or 2.0
+        n = len([x for x in q.get("pawns", "").split(",") if x])
+        need = round(days * 2 + 3, 1)
+        return self._ok(days=days, food_days=need, food_need=need, mass=f"{20 * n}", capacity=f"{35 * n}",
+                        food=[{"item": "pemmican", "count": int(need * 2)}], ok=n > 0, problems=[] if n else ["no pawns"])
 
     @staticmethod
     def _act_shape(verb: str, b: dict) -> str:
@@ -442,6 +475,19 @@ class FakeBridge:
             if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)) \
                     and not (isinstance(b.get("passions"), list) or isinstance(b.get("trait"), str)):
                 return "option or text required"
+        elif verb == "trade":
+            lines = (b.get("buy") or []) + (b.get("sell") or [])
+            ok = lambda x: isinstance(x, dict) and isinstance(x.get("item"), str) and x["item"] and pos(x.get("count"))
+            if not isinstance(b.get("with"), str) or not b["with"] or not 1 <= len(lines) <= 12 or not all(ok(x) for x in lines):
+                return "with, and 1..12 buy/sell lines {item, count} required"
+        elif verb == "caravan":
+            op = b.get("op")
+            if op not in ("form", "send", "cancel"):
+                return "op form/send/cancel required"
+            if op == "form" and not (isinstance(b.get("pawns"), list) and 1 <= len(b["pawns"]) <= 6 and all(pos(i) for i in b["pawns"]) and b.get("to")):
+                return "form needs pawns (1..6 ids) and to"
+            if op != "form" and not b.get("caravan"):
+                return "send and cancel need caravan"
         elif verb == "draft":
             ids = b.get("pawns")
             if not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids) or not isinstance(b.get("drafted"), bool):
@@ -530,7 +576,7 @@ class FakeBridge:
                  "letter": lambda: f"letter {b['letter']}: {b['choice']}",
                  "draft": lambda: ("drafted" if b["drafted"] else "undrafted") + f" {len(b['pawns'])} pawn(s)",
                  "order": lambda: f"{b['order']} order for pawn {b['pawn']}"}
-        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend"):      # phase 2 hands: accepted as sent; a test sets act_refuse[verb] to refuse
+        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade", "caravan"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
             notes[vb] = lambda vb=vb: vb + ": " + ", ".join(f"{k} {x}" for k, x in b.items() if k != "why")
         return "", notes[verb]()
 

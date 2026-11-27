@@ -844,3 +844,174 @@ manipulation. Dara was idle.
 - Advisor, asked "put Cy on construction": "I can't do that; Cy has no manipulation and is incapable of
   construction."
 - The system prompt was 25.1k chars. Outputs are in ~/.local/share/rimworld-hermes-engine/xlate/live/.
+
+## Phase 4: trade, caravans, quests
+
+The ending on Core + Biotech is the ship; trade buys the components and advanced parts the colony cannot make,
+caravans and quests bring silver, people and loot. Phase 4 gives the narrator eyes on the economy and hands to trade,
+form and run caravans, and work accepted quests. Accepting or declining a quest stays in the dialogs path (`choose`).
+Nothing here is undoable (a trade is final; a forming caravan can be cancelled with `op: cancel`), so the hands check
+first and refuse with a reason.
+
+### Pieces and where they live
+- `Mod/Source/Bridge/VivariumTrade.cs` (Verse-free, tested in `Mod.Tests/VivariumTradeTests.cs`): the argument records
+  (`TradeArgs`, `DealLine`, `CaravanArgs`), `TradeRules` (the never-sell rules), `TradeDay` (per-game-day caps, saved in
+  the vivarium JSON as `trade_day`), `DealPlanner` (checks a deal against the trader's offers, silver on both sides,
+  never-sell and caps; returns the resolved lines or a refusal), `CaravanPlanner` (travel days, food days with margin,
+  carry capacity, which food to pack), `CaravanRules` (who may go), `QuestPure` (quest kind from its def and parts,
+  feasibility), `CaravanPlans` (what each narrator caravan is for; saved as `caravan_plans`).
+- `Mod/Source/Bridge/VivariumRoutesTrade.cs`: the routes below through the normal `Act` pipeline.
+- `Mod/Source/RimWorld/VivariumTradeHands.cs`: the game bodies (`IVivariumHands.TradeOffer/Trade/CaravanPlan/Caravan`),
+  `VivariumTradeView.cs`: the digest's `trade`, `caravans` and `quests` blocks; `VivariumCaravanWatch.cs`: gives a
+  formed narrator caravan its arrival action and notes arrivals (run from the game component, every 120 ticks).
+- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer`, `trade`, `caravan_plan`, `caravan` tools),
+  the digest renderer's TRADE / TRADERS / SETTLEMENTS / CARAVANS / QUESTS lines, the playbook's trade lines.
+
+### Digest blocks (each fails alone, logged once, like `build`)
+```json
+"trade": {
+  "silver": 1240,
+  "negotiator": {"pawn": 3, "name": "Ana", "social": 9, "price_bonus": 0.13},
+  "comms": "ready",
+  "beacon": true,
+  "stock": [{"item": "cloth", "count": 420, "value": 630, "surplus": 300},
+            {"item": "jade sculpture", "count": 1, "value": 410, "surplus": 1}],
+  "needs": ["components (4 left, cannot make them)", "medicine (3, keep 10)", "steel (60)"],
+  "never_sell": ["weapons and apparel in use", "medicine below 10", "food below 10 days", "forbidden items", "jade"],
+  "traders": [{"id": "P5521", "kind": "caravan", "name": "Bulk goods trader Tomas", "faction": "Hill Union",
+               "trader": "bulk goods", "leaves_h": 18, "silver": 1800, "can_trade": true,
+               "sells": ["steel 400", "components 12", "herbal medicine 20"], "buys": ["textiles", "art", "food"]},
+              {"id": "S31", "kind": "orbital", "name": "Exotic goods trader Sigma", "trader": "exotic goods",
+               "leaves_h": 30, "silver": 2600, "can_trade": true, "sells": ["advanced components 6", "glitterworld medicine 4"],
+               "buys": ["art", "drugs"]}],
+  "settlements": [{"id": "T4321", "name": "Rivermouth", "faction": "Hill Union", "relation": "neutral", "goodwill": 12,
+                   "days": 3.1, "trader": "outlander base"}],
+  "today": {"deals": 1, "deals_left": 2, "spent": 300, "got": 200, "value_left": 4500}
+}
+"caravans": [{"id": "C88", "name": "Caravan Ana", "pawns": ["Ana", "Bram"], "animals": 1, "at": "Rivermouth",
+              "to": "home", "days_left": 2.4, "food_days": 6.5, "mass": "120/210", "danger": "none",
+              "purpose": "trade", "can_trade": "T4321", "narrator": true}]
+"quests": [{"id": "Q77", "name": "Trade request: 20 cloth", "state": "active", "kind": "delivery",
+            "what": "bring 20 cloth to Rivermouth", "reward": "600 silver", "expires_h": 240, "days": 3.1,
+            "site": "T4321", "items": [{"item": "cloth", "count": 20}], "danger": "none", "can": true, "why_not": null}]
+```
+- `trade`: `silver` = colony silver on the home map. `negotiator` = the free colonist with the best trade price bonus
+  (`StatDefOf.TradePriceImprovement`). `comms`: `ready` (a powered comms console a free colonist can reach), `no power`,
+  `none`. `beacon`: a powered orbital trade beacon exists. `stock` = the top 10 tradeable item stacks (grouped by def and
+  stuff) by total market value; `surplus` = what can be sold under the never-sell rules. `needs` (at most 8) from the
+  Verse-free `TradeView.Needs`: components when Fabrication is not done and under 10, medicine under the keep floor,
+  steel under 100, food under the keep days, plasteel/uranium/advanced components when ship research is done.
+  `never_sell` = the active rules (below). `traders`: visiting trade caravans on the map (`P<pawn id>`, the trader pawn)
+  and orbital traders in range (`S<ship load id>`), each with up to 6 sells (top by value) and 4 bought categories;
+  `can_trade` false gives `why_not` ("no comms console", "the trader is leaving", "hostile"). `settlements`: the
+  nearest 6 non-hostile settlements that trade (`T<tile>`), `days` = estimated travel days on foot from home.
+  `today`: the trade caps for the current game day.
+- `caravans`: player caravans on the world map (and ones still forming: `"at": "forming"`), at most 4. `can_trade` =
+  the settlement id when the caravan sits on a settlement that trades with it. `narrator` = it is one of the narrator's
+  (has a plan).
+- `quests`: accepted, ongoing quests (and offers still open, `state: "offer"`, so a choose has the facts), at most 6.
+  `kind` (from `QuestPure.Kind`): `site` (go to a world site), `delivery` (a trade request: bring items),
+  `hosting` (guests/lodgers stay), `combat` (raid/defend/bandit camp), `other`. `can` / `why_not` from
+  `QuestPure.Feasible` (danger vs the colony's strength, deadline vs travel, food).
+
+### Routes (POST bodies also take `op_id` and the optional `why`)
+| Route | Body / query | Notes |
+|---|---|---|
+| `GET /trade/offer?with=ID` | `with` = a trader id (`P…`, `S…`) or `T<tile>` (only with one of our caravans there) | `{with, name, silver, negotiator, buys:[{item, count, price}], sells:[{item, count, price}], left}`: what the trader sells to us (price we pay each) and what of ours it buys (price we get each), at most 30 each, after the negotiator's bonus; `sells` of ours lists only sellable counts (never-sell applied). |
+| `POST /act/trade` | `with`, `buy` [{item, count}], `sell` [{item, count}] (at least one line, at most 12 lines) | Opens the game's `TradeSession` with the best negotiator (no window), sets each `Tradeable` count, checks with `DealPlanner`, executes `TradeDeal.TryExecute`, closes the session. Done: "bought 10 components, sold 200 cloth (+120 silver), Ana negotiated". Extra: `spent`, `got`, `net`, `today`. |
+| `GET /caravan/plan?pawns=3,5&animals=9&to=T4321&goods=cloth:20` | as `/act/caravan` form | `CaravanPlanner`'s answer, no action: `{days, food_days, food_need, mass, capacity, food:[{item,count}], ok, problems:[...]}`. |
+| `POST /act/caravan` | `op` form\|send\|cancel; form: `pawns` [ids] (1..6), `animals` [ids]?, `goods` [{item,count}]?, `to` (`T<tile>`, `Q<quest id>`, a site `W<tile>`), `purpose` trade\|visit\|quest\|deliver, `player_asked`?; send: `caravan` (`C…`), `to` (as form, or `home`); cancel: `caravan` (forming only) | Form: checks `CaravanRules` and the planner, packs food automatically (planner's pick), then forms the caravan the game's way (`CaravanFormingUtility.StartFormingCaravan`: pawns gather the goods and leave). `Q<id>`: a delivery quest packs its items and goes to its settlement; a site quest goes to the site; a combat quest is refused "needs combat (not yet)"; hosting needs no caravan (refused with what to prepare). Send: paths an existing caravan (home = enter the home map). |
+
+**Hands interface (as built, `IVivariumHands`).** `JObject TradeOffer(string with, TradeLimits limits)`;
+`HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day)`; `JObject CaravanPlan(CaravanArgs a, TradeLimits limits)`;
+`HandResult Caravan(CaravanArgs a, int maxPawns)`. The two JObject hands signal a refusal with `{"refused": "reason"}` (the
+route answers 409 `refused`), return null for no game; otherwise the object is the reply body (`/trade/offer` gets `today`
+added when missing). `Trade` runs `DealPlanner.Plan(args, situation, limits, day, tick)` on the live offers, then executes;
+its success Extra holds `spent`, `got`, `net` (optional `value`, default spent + got); the route calls `day.Charge` from them
+and adds `today` to the reply (the route has already rolled `day` to this tick and refused when the day's deals are used up).
+`Caravan` success Extra for `form` must hold `caravan` (the key the digest lists as `id`, e.g. `C88`); the route stores
+`CaravanPlans.Set(key, purpose, to, quest (to when Q..), tick, note)`; `send` updates the plan's `to`, `cancel` removes it.
+`TradeDay.Roll(tick)` / `Charge(spent, got, value = -1)`. Query/body shapes: `to` matches `[TQW]<digits>` (`home` only for
+send), `with` matches `[PST]<digits>`, `caravan` matches `C<digits>`, `purpose` defaults to `visit`, goods `item:count,...`
+in the query. Routes refuse before the hand when `settings.trade` / `settings.caravans` is off, when the day's deals are
+spent, and for `player_asked` without a recent player line. Pure helpers: `TradeRules.Reason` returns the full sentence
+("can't sell medicine: the colony keeps 10 medicine"); `DealPlan.Clips` lists sells cut to a floor; `CaravanPlanner` feeds
+kibble to animals with `EatsKibble` only, other animals forage; `QuestPure.Feasible` returns a `(bool can, string whyNot)`
+tuple, expiresDays infinity or NaN = no deadline; `CaravanRules` also takes `FreeColonists`/`FreeFighters`.
+Pure files: `VivariumTrade.cs`, `VivariumCaravan.cs`, `TradeView.cs` (`TradeView.Needs(NeedsInput)`).
+
+**Never sell (TradeRules).** Weapons and apparel a colonist has equipped or worn; medicine below `narratorKeepMedicine`
+(default 10 units, all kinds together); food below `narratorKeepFoodDays` days for the colony (default 10, from the
+colony's daily nutrition); forbidden items; anything matching the player's list `narratorNeverSell` (comma-separated
+words or defNames, matched against the item's label and def, case-insensitive). A deal that sells past a floor sells
+only down to it, or is refused when nothing is left ("can't sell medicine: the colony keeps 10").
+
+**Caps (TradeDay, per game day).** `narratorTradeMaxDeal` (2000 silver of value per deal, buys + sells),
+`narratorTradeMaxDay` (6000 per day), `narratorTradeDealsPerDay` (3). Over the deal cap is refused whole; the day
+counters reset at the game day's change and are saved with the game.
+
+**Who may go (CaravanRules).** Never every free colonist (at least one stays, and at least one able to fight);
+never the only doctor (best Medicine) or the only cook unless `player_asked`; at most `narratorCaravanMaxPawns`
+(default 3) pawns unless `player_asked`; no downed, drafted, sick-in-bed or mental-state pawns; a pawn under 13 never.
+An animal must be a tame pack animal or one that can carry (capacity > 0).
+
+**Planner (CaravanPlanner, pure).** Travel days from the game's estimate (else world tiles / 9 a day). Food needed
+= days x 2 + 3 for a round trip (trade, visit, deliver), days + 3 one way (quest site; the return is planned on
+arrival). Pack food in this order: pemmican, packaged survival meals, kibble (animals only), simple/fine meals only when
+their spoil time is longer than the trip, raw food that keeps. Capacity = 35 kg per body size (pawns' own capacity
+from the game); refuse over capacity ("too heavy: 260/210 kg"); refuse when food is short ("food for 4.0 days, needs 9.2").
+
+**Settings (Colonists → Narrator plays).** `narratorTrade` (default on), `narratorCaravans` (default on),
+`narratorTradeMaxDeal`, `narratorTradeMaxDay`, `narratorTradeDealsPerDay`, `narratorKeepMedicine`,
+`narratorKeepFoodDays`, `narratorNeverSell` (text), `narratorCaravanMaxPawns`. Mirrored as `settings.trade`,
+`settings.caravans`, `settings.trade_max_deal`, ... in `GET /vivarium`.
+
+### Steward
+Four tools when the digest has a `trade` block: `trade_offer` (with: look at prices; not an action), `trade` (with,
+buy, sell as "item xN, item xN"), `caravan_plan` (not an action), `caravan` (op form|send|cancel, pawns as names, to,
+quest, goods, purpose). The prompt's playbook lines: sell surplus art, textiles and drugs; buy components early;
+keep a silver reserve (500); never strip the base's defense for a caravan; take quests only when `can` is true.
+
+### Phase 4 status (what is built)
+- Mod, Verse-free and unit-tested: `VivariumTrade.cs` (deal planner, never-sell rules, day caps), `VivariumCaravan.cs`
+  (caravan planner, who may go, quest kind and feasibility, caravan plans), `TradeView.cs` (needs),
+  `VivariumTradeKeys.cs` (id parsing, food kinds), `NeverSellList.cs`; routes in `VivariumRoutesTrade.cs`. Tests:
+  `VivariumTradeTests`, `VivariumTradeRoutesTests`, `VivariumTradeKeysTests`, `NeverSellListTests`.
+- Mod, game bodies (compile-checked against the 1.7 reference assemblies only; the playtest, section J, is their first
+  run): `VivariumTradeHands.cs` (offer and trade through `TradeSession`/`TradeDeal`; worn, wielded and forbidden
+  things are taken off the colony side; pawns and animals are never traded), `VivariumCaravanHands.cs` (plan, form via
+  `CaravanFormingUtility.StartFormingCaravan`, send via the path follower, cancel), `VivariumTradeUtil.cs`,
+  `VivariumQuestUtil.cs`, `VivariumTradeView.cs` (digest blocks, plus `trade.animals`: tame pack animals, at most 8),
+  `VivariumCaravanWatch.cs` (every 120 ticks: re-keys a plan from the forming lord to the formed caravan, restores a
+  site's arrival action, notes a settlement arrival once in the chat, drops plans whose caravan is gone).
+- Agent: `steward_trade.py` (`TradeKit`), the look-tool path in `Session.run` (`trade_offer`, `caravan_plan` are not
+  actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
+  `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
+  reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
+- Decisions: a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
+  caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
+  fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
+  best doctor (not only the only one) stays home unless the player asks; ship needs in `trade.needs` are approximated
+  from the costs of a computer core, a reactor and one engine, shown only after ShipBasics.
+- Not yet: caravans to quest sites returning home on their own (the steward sends them), fulfilling a trade request
+  on arrival (the caravan arrives with the goods; the player or a later hand clicks the request), gifts, selling
+  prisoners or animals, buying from settlements without a caravan there.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
+`custom/use`, 2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against the fake bridge on the three trade
+samples, also with food raised to 14 days).** System prompt about 29k chars (user turn about 5k); a cycle took
+16-28 s.
+- Visiting bulk trader, heartbeat (three runs): `trade_offer` first, then one deal: buy herbal medicine x20 and
+  components x6-10, sell cloth x300, the jade sculpture and the smokeleaf joints, "since we need components and
+  medicine"; then the build work.
+- Orbital exotic trader, chat "get what we need": `trade_offer S31`, then buy components x20 and glitterworld
+  medicine x4, sell cloth and the gold sculptures. On heartbeats the build list (freezer, table, research bench) took
+  the step budget first; with the amended `growth.trade` alert it looked at the offer in its last step.
+- Settlement 3.1 days away with an accepted delivery quest, chat "let's do the Rivermouth cloth delivery":
+  `caravan_plan` (3.1 days, food need 9.2, packs pemmican 18, 60/105 kg, ok), then `caravan form` with Ana, Bram and
+  Eli, cloth x20, to Q77, purpose quest. Advisor "should we send a caravan to Rivermouth?": advice only (the 600
+  silver reward is worth it, the cloth is surplus), no action.
+- With food at 2.4 days (the samples as recorded) it left the caravan alone and fixed food first.
+- Fixed from it: `growth.trade` only fired above 1500 silver; it now fires when a trader can trade and NEEDS has
+  entries; the strategy says to trade first in a turn because traders leave. Seen, not fixed (phase 2): the model
+  keeps trying a cooler for a freezer that is only planned (refused with the reason each time).

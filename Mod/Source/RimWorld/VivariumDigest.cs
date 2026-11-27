@@ -79,6 +79,9 @@ namespace RimWorldLLM
             Sec(o, "food", () => VivariumFood.Digest(map));
             Sec(o, "deadlines", () => VivariumDeadlines.Digest(map));
             Sec(o, "facts", () => VivariumFacts.Build(map));
+            Sec(o, "trade", () => VivariumTradeView.Trade(map));
+            Sec(o, "caravans", () => VivariumTradeView.Caravans(map));
+            Sec(o, "quests", () => VivariumTradeView.Quests(map));
             return o;
         }
 

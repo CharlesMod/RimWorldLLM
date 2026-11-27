@@ -338,6 +338,31 @@ namespace RimWorldLLM
                 SliderRow(l, "RWL_Viv_AutosaveKeep", s.narratorAutosaveKeep, ref keep, 1f, 20f, "RWL_Viv_AutosaveKeepTip");
                 s.narratorAutosaveKeep = Mathf.Clamp(Mathf.RoundToInt(keep), 1, 20);
             }
+            Check(l, "RWL_Viv_Trade", ref s.narratorTrade, "RWL_Viv_TradeTip");
+            Check(l, "RWL_Viv_Caravans", ref s.narratorCaravans, "RWL_Viv_CaravansTip");
+            if (s.narratorTrade || s.narratorCaravans)
+            {
+                float tv;
+                tv = s.narratorTradeMaxDeal;
+                SliderRow(l, "RWL_Viv_TradeMaxDeal", s.narratorTradeMaxDeal, ref tv, 100f, 20000f, "RWL_Viv_TradeMaxDealTip");
+                s.narratorTradeMaxDeal = Mathf.Clamp(Mathf.RoundToInt(tv / 100f) * 100, 100, 20000);
+                tv = s.narratorTradeMaxDay;
+                SliderRow(l, "RWL_Viv_TradeMaxDay", s.narratorTradeMaxDay, ref tv, 100f, 50000f, "RWL_Viv_TradeMaxDayTip");
+                s.narratorTradeMaxDay = Mathf.Clamp(Mathf.RoundToInt(tv / 100f) * 100, 100, 50000);
+                tv = s.narratorTradeDealsPerDay;
+                SliderRow(l, "RWL_Viv_TradeDealsPerDay", s.narratorTradeDealsPerDay, ref tv, 1f, 10f, "RWL_Viv_TradeDealsPerDayTip");
+                s.narratorTradeDealsPerDay = Mathf.Clamp(Mathf.RoundToInt(tv), 1, 10);
+                tv = s.narratorKeepMedicine;
+                SliderRow(l, "RWL_Viv_KeepMedicine", s.narratorKeepMedicine, ref tv, 0f, 50f, "RWL_Viv_KeepMedicineTip");
+                s.narratorKeepMedicine = Mathf.Clamp(Mathf.RoundToInt(tv), 0, 50);
+                tv = s.narratorKeepFoodDays;
+                SliderRow(l, "RWL_Viv_KeepFoodDays", s.narratorKeepFoodDays, ref tv, 0f, 30f, "RWL_Viv_KeepFoodDaysTip");
+                s.narratorKeepFoodDays = Mathf.Clamp(Mathf.RoundToInt(tv), 0, 30);
+                TextRow(l, "RWL_Viv_NeverSell", ref s.narratorNeverSell, "RWL_Viv_NeverSellTip");
+                tv = s.narratorCaravanMaxPawns;
+                SliderRow(l, "RWL_Viv_CaravanMaxPawns", s.narratorCaravanMaxPawns, ref tv, 1f, 6f, "RWL_Viv_CaravanMaxPawnsTip");
+                s.narratorCaravanMaxPawns = Mathf.Clamp(Mathf.RoundToInt(tv), 1, 6);
+            }
             s.narratorRestartMode = Mathf.Clamp(s.narratorRestartMode, 0, 2);
             var modeRect = l.GetRect(30f);
             TooltipHandler.TipRegion(modeRect, UiUtil.T("RWL_Viv_RestartModeTip"));

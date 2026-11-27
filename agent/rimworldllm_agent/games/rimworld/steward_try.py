@@ -8,6 +8,10 @@
 --playing the first cycle is the full "combat started" one. ``--combat-cycle`` runs one small combat turn instead (GET /combat
 and the plan line only; no --digest needed). Both print the seconds the cycle took and the prompt size (chars, rough tokens).
 
+Phase 4 samples: --digest tests/data/steward_digest_trader.json | steward_digest_orbital.json | steward_digest_settlement.json
+(a visiting bulk trader; an exotic orbital trader; no traders and an accepted delivery quest to Rivermouth). The fake bridge
+answers /trade/offer and /caravan/plan from the digest and accepts trade and caravan acts.
+
 Prints the system prompt size, the user turn, each tool call with its arguments and the fake bridge's result, and the
 final chat line. Nothing here touches a real game.
 """

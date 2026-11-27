@@ -582,6 +582,24 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_AutosaveDaysTip>How often the mod's autosave runs, in game days. It waits while a window is open or a raid is on (but not for ever).</RWL_Viv_AutosaveDaysTip>
   <RWL_Viv_AutosaveKeep>Keep {0} autosaves</RWL_Viv_AutosaveKeep>
   <RWL_Viv_AutosaveKeepTip>How many RWL-Narrator saves rotate. The oldest is overwritten; saves the mod did not make are never touched.</RWL_Viv_AutosaveKeepTip>
+  <RWL_Viv_Trade>Let the narrator trade</RWL_Viv_Trade>
+  <RWL_Viv_TradeTip>Lets the narrator buy and sell with visiting traders and settlements, within the limits below. In advisor mode only when you ask.</RWL_Viv_TradeTip>
+  <RWL_Viv_Caravans>Let the narrator send caravans</RWL_Viv_Caravans>
+  <RWL_Viv_CaravansTip>Lets the narrator send colonists out on caravans to trade or work quests. It never sends everyone, nor the best doctor or only cook unless you ask.</RWL_Viv_CaravansTip>
+  <RWL_Viv_TradeMaxDeal>Largest single deal: {0} silver</RWL_Viv_TradeMaxDeal>
+  <RWL_Viv_TradeMaxDealTip>The most silver one trade may move. Bigger deals are refused.</RWL_Viv_TradeMaxDealTip>
+  <RWL_Viv_TradeMaxDay>Daily trade limit: {0} silver</RWL_Viv_TradeMaxDay>
+  <RWL_Viv_TradeMaxDayTip>The most silver the narrator may move in trades per day.</RWL_Viv_TradeMaxDayTip>
+  <RWL_Viv_TradeDealsPerDay>Deals per day: {0}</RWL_Viv_TradeDealsPerDay>
+  <RWL_Viv_TradeDealsPerDayTip>The most trades the narrator may make in a day.</RWL_Viv_TradeDealsPerDayTip>
+  <RWL_Viv_KeepMedicine>Keep {0} medicine</RWL_Viv_KeepMedicine>
+  <RWL_Viv_KeepMedicineTip>The narrator never sells medicine below this many.</RWL_Viv_KeepMedicineTip>
+  <RWL_Viv_KeepFoodDays>Keep {0} days of food</RWL_Viv_KeepFoodDays>
+  <RWL_Viv_KeepFoodDaysTip>The narrator never sells food that would leave the colony with fewer days than this.</RWL_Viv_KeepFoodDaysTip>
+  <RWL_Viv_NeverSell>Never sell (comma separated)</RWL_Viv_NeverSell>
+  <RWL_Viv_NeverSellTip>Item names the narrator must never sell, separated by commas. For example: Mortar shell, Neutroamine.</RWL_Viv_NeverSellTip>
+  <RWL_Viv_CaravanMaxPawns>Caravan size: up to {0} colonists</RWL_Viv_CaravanMaxPawns>
+  <RWL_Viv_CaravanMaxPawnsTip>The most colonists the narrator may send on one caravan.</RWL_Viv_CaravanMaxPawnsTip>
   <RWL_Viv_RestartMode>When the colony is lost: {0}</RWL_Viv_RestartMode>
   <RWL_Viv_RestartMode_0>ask me</RWL_Viv_RestartMode_0>
   <RWL_Viv_RestartMode_1>restart by itself</RWL_Viv_RestartMode_1>
