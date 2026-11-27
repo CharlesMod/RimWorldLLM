@@ -920,7 +920,7 @@ text when all are offered (about 0.7..0.9 k for one).
 
 ### Limits
 - The game bodies are compile-checked against the 1.7 reference assemblies only; the playtest (VIVARIUM-PLAYTEST.md,
-  section J) is their first run.
+  section K) is their first run.
 - Mechs are not squad members: the combat squad drafts colonists and slaves only (drafting mechs needs the mechanitor
   in range and its own controller); mech control groups in escort mode follow their mechanitor into fights.
 - No growth vats, no gene extraction, no deathrest management, no ovum/embryo work, no baby naming (the game names
