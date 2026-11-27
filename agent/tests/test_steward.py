@@ -455,3 +455,15 @@ def test_recent_unanswered_lines_are_caught_up_on_first_sight(world):
         assert lines(w, "narrator")[-1] == "Here now."
         assert "typed while the agent was restarting" in fake.calls[0]["messages"][1]["content"]
     run(go())
+
+
+def test_switching_on_wakes_the_steward_at_once(world):
+    async def go():
+        w, st, fake = await boot(world, [final("Advice."), final("Taking over.")], playing=False)
+        chat(w, "advise me")
+        await cycle(w)                           # an advisor cycle sets the heartbeat clock
+        assert fake.cycles == 1
+        w.fb.playing = True                      # the player flips the switch
+        await cycle(w)
+        assert fake.cycles == 2 and st.stats.by_reason.get("switched on") == 1
+    run(go())

@@ -102,6 +102,8 @@ class Steward:
         self.urgent: list[str] = []
         self.last_game: int | None = None
         self.last_real: float | None = None
+        self.was_playing = False                      # the switch was on at the last step (an off→on flip wakes at once)
+        self.switched_on = False
         self.pause_woken = False
         self.vv = {}
         if self.d.leases.narrator_owner == "steward":
@@ -140,6 +142,9 @@ class Steward:
             return
         self.vv = vv
         playing = bool(vv.get("playing"))
+        if playing and not self.was_playing:
+            self.switched_on = True                   # the player just handed over: look at the world now
+        self.was_playing = playing
         seq = int(vv.get("chat_seq", 0) or 0)
         if self.cursor is None or seq < self.cursor:
             self.cursor = seq                         # first sight (or a new log): old history is not answered,
@@ -189,6 +194,10 @@ class Steward:
             return "chat"
         if not playing or env.paused and not self.vv.get("paused_by_narrator"):
             return None
+        if self.switched_on:
+            self.switched_on = False
+            if self.last_game is not None:            # never looked yet: the heartbeat below fires anyway
+                return "switched on"
         if self.last_real is not None and d.clock() - self.last_real < d.cfg.steward_min_gap_real_s:
             return None
         if self.urgent and not env.paused:

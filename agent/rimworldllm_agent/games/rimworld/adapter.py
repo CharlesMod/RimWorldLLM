@@ -397,7 +397,8 @@ class RimWorldAdapter:
         return float(a) if isinstance(a, (int, float)) and not isinstance(a, bool) else None
 
     def snapshot_job(self, snap: dict) -> str:
-        return snap.get("job") or ""
+        j = snap.get("job") or ""
+        return str(j.get("label") or j.get("def") or "") if isinstance(j, dict) else str(j)    # the pawn route sends {def, label}
 
     def relations(self, snap: dict) -> list[tuple[int, int | None]]:
         return [(r["pawn"], r.get("opinion")) for r in snap.get("relations", []) if isinstance(r.get("pawn"), int)]
