@@ -206,3 +206,12 @@ point `RIMWORLDLLM_STEWARD_STRATEGY` (or `steward_strategy_path`) at another fil
 
 **Not in phase 1:** designations, building, zones, bills, trade, caravans, animals, the tactical controller.
 The steward is told to recommend those to the player instead of pretending.
+
+**Live check (2026-11-27, poe P40, the keeper's 26B `gemma4-rp-maxxed-Q3_K_XL`, 3 slots × 32k, grammar
+protocol, `steward_try` on `agent/tests/data/steward_digest_sample.json`).** System prompt ≈ 4.6k tokens
+(steward rules + playbook 3.5k, tools ≈ 1.1k), rendered digest 0.8k tokens. A chat cycle ("we're low on food, keep
+two cooks") took 14 s: a short-term goal, a plan, Eli's Cooking set to 1, one note and a line. A heartbeat took 11 s:
+a bed for Eli, research Batteries, two notes, a line. In advisor mode a question about the quest got advice only
+(after a prompt fix; before it, it rejected the quest), "put Bram on hunting first" did exactly that one task, and
+"build a freezer" got "I can't build yet". Fixed from this check: advisor questions vs requests, priority churn,
+doubled notes, and a grammar detail that sometimes made the final line a scrap (":").
