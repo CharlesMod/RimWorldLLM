@@ -11,7 +11,7 @@ namespace RimWorldLLM
 {
     /// <summary>The game bodies of the narrator's hands. Game thread only. The routes already checked shapes and
     /// mod settings; this applies the change through the same calls the vanilla UI makes.</summary>
-    public sealed class VivariumHands : IVivariumHands
+    public sealed partial class VivariumHands : IVivariumHands
     {
         static bool _warned;
 

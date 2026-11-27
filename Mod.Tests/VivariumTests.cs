@@ -22,6 +22,19 @@ namespace RimWorldLLM.Tests
         public HandResult AnswerLetter(int l, string c) { Calls.Add("letter " + l + " " + c); return Next; }
         public HandResult Draft(IList<int> pawns, bool d) { Calls.Add("draft " + string.Join(",", pawns) + " " + d); return Next; }
         public HandResult Order(int pawn, string o, int x, int z, int t, bool h) { Calls.Add("order " + pawn + " " + o + " " + x + " " + z + " " + t + " " + h); return Next; }
+        // phase 2: the last args and budget seen, for the build tests
+        public object LastArgs; public BuildBudget LastLeft; public IList<NarratorMark> LastUndo;
+        public JObject BenchesJson = new JObject { ["benches"] = new JArray() };
+        HandResult Took(string verb, object a, BuildBudget left) { Calls.Add(verb); LastArgs = a; LastLeft = left; return Next; }
+        public HandResult Designate(DesignateArgs a, BuildBudget left) { return Took("designate", a, left); }
+        public HandResult Build(BuildArgs a, BuildBudget left) { return Took("build", a, left); }
+        public HandResult Room(RoomArgs a, BuildBudget left) { return Took("room", a, left); }
+        public HandResult Zone(ZoneArgs a, BuildBudget left) { return Took("zone", a, left); }
+        public HandResult Area(AreaArgs a, BuildBudget left) { return Took("area", a, left); }
+        public HandResult Bill(BillArgs a, BuildBudget left) { return Took("bill", a, left); }
+        public JObject Benches() { Calls.Add("benches"); return BenchesJson; }
+        public HandResult UndoNext = HandResult.Done("cancelled it");
+        public HandResult Undo(IList<NarratorMark> marks) { Calls.Add("undo " + marks.Count); LastUndo = marks; return UndoNext; }
     }
 
     public class VivariumTests
@@ -432,6 +445,14 @@ namespace RimWorldLLM.Tests
             public HandResult AnswerLetter(int l, string c) { throw new InvalidOperationException("boom"); }
             public HandResult Draft(IList<int> p, bool d) { throw new InvalidOperationException("boom"); }
             public HandResult Order(int p, string o, int x, int z, int t, bool h) { throw new InvalidOperationException("boom"); }
+            public HandResult Designate(DesignateArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public HandResult Build(BuildArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public HandResult Room(RoomArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public HandResult Zone(ZoneArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public HandResult Area(AreaArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public HandResult Bill(BillArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
+            public JObject Benches() { throw new InvalidOperationException("boom"); }
+            public HandResult Undo(IList<NarratorMark> m) { throw new InvalidOperationException("boom"); }
         }
 
         // ------------------------------------------------------------ time gate
