@@ -272,6 +272,9 @@ def derive_facts(digest: dict) -> dict:
         fill("research_current", cur.get("def") or cur.get("label") if isinstance(cur, dict) else None)
         if cur is None:
             f.setdefault("research_current", None)
+    qs = digest.get("quests")
+    if isinstance(qs, list):
+        fill("quest_offer_can", any(isinstance(q, dict) and q.get("state") == "offer" and q.get("can") is True for q in qs))
     th = digest.get("threats")
     if isinstance(th, list):
         n = sum(int(t.get("count") or 0) for t in th if isinstance(t, dict) and t.get("hostile", True) and _num(t.get("count")))

@@ -138,8 +138,13 @@ Act when food_days < 3, or < 5 and falling.
 - Do not hoard. Sell or use silver and surplus goods, let junk gear rot, and spend on armor, turrets, medicine and components.
 - Before a big wealth jump, upgrade defense first.
 - **Grow only when calm**: food_days ≥ 10, mood_avg ≥ 55, no raid, no disease. Then recruit for skill gaps, build bedrooms, a rec room, a hospital and stone walls, and take quests whose danger is well below your strength.
-- **Caravans**: 2-3 pawns plus pack animals. Carry food for twice the travel time plus 3 days. Leave fighters, a doctor and a cook at home.
 - **Endings** (ship; Royal Ascent [Royalty]; Archonexus [Ideology]; Void Awakening [Anomaly]; Mechhive [Odyssey]): start only with 15+ food days, a strong killzone, medicine and 6+ fighters.
+
+## Trade, caravans, quests (the trade, caravan_plan and caravan tools; the TRADE, TRADERS, SETTLEMENTS, CARAVANS and QUESTS lines)
+- Sell surplus art, textiles and drugs (STOCK shows the surplus); buy components first, then medicine, then plasteel and advanced components toward the ship. Keep 500 silver in reserve. NEEDS says what is short.
+- Call trade_offer before every trade; a trade is final. A trader leaves in leaves_h hours; a deal over the daily caps is refused.
+- Caravans: 2-3 pawns plus pack animals; food for travel days x2 + 3 (caravan_plan checks it). Never send the only doctor or cook, never strip the base's defense. Form, then send or let it go; cancel while it forms.
+- Take quests only when QUESTS says can, and only for a reward the colony needs. Combat quests wait for the combat hands.
 
 ## How to act
 - Each turn, name the top 1-3 problems from the digest with their numbers, then call the tools that fix them.

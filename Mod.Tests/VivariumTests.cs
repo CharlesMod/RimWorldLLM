@@ -36,6 +36,16 @@ namespace RimWorldLLM.Tests
         public JObject Benches() { Calls.Add("benches"); return BenchesJson; }
         public HandResult UndoNext = HandResult.Done("cancelled it");
         public HandResult Undo(IList<NarratorMark> marks) { Calls.Add("undo " + marks.Count); LastUndo = marks; return UndoNext; }
+        // phase 4: what the hands were given, and what they answer
+        public string LastWith; public TradeArgs LastTrade; public TradeLimits LastLimits; public TradeDay LastDay; public CaravanArgs LastCaravan; public int LastMaxPawns;
+        public JObject OfferJson = new JObject { ["with"] = "P1", ["buys"] = new JArray() };
+        public JObject PlanJson = new JObject { ["ok"] = true };
+        public HandResult TradeNext = HandResult.Done("bought 2 steel", new JObject { ["spent"] = 100, ["got"] = 40, ["net"] = -60 });
+        public HandResult CaravanNext = HandResult.Done("Ana and Bram set off", new JObject { ["caravan"] = "C7" });
+        public JObject TradeOffer(string with, TradeLimits l) { Calls.Add("offer " + with); LastWith = with; LastLimits = l; return OfferJson; }
+        public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { Calls.Add("trade"); LastTrade = a; LastLimits = l; LastDay = d; return TradeNext; }
+        public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { Calls.Add("caravanplan"); LastCaravan = a; LastLimits = l; return PlanJson; }
+        public HandResult Caravan(CaravanArgs a, int max) { Calls.Add("caravan " + a.Op); LastCaravan = a; LastMaxPawns = max; return CaravanNext; }
     }
 
     public class VivariumTests
@@ -521,6 +531,10 @@ namespace RimWorldLLM.Tests
             public HandResult Bill(BillArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
             public JObject Benches() { throw new InvalidOperationException("boom"); }
             public HandResult Undo(IList<NarratorMark> m) { throw new InvalidOperationException("boom"); }
+            public JObject TradeOffer(string w, TradeLimits l) { throw new InvalidOperationException("boom"); }
+            public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { throw new InvalidOperationException("boom"); }
+            public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { throw new InvalidOperationException("boom"); }
+            public HandResult Caravan(CaravanArgs a, int m) { throw new InvalidOperationException("boom"); }
         }
 
         // ------------------------------------------------------------ time gate

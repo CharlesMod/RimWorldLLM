@@ -678,6 +678,24 @@ first and refuse with a reason.
 | `GET /caravan/plan?pawns=3,5&animals=9&to=T4321&goods=cloth:20` | as `/act/caravan` form | `CaravanPlanner`'s answer, no action: `{days, food_days, food_need, mass, capacity, food:[{item,count}], ok, problems:[...]}`. |
 | `POST /act/caravan` | `op` form\|send\|cancel; form: `pawns` [ids] (1..6), `animals` [ids]?, `goods` [{item,count}]?, `to` (`T<tile>`, `Q<quest id>`, a site `W<tile>`), `purpose` trade\|visit\|quest\|deliver, `player_asked`?; send: `caravan` (`C…`), `to` (as form, or `home`); cancel: `caravan` (forming only) | Form: checks `CaravanRules` and the planner, packs food automatically (planner's pick), then forms the caravan the game's way (`CaravanFormingUtility.StartFormingCaravan`: pawns gather the goods and leave). `Q<id>`: a delivery quest packs its items and goes to its settlement; a site quest goes to the site; a combat quest is refused "needs combat (not yet)"; hosting needs no caravan (refused with what to prepare). Send: paths an existing caravan (home = enter the home map). |
 
+**Hands interface (as built, `IVivariumHands`).** `JObject TradeOffer(string with, TradeLimits limits)`;
+`HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day)`; `JObject CaravanPlan(CaravanArgs a, TradeLimits limits)`;
+`HandResult Caravan(CaravanArgs a, int maxPawns)`. The two JObject hands signal a refusal with `{"refused": "reason"}` (the
+route answers 409 `refused`), return null for no game; otherwise the object is the reply body (`/trade/offer` gets `today`
+added when missing). `Trade` runs `DealPlanner.Plan(args, situation, limits, day, tick)` on the live offers, then executes;
+its success Extra holds `spent`, `got`, `net` (optional `value`, default spent + got); the route calls `day.Charge` from them
+and adds `today` to the reply (the route has already rolled `day` to this tick and refused when the day's deals are used up).
+`Caravan` success Extra for `form` must hold `caravan` (the key the digest lists as `id`, e.g. `C88`); the route stores
+`CaravanPlans.Set(key, purpose, to, quest (to when Q..), tick, note)`; `send` updates the plan's `to`, `cancel` removes it.
+`TradeDay.Roll(tick)` / `Charge(spent, got, value = -1)`. Query/body shapes: `to` matches `[TQW]<digits>` (`home` only for
+send), `with` matches `[PST]<digits>`, `caravan` matches `C<digits>`, `purpose` defaults to `visit`, goods `item:count,...`
+in the query. Routes refuse before the hand when `settings.trade` / `settings.caravans` is off, when the day's deals are
+spent, and for `player_asked` without a recent player line. Pure helpers: `TradeRules.Reason` returns the full sentence
+("can't sell medicine: the colony keeps 10 medicine"); `DealPlan.Clips` lists sells cut to a floor; `CaravanPlanner` feeds
+kibble to animals with `EatsKibble` only, other animals forage; `QuestPure.Feasible` returns a `(bool can, string whyNot)`
+tuple, expiresDays infinity or NaN = no deadline; `CaravanRules` also takes `FreeColonists`/`FreeFighters`.
+Pure files: `VivariumTrade.cs`, `VivariumCaravan.cs`, `TradeView.cs` (`TradeView.Needs(NeedsInput)`).
+
 **Never sell (TradeRules).** Weapons and apparel a colonist has equipped or worn; medicine below `narratorKeepMedicine`
 (default 10 units, all kinds together); food below `narratorKeepFoodDays` days for the colony (default 10, from the
 colony's daily nutrition); forbidden items; anything matching the player's list `narratorNeverSell` (comma-separated

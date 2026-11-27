@@ -278,6 +278,10 @@ class BridgeClient:
         """POST /act/<verb>: returns the reply body ({"done": note, ...}); a refusal is BridgeError code "refused" (status 409, detail = the reason)."""
         return await self._req("POST", f"/act/{verb}", json_body=self._write_body(body, expires_at, op_id))
 
+    async def look(self, path: str, params: dict | None = None) -> dict:
+        """A read-only GET of a Vivarium route (for example /trade/offer?with=P5521); the reply body."""
+        return await self._req("GET", path, params=params)
+
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int:
         b = await self._req("PUT", f"{self.protocol.mind_path}/{actor_id}",
                             json_body=self._write_body({"rev": rev, "mind": mind}, None, op_id))

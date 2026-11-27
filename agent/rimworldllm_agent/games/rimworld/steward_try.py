@@ -3,6 +3,10 @@
     python -m rimworldllm_agent.games.rimworld.steward_try --digest tests/data/steward_digest_sample.json \\
         [--goals goals.json] [--chat "who cooks?"] [--playing] --llm-url http://127.0.0.1:8080/v1 [--model m]
 
+Phase 4 samples: --digest tests/data/steward_digest_trader.json | steward_digest_orbital.json | steward_digest_settlement.json
+(a visiting bulk trader; an exotic orbital trader; no traders and an accepted delivery quest to Rivermouth). The fake bridge
+answers /trade/offer and /caravan/plan from the digest and accepts trade and caravan acts.
+
 Prints the system prompt size, the user turn, each tool call with its arguments and the fake bridge's result, and the
 final chat line. Nothing here touches a real game.
 """

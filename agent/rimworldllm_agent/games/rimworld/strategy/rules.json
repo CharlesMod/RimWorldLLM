@@ -65,7 +65,7 @@
   "components": "int",
   "silver": "int",
   "dlc": "list of strings: royalty|ideology|biotech|anomaly|odyssey",
-  "quest_offer_threat": "float or null, threat points of a pending quest's danger (if known)"
+  "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block"
  },
  "sources": {
   "W-quick": "https://rimworldwiki.com/wiki/Quickstart_Guides",
@@ -789,7 +789,7 @@
    "id": "growth.trade",
    "category": "economy",
    "condition": "silver > 1500 and 'MicroelectronicsBasics' in research_done",
-   "action": "Spend silver (it counts as wealth): buy components, industrial medicine, armor and good guns from traders via the comms console.",
+   "action": "Spend silver (it counts as wealth): with a trader in TRADERS, look at trade_offer then trade for components, industrial medicine, armor and good guns; keep 500 silver.",
    "priority": 3,
    "sources": [
     "W-trade",
@@ -799,7 +799,7 @@
   {
    "id": "growth.quest_accept",
    "category": "economy",
-   "condition": "quest_offer_threat != null and quest_offer_threat < 0.6 * threat and food_days >= 10 and colonists_downed == 0 and colonists_sick == 0",
+   "condition": "quest_offer_can == true and food_days >= 10 and colonists_downed == 0 and colonists_sick == 0",
    "action": "Quest acceptable if its reward fixes a current bottleneck; avoid threatened joiner, peace talks without a top negotiator, hospitality/pawn lending during disease.",
    "priority": 3,
    "sources": [

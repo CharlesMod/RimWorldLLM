@@ -70,6 +70,21 @@ namespace RimWorldLLM.Bridge
         /// <summary>Takes back what the marks recorded, where it still exists: cancels blueprints and frames, removes
         /// designations, deletes zones/zone cells/area cells and bills. Finished buildings stay.</summary>
         HandResult Undo(IList<NarratorMark> marks);
+
+        // ---- phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"). The routes check shapes and the settings gates; the
+        // hands check the game and refuse with a reason. The JObject hands signal a refusal with {"refused": "reason"}
+        // (the route turns it into a 409); anything else is the reply body. null = no game.
+
+        /// <summary>GET /trade/offer: what the trader `with` sells and buys. `with` = P.., S.. or T<tile>.</summary>
+        JObject TradeOffer(string with, TradeLimits limits);
+        /// <summary>POST /act/trade: runs DealPlanner.Plan against the live offers, then executes. Extra: spent, got, net (and value, optional).
+        /// The route charges `day` (already rolled to this tick) from spent/got and adds `today`.</summary>
+        HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day);
+        /// <summary>GET /caravan/plan: CaravanPlanner's answer for the form args, no action. {"refused": ...} on a refusal.</summary>
+        JObject CaravanPlan(CaravanArgs a, TradeLimits limits);
+        /// <summary>POST /act/caravan form | send | cancel. Form success Extra must hold `caravan` (the key the digest lists), which the route
+        /// stores in Vivarium.CaravanPlans with purpose, to and the quest id (when to is Q..).</summary>
+        HandResult Caravan(CaravanArgs a, int maxPawns);
     }
 
 }

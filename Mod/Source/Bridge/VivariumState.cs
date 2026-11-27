@@ -34,6 +34,26 @@ namespace RimWorldLLM.Bridge
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
         /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
         public bool Commentary = true;
+        /// <summary>Phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"); the game side refreshes these from the mod settings.</summary>
+        public bool Trade = true;
+        public bool Caravans = true;
+        public int TradeMaxDeal = 2000;
+        public int TradeMaxDay = 6000;
+        public int TradeDealsPerDay = 3;
+        public int KeepMedicine = 10;
+        public int KeepFoodDays = 10;
+        public List<string> NeverSell = new List<string>();
+        public int CaravanMaxPawns = 3;
+
+        public TradeLimits Limits()
+        {
+            return new TradeLimits
+            {
+                MaxDeal = TradeMaxDeal, MaxDay = TradeMaxDay, DealsPerDay = TradeDealsPerDay,
+                KeepMedicine = KeepMedicine, KeepFoodDays = KeepFoodDays, NeverSell = new List<string>(NeverSell ?? new List<string>())
+            };
+        }
+
         public JObject ToJson()
         {
             return new JObject
@@ -43,7 +63,16 @@ namespace RimWorldLLM.Bridge
                 ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,
-                ["heartbeat_hours"] = HeartbeatHours
+                ["heartbeat_hours"] = HeartbeatHours,
+                ["trade"] = Trade,
+                ["caravans"] = Caravans,
+                ["trade_max_deal"] = TradeMaxDeal,
+                ["trade_max_day"] = TradeMaxDay,
+                ["trade_deals_per_day"] = TradeDealsPerDay,
+                ["keep_medicine"] = KeepMedicine,
+                ["keep_food_days"] = KeepFoodDays,
+                ["never_sell"] = JArray.FromObject(NeverSell ?? new List<string>()),
+                ["caravan_max_pawns"] = CaravanMaxPawns
             };
         }
     }
@@ -493,6 +522,9 @@ namespace RimWorldLLM.Bridge
         public readonly BuildBudget Budget = new BuildBudget();
         /// <summary>Unattended play: the choice windows and letters open right now. Never saved.</summary>
         public readonly DialogBook Dialogs = new DialogBook();
+        /// <summary>Phase 4: today's trade counters (saved as trade_day) and what each narrator caravan is for (caravan_plans).</summary>
+        public readonly TradeDay TradeDay = new TradeDay();
+        public readonly CaravanPlans CaravanPlans = new CaravanPlans();
         static readonly System.Diagnostics.Stopwatch RealClock = System.Diagnostics.Stopwatch.StartNew();
         /// <summary>Real seconds since start (modal windows pause the game, so dialog timeouts use this). Tests may replace it.</summary>
         public static Func<double> NowReal = () => RealClock.Elapsed.TotalSeconds;
@@ -523,7 +555,9 @@ namespace RimWorldLLM.Bridge
                 ["goals"] = Goals.Export(),
                 ["actions"] = Actions.Export(),
                 ["actions_seq"] = Actions.LastSeq,
-                ["ledger"] = Ledger.Export()
+                ["ledger"] = Ledger.Export(),
+                ["trade_day"] = TradeDay.Export(),
+                ["caravan_plans"] = CaravanPlans.Export()
             };
         }
 
@@ -539,12 +573,14 @@ namespace RimWorldLLM.Bridge
             Actions.Import(saved["actions"] as JArray);
             Actions.RestoreSeq(VivJson.Int(saved["actions_seq"]));
             Ledger.Import(saved["ledger"] as JArray);
+            TradeDay.Import(saved["trade_day"] as JObject);
+            CaravanPlans.Import(saved["caravan_plans"] as JArray);
         }
 
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Dialogs.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Dialogs.Clear(); TradeDay.Clear(); CaravanPlans.Clear();
         }
     }
 }

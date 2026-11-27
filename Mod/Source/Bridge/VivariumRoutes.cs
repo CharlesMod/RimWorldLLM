@@ -45,6 +45,7 @@ namespace RimWorldLLM.Bridge
             });
             router.Add("POST", "/act/choose", true, c => Choose(c, vivarium, hands));
             RegisterBuild(router, vivarium, hands);
+            RegisterTrade(router, vivarium, hands);
         }
 
         static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }
