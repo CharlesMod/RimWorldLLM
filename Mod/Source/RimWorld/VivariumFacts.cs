@@ -52,6 +52,7 @@ namespace RimWorldLLM
             F(o, "fires", () => Fires(map));
             Power(o, map);
             try { VivariumFood.AddFacts(o, map); } catch (Exception e) { if (logged.Add("food_facts")) Log.Warning("[RimWorldLLM] digest food facts failed: " + e.Message); }
+            try { VivariumExtras.AddFacts(o, map); } catch (Exception e) { if (logged.Add("extras_facts")) Log.Warning("[RimWorldLLM] digest extras facts failed: " + e.Message); }
             try { VivariumDeadlines.AddFacts(o, map); } catch (Exception e) { if (logged.Add("deadline_facts")) Log.Warning("[RimWorldLLM] digest deadline facts failed: " + e.Message); }
 
             var rc = map.resourceCounter;

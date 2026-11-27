@@ -198,6 +198,7 @@ namespace RimWorldLLM
             try { job = p.jobs?.curDriver?.GetReport() ?? ""; } catch (Exception) { }
             o["job"] = job;
             o["drafted"] = p.Drafted;
+            try { VivariumExtras.AddPawn(o, p); } catch (Exception e) { LogOnce("pawn_extras", e); }
 
             if (p.timetable != null)
             {

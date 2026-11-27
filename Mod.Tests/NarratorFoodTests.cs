@@ -126,3 +126,33 @@ namespace RimWorldLLM.Tests
         }
     }
 }
+
+namespace RimWorldLLM.Tests
+{
+    public class NarratorExtrasTests
+    {
+        [Theory]
+        [InlineData(0.02, "extreme")]
+        [InlineData(0.15, "major")]
+        [InlineData(0.30, "minor")]
+        [InlineData(0.37, "near")]
+        [InlineData(0.60, null)]
+        public void BreakRiskByThreshold(double mood, string want)
+        { Assert.Equal(want, NarratorExtras.BreakRisk(mood, 0.35, 0.20, 0.05)); }
+
+        [Fact]
+        public void MoodWhySumsSameLabelAndTakesWorstTwo()
+        {
+            var w = NarratorExtras.MoodWhy(new[]
+            {
+                new MoodThought("ate raw food", -4), new MoodThought("ate raw food", -4), new MoodThought("slept outside", -5),
+                new MoodThought("dirty room", -3), new MoodThought("nice room", 6), new MoodThought("tiny", -0.2)
+            });
+            Assert.Equal(new[] { "ate raw food", "slept outside" }, w.ToArray());
+            Assert.Empty(NarratorExtras.MoodWhy(null));
+        }
+
+        [Fact]
+        public void DirtyBelowThreshold() { Assert.True(NarratorExtras.IsDirty(-2)); Assert.False(NarratorExtras.IsDirty(-1)); }
+    }
+}
