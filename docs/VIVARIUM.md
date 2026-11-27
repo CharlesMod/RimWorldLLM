@@ -389,3 +389,28 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## The narrator's view: reasons, food, clocks (2026-11-27)
+The digest now says *why*, not just *what*: the audit and every field are in docs/NARRATOR-VIEW.md. The design rule
+stays: short words (counts, reasons, deadlines, direction + distance), never coordinates or item lists; the hands
+find the cells.
+- `build.loose[].store`: none / full / far / ok, so loose steel with nowhere to go reads "(no stockpile takes it)",
+  and the narrator makes a stockpile instead of mining more.
+- `stuck[]` (at most 6): blueprints, frames and bills that can't go on, one reason per group: forbidden,
+  unreachable, no one can build, material forbidden, waiting on material (need N, have M), bench has no power,
+  no one does the work type, no ingredients.
+- Pawn rows: `child`, `cannot` (capacity reasons such as no manipulation), `idle`, `break_risk` + `mood_why`. The
+  work hand's refusal says why ("Cooking: Ana can't (Pyromaniac)").
+- `food`: meals and raw food with the loose part, food about to rot, crops ready (and days for the rest), game
+  nearby, hunters.
+- `deadlines[]` (at most 6, soonest first): bleeding out, infections (winning or losing the race), rot, winter /
+  growing season, expiring letters, rendered as "in 5 h" / "in 2 days".
+- Rooms gain `temp_c`, `mountain`, `dirty`; facts gain the counts the rules read (`loose_unstorable`,
+  `stuck_no_material`, `stuck_no_builder`, `bills_stuck`, `colonists_idle`, `colonists_children`, `meals`,
+  `raw_food`, `food_rot_soon`, `crops_ready`, `huntable`, `days_to_winter`, `days_to_growing`, `bleed_out_hours`,
+  `infections_losing`, `tattered_apparel`, `ancient_danger`, `unreachable_piles`).
+- Nine new playbook rules and a strategy section ("Reading the digest's new lines"): stockpile when nothing takes a
+  pile; fix the stuck reason rather than reorder; respect incapables and children; harvest and hunt before
+  starving; act on deadlines.
+- All of it is compile-checked against the 1.7 reference assemblies and unit-tested in the pure helpers; the
+  playtest (docs/release/VIVARIUM-PLAYTEST.md, section D) is its first run in game.

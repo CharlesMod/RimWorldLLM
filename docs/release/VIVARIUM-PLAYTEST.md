@@ -158,5 +158,33 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
     never over beds/graves, never tearing anything down. Chat "build a freezer": a freezer room, then a cooler in it.
     Note anything silly (rooms in odd places, fields on rock, rooms overlapping planned rooms).
 
+## D. The narrator's view: reasons, food, clocks
+
+Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field, then let the narrator look once
+(switch on, or chat as advisor) and see that it acts on the reason.
+
+28. **Loose with nowhere to go.** Make your only stockpile food-only, then mine or deconstruct until steel lies
+    loose. `curl -s -H "Authorization: Bearer $T" $B/digest | jq .build.loose`: the steel pile shows `"store":"none"`
+    (fill the stockpile instead and it reads `"full"`; a far-away stockpile reads `"far"`). The narrator should make
+    or widen a stockpile for it, not mine more steel.
+29. **Stuck building.** Place a few wall blueprints and turn Construction off for everyone. `jq .stuck`: a row
+    "N wall blueprints ...: no one can build (construction off or incapable)"; facts `stuck_no_builder` true. Turn it
+    back on, but place steel walls with no steel: "waiting on steel: need N, have M". Forbid the steel: "steel is
+    forbidden: unforbid it". The narrator should fix that reason (enable Construction, unforbid, haul or mine), not
+    shuffle priorities.
+30. **Stuck bill.** A stove bill with no raw food on the map: a `stuck` row "bill: ... no ingredients (...)". An
+    electric bench unpowered: "bench has no power".
+31. **People.** A colonist incapable of a work type: ask the narrator in chat to make them do it; the refusal names
+    why ("Cooking: X can't (backstory or trait)"). A pawn with a missing or broken hand/arm shows `cannot` "no
+    manipulation" or "weak hands"; a child shows `child`. A colonist wandering shows `idle` and the IDLE line counts it.
+32. **Food.** `jq .food`: meals and raw counts match the stock (loose shown apart); food left outside in summer shows
+    in `rot_soon` with days; a field near harvest shows ready cells and days for the rest (days include the night
+    rest: compare with the plant's own "grows in" tooltip); wild deer/boar near home appear in `game`.
+33. **Clocks.** A bleeding colonist: `jq .deadlines` shows "X bleeds out" with hours close to the health tab's
+    estimate. A colonist with flu or an infection: "winning/losing the race" with hours. Late summer in a temperate
+    biome: "winter (crops die)" with days; in winter: "growing season starts". A quest letter: "... expires".
+34. **Size.** With all of the above at once, the agent's log shows the rendered digest under 6000 chars, and the
+    narrator's turn still fits its time.
+
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
