@@ -205,3 +205,14 @@ def test_fired_rules_skip_rules_with_unknown_research():
     known = {"research_known": sorted(names)}
     assert sr.unknown_research(names, known) == frozenset()
     assert rid
+
+
+def test_facts_count_stored_plus_loose_but_not_forbidden():
+    d = json.loads(json.dumps(SAMPLE))
+    del d["facts"]
+    d["resources"] = [
+        {"category": "materials", "label": "steel", "count": 40, "loose": 300, "forbidden": 50},
+        {"category": "materials", "label": "components", "count": 0, "loose": 7, "forbidden": 0},
+    ]
+    f = sr.derive_facts(d)
+    assert f["steel"] == 340 and f["components"] == 7

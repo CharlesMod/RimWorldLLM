@@ -177,7 +177,7 @@ def test_letters_and_alerts_are_not_voiced_or_remembered(world):
         w.fb.add_event("alert", [], "Low food", [], severity=0.4, data={"alert": "Alert_LowFood", "label": "Low food", "critical": False})
         await w.d.step()
         await w.d.drain()
-        assert set(w.d.adapter.silent_events) == {"letter", "alert"}
+        assert set(w.d.adapter.silent_events) == {"letter", "alert", "dialog"}
         assert w.d.adapter.priority("letter") == Cls.IDLE and w.d.adapter.priority("alert") == Cls.IDLE
         assert not any("A quest came" in x.text or "Low food" in x.text for x in w.d.chronicle.state.recent)
         assert w.d.dropped == [] or all("letter" not in str(x) for x in w.d.dropped)
@@ -269,3 +269,29 @@ def test_build_block_shrinks_first_then_cap_holds():
         assert len(render_digest(d, cap)) <= cap
     tiny = render_digest(d, 4000)
     assert "BUILD: home" in tiny and "CAN BUILD" not in tiny
+
+
+def test_resources_show_loose_and_forbidden_and_loose_only_defs():
+    d = json.loads(json.dumps(SAMPLE))
+    d["resources"] = [
+        {"category": "materials", "label": "steel", "count": 40, "loose": 300, "forbidden": 50},
+        {"category": "materials", "label": "plasteel", "count": 0, "loose": 12, "forbidden": 0},
+        {"category": "materials", "label": "wood", "count": 5, "loose": 0, "forbidden": 0},
+    ]
+    text = render_digest(d)
+    assert "steel 40 (+300 loose, 50 forbidden)" in text
+    assert "plasteel 0 (+12 loose)" in text
+    assert "wood 5;" in text or "wood 5\n" in text
+
+
+def test_loose_line_renders_piles_with_distance_direction_and_forbidden():
+    d = json.loads(json.dumps(SAMPLE))
+    d["build"]["loose"] = [
+        {"label": "steel", "count": 300, "dist": 25, "dir": "NE", "forbidden": False},
+        {"label": "wood", "count": 80, "dist": 12, "dir": "S", "forbidden": True},
+    ]
+    text = render_digest(d)
+    assert "LOOSE: steel 300 25 cells NE; wood 80 12 cells S (forbidden)" in text
+    d["build"]["loose"] = [dict(d["build"]["loose"][0], label=f"m{i}") for i in range(9)]
+    assert render_digest(d, 100000).count("cells NE") == 6
+    assert "LOOSE" not in render_digest(dict(d, build=dict(d["build"], loose=[])))

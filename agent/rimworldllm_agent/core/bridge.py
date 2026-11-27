@@ -236,6 +236,10 @@ class BridgeClient:
         """GET /digest: the compact world digest (needs a loaded game)."""
         return await self._req("GET", "/digest")
 
+    async def dialogs(self) -> dict:
+        """GET /dialogs: the choice windows and letters open now ({"dialogs": [...], "timeout_s": N})."""
+        return await self._req("GET", "/dialogs")
+
     async def chat_since(self, seq: int) -> dict:
         """GET /chat?since=N -> {"entries": [...], "next_seq": N}."""
         return await self._req("GET", "/chat", params={"since": seq})

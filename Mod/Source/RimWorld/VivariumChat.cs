@@ -35,7 +35,7 @@ namespace RimWorldLLM
 
         public static bool IsOpen { get { return Find.WindowStack != null && Find.WindowStack.IsOpen<Window_RWLChat>(); } }
 
-        public static void Reset() { Close(); _text = ""; _seen = 0; _scroll = 0f; _arrived.Clear(); }
+        public static void Reset() { Close(); _text = ""; _seen = 0; _scroll = 0f; _arrived.Clear(); _rows.Clear(); _liveSeen = -1; _live.Clear(); _layoutCache.Invalidate(); }
 
         /// <summary>The game started or loaded: older lines are not highlighted as new.</summary>
         public static void OnGameStart() { Reset(); _seen = VivariumGame.State.Chat.LastSeq; }
@@ -61,28 +61,33 @@ namespace RimWorldLLM
         static RimWorldLLMSettings S { get { return RimWorldLLMMod.Settings ?? new RimWorldLLMSettings(); } }
         static GameFont Font { get { return S.chatPanelMedium ? GameFont.Medium : GameFont.Small; } }
 
+        // Layout is recomputed only when an input changed (OnGUI runs for every event type, several times a frame).
+        static readonly ChatLayoutCache _layoutCache = new ChatLayoutCache();
+        static readonly float[] _lineH = new float[4];   // per GameFont
+
         static ChatLayout.Result Layout()
         {
             var s = S;
-            var old = Text.Font;
-            Text.Font = Font;
-            float lh = Text.LineHeight;
-            Text.Font = old;
-            return ChatLayout.Compute(new ChatLayout.Input
+            return _layoutCache.Get(new ChatLayout.Input
             {
                 ScreenW = UI.screenWidth, ScreenH = UI.screenHeight, Width = s.chatPanelWidth,
-                Lines = s.chatPanelLines, LineH = lh, Right = s.chatPanelRight,
+                Lines = s.chatPanelLines, LineH = LineHeight(), Right = s.chatPanelRight,
                 Custom = s.ChatCustom, FX = s.chatPanelX, FY = s.chatPanelY, FW = s.chatPanelW, FH = s.chatPanelH
             });
         }
 
         static float LineHeight()
         {
-            var old = Text.Font;
-            Text.Font = Font;
-            float lh = Text.LineHeight;
-            Text.Font = old;
-            return lh;
+            int f = (int)Font;
+            if (f < 0 || f >= _lineH.Length) f = 1;
+            if (_lineH[f] <= 0f)
+            {
+                var old = Text.Font;
+                Text.Font = Font;
+                _lineH[f] = Text.LineHeight;
+                Text.Font = old;
+            }
+            return _lineH[f];
         }
 
         // ---- drag (move / resize) state; the box lives in settings as screen fractions, so UI scale and resolution changes keep it
@@ -123,20 +128,31 @@ namespace RimWorldLLM
         /// <summary>The chips in the strip, left to right after the grip; one that does not fit is left out (rect width 0).</summary>
         static Rect[] ChipRects(ChatLayout.Result lay)
         {
-            var res = new Rect[GroupKeys.Length];
-            var old = Text.Font;
-            Text.Font = GameFont.Tiny;
-            float x = lay.Grip.Right + 2f, y = lay.Strip.Y + 2f, h = lay.Strip.H - 4f, maxX = lay.Strip.Right - 3f;
-            for (int i = 0; i < res.Length; i++)
+            if (_chipLabels == null)
             {
-                float w = Text.CalcSize(UiUtil.T(GroupKeys[i])).x + 10f;
+                _chipLabels = new string[GroupKeys.Length]; _chipW = new float[GroupKeys.Length];
+                var f0 = Text.Font;
+                Text.Font = GameFont.Tiny;
+                for (int i = 0; i < GroupKeys.Length; i++) { _chipLabels[i] = UiUtil.T(GroupKeys[i]); _chipW[i] = Text.CalcSize(_chipLabels[i]).x + 10f; }
+                Text.Font = f0;
+                _chipTip = UiUtil.T("RWL_Chat_ChipTip");
+            }
+            for (int i = 0; i < _chipRects.Length; i++) _chipRects[i] = default(Rect);
+            float x = lay.Grip.Right + 2f, y = lay.Strip.Y + 2f, h = lay.Strip.H - 4f, maxX = lay.Strip.Right - 3f;
+            for (int i = 0; i < _chipRects.Length; i++)
+            {
+                float w = _chipW[i];
                 if (x + w > maxX) break;
-                res[i] = new Rect(x, y, w, h);
+                _chipRects[i] = new Rect(x, y, w, h);
                 x += w + 3f;
             }
-            Text.Font = old;
-            return res;
+            return _chipRects;
         }
+
+        static string[] _chipLabels;
+        static float[] _chipW;
+        static string _chipTip;
+        static readonly Rect[] _chipRects = new Rect[GroupKeys.Length];
 
         /// <summary>Presses on the grips, the strip and the chips; the drag itself. Returns true when it took the event.</summary>
         static void HandleMouse(Event e, ref ChatLayout.Result lay, bool hover)
@@ -193,8 +209,8 @@ namespace RimWorldLLM
                 bool on = GroupOn(i), over = chips[i].Contains(mouse);
                 Widgets.DrawBoxSolid(chips[i], on ? new Color(0.25f, 0.4f, 0.3f, over ? 1f : 0.9f) : new Color(0.15f, 0.15f, 0.15f, over ? 0.9f : 0.6f));
                 GUI.color = on ? Color.white : new Color(1f, 1f, 1f, 0.35f);
-                Widgets.Label(chips[i], UiUtil.T(GroupKeys[i]));
-                if (over) TooltipHandler.TipRegion(chips[i], UiUtil.T("RWL_Chat_ChipTip"));
+                Widgets.Label(chips[i], _chipLabels[i]);
+                if (over) TooltipHandler.TipRegion(chips[i], _chipTip);
             }
             Text.Anchor = oldAnchor;
             GUI.color = Color.white;
@@ -378,6 +394,8 @@ namespace RimWorldLLM
                 case "diary": return new Color(0.7f, 0.64f, 0.5f, 0.9f);      // dim paper brown
                 case "chronicle": case "recap": return new Color(0.86f, 0.76f, 0.54f);   // muted gold
                 case "art": return new Color(0.82f, 0.7f, 0.86f);
+                case "camera": return new Color(0.5f, 0.74f, 0.85f, 0.95f);    // dim cyan-grey: the director's caption
+                case "comment": return new Color(0.95f, 0.8f, 0.45f, 0.92f);   // narrator gold, italic: documentary commentary
                 case "action": return new Color(0.56f, 0.71f, 0.23f);   // #8FB43A: greentext #789922, lifted a touch for dark backgrounds
                 case "refused": return new Color(0.5f, 0.5f, 0.5f);
                 default: return new Color(0.72f, 0.72f, 0.72f);   // notes ("→ ...")
@@ -401,6 +419,8 @@ namespace RimWorldLLM
                 case "chronicle":
                     return string.IsNullOrEmpty(c.Name) ? UiUtil.T("RWL_Viv_LineChronicle", c.Text) : UiUtil.T("RWL_Viv_LineChronicleDay", c.Name, c.Text);
                 case "recap": return UiUtil.T("RWL_Viv_LineRecap", c.Text);
+                case "camera": return ChatRowFormat.Camera(c.Text, UiUtil.T("RWL_Viv_CameraPrefix"));
+                case "comment": return ChatRowFormat.Comment(c.Text, UiUtil.T("RWL_Viv_CommentPrefix"));
                 case "action": case "refused": return "> " + c.Text;
                 default: return c.Text;   // note, art (stored as a one-liner)
             }
@@ -417,81 +437,86 @@ namespace RimWorldLLM
             return "?";
         }
 
-        sealed class Row { public string Text; public Color Col; public float Fresh; public float Progress = -1f; public float H; }
-
-        static Row LiveRow(LiveLine l, double now)
+        static PanelRow LiveRow(LiveLine l, double now)
         {
             string name = SpeakerName(l);
             string dots = new string('.', ChatLayout.Dots(now));
-            var col = ColorOf(l.Who == "narrator" ? "narrator" : "colonist", l.To);
             if (!l.Typing || string.IsNullOrEmpty(l.Text))
             {
                 string t = UiUtil.T(l.Typing ? "RWL_Viv_Typing" : "RWL_Viv_Thinking", name) + dots.PadRight(3);
                 string pct = l.Typing ? "" : ChatLayout.ProgressText(l.Progress);
                 if (pct.Length > 0) t += " " + pct;
-                return new Row { Text = t, Col = new Color(col.r, col.g, col.b, 0.75f), Progress = l.Typing ? -1f : l.Progress };
+                return new PanelRow { Text = t, Who = l.Who == "narrator" ? "narrator" : "colonist", To = l.To, Alpha = 0.75f, Progress = l.Typing ? -1f : l.Progress };
             }
             string line = l.Who == "narrator" ? UiUtil.T("RWL_Viv_LineNarrator", l.Text) : name + ": " + l.Text;
-            return new Row { Text = line + " " + dots, Col = col };
+            return new PanelRow { Text = line + " " + dots, Who = l.Who == "narrator" ? "narrator" : "colonist", To = l.To };
+        }
+
+        // The panel keeps its rows between frames: text, heights and the row list are rebuilt only when something changed.
+        static readonly ChatPanelRows _rows = new ChatPanelRows();
+        static readonly List<LiveLine> _live = new List<LiveLine>();
+        static int _liveSeen = -1;
+        static readonly List<KeyValuePair<int, float>> _vis = new List<KeyValuePair<int, float>>();
+        static readonly Func<string, bool> _shownFn = Shown;
+        static readonly Func<ChatEntry, string> _formatFn = Line;
+        static float _measureW;
+        static readonly Func<string, float> _heightFn = t => Text.CalcHeight(t, _measureW);
+        static double _drawNow;
+        static readonly Func<LiveLine, PanelRow> _liveFn = l => LiveRow(l, _drawNow);
+
+        static int FilterBits()
+        {
+            var s = S;
+            return (s.chatShowTalk ? 1 : 0) | (s.chatShowThoughts ? 2 : 0) | (s.chatShowNarrator ? 4 : 0) | (s.chatShowActions ? 8 : 0) | (s.chatShowStory ? 16 : 0);
         }
 
         static void DrawPanel(ChatLayout.Result lay, bool hover)
         {
             var s = S;
             double now = Now;
-            var entries = VivariumGame.State.Chat.Entries;
-            var live = Live.Snapshot();
+            var chat = VivariumGame.State.Chat;
             var box = R(lay.Box);
             float inner = box.width - ChatLayout.Pad * 2f;
             float innerH = box.height - ChatLayout.Pad * 2f;
 
             Text.Font = Font;
             Text.WordWrap = true;
-            var rows = new List<Row>();
-            float freshest = 0f, need = innerH + Mathf.Max(0f, _scroll);
-            // newest first until the box (plus the scroll) is filled, then flip
-            for (int i = live.Count - 1; i >= 0; i--)
-                if (Shown(live[i].Who == "narrator" ? "narrator" : "colonist")) rows.Add(LiveRow(live[i], now));
-            for (int i = entries.Count - 1; i >= 0; i--)
-            {
-                if (!Shown(entries[i].Who)) continue;
-                double at;
-                float fresh = _arrived.TryGetValue(entries[i].Seq, out at) ? ChatLayout.Freshness(now - at) : 0f;
-                rows.Add(new Row { Text = Line(entries[i]), Col = ColorOf(entries[i].Who, entries[i].To), Fresh = fresh });
-                if (rows.Count > 200) break;
-            }
-            float sum = 0f;
-            int keep = 0;
-            foreach (var r in rows)
-            {
-                r.H = Text.CalcHeight(r.Text, inner);
-                freshest = Mathf.Max(freshest, r.Fresh);
-                sum += r.H; keep++;
-                if (sum > need + 400f) break;   // enough history for this scroll; the wheel asks for more next frame
-            }
-            rows.RemoveRange(keep, rows.Count - keep);
-            rows.Reverse();
+            _measureW = inner; _drawNow = now;
+            int widthKey = (int)Mathf.Round(inner), fontKey = (int)Font, bits = FilterBits();
+            Live.Refresh(ref _liveSeen, _live);
+            _rows.SyncChat(chat.Entries, chat.LastSeq, bits, widthKey, fontKey, _shownFn, _formatFn, _heightFn);
+            _rows.SyncLive(_liveSeen, ChatLayout.Dots(now), bits, widthKey, fontKey, _live, _shownFn, _liveFn, _heightFn);
+            var rows = _rows.Rows;
 
+            float freshest = 0f;
+            if (_arrived.Count > 0)
+                for (int i = rows.Count - 1; i >= 0 && i >= rows.Count - 12; i--)
+                {
+                    double at;
+                    if (!rows[i].Live && _arrived.TryGetValue(rows[i].Seq, out at)) freshest = Mathf.Max(freshest, ChatLayout.Freshness(now - at));
+                }
             float bg = ChatLayout.BackgroundAlpha(s.chatPanelOpacity, hover, freshest);
             if (bg > 0.001f) Widgets.DrawBoxSolid(box, new Color(0f, 0f, 0f, bg));
             if (hover) { GUI.color = new Color(1f, 1f, 1f, 0.15f); Widgets.DrawBox(box, 1, null); GUI.color = Color.white; }
             if (rows.Count == 0) { Text.Font = GameFont.Small; return; }
 
-            var hs = new List<float>(rows.Count);
-            foreach (var r in rows) hs.Add(r.H);
-            var vis = ChatLayout.Visible(hs, innerH, ref _scroll);
+            ChatLayout.VisibleInto(_rows.Heights, innerH, ref _scroll, _vis);
             Widgets.BeginGroup(new Rect(box.x + ChatLayout.Pad, box.y + ChatLayout.Pad, inner, innerH));
-            foreach (var kv in vis)
+            for (int k = 0; k < _vis.Count; k++)
             {
-                var r = rows[kv.Key];
-                var lr = new Rect(0f, kv.Value, inner, r.H);
-                if (r.Fresh > 0f) Widgets.DrawBoxSolid(lr, new Color(1f, 0.9f, 0.6f, 0.12f * r.Fresh));
-                ShadowLabel(lr, r.Text, r.Col);
+                var r = rows[_vis[k].Key];
+                var lr = new Rect(0f, _vis[k].Value, inner, r.H);
+                var col = ColorOf(r.Who, r.To);
+                if (r.Alpha < 1f) col = new Color(col.r, col.g, col.b, r.Alpha);
+                double at;
+                float fresh = !r.Live && _arrived.Count > 0 && _arrived.TryGetValue(r.Seq, out at) ? ChatLayout.Freshness(now - at) : 0f;
+                if (fresh > 0f) Widgets.DrawBoxSolid(lr, new Color(1f, 0.9f, 0.6f, 0.12f * fresh));
+                ShadowLabel(lr, r.Text, col);
                 if (r.Progress >= 0f)
                 {
                     var track = new Rect(0f, lr.yMax - 2f, inner * 0.5f, 2f);
                     Widgets.DrawBoxSolid(track, new Color(1f, 1f, 1f, 0.12f));
-                    Widgets.DrawBoxSolid(new Rect(track.x, track.y, track.width * r.Progress, 2f), new Color(r.Col.r, r.Col.g, r.Col.b, 0.8f));
+                    Widgets.DrawBoxSolid(new Rect(track.x, track.y, track.width * r.Progress, 2f), new Color(col.r, col.g, col.b, 0.8f));
                 }
             }
             Widgets.EndGroup();

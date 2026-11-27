@@ -42,6 +42,9 @@ namespace RimWorldLLM.Bridge
         HandResult SetResearch(string project);
         /// <summary>choice: an option label, "#&lt;index&gt;" (0-based), or "dismiss".</summary>
         HandResult AnswerLetter(int letter, string choice);
+        /// <summary>Unattended play: answer an open dialog or choice letter (a scanned DialogRecord id). option is the
+        /// record's option index (-1 for naming); texts are the naming fields by name. Game thread.</summary>
+        HandResult Choose(DialogRecord dialog, int option, IDictionary<string, string> texts);
         HandResult Draft(IList<int> pawns, bool drafted);
         /// <summary>order: move (x,z), attack (target thing id), hold (hold true/false).</summary>
         HandResult Order(int pawn, string order, int x, int z, int target, bool hold);

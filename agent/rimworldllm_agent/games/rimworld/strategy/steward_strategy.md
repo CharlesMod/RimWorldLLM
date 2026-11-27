@@ -72,7 +72,7 @@ You are the RimWorld colony steward (game 1.7; gameplay identical to 1.6.4850). 
 ## Build order (use the build, zone, designate and bill tools; the digest's BUILD lines say what is missing)
 Build the first missing item, one room or zone per turn, only when calm and the stock covers it.
 1. Shelter: a roofed room for everyone. 2. Beds, one per colonist (bedrooms later). 3. Food storage: a stockpile (food) in the kitchen. 4. A stove, then a "simple meal" bill with "until" about 10 per colonist. 5. A freezer next to the kitchen once there is a cooler to build. 6. A dining table and chairs. 7. A research bench, in its own room if possible. 8. Growing zones sized to the colonists, about 40 cells each: rice, potatoes, a little corn; healroot only with the skill.
-Never build over beds or graves, never remove what the player built, never repeat a refused build the same way. Mine only when steel or components run short; chop trees only where they block a plan.
+Never build over beds or graves, never remove what the player built, never repeat a refused build the same way. Count loose materials as stock. When much lies loose, haul it (designate haul) instead of mining. Mine only when stored + loose steel or components run short. Forbidden piles stay the player's call. chop trees only where they block a plan.
 
 ## Combat checklist
 - **Assault or melee rush**

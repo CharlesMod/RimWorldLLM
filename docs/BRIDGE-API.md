@@ -337,7 +337,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk, art_created, sleep_start, first_cue, gathering, gathering_end`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created, sleep_start, first_cue, gathering, gathering_end, birth, masterwork, ship_part`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
@@ -349,6 +349,9 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   `description` (the game's own tale text, game text, at most 400 characters), `material` (the stuff label, `""` when none) and, when the art depicts a tale, `tale`: `{def, summary (at most 200 characters), day (game day it happened, may be absent), pawns (up to 3 names)}` (all game text; `tale` is left out when there is none or it cannot be read). The maker has role
   `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
   one game hour per maker.
+- `birth` (Biotech only; hook `PregnancyUtility.ApplyBirthOutcome`) fires when a player-faction pawn gives birth. `data`: `pawn` `{id, name}` (the mother, also actor role `mother`). Severity 0.6.
+- `masterwork` fires when a player pawn finishes a Masterwork or Legendary item (hook `QualityUtility.SendCraftNotification`). `data`: `thing` (thing id), `label`, `quality` (`masterwork` or `legendary`), `maker` `{id, name}` (also actor role `maker`). Severity 0.5.
+- `ship_part` fires when a ship part building (a def with `CompProperties_ShipPart`) is completed from its frame. `data`: `thing` (def name), `label`. Everyone on the map knows. Severity 0.7.
 - `sleep_start` fires when a colonist falls asleep in a bed (not downed, not anesthetized; a colonist first seen already asleep,
   as after a load, does not fire), at most once per pawn per 8 game hours. The sleeper has role `sleeper` and is the only
   witness (the mod lists it explicitly, because sleepers are never witnesses otherwise). Severity 0.1, not chronicle-worthy; the
@@ -645,3 +648,34 @@ and caps: docs/VIVARIUM.md "Phase 2".
 becomes active (polled every 250 ticks; critical alerts and a short list: fire, starvation, low food,
 colonist needs rescue, colonist needs tending, life-threatening illness). Both have empty `pawns`; the
 director does not voice them.
+
+### `GET /dialogs` and `POST /act/choose` (unattended play; game needed for the act)
+`GET /dialogs` (no game needed) lists the choice windows and choice letters open now, as the mod's scanner last saw
+them (a few times a second, also while a modal window has the game paused):
+`{"dialogs": [{"id": "L4021", "kind": "joiner", "title": "Refugee", "text": "...(<=300)", "options": [{"index": 0,
+"label": "Accept the refugee", "disabled": false, "risk": "costs silver"}], "fields": [{"name": "faction", "label":
+"Faction name", "max_len": 40}], "default": "Accept the refugee", "timeout_s": 90, "open_s": 12, "pauses_game": false}],
+"timeout_s": 90}`. `id` is `L<letter id>` for letters and `W<n>` for windows. `kind` is one of joiner, creep_joiner,
+visitors, betray_visitors, ransom, choose_pawn, baby_to_child, growth_moment, quest, letter, node_tree, message_box,
+naming. `disabled_reason` appears on a disabled option, `risk` (a few words) on a costly or destructive one. Naming
+dialogs have `fields` and no options. `default` is what the safe default would pick. `open_s` is real seconds open.
+The same list is the digest's `dialogs` array (omitted when none are open).
+
+`POST /act/choose` `{"dialog": "L4021", "option": 0 | "Accept the refugee" | "#0", "why": "since we have room"}` or, for
+naming, `{"dialog": "W3", "text": "Ferngrove"}` / `{"dialog": "W3", "text": {"faction": "The Lanterns", "settlement":
+"Ashford"}}`. Checks: `dialog` 1..64 chars; `option` an integer or a string, or `text` a string or an object of strings (each
+1..60 chars; cut to the field's max_len); at least one of them (`400`). Then the usual `/act/*` path: `409 refused` with a
+reason when the dialog is gone, the option is disabled or unknown, a choice dialog got `text` or a naming dialog got only
+an `option`, or the game refused. A success is an action (`choose`) and a greentext line. A name the dialog
+rejects (too long, already taken) is refused with the reason.
+
+### Event `dialog`
+`{"type": "dialog", "severity": 0.6, "data": {"dialog": "L4021", "kind": "joiner", "title": "Refugee", "options":
+["Accept the refugee", "Reject"], "default": "Accept the refugee", "timeout_s": 90}}`, published once when a dialog is first
+seen. `pawns` is empty; the director does not voice it. The steward wakes on it even while the game is paused.
+
+### Event `colony_lost`
+`{"type": "colony_lost", "severity": 1.0, "data": {}}`, published once when the colony is gone (the game's
+game-ending flag, or three polls in a row with no free colonist on a player map and none in a caravan, after
+tick 2500). It is re-armed by a new game or load. Empty `pawns`. The mod then follows the "When the colony is
+lost" setting (docs/VIVARIUM.md, "Unattended play: stability and restart"); it never deletes a save.

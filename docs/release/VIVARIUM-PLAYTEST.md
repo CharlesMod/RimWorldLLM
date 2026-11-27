@@ -160,3 +160,80 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
+
+## D. Unattended play: dialogs
+
+Narrator plays on, the agent running with the model, `$B` and `$T` as above. Use dev mode (Debug actions) to fire
+incidents: `Incidents > Refugee chased`, `Wanderer joins`, `Ransom demand`, `Quest`, `Give quest`; change the settings
+first: timeout 15 s in the mod settings (Narrator plays group).
+
+26. **See.** Fire a refugee incident. `curl -s -H "Authorization: Bearer $T" $B/dialogs | jq` lists `L<id>` kind joiner
+    with two options (Accept / Reject, nothing disabled). `GET /events` has a `dialog` event with the same id.
+27. **Answer by the model.** Leave the agent running: within a few seconds a `> chose "Accept ..." on "Refugee", since ...`
+    green line appears and the refugee joins. Check the order of the options in `/dialogs` against the real letter
+    (index 0 must be the accepting one; if vanilla's order differs, the default picks the wrong one: report it).
+28. **Paused window.** Fire the colony naming dialog (new game start, or Debug > "Name colony"/rename faction in the
+    faction tab) while the game is running: the game is paused by the window. The steward still answers (reason `dialog` in
+    its trace) with a fitting name; the window closes and the name shows in the faction tab.
+29. **Default.** Stop the agent (or set the agent's choice off). Fire `Ransom demand`: after 15 s a chat note "No answer in
+    15 s: chose "Refuse..." on ... (default)" and an action line; no silver is paid. Fire a refugee: after 15 s accepted.
+    Fire a quest offer: declined (the letter disappears, the quest does not start).
+30. **Message box and node tree.** Trigger a trader/faction comms dialog (Debug > "Make trader caravan arrive", open the
+    comms console), leave it: after the timeout it closes via its harmless option. Raise a Dialog_MessageBox (for
+    example "Abandon colony" confirm via the caravan tab) with the agent off: after the timeout the Cancel button is
+    pressed, not the destructive one.
+31. **Growth moment** (Biotech): a child turning 3, 7 or 10 gives a letter and a choice window. With the agent off, the
+    default takes the first passion(s) and the first trait; the child's skills and traits show it.
+32. **Toggle.** Turn "Answer popups when the narrator plays" off: nothing is auto-answered; the model's `choose` still
+    works. Turn Narrator plays off: nothing is auto-answered either.
+33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
+    stays open with no default; after three tries (none, when no option is enabled) one chat note says so. Nothing loops.
+
+## E. Unattended play: camera director (watch mode)
+
+1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
+   (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
+2. With watch mode on and nothing happening, the camera drifts to a colonist about every 25 s (no chat line).
+3. Dev mode: fire a raid; within a second the camera cuts to the raiders, chat gets "Camera: a raid arrives from the <side>".
+4. Start a fight, a mental break and a social fight (dev tools) one after another: shots follow, the chat does not flood
+   (at most one camera line per 12 s). The same colonist is not shown again and again while others have events.
+5. Move or zoom the camera yourself: it stays still for the pause time (default 20 s), then resumes by itself.
+6. A funeral, a wedding or a party each get a shot and a line. Kill a colonist: cut to the body, "Camera: X has died".
+7. Biotech: a birth gives "Camera: X gives birth" and a `birth` event on GET /events. Without Biotech: no errors in the log.
+8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
+9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).
+
+## F. Unattended play: stability and restart
+Needs the mod; the agent is optional except where noted. Switch Narrator plays on.
+
+34. **Chat kinds.** `POST /chat` with who=comment and a camera-kind line: the comment shows gold italic, the camera
+    line dim blue-grey, both under the Story filter.
+35. **Panel cost.** Leave the panel open at 3x speed for a game day with a chat stream going: no stutter, no
+    growing frame time. Scroll and resize still feel immediate.
+36. **Rotating autosave.** Options: game autosave off. Run 3 game days (days slider 1, keep 3): saves
+    `RWL-Narrator-1..3` appear, then the oldest is overwritten. Your own saves are untouched. No save starts
+    during a long event, an open dialog, or in the middle of a raid (a raid holds it at most half a day).
+37. **Game autosave on.** The mod does not save at all (the game handles it).
+38. **Colony lost, ask.** Let everyone die (or use a dev kill). One `colony_lost` event; the dialog offers New
+    colony on this world, New world, Stop. Vanilla's own game-over window may also show; either is fine.
+39. **Same world.** Pick it: the vanilla wanderers dialog opens; accept it. A chronicle entry "story continues" and
+    the chat carry on; Narrator plays is still on. Nothing was deleted.
+40. **New world.** Pick it: the lost world is saved as `<colony>-lost-<n>` first (never overwriting), then the
+    quick-start world loads; Narrator plays is on, the chronicle has the "story continues" entry.
+41. **Auto.** Setting auto: a chat note, 20 s later the same-world dialog opens. Leave it: after 3 minutes the lost
+    world is saved and a new world starts. Off: nothing happens.
+42. **Save failed.** If the lost-world save is refused (disabled saving), the leave is cancelled with a chat note.
+
+## G. Unattended play: documentary voice (agent with the 26B)
+Needs the mod setting `narratorCommentary` (Colonists -> Narrator plays), on by default.
+1. **On.** Narrator plays on, setting on. A raid starts: within a minute one short wry line appears in the chat (Story
+   group, "comment" kind), one sentence, no quotes, only names that exist. A death right after it: a second line once 30 s
+   have passed.
+2. **Gaps.** Several ordinary moments (a funeral, a masterwork, a party) in a row: at most one line per 3 minutes and per 6
+   game hours. Deaths, raids and births may follow within 30 s.
+3. **Recap.** When the day turns, one recap sentence of the day's big moments, once per day, none on a quiet day.
+4. **Yields.** Chat to the narrator while a comment is being written: the comment is dropped, the steward's answer is
+   not delayed.
+5. **Off.** Switch the setting off, or Narrator plays off: no more comment lines.
+6. **Age gate.** A wedding or a birth involving a minor: no romantic wording, ever.
+Report: how it read (too chatty, too quiet, too grim?), any line with an invented name or a quote.

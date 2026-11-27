@@ -1,0 +1,29 @@
+{
+ "dialogs": [
+  {
+   "id": "L4107",
+   "kind": "ransom",
+   "title": "Ransom demand",
+   "text": "A raider band holds your colonist Ana and demands 900 silver for her release. If you refuse she will not be returned.",
+   "options": [
+    {
+     "index": 0,
+     "label": "Pay 900 silver",
+     "disabled": false,
+     "risk": "costs silver"
+    },
+    {
+     "index": 1,
+     "label": "Refuse",
+     "disabled": false
+    }
+   ],
+   "fields": [],
+   "default": "Refuse",
+   "timeout_s": 90,
+   "open_s": 0,
+   "pauses_game": false
+  }
+ ],
+ "timeout_s": 90
+}

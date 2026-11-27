@@ -389,3 +389,214 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## Unattended play: dialogs
+
+Goal: with "Narrator plays" on, no popup stops a run. Every window that wants a player's choice is seen, shown to the
+steward, and answered: by the model when it can, by a safe default when it does not.
+
+**Pieces.** `Mod/Source/Bridge/VivariumDialogs.cs` (Verse-free: the `DialogRecord`, the `DialogBook` of what is open, the
+`DialogPolicy` defaults, the chat-note text), `VivariumRoutesDialogs.cs` (`POST /act/choose` through the normal Act
+pipeline, so each answer is a greentext line and an action-log entry; `DialogSweep`, the timeout sweep),
+`Mod/Source/RimWorld/VivariumDialogHost.cs` (the game side: a scanner run from `GameComponentUpdate`, so it also runs while a
+modal window has the game paused, at most every 0.35 real seconds; it turns windows and letters into records with stable
+ids, publishes the `dialog` event once per new dialog, answers through `IVivariumHands.Choose`, and runs the sweep).
+Routes and shapes: docs/BRIDGE-API.md. The agent reads the list from the digest's `dialogs` array and answers with the
+`choose` tool; a `dialog` event wakes the steward at once, also while the game is paused (every other event only wakes
+it while the game runs).
+
+**Timeout.** Real seconds, since modal windows force-pause the game: setting `narratorDialogTimeoutS`, default 90 (10..300).
+Past it, and only while Narrator plays is on and "Answer popups when the narrator plays" (`narratorAnswerDialogs`, default on)
+is on, the sweep applies the safe default, adds the chat note `No answer in 90 s: chose "..." on "..." (default)` and the
+action line (action `choose`, by `default`). A default that fails (window gone, option disabled, the game refused) is retried
+twice more (every scan, about 3 times a second), then gives up with one chat note and the dialog stays open. A dialog with no
+enabled option (and no naming field) is never auto-answered.
+
+### Inventory
+
+| What | Game type | Kind | Options the narrator sees | Safe default | Answered by |
+|---|---|---|---|---|---|
+| Refugee, wanderer, pod-crash survivor joins | `ChoiceLetter_AcceptJoiner` | `joiner` | the letter's choices (vanilla: accept, reject) | accept | the choice's `action()`, as the letter dialog does |
+| Anomaly joiner | `ChoiceLetter_AcceptCreepJoiner` | `creep_joiner` | accept / capture / reject (by position) | decline (the third option, else the first safe) | the choice's `action()` |
+| Visitors ask to stay | `ChoiceLetter_AcceptVisitors` | `visitors` | accept / reject | accept | the choice's `action()` |
+| Betray visitors (obsolete in 1.7) | `ChoiceLetter_BetrayVisitors` | `betray_visitors` | accept / decline | decline | the choice's `action()` |
+| Ransom demand | `ChoiceLetter_RansomDemand` | `ransom` | pay (risk "costs silver") / refuse | refuse | the choice's `action()` |
+| Choose a pawn | `ChoiceLetter_ChoosePawn` | `choose_pawn` | one option per pawn | the first enabled | the choice's `action()` |
+| Baby to child (colonist or slave) | `ChoiceLetter_BabyToChild` | `baby_to_child` | colonist / slave | the first (colonist) | the choice's `action()` |
+| Other `ChoiceLetter` subclasses with choices | any | `letter` | the letter's choices | the first option with no risk | the choice's `action()` |
+| Quest offer | plain `ChoiceLetter` with `quest` not yet accepted | `quest` | "Accept the quest" (risk "risk unknown") / "Decline the quest" | decline | accept: `Quest.Accept(a free colonist)`, then the letter is removed; decline: the letter's reject option |
+| Growth moment (Biotech) | `ChoiceLetter_GrowthMoment`, window `Dialog_GrowthMomentChoices` | `growth_moment` | one option: take the first passion choices and the first trait | the same | `MakeChoices(first passions, first trait)`, close the window, remove the letter |
+| Comms, event dialogs | `Dialog_NodeTree` (and `Dialog_NodeTreeWithFactionInfo`) | `node_tree` | the current node's `DiaOption`s (an option that only closes the tree has role close) | the free option that closes the tree, else the first enabled | `DiaOption.Activate()`, as the click does |
+| Confirmations raised by events | `Dialog_MessageBox` | `message_box` | buttons A, B, C (A is risk "destructive" when flagged) | the non-destructive button, preferring the cancel/decline one | the button's action, then the window closes |
+| Confirm | `Dialog_Confirm` | `message_box` | Confirm (risk "confirms an action") / Cancel | Cancel | the `onConfirm` action, or just close |
+| Name the colony, settlement, faction | `Dialog_NamePlayerFaction`, `...Settlement`, `...FactionAndSettlement` (all `Dialog_GiveName`) | `naming` | none: fields `name` (or `faction`, `settlement`) with a max length | a fallback name from a small list, cut to the field | `IsValidName`, `Named(s)` (and `NamedSecond(s)`), close the window |
+
+Not scanned, on purpose: windows the player opens himself (trade, caravan forming, ritual and ideology dialogs, rename of an
+existing pawn, `Dialog_NamePawn`, options, save/load): they are not raised by an event and the narrator has its own hands
+for the matching jobs; babies are named by the game. `ChoiceLetter_BabyBirth`, `_EntityDiscovered` and `_GameEnded`, and plain
+letters with only Close/Jump/Postpone options, are informational and skipped (they do not block play). `Dialog_Negotiation`
+and the like are node trees. Options that have no action and no link (they only open another window, such as "view in quests
+tab") are listed as disabled ("only opens a window").
+
+**The model's answer.** The steward's prompt tells it to answer open dialogs with `choose` (dialog id, option number or label;
+for naming a short fitting name in `text`, `faction | settlement` for two names), to accept people who ask to join when the
+colony can feed them and decline ransoms and quests it cannot judge. Chosen text is clipped to the field's maximum, and a name
+the dialog rejects comes back as a refusal the model reads. `dialog_try` (`python -m rimworldllm_agent.games.rimworld.dialog_try
+--dialogs agent/tests/data/dialogs_refugee.json [--paused] --llm-url ...`) runs one steward cycle against recorded
+`GET /dialogs` bodies (samples for refugee, ransom, quest offer, colony naming are in `agent/tests/data/`).
+
+**Known limits.** The roles of a letter's options are fixed by position (`DialogKinds.RolesFor`), because the labels are
+translated: if vanilla's order differs the default picks the wrong one (check 27 in VIVARIUM-PLAYTEST.md). The growth moment
+takes the first choices only (no model choice yet). The pawn who accepts a quest is the first free colonist. Hand-written
+`Window` subclasses from other mods are not seen. The mod's own "colony lost" choice window is left to the player (ask
+means ask); auto mode handles it by itself.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
+32k, q4_0 KV, grammar protocol, `dialog_try --paused` on the four samples).** Each cycle answered its dialog with `choose`
+as its first act, then went on with the colony: the refugee accepted ("since we need more hands"), the ransom refused
+(option 1, "since we can't afford it"), the hosting quest declined ("since we have a food emergency"), and the naming
+dialog got both names. Fixed from it: with the fallback name shown, the model copied it ("Ashford"); a naming dialog's
+default is no longer shown to the model and the line says to invent its own names (it then named "Ferngrove"). Seen, not
+fixed here: the grammar fills `option`/`text` on every call (harmless: a label or index is used, stray text is ignored),
+and on these samples the model spent steps on a cooler for a not-yet-built freezer (phase 2's guard refuses it), so some
+cycles ended without a final chat line.
+
+## Unattended play: camera director
+
+Watch mode makes the game watchable like an ant farm: the camera cuts between what is happening and says what it
+is showing. Camera only: it never selects, drafts, opens windows or changes the time speed.
+
+**Controls.** A camera button in the play-settings row beside the "Narrator plays" eye
+(`Patch_NarratorSwitch`, icon `Textures/RimWorldLLM/UI/RWL_WatchMode.png`, made by
+`~/.local/share/rimworld-hermes-engine/unattended/make_watch_icon.py`), a key (`RWL_ToggleWatchMode`, unbound),
+and settings (`watchMode` default off, `watchCaptions` default on, `watchPlayerPauseSec` default 20). Decision:
+`watchMode` is a mod setting (it is a viewing preference of the person at the screen), not saved per game. While
+it is on it replaces the older "follow a talking pawn" director camera. Moving, zooming or edge-scrolling the camera
+pauses the director for `watchPlayerPauseSec`; a jump from a letter or the log counts the same.
+
+**Code.** Pure: `Mod/Source/Bridge/WatchDirector.cs` (`WatchKinds`, `WatchDirector`; tests `WatchDirectorTests.cs`).
+Game side: `Mod/Source/RimWorld/WatchCamera.cs` (feeds, steering through `DirectorCamera.Pan`, captions) and
+`CameraEvents.cs` (the three new events). Clock is real seconds.
+
+**Scoring.** Interest = kind weight x (0.5 + event severity, clamped 0.5..1.5) x 0.5^(age / 20 s), expiring after
+60 s. Variety: the same subject (pawn, or place for place events) shown in the last 90 s counts x0.25, the same kind
+in the last 30 s x0.6. Below 0.8 the director stays put. A shot has a dwell (12 s for raid, death, birth, wedding,
+funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise; 6 s for filler). Urgent kinds (raid,
+death, mental break) may cut in after 3 s when they score 1.3x the current shot. A filler "wander" shot (a colonist,
+rotating) is offered every 25 s when nothing is pending.
+
+| Event | Kind | Weight | Sample caption |
+|---|---|---|---|
+| `raid_start` (via the raid hook) | raid_start | 20 | Camera: a raid arrives from the east |
+| `death` | death | 16 | Camera: Ana has died |
+| `birth` | birth | 14 | Camera: Ana gives birth |
+| `mental_break` | mental_break | 12 | Camera: Bram is having a mental break |
+| `gathering` wedding | wedding | 12 | Camera: a wedding |
+| `funeral`, `gathering` funeral | funeral | 11 | Camera: Bram's funeral |
+| `ship_part` | ship_part | 10 | Camera: a ship part is finished (ship reactor) |
+| `mental_break` with state SocialFighting | social_fight | 9 | Camera: Ana is in an argument |
+| `injury` | combat | 8 | Camera: Cy is fighting |
+| `gathering` party | party | 7 | Camera: a party |
+| `masterwork` | masterwork | 6 | Camera: Ana finishes a legendary sculpture |
+| `art_created` (player maker) | art_created | 4 | Camera: Ana finishes a work of art |
+| (filler) | wander | 1 | none |
+
+**Captions.** Each new shot of interest writes one chat line of kind `camera` (Story filter group): at most one per
+12 s (4 s for urgent kinds), never the same text twice within 90 s, none for filler shots.
+
+**New events** (published through `EventBus`, so the agent sees them): `birth` (Biotech only, guarded by
+`ModsConfig.BiotechActive`), `masterwork`, `ship_part`. Details in BRIDGE-API.md.
+
+## Unattended play: stability and restart
+For long sessions with nobody at the keyboard. Pure logic is under `Mod/Source/Bridge/` (tests `CapsTests`,
+`UnattendedStabilityTests`, `ChatPanelCacheTests`, `SoakTests`); game bodies are in `VivariumStability.cs`.
+
+**Rotating autosave.** If the game's own autosave is on (`Prefs.AutosaveIntervalDays`) the mod does nothing. If it
+is off while Narrator plays, every `narratorAutosaveDays` in-game days it saves `RWL-Narrator-1..K`
+(`narratorAutosaveKeep`), filling free slots then overwriting the oldest. Only names matching `RWL-Narrator-<1..20>`
+are ever written; other saves are never deleted. It saves on the game thread through a long event, and holds
+while a long event is running, saving is disabled, or a window prevents saving. An open raid holds it softly (at
+most half a day past due).
+
+**Caps.**
+
+| Log / book | Cap |
+|---|---|
+| ChatLog | 600 lines x 500 chars |
+| ActionLog | 500 |
+| NarratorLedger | 50 |
+| Ledger (open facts) | 120, plus age prune of raid (4 days) and weather (6 days) |
+| MindBook records | 400 (LRU); 20 thoughts, 7 diaries per pawn; blob <= 32 KiB |
+| ChronicleBook | 120 (lore 12) |
+| ArtBook | 200 |
+| AvoidTable | 256 |
+| EventRing | 2000 |
+| ConversationLog | 500 |
+| TextDesk | queue 40; per-kind stores 3000/1000/2000/600/300; tried 20000 (export 5000) |
+| FirstCues.Seen | 5000 |
+| ColonyEvents.Quests | 500 |
+| TextHook.Applied | 20000 |
+| ChatLive | 64 ended ids; streams time out at 90 s |
+| Panel row cache | 200 rows; cache <= 1200 |
+
+Left unbounded on purpose: small warning-dedupe sets (facts, digest, build view) and the meal detector's room keys.
+The soak test drives 20 game days over every cap in about 2 s and asserts the caps, a vivarium JSON under 1.5 MB
+and a text-desk export under 3 MB.
+
+**Panel.** Text and height are cached per entry, the layout and chip rects are cached, lists are reused, and the
+live snapshot is read only when a `ChatLive` version changes (`ChatPanelRows`, `ChatLayoutCache`). The `camera`
+kind draws dim blue-grey and the `comment` kind narrator gold italic.
+
+**Colony lost.** Detected from the game-ending flag, or three polls with no free colonist and no carrying caravan
+(after tick 2500). `colony_lost` (severity 1.0) is published once. The setting "When the colony is lost":
+- ask (default): a dialog, New colony on this world / New world / Stop.
+- auto: a chat note, after 20 s the same-world path; if the vanilla wanderers dialog is unanswered for 180 s, save
+  the lost world and start a new one.
+- off: nothing.
+Leaving a world always saves it first as `<colony>-lost-<n>` (a name never reused; a failed save cancels the
+leave). No save is ever deleted. A static `RestartHandoff` survives the scene change: Narrator plays stays on and
+the chronicle gets a "story continues" entry. A new world uses the vanilla quick-start path from a
+`MainMenuDrawer.Init` postfix.
+
+Not run in a game yet: detection, dialog, save naming, quick-start world, handoff and the long-event autosave are
+compile-checked only (see PLAYTEST section D).
+
+
+## Unattended play: documentary voice
+While the narrator plays, it also keeps a nature-documentary voice: one dry, warm sentence at a big moment, and one
+recap sentence per finished game day. They arrive as chat lines `who: "comment"` (POST /chat; the mod shows them in the
+Story filter group). Agent module `core/commentary.py` (small, with a clear contract for a C# port), the RimWorld
+moment table in `games/rimworld/moments.py`, tests `tests/test_commentary.py`.
+- **Moments and weights** (0..1; under 0.4 nothing is said): colony_lost 1.0, death 0.95, raid_start 0.9, ship_part 0.8,
+  birth 0.75, wedding (gathering kind wedding) 0.7, legendary masterwork 0.7, mental_break 0.6, social fight (state
+  SocialFighting) 0.5, masterwork 0.5, funeral 0.5, quest accepted / joiner (a `letter` or `dialog` whose text says so)
+  0.5, party 0.4. Anything else (tend, social, other letters, other gatherings) is ignored. Urgent: colony_lost, death,
+  raid_start, birth.
+- **Dedupe and limits.** The same key (kind plus who) inside 2500 game units (about an hour) is dropped; raid_start is one
+  key. A normal moment needs `commentary_min_gap_real_s` (180 s of play clock) and `commentary_min_gap_game` (15000 =
+  6 game hours) since the last line; an urgent moment needs only a 30 s floor. At most 8 moments wait; a normal one older
+  than half a day is dropped. The heaviest waiting moment speaks first.
+- **Recap.** When the game day turns and the finished day had at least one moment, one sentence sums it up (the day's
+  heaviest six moments, in order). One per day, the latest finished day only; it needs the 30 s floor only. The chronicle
+  is not used (it is written per entry, not per day). `commentary_recap` turns it off.
+- **When it runs.** Only when the vivarium answers, the narrator plays (`playing`), `settings.commentary` (the mod's
+  `narratorCommentary`, default on) and the agent's `commentary` are on, and the narrator slot is free
+  (`narrator_may_do_idle_work()`, no idle job running). A starting steward cycle cancels a running commentary call at
+  once (`narrator_owner`): nothing is posted. It does not use the actor windows' queue.
+- **The call.** `kind="narrator"`, slot 0, 48 tokens, stop at newline; system `adapter.commentary_prompt` plus the game
+  data rule; the moment text goes through `gd.clean` inside a `<game_data>` block. The answer goes through
+  `sanitize_line` (refusals, invented names, the age gate: a romantic or sexual line, or one naming a minor in it, is
+  dropped); a dropped line is spent, not retried. A mod that refuses `who: "comment"` (400/404) is not asked again.
+- **narrator_cover** (the old "all windows busy" one-liner) is untouched: it still fills `narrator_lines`, which nothing
+  reads. Commentary does not use it.
+- **Try it.** `python -m rimworldllm_agent.games.rimworld.comment_try --events agent/tests/data/comment_events_sample.json
+  [--llm-url http://host:port/v1]` prints the line per recorded moment and the day recap (FakeLLM without --llm-url).
+- Config: `commentary` (true), `commentary_min_gap_real_s` (180), `commentary_min_gap_game` (15000), `commentary_recap` (true).
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL`, `comment_try` on the sample, three runs).**
+One documentary sentence per moment, in register: "From the eastern scrub, a marauding band of pirates emerges to test the
+resilience of the small, stranded colony."; "The arrival of little Wren marks a sudden, fragile new beginning for Ana and
+her weary band of survivors."; recap "Amidst the violence of a pirate raid and the loss of Bram, Ana welcomes baby Wren and
+marries Cy, who celebrates their union with a masterwork longsword." The tend event is ignored as designed. One wedding
+line of 21 was dropped by the sanitizer (now printed as `(dropped: reason)` by `comment_try`). Lines run 20-30 words; a
+shorter cap is a tuning choice for the keeper.
