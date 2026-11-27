@@ -40,9 +40,9 @@ test_steward_chat_status 4/5, the 15 test_creative_ground tests touching these m
 - dreams: dream preempted by actor work (idle runner).
 - lore: the chronicle prompt "SHARED NAMES" block (`Director._common_talk`); the Director's epoch-change reload trigger (`Lore.LoadAsync` itself is tested).
 - recap: `Director._recap_when_free` (Recap.RunAsync/LateDue are tested directly).
-- steward: `test_recap_waits_for_the_cycle`, `test_wants_off_with_a_backend_present_runs_no_wants` (Director idle due_wants), `test_steward_try_cli_runs_one_cycle`
-  (no C# CLI), task-cancel half of `test_idle_jobs_yield_to_a_cycle_and_come_back`, the `Director.ingest` half of `test_letters_and_alerts_are_not_voiced`;
-  the two digest tests (covered by StewardToolsTests) and `test_client_bodies` (BridgeClientTests).
+- steward: all ported over the real Director in StewardWorldTests.cs (recap waits, wants off, idle yield incl. the preemption, letters/alerts through
+  Director.ingest) except `test_steward_try_cli_runs_one_cycle` (no C# CLI: it drives games/rimworld/steward_try.py); the two digest tests are
+  covered by StewardToolsTests and `test_client_bodies` by BridgeClientTests.
 
 ## Behaviour differences / notes
 - `Lore.cs` keeps a private copy of the refusal regex (Sanitize's is private).

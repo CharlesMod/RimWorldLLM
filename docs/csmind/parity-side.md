@@ -44,14 +44,14 @@ Goldens are generated from the Python by `~/.local/share/rimworld-hermes-engine/
   append-only chronicle files, the tiny-budget stop.
 
 ### Deferred (need the Director, the world fixture, or core/steward.py; they port with those)
-- test_steward.py: every `boot(world)`/cycle test (chat wakes, cursor, heartbeat, paused, floor, advisor mode, own note, loop on slot 0,
-  silent final lines, minor/romance line, dead backend, unreadable digest, catch-up, switch-on wake) and the queueing half of
-  test_other_events_only_queue_for_the_next_cycle.
-- test_steward_more.py: board batching/rev conflict, idle yield, recap waits, the strategy-order tests (load_strategy lives in core/steward.py),
-  letters/alerts not voiced, wants off, slot pin; test_steward_try (CLI).
-- test_steward_rules: test_user_turn_has_alerts_after_why_you_woke, test_cycle_sends_alerts_to_the_model, the load_strategy half of
-  test_shipped_strategy_loaded_capped_and_override_order.
-- test_steward_chat_status: the cycle tests (thinking/idle/final, backend raises, no final, rejecting bridge).
+- test_steward.py, test_steward_more.py, test_steward_chat_status.py, test_steward_rules.py (the 2 world tests + the load_strategy half),
+  test_model_tier.py (the 8 world tests): ported over the real Director in `StewardWorldTests.cs` (66 tests; the Director now exists).
+  The same cycle tests also run against the JobsWorld stand-in in StewardTests/StewardMoreTests/StewardChatStatusTests.
+  Notes: test_recap_waits_for_the_cycle spawns the recap through a late connect (`recap_open`) because `_recap_when_free` is private;
+  the model-tier `_inner_after_say` tests go through the public `Director.SayAsync` (the private InnerAfterSayAsync is reached when a line applies);
+  test_user_turn_has_alerts calls the private `Steward.UserText` by reflection (as the Python calls `_user`).
+- test_steward_more: test_steward_try_cli_runs_one_cycle is NOT ported: it drives the Python CLI (games/rimworld/steward_try.py, `main(argv)`)
+  and there is no C# CLI.
 - test_creative_ground: art queue/prompt, lore, ceremony, inner, aim, sampler routing, art v2 (art.py, lore.py, group.py, inner.py, Director).
 - test_diary_chronicle_pacing: diary tests, chronicle-through-Director, idle tests, chronicle bridge on/off, narrator coverage, the
   chronicle client contract (bridge.chronicle; the bridge part).
