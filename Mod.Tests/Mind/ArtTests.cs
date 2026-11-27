@@ -63,11 +63,12 @@ namespace RimWorldLLM.Tests.Mind
         public TaCtx(JobsWorld w) { W = w; }
 
         /// <summary>conftest World + Director.start: Ana (kind), Bram (abrasive), Cy; bio "X is a colonist."; the golden script does the same.</summary>
-        public static async Task<TaCtx> Go(bool creativeOff = true)
+        public static async Task<TaCtx> Go(bool creativeOff = true, Action<JobsWorld> beforeStart = null)
         {
             var w = new JobsWorld(creativeOff);
             w.Fb.Pawns[1]["traits"] = JArray.Parse("[{\"def\": \"Kind\", \"label\": \"kind\", \"degree\": 0}]");
             w.Fb.Pawns[2]["traits"] = JArray.Parse("[{\"def\": \"Abrasive\", \"label\": \"abrasive\", \"degree\": 0}]");
+            beforeStart?.Invoke(w);
             await w.StartAsync();
             return new TaCtx(w);
         }
