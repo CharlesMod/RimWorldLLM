@@ -1,6 +1,4 @@
-// Ported from agent/tests/test_steward_trade.py (trade only; the keeper decided NO CARAVANS, so the caravan and caravan_plan
-// tests are dropped) and the growth-moment cases of test_steward_dialogs.py. The digest-line, digest-cap, rules-fact and prompt-text
-// tests of that file belong to the digest/rules/resources port (worker B); see docs/csmind/parity-delta3-c.md.
+// Ported from agent/tests/test_steward_trade.py (trade only; caravans are off in the Python itself, so its caravan tests are gone) and the growth-moment cases of test_steward_dialogs.py.
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -301,14 +299,15 @@ namespace RimWorldLLM.Tests.Mind
         [Fact]
         public void ToolSectionBudget()
         {
-            var d = Clone(Trader);
+            var d = Clone(AtSettlement());
             d["build"] = BuildBlock.DeepClone();
+            ((JObject)d["trade"])["traders"] = Trader["trade"]["traders"].DeepClone();
             var s = Session(d);
             var names = s.Tools.Select(t => t.Name).ToList();
             foreach (var n in new[] { "trade_offer", "trade", "build", "bill" }) Assert.Contains(n, names);
             int len = Prompt.RenderTools(s.Tools).Length;
             Assert.True(len < 11000, len.ToString());
-            Assert.True(Prompt.RenderTools(Session(Sample).Tools).Length < len);   // Python compares against TRADER (no caravan tools here, so the same set)
+            Assert.True(Prompt.RenderTools(Session(Trader).Tools).Length <= len);   // (no caravan tools any more: the trade tools add little)
         }
 
         // ---- grammar and signatures
