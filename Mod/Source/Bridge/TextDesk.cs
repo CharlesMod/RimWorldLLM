@@ -294,6 +294,22 @@ namespace RimWorldLLM.Bridge
         string Apply(TextEntry entry);
     }
 
+    /// <summary>Which log lines ours may replace. Romance and anything near it stays the game's (the hard age gate: a written
+    /// line is never romantic, so these are left alone entirely); combat lines only where the game's line carries no wound.</summary>
+    public static class TextLogRules
+    {
+        static readonly string[] UnsafeParts = { "romance", "marriage", "breakup", "lovin", "flirt", "seduc", "proposal" };
+        static readonly string[] MeleeSafe = { "Combat_Miss", "Combat_Dodge", "Combat_Deflect" };
+
+        public static bool Unsafe(string interactionDefName)
+        {
+            string n = (interactionDefName ?? "").ToLowerInvariant();
+            return n.Length == 0 || UnsafeParts.Any(p => n.Contains(p));
+        }
+
+        public static bool MeleeOk(string ruleDefName) { return MeleeSafe.Contains(ruleDefName ?? ""); }
+    }
+
     /// <summary>GET /text/queue and POST /text/fill.</summary>
     public static class TextRoutes
     {

@@ -24,6 +24,7 @@ namespace RimWorldLLM
             r.Add("GET", "/talk", true, Talk);
             RegisterWants(r);
             RegisterArt(r);
+            TextHook.Register(r);
         }
 
         static Pawn PawnArg(JObject body, string field, bool required, out ApiResult err)

@@ -160,6 +160,18 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
+        public void RomanceAndWoundLinesStayTheGames()
+        {
+            foreach (var n in new[] { "RomanceAttempt", "MarriageProposal", "Breakup", "LovinNotice", "Flirt", "" })
+                Assert.True(TextLogRules.Unsafe(n), n);
+            foreach (var n in new[] { "Chitchat", "DeepTalk", "Insult", "KindWords", "Slight" })
+                Assert.False(TextLogRules.Unsafe(n), n);
+            Assert.True(TextLogRules.MeleeOk("Combat_Miss"));
+            Assert.False(TextLogRules.MeleeOk("Combat_Hit"));
+            Assert.False(TextLogRules.MeleeOk(null));
+        }
+
+        [Fact]
         public void TidyStripsWrappingQuotesAndSpace()
         {
             Assert.Equal("Hello there", TextValidate.Tidy(" “Hello \n there” "));

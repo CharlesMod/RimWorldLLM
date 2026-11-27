@@ -302,6 +302,20 @@ namespace RimWorldLLM
             Check(l, "RWL_Art_Enable", ref s.artDescriptions, "RWL_Art_EnableTip");
 
             l.GapLine();
+            Title(l, "RWL_Text_Title");
+            Note(l, UiUtil.T("RWL_Text_Help"));
+            Check(l, "RWL_Text_Enable", ref s.textGen, "RWL_Text_EnableTip");
+            if (s.textGen)
+            {
+                Check(l, "RWL_Text_Art", ref s.textArt, "RWL_Text_ArtTip");
+                Check(l, "RWL_Text_Graves", ref s.textGraves, "RWL_Text_GravesTip");
+                Check(l, "RWL_Text_Books", ref s.textBooks, "RWL_Text_BooksTip");
+                Check(l, "RWL_Text_Social", ref s.textSocial, "RWL_Text_SocialTip");
+                Check(l, "RWL_Text_Combat", ref s.textCombat, "RWL_Text_CombatTip");
+                Note(l, UiUtil.T("RWL_Text_Vanilla"));
+            }
+
+            l.GapLine();
             Title(l, "RWL_Viv_Title");
             Note(l, UiUtil.T("RWL_Viv_Help"));
             Check(l, "RWL_Viv_MayPause", ref s.narratorMayPauseForEmergencies, "RWL_Viv_MayPauseTip");
@@ -426,10 +440,25 @@ namespace RimWorldLLM
             return total;
         }
 
+        // Written texts in the current game: per kind, how many are stored and how many wait in the queue.
+        static void TextCounts(Listing_Standard l)
+        {
+            if (Current.Game == null) return;
+            var d = TextHook.Desk;
+            var parts = new System.Collections.Generic.List<string>();
+            var names = new[] { UiUtil.T("RWL_Text_Kind_art"), UiUtil.T("RWL_Text_Kind_grave"), UiUtil.T("RWL_Text_Kind_book"),
+                                UiUtil.T("RWL_Text_Kind_social"), UiUtil.T("RWL_Text_Kind_combat") };
+            var ids = new[] { "art", "grave", "book", "social", "combat" };
+            for (int i = 0; i < ids.Length; i++) parts.Add(names[i] + " " + d.Count(ids[i]) + " (+" + d.Queued(ids[i]) + ")");
+            l.Label(UiUtil.T("RWL_Storage_Texts", string.Join(", ", parts)));
+            l.GapLine();
+        }
+
         static void Storage(Listing_Standard l, RimWorldLLMSettings s)
         {
             Title(l, "RWL_Storage_Title");
             Note(l, UiUtil.T("RWL_Storage_Help"));
+            TextCounts(l);
             EngineManager.Touch();
             if (EngineManager.Client == null) { Note(l, UiUtil.T("RWL_Storage_NoEngine")); return; }
             var st = EngineManager.Storage;
