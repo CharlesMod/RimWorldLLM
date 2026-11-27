@@ -63,14 +63,28 @@ For an easyEngine on another computer (the PC with the card): no URL or key to t
    Cancel withdraws the request. Denied on the engine ends it; a request the engine ended (it restarted, or a newer
    request from this computer replaced it) offers Try again once. A dropped connection is retried by itself.
 3. **Paired:** the token is stored per engine_id in `pairedEngines` and the endpoint fields are filled: `llmBaseUrl` =
-   the engine's address + `/v1`, `llmModel` = the model id the engine lists on `/v1/models` (its catalog id, which the
-   agent's model rules need; left as it was when the engine is still loading), `llmApiKey` = the token, and
+   the engine's address + `/v1`, `llmModel` = the `model_id` from hello (the selected model's catalog id; easyEngine
+   871f821 and newer, `""` when none is selected or the model is a custom file, absent on older engines) or, when that
+   is empty, the first model id the engine lists on `/v1/models` (its catalog id, which the agent's model rules need;
+   left as it was when the engine is still loading). The same rule applies at game start and when adopting a key, `llmApiKey` = the token, and
    `llmEngineId` = the engine. The token is sent as `Authorization: Bearer` from then on; it never appears in a log.
 4. **Staying connected:** at game start the paired engine is called at its last address with the token; if it moved, it
    is found again by engine_id over mDNS and the URL follows. A revoked or unknown token (also seen from a 401 with
    `token_revoked` / `token_invalid` on the Test button or the engine client) is dropped, and the status line says
    **Pair again** with a button (and a message once, in a running game). Typing another URL by hand lets go of the
    paired engine (its token stays stored for later).
+
+5. **Pair with this engine** (shown under the status line when `llmBaseUrl` is set and is not already a paired engine,
+   i.e. no `llmEngineId` or no stored token for it): for an endpoint already typed in, such as `http://sprinter:47480/v1`
+   over a tailnet where mDNS does not reach. The engine root is the URL without a trailing `/v1` and slashes (no port
+   means 47480); hello is called there. Not an easyEngine (hello fails or `engine` is not `easy-engine`): the line
+   "This endpoint isn't an easyEngine; keep the key typed by hand" shows and nothing changes. An easyEngine whose hello
+   accepts the current `llmApiKey` as a Bearer (`paired:true`, or no token needed) keeps that key: it is stored in
+   `pairedEngines` under the engine_id and `llmEngineId` is set, with no pairing round. A master token may come back
+   `paired:false` on hello, so an authenticated `GET /engine/v1/status` answering 200 counts as proof the key works.
+   Otherwise the normal Connect flow runs (big code, Allow on the engine). The status line then reads "Paired with
+   <name> at host:port". The key is never logged or shown. When hello carries a non-empty `model_id`, adopting also sets
+   `llmModel` from it; otherwise the typed model stays.
 
 The typed path is unchanged: any OpenAI-compatible server with a URL, model and key works as before; pairing only fills
 those fields.
@@ -95,6 +109,7 @@ those fields.
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
 | `narratorSlowsForCombat` | true | P | "Narrator plays" group: when a fight starts the narrator sets normal speed and puts the player's speed back after (unless the player changed it); works without "controls the speed" | new (vivarium 3) |
+| `narratorMayImplantGenes` | false | P | "Narrator plays" group, shown only with Biotech: the narrator may set a grown colonist to receive a xenogerm (always with a plan in the greentext); never children or prisoners. Off: it may still assemble xenogerms | new (vivarium biotech) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
 | `narratorAutosave` | true | P | "Narrator plays" group: while Narrator plays and the game's own autosave is off, the mod keeps rotating autosaves `RWL-Narrator-1..K` | new (unattended) |
 | `narratorAutosaveDays` | 1 | P | Rotating autosave: every N in-game days (0.25-7, in quarter days) | new (unattended) |

@@ -197,8 +197,10 @@ namespace RimWorldLLM.Bridge
         }
 
         /// <summary>Can the narrator work it now? Dangers are in points; expiresDays PositiveInfinity or NaN = no deadline.</summary>
-        public static (bool can, string whyNot) Feasible(string kind, double threatPoints, double colonyPoints, double travelDays, double expiresDays, double foodDays, double healthyFraction, bool combatHandsReady = false)
+        public static (bool can, string whyNot) Feasible(string kind, double threatPoints, double colonyPoints, double travelDays, double expiresDays, double foodDays, double healthyFraction, bool combatHandsReady = false, bool caravansOff = false)
         {
+            // caravans are off for the narrator: a site or a delivery needs one, so the caravan reason comes before anything else
+            if (caravansOff && (kind == "site" || kind == "delivery")) return (false, "needs a caravan (caravans are off)");
             if (kind == "combat" && !combatHandsReady) return (false, "needs combat (not yet)");
             if (threatPoints > 0 && threatPoints > 0.6 * colonyPoints)
                 return (false, "too dangerous (threat " + TradeRules.Num(threatPoints, 0) + " against our " + TradeRules.Num(colonyPoints, 0) + ")");

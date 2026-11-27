@@ -656,6 +656,53 @@ Full shapes and behaviour: docs/VIVARIUM.md "Phase 3".
 the remembered speed and the last raid side are saved in the vivarium JSON (`combat`). The digest gains `combat`
 (the `GET /combat` object) while a fight is active.
 
+### Biotech: mechs, genes, children (game needed)
+Full behaviour: docs/VIVARIUM.md "Biotech". Every route refuses "Biotech is not active" without the DLC, and "Biotech
+hands are not available" when the hands object has no Biotech bodies.
+
+| Route | Example body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/mech_mode` | `{"group": 2, "mode": "recharge"}` | group 1..12; mode work, escort, recharge, shutdown (dormant, self-shutdown, selfshutdown → shutdown); `mechanitor` optional id (0 = the first) |
+| `/act/mech_group` | `{"mech": 501, "group": 2}` | ids positive, group 1..12 |
+| `/act/mech_gestate` | `{"kind": "lifter", "count": 2}` | kind 1..40 chars (label or defName); count 1..3 (1); `gestator` optional id. The hand keeps 1 bandwidth free. Reply adds `undo_seq`, `left` (a bill mark) |
+| `/act/genepack` | `{}` / `{"genepack": 7301, "bank": 7400}` | optional ids; none = all loose packs (up to 4 a call), any bank with space |
+| `/act/xenogerm` | `{"op": "assemble", "genepacks": ["robust", "fast runner"], "name": "Quick", "plan": "..."}` / `{"op": "implant", "xenogerm": 7710, "pawn": 102, "plan": "..."}` | op assemble\|implant; assemble: genepacks 1..12 (labels or ids), name 1..40; implant: xenogerm, pawn ids; plan 10..200 chars (both). Implant: 409 refused unless the setting **may_implant_genes** is on |
+| `/act/hemogen` | `{"op": "donate", "prisoner": 108}` | op donate\|stop; prisoner id |
+| `/act/child_schedule` | `{"pawn": 106, "preset": "school"}` | preset school\|play\|default (age rules in the hand) |
+| `/act/feed` | `{"baby": 107, "feeder": 101, "mode": "urgent"}` | mode never\|childcare\|urgent (childcare); feeder 0 or absent = reset to the carers' default |
+| `/act/child_care` | `{"pawn": 101, "priority": 1}` | priority 0..4 (1) |
+
+The digest gains `bio` (absent without Biotech; every key may be missing):
+```json
+"bio": {
+  "mechanitors": [{"pawn": 101, "name": "Ana", "bandwidth_used": 3, "bandwidth_total": 6, "gestating_bandwidth": 1,
+                   "groups": [{"group": 1, "mode": "work", "mechs": 2}]}],
+  "mechs": [{"id": 501, "name": "Lifter 1", "kind": "lifter", "overseer": "Ana", "group": 1, "mode": "work",
+             "job": "hauling steel", "energy": 45, "problem": null}],
+  "mechs_total": 14,
+  "gestators": [{"id": 610, "label": "mech gestator", "state": "gestating lifter (40%)"}],
+  "rechargers": [{"id": 620, "label": "basic recharger", "state": "charging Lifter 1"}],
+  "can_gestate": [{"kind": "lifter", "bandwidth": 1}],
+  "pollution": {"wastepacks": 12, "wastepacks_near_home": 4, "home_polluted_pct": 3, "map_polluted_pct": 1, "trend": "growing",
+                "toxic_buildup": ["Ana 12%"], "atomizer": false, "can_atomize": true, "waste_stockpile": false},
+  "genes": [{"pawn": 102, "name": "Bram", "xenotype": "Sanguophage", "effects": ["needs hemogen", "deathrest"], "hemogen_pct": 18}],
+  "hemogen": {"packs": 4, "donors": ["prisoner Cole (hemogen farm)"], "needing": ["Bram 18%"],
+              "prisoners": [{"id": 140, "name": "Vex"}]},
+  "genebank": {"genepacks": 3, "unstored": 1, "banks": 1, "bank_space": 4, "assembler": "idle (max complexity 6)",
+               "packs": ["robust (complexity 1)"]},
+  "xenogerms": [{"id": 7710, "name": "Quick"}],
+  "children": [{"pawn": 106, "name": "Fay", "age": 6, "stage": "child", "growth_tier": 3, "learning_pct": 60,
+                "learning": "lessontaking", "desk": true}],
+  "babies": [{"pawn": 107, "name": "Dee", "age_days": 20, "food_pct": 22, "hungry": true, "feeder": null, "feeding": "carers at childcare"}],
+  "pregnancies": [{"pawn": 101, "name": "Ana", "progress_pct": 40, "days_left": 11}],
+  "carers": ["Ana"],
+  "may_implant": false,
+  "missing": ["mech recharger", "school desk"]
+}
+```
+`hemogen.prisoners` lists grown, non-hemogenic prisoners not yet giving blood. `GET /vivarium` `settings` gains
+`may_implant_genes`; `GET /config` gains `vivarium_may_implant_genes`. `POST /act/zone` takes `preset: "waste"`.
+
 ### Phase 4: trade, caravans, quests (game needed)
 Full shapes and behaviour: docs/VIVARIUM.md "Phase 4". Same rules as the other `/act/*`. Nothing here is undoable;
 the hands check first and refuse with a reason. The JObject reads (`/trade/offer`, `/caravan/plan`) answer `409 refused`
@@ -664,13 +711,18 @@ with the hand's reason and write no chat line.
 | Route | Example | Checks before the game is asked |
 | --- | --- | --- |
 | `GET /trade/offer?with=P5521` | | `with` matches `P<id>` (visiting trader pawn), `S<id>` (orbital ship) or `T<tile>` (a settlement where one of our caravans is). Reply `{"with", "name", "silver", "negotiator", "colony_silver", "buys": [{"item", "count", "price"}], "sells": [{"item", "count", "price"}], "today"}`: `buys` = what the trader sells to us (price each, after the negotiator's bonus), `sells` = what of ours it takes (sellable counts after the never-sell rules), at most 30 each. |
-| `/act/trade` | `{"with": "P5521", "buy": [{"item": "components", "count": 6}], "sell": [{"item": "cloth", "count": 300}]}` | `settings.trade` on; `with` as above; 1..12 lines in all, item 1..60 chars, count 1..100000; the day's deals not used up. The hand runs the deal planner on the live offers (item matching, trader stock, never-sell floors, both sides' silver, the deal and day caps) and executes the game's trade deal without the window. Reply `{"done": "bought 6 components, sold 300 cloth (+120 silver), Ana negotiated", "spent", "got", "net", "value", "today": {"deals", "deals_left", "spent", "got", "value_left"}}`. |
-| `GET /caravan/plan?pawns=101,102&to=T4321&goods=cloth:20&purpose=deliver` | | `pawns`/`animals` comma ids; `to` `T<tile>`, `W<tile>` (site) or `Q<id>` (quest); goods `item:count,...`; `purpose` trade/visit/quest/deliver (default visit). Reply: `{"days", "food_days", "food_need", "mass", "capacity", "food": [{"item", "count"}], "ok", "problems": [...], "to", "rules"}` (`rules` = the who-may-go refusal or null). |
-| `/act/caravan` | `{"op": "form", "pawns": [101, 102], "to": "Q77", "purpose": "deliver"}` / `{"op": "send", "caravan": "C88", "to": "home"}` / `{"op": "cancel", "caravan": "C9001"}` | `settings.caravans` on; op form/send/cancel; form: 1..6 pawns, animals optional, goods ≤ 12 lines, `to` required (no `home`), purpose known, `player_asked` needs a player chat line in the last 2500 ticks; send: `caravan` `C<id>` and `to` (or `home`); cancel: `caravan`. Form replies `{"done": "...", "caravan": "C<lord id>"}` and the route remembers the plan (purpose, to, quest) in `caravan_plans`. |
+| `/act/trade` | `{"with": "P5521", "buy": [{"item": "components", "count": 6}], "sell": [{"item": "cloth", "count": 300}]}` | `settings.trade` on; `with` as above; 1..12 lines in all, item 1..60 chars, count 1..100000; the day's deals not used up; for `P`/`S` no trade already under way ("a trade is already under way: Ana is walking to the comms console"). **`P`/`S`: a walking trade.** The hand checks the deal now (the deal planner on the live offers: item matching, trader stock, never-sell floors, both sides' silver, the deal and day caps), sends the negotiator (a playerForced Goto, then a short wait) to the comms console's interaction cell (orbital) or next to the trader pawn (visitor), and replies `{"done": "Ana is walking to the comms console to trade with the exotic goods trader", "status": "walking", "negotiator": "Ana", "to": "the comms console"}`: no greentext and no day charge yet (a short chat note instead). The deal runs on arrival (checked again; greentext "Ana walked to the comms console and bought 6 components, sold 300 cloth (+120 silver)", the action log and the day charged then) or falls back to the instant trade when the negotiator can't get there (no path, downed, drafted, mental state, interrupted 3 times) or after 2500 ticks ("... (Ana took too long; traded over the radio)"); trader gone: refused in the chat, nothing traded. When no walk can be started at all the trade runs at once with "(traded over the radio: why)". **`T<tile>`**: instant as before, reply `{"done": "bought 6 components, sold 300 cloth (+120 silver), Ana negotiated", "spent", "got", "net", "value", "today": {"deals", "deals_left", "spent", "got", "value_left"}}`. |
+| `GET /caravan/plan?pawns=101,102&to=T4321&goods=cloth:20&purpose=deliver&script=true` | | **Caravans are off for the narrator:** without `script=true` the answer is `409 refused` "caravans are off". `pawns`/`animals` comma ids; `to` `T<tile>`, `W<tile>` (site) or `Q<id>` (quest); goods `item:count,...`; `purpose` trade/visit/quest/deliver (default visit). Reply: `{"days", "food_days", "food_need", "mass", "capacity", "food": [{"item", "count"}], "ok", "problems": [...], "to", "rules"}` (`rules` = the who-may-go refusal or null). |
+| `/act/caravan` | `{"op": "form", "pawns": [101, 102], "to": "Q77", "purpose": "deliver"}` / `{"op": "send", "caravan": "C88", "to": "home"}` / `{"op": "cancel", "caravan": "C9001"}` | **Caravans are off for the narrator:** without `"script": true` in the body it is refused "caravans are off" (a chat refusal line); with it, as before: `settings.caravans` on; op form/send/cancel; form: 1..6 pawns, animals optional, goods ≤ 12 lines, `to` required (no `home`), purpose known, `player_asked` needs a player chat line in the last 2500 ticks; send: `caravan` `C<id>` and `to` (or `home`); cancel: `caravan`. Form replies `{"done": "...", "caravan": "C<lord id>"}` and the route remembers the plan (purpose, to, quest) in `caravan_plans`. |
 
 `GET /vivarium` `settings` carries `trade`, `caravans`, `trade_max_deal`, `trade_max_day`, `trade_deals_per_day`,
-`keep_medicine`, `keep_food_days`, `never_sell`, `caravan_max_pawns`. The save JSON gains `trade_day` and
-`caravan_plans`. The digest gains the `trade`, `caravans` and `quests` blocks.
+`keep_medicine`, `keep_food_days`, `never_sell`, `caravan_max_pawns`. The save JSON gains `trade_day`,
+`caravan_plans` and `trade_walk` (the pending walking trade, or null: with, buy, sell, why, op_id, negotiator_id,
+negotiator, target_kind console|trader, target, trader, start_tick, deadline_tick, reissues). The digest gains the
+`trade` (with `pending`: `{"negotiator", "to", "with"}` or null), `caravans` and `quests` blocks; a `site` or
+`delivery` quest has `can` false, `why_not` "needs a caravan (caravans are off)". `GET /vivarium` gains
+`"traders": [{"id": "S31", "kind": "orbital", "name": "Exotic goods trader Sigma"}]`: the traders that can trade now
+(the digest's ids; polled every 250 ticks, not saved; empty array when none). The agent wakes one trade turn per new id.
 
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`

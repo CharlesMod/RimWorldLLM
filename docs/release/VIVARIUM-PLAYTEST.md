@@ -308,9 +308,6 @@ Save first so each step can be retried.
     indoors, no orders repeated over and over, and roughly how long each combat turn takes (the agent log's
     `elapsed_s`; the live check measured 4-6 s).
 
-Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
-twitchy, sensible?).
-
 ## I. The narrator's view: reasons, food, clocks
 
 Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field, then let the narrator look once
@@ -343,34 +340,74 @@ Report back: the step numbers that failed, the agent log around them, and how th
 (too busy, too quiet, sensible priorities?).
 
 
-## J. Phase 4: trade, caravans, quests (with the agent and the 26B)
+## J. Phase 4: trade and quests; caravans are off (with the agent and the 26B)
 Needs: a colony with a comms console (Microelectronics) and power, some surplus (cloth, a sculpture), a few silver,
-5+ colonists, a pack animal. Dev mode may spawn a trade caravan or ship for the test only (the narrator never uses
-dev mode). Check `GET /digest` with `curl ... | jq '.trade, .caravans, .quests'`.
+5+ colonists. Dev mode may spawn a trade caravan or ship for the test only (the narrator never uses dev mode). Check
+`GET /digest` with `curl ... | jq '.trade, .quests'` and `GET /vivarium` with `jq '.traders'`.
 58. **Trade view.** A visiting trade caravan shows in `trade.traders` as `P<id>` with its sells/buys and `can_trade`
     true; an orbital ship in range shows as `S<id>` with `leaves_h`; turn the console's power off: `can_trade` false,
     `why_not` "the console has no power". `stock` lists the top items, `surplus` lower for medicine and food than the
-    count. `settlements` shows the nearest friendly towns with days close to the caravan dialog's estimate.
+    count. `GET /vivarium` lists the same ids under `traders` (only those that can trade; within ~4 s of game time).
 59. **Offer.** `GET /trade/offer?with=P<id>`: prices close to the trade window's (open it yourself after, then close it
     without trading). Worn apparel and the colonists' weapons never appear in `sells`.
-60. **A deal.** Ask in chat "sell 50 cloth to the trader and buy 5 components". The greentext line says bought/sold with
-    the silver; the colony's stock and silver change by exactly that; the trader's stock too. Check the direction (a
-    buy adds, a sell removes): a wrong direction is refused as "count direction ... not what was expected".
-61. **Refusals.** Put "cloth" in Never sell: the same ask is refused naming the list. Ask to sell all medicine: it sells
+60. **Trade turn on arrival.** When the trader arrives (or the ship comes in range) the narrator takes one short trade
+    turn within a few seconds: the agent log shows "trade" as the wake, `trade_offer` then one `trade`. It happens once
+    per visit (not again for the same trader), not during a fight, and not when food is under 3 days (the routine turn
+    deals with food first).
+61. **Walking trade, orbital.** After the narrator's `trade` with `S<id>`: a short chat note "Ana is walking to the comms
+    console to trade with the exotic goods trader", no greentext yet, and the camera may show a "Camera: Ana trades
+    with ..." scene. Ana walks to the console and stands there a moment; then the greentext "Ana walked to the comms
+    console and bought ..., sold ... (+N silver)". The stock and silver change by exactly that; goods drop by pod as
+    vanilla. `trade.pending` in the digest shows the trade while she walks and is null after.
+62. **Walking trade, visitor.** With a visiting caravan (`P<id>`) the negotiator walks up to the trader pawn (and
+    follows if it wanders) and the deal runs next to it. Ask for a second trade while one is under way: refused "a
+    trade is already under way: ...".
+63. **Fallbacks.** Draft the walking negotiator (or wall them in): the deal runs at once with "(Ana couldn't get there:
+    was drafted; traded over the radio)". Leave them walking more than an in-game hour: "(Ana took too long; traded over
+    the radio)". Make the trader leave (dev: kill or despawn it) while she walks: "couldn't trade with the bulk goods
+    trader: the trader has left", nothing traded. Change the stock while she walks (sell the cloth by hand): the deal is
+    checked again when it runs and refused or clipped with the reason.
+64. **Refusals.** Put "cloth" in Never sell: the same ask is refused naming the list. Ask to sell all medicine: it sells
     down to the keep floor and says so. Ask for a deal over 2000 silver: refused with the cap. A 4th deal in a day:
     refused.
-62. **Orbital.** With a ship in range: a buy drops goods by pod at the beacon (or near the console) as vanilla does. The
-    negotiator does not walk (decision); say if that feels wrong.
-63. **Caravan plan and form.** Ask "plan a caravan to <town> with Ana and Bram". `caravan_plan` days/food/mass match the
-    vanilla form-caravan dialog roughly. Then "send them": the pawns gather the food (pemmican first) and goods, form
-    and leave the map like a player-formed caravan. Try including the best doctor: refused unless you said so.
-    Try sending everyone: refused.
-64. **Travel and arrival.** On the world map the caravan heads to the town; `caravans` in the digest shows days left and
-    food days. On arrival one chat note "Caravan ... reached ...: it can trade there"; then a trade with `T<tile>` works
-    and the goods go into the caravan. "Bring them home": it paths home and enters the map.
-65. **Quests.** Accept a trade-request quest (through `choose`): `quests` shows kind `delivery` with the items and
-    `can`; "do the delivery" forms a caravan carrying the requested items to the right town. A raid/bandit-camp quest
-    shows `combat` with `why_not` "needs combat (not yet)"; a lodger quest shows `hosting` and the caravan hand refuses
-    with what to prepare. A quest far beyond the deadline shows "no time".
-66. **Save/load.** Save mid-trip and load: the day's trade counters and the caravan's plan survive (the plan of a
-    caravan still forming is dropped).
+65. **Caravans are off.** Ask in chat "send a caravan to <town>": the narrator says it cannot (no caravan tool).
+    `curl -X POST .../act/caravan` without `"script": true` answers 409 "caravans are off". A trade-request or site
+    quest offer shows in `quests` with `can` false, `why_not` "needs a caravan (caravans are off)", and the narrator
+    declines it with `choose`. A raid/bandit-camp quest shows "needs combat (not yet)"; a lodger quest `hosting`.
+66. **Save/load.** Save while the negotiator walks and load: the trade is still pending (`trade.pending`), the walk goes
+    on (or the job is given again) and the deal runs on arrival. The day's trade counters survive.
+
+## K. Biotech: mechs, genes, children (Biotech on; agent with the 26B for the narrator steps)
+Without Biotech first: `jq .bio` on the digest is `null`, the steward log lists no `mechs`/`genes`/`children` tool,
+and the settings window shows no "implant xenogerms" box. Then load a Biotech colony (dev mode is fine to set up the
+scene; switch it off before the narrator plays).
+
+67. **Seeing it.** `curl -s -H "Authorization: Bearer $T" $B/digest | jq .bio`: mechanitor bandwidth matches the
+    bandwidth gizmo; control groups and modes match; each mech's job/energy match its inspect pane; gestator and recharger
+    states read sensibly; `can_gestate` lists only researched mechs with their bandwidth; genes: a Hussar shows "fast,
+    aggressive, needs go-juice"-like words, a sanguophage "needs hemogen, deathrest" with a hemogen % matching the bar;
+    a child shows age, growth tier and learning %; a baby shows food % and hunger; a (visible) pregnancy shows % and days
+    left. Nothing shows coordinates.
+68. **Mechs.** Ask in chat "put group 2 on recharge" → greentext "set Ana's control group 2 (N mechs) to recharge" and
+    the gizmo agrees. "Move Lifter 1 to group 2" → it moves (check the mech's gizmo). "Gestate two lifters" with bandwidth
+    to spare → a gestator bill "x2" appears; with no spare bandwidth → "couldn't start gestating a lifter: not enough
+    bandwidth: ..."; with no gestator → "... build one first". `/undo` removes the gestation bill.
+69. **Genes.** Loose genepack + a gene bank: the narrator (or "store the genepacks") gets a colonist to carry it in.
+    "Make a xenogerm from robust and ..." with a plan → the assembler starts; conflicting packs → refused with the two
+    gene names. Implant with the setting off → "the player has not let the narrator implant genes"; turn it on and ask
+    for a grown colonist → the implant bill appears on them; ask for a child → refused, always.
+70. **Blood.** A sanguophage below a third of hemogen and a grown prisoner: the narrator should set the prisoner to
+    hemogen farm (prisoner tab shows it), not cut food. A hemogenic or child prisoner is refused.
+71. **Children.** A child of 6: "give Fay a school day" → her schedule shows sleep 21-6, recreation 17-19, anything
+    otherwise; a child of 8 on "default" gets work 13-15; a child of 5 never gets work hours. Drafting "Fay" in chat is
+    refused ("children stay out of fights"); "draft everyone" leaves children out. Childcare: "Ana looks after the
+    babies" → Ana's Childcare priority 1. A hungry baby: the narrator sets a feeder (the baby's feeding tab shows the
+    choice) or turns Childcare on for someone; "urgent" makes the feeder drop other work.
+72. **Pollution.** Wastepacks lying in the home area: BIO MISSING says "waste stockpile"; the narrator makes a waste
+    stockpile (zone accepts only wastepacks, away from the base); with the atomizer researched it builds one. Wastepacks
+    never get a stockpile in the base.
+73. **Size.** A colony with mechs, genes and children at once: the rendered digest stays under 6000 chars and the turn
+    still fits its time.
+
+Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
+twitchy, sensible?).

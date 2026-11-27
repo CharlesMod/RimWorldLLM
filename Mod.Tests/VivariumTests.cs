@@ -44,6 +44,15 @@ namespace RimWorldLLM.Tests
         public HandResult CaravanNext = HandResult.Done("Ana and Bram set off", new JObject { ["caravan"] = "C7" });
         public JObject TradeOffer(string with, TradeLimits l) { Calls.Add("offer " + with); LastWith = with; LastLimits = l; return OfferJson; }
         public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { Calls.Add("trade"); LastTrade = a; LastLimits = l; LastDay = d; return TradeNext; }
+        // walking trades: StartNext null + StartCannot null = the hand does not walk (instant trade)
+        public HandResult StartNext; public string StartCannot; public PendingTrade StartPending; public WalkObs ObsNext = new WalkObs { TraderPresent = true, NegotiatorOk = true, HasOurJob = true };
+        public int Reissued;
+        public HandResult TradeStart(TradeArgs a, TradeLimits l, TradeDay d, out PendingTrade p, out string cannot)
+        {
+            Calls.Add("tradestart"); LastTrade = a; LastLimits = l; p = StartPending; cannot = StartCannot; return StartNext;
+        }
+        public WalkObs TradeObserve(PendingTrade p) { Calls.Add("observe"); return ObsNext; }
+        public void TradeReissue(PendingTrade p) { Calls.Add("reissue"); Reissued++; }
         public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { Calls.Add("caravanplan"); LastCaravan = a; LastLimits = l; return PlanJson; }
         public HandResult Caravan(CaravanArgs a, int max) { Calls.Add("caravan " + a.Op); LastCaravan = a; LastMaxPawns = max; return CaravanNext; }
         // phase 3
@@ -540,6 +549,9 @@ namespace RimWorldLLM.Tests
             public HandResult Undo(IList<NarratorMark> m) { throw new InvalidOperationException("boom"); }
             public JObject TradeOffer(string w, TradeLimits l) { throw new InvalidOperationException("boom"); }
             public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { throw new InvalidOperationException("boom"); }
+            public HandResult TradeStart(TradeArgs a, TradeLimits l, TradeDay d, out PendingTrade p, out string c) { throw new InvalidOperationException("boom"); }
+            public WalkObs TradeObserve(PendingTrade p) { throw new InvalidOperationException("boom"); }
+            public void TradeReissue(PendingTrade p) { throw new InvalidOperationException("boom"); }
             public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { throw new InvalidOperationException("boom"); }
             public HandResult Caravan(CaravanArgs a, int m) { throw new InvalidOperationException("boom"); }
             public JObject Combat(CombatState s) { throw new InvalidOperationException("boom"); }

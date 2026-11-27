@@ -126,6 +126,11 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
     **Or its address** and press Look instead. Press **Connect**: a big code shows on the Mac. On sprinter, compare it
     with the code in the tray or setup page (or run `easy-engine pair`) and Allow. The Mac says "Paired with sprinter
     at ...", the URL, model and key fields are filled, and Test is green. Lines keep coming.
+38a2. **Pair with this engine (typed endpoint).** On the Mac with My own endpoint set to `http://sprinter:47480/v1` and
+    the master token as the key (no `llmEngineId`), press **Pair with this engine** under the status line. No code is
+    asked: the status line becomes "Paired with sprinter at sprinter:47480" and the URL, model and key are unchanged.
+    Point the URL at a plain llama.cpp or LM Studio server and press it again: "This endpoint isn't an easyEngine; keep
+    the key typed by hand" and nothing changes. With a wrong key the big code flow starts. No key in Player.log.
 38b. **Pair again.** On sprinter, `easy-engine token --list`, then `easy-engine token --revoke <id>` for "RimWorld on
     <the Mac>". Restart the game on the Mac (or press Test): the status line says the key was revoked, with **Pair
     again**; pairing again works, and no token is in Player.log.

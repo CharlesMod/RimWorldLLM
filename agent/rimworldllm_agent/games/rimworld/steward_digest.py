@@ -28,16 +28,24 @@ _BUILD = [
     dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2, loose=2, flags=1),
     dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0, loose=0, flags=0),
 ]
-# the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
-# trader, settlements, caravans, quests. The last step keeps the TRADE line and the few traders and quests.
-_TRADE = [
-    dict(stock=10, needs=8, never=8, traders=6, sells=6, buys=4, places=6, caravans=4, quests=6),
-    dict(stock=6, needs=5, never=5, traders=4, sells=4, buys=3, places=4, caravans=3, quests=4),
-    dict(stock=3, needs=3, never=3, traders=3, sells=3, buys=2, places=2, caravans=2, quests=3),
-    dict(stock=0, needs=2, never=0, traders=2, sells=2, buys=0, places=1, caravans=2, quests=2),
+# the Biotech block (bio): per-mech and genepack lists go first, then the detail lines, then all but the urgent facts
+_BIO = [
+    dict(mechs=8, packs=8, genes=6, detail=1, urgent=0),
+    dict(mechs=0, packs=0, genes=4, detail=1, urgent=0),
+    dict(mechs=0, packs=0, genes=0, detail=0, urgent=0),
+    dict(mechs=0, packs=0, genes=0, detail=0, urgent=1),
 ]
-# (base level, build level, trade level): the build block shrinks all the way first, then the trade blocks, then the rest
-_STEPS = [(0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 3, 0), (0, 3, 1), (0, 3, 2), (0, 3, 3), (1, 3, 3), (2, 3, 3), (3, 3, 3)]
+# the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
+# trader, quests. The last step keeps the TRADE line and the few traders and quests.
+_TRADE = [
+    dict(stock=10, needs=8, never=8, traders=6, sells=6, buys=4, quests=6),
+    dict(stock=6, needs=5, never=5, traders=4, sells=4, buys=3, quests=4),
+    dict(stock=3, needs=3, never=3, traders=3, sells=3, buys=2, quests=3),
+    dict(stock=0, needs=2, never=0, traders=2, sells=2, buys=0, quests=2),
+]
+# (base, build, trade, bio levels): the build block shrinks all the way first, then the bio block, then the trade blocks, then the rest
+_STEPS = [(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (0, 3, 0, 0), (0, 3, 0, 1), (0, 3, 0, 2), (0, 3, 0, 3), (0, 3, 1, 3), (0, 3, 2, 3),
+          (0, 3, 3, 3), (1, 3, 3, 3), (2, 3, 3, 3), (3, 3, 3, 3)]
 
 
 def pawn_names(digest: dict) -> dict[str, int]:
@@ -276,6 +284,113 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     return out
 
 
+def _bio_lines(b: dict, bl: dict, ages: dict | None = None) -> list[str]:
+    """The BIOTECH lines (digest ``bio``, contract A): mechs, pollution, genes, blood, genepacks, children, babies, pregnancies.
+    Every key may be missing. Pregnancies are plain facts for adults only (a child's pawn id or an age under 18 drops the entry)."""
+    c = lambda v: gd.clean(str(v if v is not None else ""), "label")  # noqa: E731
+    L = lambda k: [x for x in (b.get(k) if isinstance(b.get(k), list) else []) if isinstance(x, dict)]  # noqa: E731
+    out: list[str] = []
+    kids = L("children")
+    urgent = bl["urgent"]
+    mech_bits = []
+    for m in L("mechanitors"):
+        t = f"{c(m.get('name'))} bandwidth {_num(m.get('bandwidth_used'))}/{_num(m.get('bandwidth_total'))}"
+        if m.get("gestating_bandwidth"):
+            t += f" ({_num(m['gestating_bandwidth'])} gestating)"
+        try:
+            free = int(m.get("bandwidth_total") or 0) - int(m.get("bandwidth_used") or 0) - int(m.get("gestating_bandwidth") or 0)
+        except (TypeError, ValueError):
+            free = 0
+        if free > 0:
+            t += f", {free} free"
+        gs = [f"group {_num(g.get('group'))} {c(g.get('mode'))} ({_num(g.get('mechs'))})" for g in (m.get("groups") or []) if isinstance(g, dict)]
+        mech_bits.append(t + ("; " + ", ".join(gs) if gs else ""))
+    for m in L("mechs")[:bl["mechs"]]:
+        mech_bits.append(f"{c(m.get('name'))} " + (c(m["problem"]) if m.get("problem") else
+                         " ".join(x for x in (c(m.get("job")), f"{_num(m['energy'])}%" if m.get("energy") is not None else "") if x)))
+    if mech_bits and not urgent:
+        out.append("MECHS: " + "; ".join(x.strip() for x in mech_bits))
+    if bl["detail"]:
+        gest = [f"{c(g.get('label'))} {c(g.get('state'))}" for g in L("gestators")]
+        rech = [f"{c(r.get('label'))} {c(r.get('state'))}" + (f" ({c(r['waste'])})" if r.get("waste") else "") for r in L("rechargers")]
+        if gest or rech:
+            out.append("GESTATORS: " + ("; ".join(gest) or "none") + ". RECHARGERS: " + ("; ".join(rech) or "none"))
+        cg = [f"{c(k.get('kind'))} {_num(k.get('bandwidth'))}" for k in L("can_gestate")]
+        if cg:
+            out.append("CAN GESTATE (bandwidth): " + ", ".join(cg))
+    p = b.get("pollution") if isinstance(b.get("pollution"), dict) else {}
+    if p and not urgent:
+        bits = [f"{_num(p.get('wastepacks'))} wastepacks" + (f" ({_num(p['wastepacks_near_home'])} near home)" if p.get("wastepacks_near_home") else "")]
+        if p.get("home_polluted_pct") is not None:
+            bits.append(f"home {_num(p['home_polluted_pct'])}% polluted")
+        if p.get("trend"):
+            bits.append(c(p["trend"]))
+        if p.get("toxic_buildup"):
+            bits.append("toxic buildup " + ", ".join(_words(p["toxic_buildup"], 4)))
+        bits.append("waste stockpile set" if p.get("waste_stockpile") else "no waste stockpile")
+        if p.get("atomizer"):
+            bits.append("atomizer built")
+        elif p.get("can_atomize"):
+            bits.append("atomizer researched, not built")
+        out.append("POLLUTION: " + ", ".join(bits))
+    gl = []
+    for g in L("genes")[:bl["genes"]]:
+        eff = _words(g.get("effects"), 6)
+        if g.get("hemogen_pct") is not None:
+            eff = [(e + f" {_num(g['hemogen_pct'])}%" if e == "needs hemogen" else e) for e in eff]
+        gl.append(f"{c(g.get('name'))} {c(g.get('xenotype'))}" + (f" ({', '.join(eff)})" if eff else ""))
+    if gl and not urgent:
+        out.append("GENES: " + "; ".join(gl))
+    hg = b.get("hemogen") if isinstance(b.get("hemogen"), dict) else {}
+    if hg:
+        t = f"{_num(hg.get('packs'))} packs"
+        if hg.get("donors") and not urgent:
+            t += "; donors " + ", ".join(_words(hg["donors"], 3))
+        if hg.get("needing"):
+            t += "; needing " + ", ".join(_words(hg["needing"], 4))
+            could = [c(x.get("name")) for x in (hg.get("prisoners") or []) if isinstance(x, dict)][:3]
+            if could and not hg.get("donors"):
+                t += "; prisoners who could give blood: " + ", ".join(could)
+        out.append("HEMOGEN: " + t)
+    gb = b.get("genebank") if isinstance(b.get("genebank"), dict) else {}
+    if gb and not urgent:
+        t = f"{_num(gb.get('genepacks'))} genepacks" + (f" ({_num(gb['unstored'])} unstored)" if gb.get("unstored") else "")
+        t += f", {_num(gb.get('banks'))} bank" + (f" ({_num(gb['bank_space'])} free)" if gb.get("bank_space") is not None else "")
+        if gb.get("assembler"):
+            t += ", assembler " + c(gb["assembler"])
+        pk = _words(gb.get("packs"), bl["packs"])
+        out.append("GENEBANK: " + t + ("; packs " + ", ".join(pk) if pk else ""))
+    germs = [c(x.get("name")) for x in L("xenogerms") if isinstance(x, dict)]
+    if germs and not urgent:
+        out.append("XENOGERMS: " + ", ".join(germs[:4]) + ("" if b.get("may_implant") is True else " (implanting is the player's call)"))
+    if kids and not urgent:
+        out.append("CHILDREN: " + "; ".join(
+            f"{c(k.get('name'))} {_num(k.get('age'))} (" + ", ".join(x for x in (
+                f"learning {_num(k['learning_pct'])}%" if k.get("learning_pct") is not None else "", c(k.get("learning")),
+                "" if k.get("desk") else "no school desk") if x) + ")" for k in kids[:6]))
+    babies = L("babies")
+    if babies:
+        hungry = [x for x in babies if x.get("hungry")]
+        show = hungry if urgent else babies
+        if show:
+            out.append("BABIES: " + "; ".join(
+                f"{c(x.get('name'))} {_num(x.get('age_days'))} days, " + (f"hungry {_num(x.get('food_pct'))}%" if x.get("hungry") else f"fed {_num(x.get('food_pct'))}%")
+                + (f", fed by {c(x['feeder'])}" + (f" ({c(x['feeding'])})" if x.get("feeding") else "") if x.get("feeder") else (f", fed by {c(x['feeding'])}" if x.get("feeding") and x.get("feeding") != "no one assigned" else ", no feeder")) for x in show[:6]))
+    kid_ids = {k.get("pawn") for k in kids}
+    preg = [x for x in L("pregnancies") if x.get("pawn") not in kid_ids and (ages or {}).get(x.get("pawn"), 99) >= 18]
+    if preg and not urgent:
+        out.append("PREGNANT: " + "; ".join(f"{c(x.get('name'))} {_num(x.get('progress_pct'))}% ({_num(x.get('days_left'))} days left)" for x in preg[:4]))
+    cr = _words(b.get("carers"), 6)
+    if cr and not urgent:
+        out.append("CARERS: " + ", ".join(cr))
+    miss = _words(b.get("missing"), 6)
+    if miss:
+        out.append("BIO MISSING: " + ", ".join(miss))
+    return out
+
+
+
+
 def _dict_list(x: object, n: int) -> list[dict]:
     return [i for i in (x if isinstance(x, list) else [])[:n] if isinstance(i, dict)]
 
@@ -297,35 +412,6 @@ def _trader_line(t: dict, tl: dict) -> str:
     return ", ".join(bits)
 
 
-def _place_line(s: dict) -> str:
-    head = f"{gd.clean(s.get('id', ''), 'label')} {gd.clean(s.get('name', ''), 'name')}"
-    d = [gd.clean(s[k], "label") for k in ("faction", "relation") if s.get(k) is not None]
-    if s.get("goodwill") is not None:
-        d.append(f"goodwill {_num(s['goodwill'])}")
-    bits = [head + (" (" + ", ".join(d) + ")" if d else "")]
-    if s.get("days") is not None:
-        bits.append(f"{_num(s['days'])} days")
-    if s.get("trader"):
-        bits.append(gd.clean(s["trader"], "label"))
-    return ", ".join(bits)
-
-
-def _caravan_line(c: dict) -> str:
-    names = ", ".join(_words(c.get("pawns"), 6))
-    bits = [f"- {gd.clean(c.get('id', ''), 'label')} {gd.clean(c.get('name', ''), 'name')}: {names}"
-            + (f" + {_num(c['animals'])} animals" if c.get("animals") else "")]
-    if c.get("at") or c.get("to"):
-        bits.append(f"at {gd.clean(c.get('at', '?'), 'label')} -> {gd.clean(c.get('to', '?'), 'label')}")
-    for k, fmt in (("days_left", "{} days left"), ("food_days", "food {} days"), ("mass", "mass {}")):
-        if c.get(k) is not None:
-            bits.append(fmt.format(_num(c[k])))
-    for k in ("danger", "purpose"):
-        if c.get(k) not in (None, "", "none"):
-            bits.append(f"{k} {gd.clean(c[k], 'label')}")
-    if c.get("can_trade"):
-        bits.append("can trade here: " + gd.clean(c["can_trade"], "label"))
-    return ", ".join(bits) + (" (yours)" if c.get("narrator") else "")
-
 
 def _quest_line(q: dict) -> str:
     bits = [f"- {gd.clean(q.get('id', ''), 'label')} [{gd.clean(q.get('state', ''), 'label')}] {gd.clean(q.get('kind', ''), 'label')}: "
@@ -338,12 +424,22 @@ def _quest_line(q: dict) -> str:
         bits.append(f"{_num(q['days'])} days away")
     if q.get("danger") not in (None, "", "none"):
         bits.append("danger " + gd.clean(q["danger"], "label"))
-    bits.append("can" if q.get("can") else "CANNOT: " + (gd.clean(q.get("why_not", ""), "label", max_len=80) or "no"))
+    bits.append("can" if q.get("can") else "can't: " + (gd.clean(q.get("why_not", ""), "label", max_len=80) or "no"))
     return ", ".join(bits)
 
 
+def trade_view(d: dict, arrived: list[str]) -> str:
+    """The trade turn's view: who arrived, then TRADE / NEEDS / STOCK / NEVER SELL / TRADERS (no settlements, no quests)."""
+    t = d.get("trade") if isinstance(d.get("trade"), dict) else {}
+    names = [gd.clean(x.get("name") or x.get("id"), "label") + f" ({gd.clean(x['id'], 'label')})"
+             for x in t.get("traders") or [] if isinstance(x, dict) and x.get("id") and str(x["id"]) in arrived]
+    out = ["ARRIVED: " + ", ".join(names)] if names else []
+    out.extend(trade_lines({"trade": {**t, "settlements": []}}, _TRADE[1]))
+    return "\n".join(out)
+
+
 def trade_lines(d: dict, tl: dict) -> list[str]:
-    """TRADE / NEEDS / STOCK / NEVER SELL / TRADERS / SETTLEMENTS from the trade block, CARAVANS and QUESTS from their own."""
+    """TRADE / NEEDS / STOCK / NEVER SELL / TRADERS from the trade block (settlements are not shown: caravans are off), QUESTS from its own."""
     out: list[str] = []
     t = d.get("trade")
     if isinstance(t, dict) and t:
@@ -356,6 +452,10 @@ def trade_lines(d: dict, tl: dict) -> list[str]:
             head.append("no negotiator")
         head.append("comms " + gd.clean(t.get("comms", "?"), "label"))
         head.append("beacon " + ("yes" if t.get("beacon") else "no"))
+        pend = t.get("pending")
+        if isinstance(pend, dict) and pend.get("negotiator"):
+            head.append(f"a trade is under way: {gd.name(pend['negotiator'])} is walking to {gd.clean(pend.get('to', '?'), 'label')} "
+                        f"to trade with {gd.clean(pend.get('with', '?'), 'label')}")
         td = t.get("today")
         if isinstance(td, dict):
             head.append(f"today {_num(td.get('deals', 0))} deals, {_num(td.get('deals_left', '?'))} left, value left {_num(td.get('value_left', '?'))}")
@@ -374,16 +474,9 @@ def trade_lines(d: dict, tl: dict) -> list[str]:
         if traders:
             out.append("TRADERS (look with trade_offer, then trade; by id):")
             out.extend(_trader_line(x, tl) for x in traders)
-        places = _dict_list(t.get("settlements"), tl["places"])
-        if places:
-            out.append("SETTLEMENTS: " + "; ".join(_place_line(x) for x in places))
-    cs = _dict_list(d.get("caravans"), tl["caravans"])
-    if cs:
-        out.append("CARAVANS:")
-        out.extend(_caravan_line(c) for c in cs)
     qs = _dict_list(d.get("quests"), tl["quests"])
     if qs:
-        out.append("QUESTS (an offer is answered with choose):")
+        out.append("QUESTS (an offer is answered with choose; decline one that can't):")
         out.extend(_quest_line(q) for q in qs)
     return out
 _STORE = {"none": "no stockpile takes it", "full": "stockpiles full", "far": "only far stockpile"}
@@ -441,7 +534,7 @@ def _res_entry(r: dict) -> str:
     return f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}" + (f" ({', '.join(extra)})" if extra else "")
 
 
-def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, combat: bool = True) -> str:
+def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, bio: dict | None = None, combat: bool = True) -> str:
     bl = bl or _BUILD[0]
     tl = tl or _TRADE[0]
     out = ["DATE: " + _date(d)]
@@ -516,6 +609,9 @@ def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, c
         out.extend(built)
     elif counts:
         out.append("ROOMS: " + counts)
+    if isinstance(d.get("bio"), dict):
+        ages = {p.get("id"): p["age"] for p in pawns if isinstance(p, dict) and isinstance(p.get("age"), (int, float))}
+        out.extend(_bio_lines(d["bio"], bio or _BIO[0], ages))
     out.extend(trade_lines(d, tl))
     pw = d.get("power")
     if pw:
@@ -526,12 +622,12 @@ def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, c
 def render_digest(d: dict, cap: int = CAP) -> str:
     """The digest as compact text of at most ``cap`` characters (detail shrinks level by level, then a hard cut)."""
     text = ""
-    for base, bld, trd in _STEPS:
-        text = _render(d, _LEVELS[base], _BUILD[bld], _TRADE[trd])
+    for base, bld, trd, bio in _STEPS:
+        text = _render(d, _LEVELS[base], _BUILD[bld], _TRADE[trd], _BIO[bio])
         if len(text) <= cap:
             return text
     if view_active(d.get("combat")):                   # the cut takes the tail of the rest, never the fight
         fight = render_combat(d["combat"], DIGEST_CAPS[-1])
-        rest = _render(d, _LEVELS[-1], _BUILD[-1], _TRADE[-1], combat=False)
+        rest = _render(d, _LEVELS[-1], _BUILD[-1], _TRADE[-1], _BIO[-1], combat=False)
         return rest[:max(cap - len(fight) - 40, 0)].rsplit("\n", 1)[0] + "\n" + fight + "\n(digest cut: too long)"
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

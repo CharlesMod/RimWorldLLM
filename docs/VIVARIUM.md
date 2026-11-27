@@ -845,6 +845,110 @@ manipulation. Dara was idle.
   construction."
 - The system prompt was 25.1k chars. Outputs are in ~/.local/share/rimworld-hermes-engine/xlate/live/.
 
+## Biotech: mechs, genes, children
+
+The narrator plays the Biotech parts of the game: mechanitors and their mechs, pollution and wastepacks, genes and
+xenogerms, hemogen, children and babies. Everything switches off when Biotech is not active: the digest has no `bio`
+block, the steward gets no Biotech tool or strategy notes, and the routes refuse "Biotech is not active".
+
+### Pieces and where they live
+- `Mod/Source/Bridge/VivariumBio.cs` (Verse-free, tested in `Mod.Tests/VivariumBioTests.cs`): `IVivariumBioHands` (a
+  separate interface: a hands object without it answers "Biotech hands are not available"), `XenogermArgs`, `BioPure`
+  (bandwidth math, mech mode words, gene effect words, children's day presets and their age rules, the `missing` list,
+  the pollution trend) and `BioWords` (note text).
+- `Mod/Source/Bridge/VivariumRoutesBio.cs`: the nine `POST /act/*` routes below, through the same Act pipeline as every
+  hand (op_id, `why`, greentext, 409 refusals, the action log).
+- `Mod/Source/RimWorld/VivariumBioView.cs`: the digest's `bio` block. `Mod/Source/RimWorld/VivariumBioHands.cs`: the game
+  bodies. The `waste` stockpile preset lives in the phase 2 zone hand (`VivariumBuildHands.cs`).
+- Agent: `games/rimworld/steward_bio.py` (tools `mechs`, `genes`, `children`), the BIO lines in `steward_digest.py`,
+  four playbook rules in `strategy/rules.json` (`bio.baby_hungry`, `bio.hemogen_low`, `bio.bandwidth_idle`,
+  `bio.pollution_growing`, from facts derived in `steward_rules.py`), and `strategy/steward_biotech.md`, added to the
+  strategy section only when the digest has a `bio` block (so other games pay nothing for it and the main strategy file
+  stays under its 12 KB cap).
+
+### What the narrator sees (`bio` block; wire shape in BRIDGE-API.md)
+Mechanitors with bandwidth used/total and what is gestating, control groups and their modes; mechs by kind with their
+job, energy and a problem word (low power, no recharger, downed, dormant, out of command range); gestators and
+rechargers in words; the mech kinds a gestator could take now with their bandwidth. Pollution: wastepacks (and how many
+lie in the home area outside a waste stockpile), polluted share of home and map, a day-over-day trend, toxic buildup,
+whether an atomizer is built or researched, whether a waste stockpile exists. Genes: each colonist's xenotype with the
+effects that matter for play in words ("fast, aggressive, needs go-juice"; "needs hemogen, deathrest"), hemogen percent
+for hemogen carriers; hemogen packs, prisoners giving blood and who is low; genepacks (stored and loose), gene banks and
+their space, the assembler's state, xenogerms on the map. Children: age, growth tier, learning need and what they are
+learning now, whether there is a school desk; babies: age in days, food and hunger, who feeds them (the baby's feeding
+tab, else "carers at childcare"); pregnancies of grown women only (visible ones, with days left); colonists with
+Childcare on; and a short `missing` list (mech recharger, mech gestator, school desk, crib, waste stockpile, hemogen
+packs, gene bank). The agent renders it as MECHS, GESTATORS/RECHARGERS, CAN GESTATE, POLLUTION, GENES, HEMOGEN,
+GENEBANK, XENOGERMS, CHILDREN, BABIES, PREGNANT, CARERS and BIO MISSING lines; under the 6 KB cap they shrink after the
+BUILD lines, and the last step keeps only BIO MISSING, hungry babies and low hemogen.
+
+### The hands
+| Route | Does | Refuses (examples) |
+|---|---|---|
+| `mech_mode` | a control group's work mode: work, escort, recharge, shutdown (dormant/self-shutdown accepted) | no mechanitor; no such group; already in that mode |
+| `mech_group` | moves a mech to another of its overseer's groups (unassigns from the old one, checks it moved) | not a colony mech; no overseer; already there |
+| `mech_gestate` | queues a gestation bill (repeat count 1..3) at an idle powered gestator that takes the recipe, for the mechanitor with the most free bandwidth | unknown kind (lists the game's); research missing (names it); no gestator ("build one first"); bandwidth: "not enough bandwidth: 5 of 6 used, a lifter needs 1 and 1 stays free" (used + gestating + queued unbound bills + the new mechs + 1 spare must fit; the game's own `HasBandwidthForBill` checks too). The bill is a ledger mark: `/undo` deletes it. |
+| `genepack` | a free grown hauler carries loose genepacks (up to 4 a call) to a powered gene bank with space | no loose genepacks; no bank; banks full or unpowered; nobody can carry |
+| `xenogerm` assemble | starts the gene assembler on named genepacks from the banks next to it, with a name and a plan (10..200 chars) the player reads in the greentext | no assembler; working; no power; unknown pack; duplicate gene; conflicting genes; complexity over the assembler's maximum; metabolism below the game's floor; archites missing |
+| `xenogerm` implant | sets a grown free colonist to receive a xenogerm (a doctor implants it), with a plan | the setting "The narrator may implant xenogerms" is off (default); children always ("the narrator never implants genes in children"); prisoners and slaves; the colonist's beliefs; the game's own target check |
+| `hemogen` | turns a prisoner's hemogen-farm interaction on (donate) or off (stop) | not the colony's prisoner; a child; hemogenic |
+| `child_schedule` | a child's whole day from a preset: school, play, default (the hand builds the 24 hours from the child's age with `BioPure.ChildHours` and checks them with `CheckChildHours`) | not a child; babies (no timetable); a preset that breaks the age rules |
+| `feed` | who feeds a baby and when (never, childcare, urgent = before other work); feeder 0 resets the baby's feeders to the carers' default | not a baby; the feeder is a child or can't feed |
+| `child_care` | a grown colonist's Childcare priority (through the work hand, so priorities turn on and every pawn refreshes) | a child; incapable |
+
+Children's days (ages: baby under 3, child 3..12; 13+ is not a child): every preset sleeps 21-6; school has recreation
+17-19 (learning happens in the free "anything" hours), play has recreation 9-12 and 15-18, default has recreation 16-18
+and, for ages 7..12 only, light work 13-15. The rules: babies at least 10 sleep hours and no work or recreation blocks;
+children at least 9 sleep hours, at least 4 free hours, at most 3 work hours and none under 7. Children's work stays
+where the game allows (the work hand already refuses what a child can't do); the steward's `draft` and `order` tools
+refuse children ("children stay out of fights"), and drafting "all" skips them.
+
+Pollution has no hand of its own: the zone tool gains preset `waste` (a wastepack-only stockpile placed like a dump,
+12..30 cells from the base), and the build tool's words gain the Biotech buildings when researched (mech gestator,
+large mech gestator, mech/basic/standard recharger, school desk, blackboard, crib, baby sleeping spot, toy box, gene
+bank, gene assembler, gene extractor, growth vat, wastepack atomizer, band node, deathrest casket).
+
+### Steward
+Three tools, each only when the digest holds what it needs, each op too: `mechs` (op mode|group|gestate), `genes` (op
+store|assemble|implant|donate; implant only when the digest says the player allows it and a xenogerm exists), `children`
+(op schedule|feed|care). Names resolve to ids from the digest; an unknown name comes back listing the known ones. The
+Biotech notes: a mechanitor early for labor mechs once Basic mechtech is done, keep one bandwidth free, a recharger
+before gestating; wastepacks to a waste stockpile far from home and an atomizer once researched, never dump near home;
+hemogen from packs or a prisoner donor, never strip food for it; children learn daily, babies are fed before work,
+children never fight; genes only with a plan the player can read. The three tools add about 2.5 k characters of tool
+text when all are offered (about 0.7..0.9 k for one).
+
+### Limits
+- The game bodies are compile-checked against the 1.7 reference assemblies only; the playtest (VIVARIUM-PLAYTEST.md,
+  section K) is their first run.
+- Mechs are not squad members: the combat squad drafts colonists and slaves only (drafting mechs needs the mechanitor
+  in range and its own controller); mech control groups in escort mode follow their mechanitor into fights.
+- No growth vats, no gene extraction, no deathrest management, no ovum/embryo work, no baby naming (the game names
+  babies), no mech resurrection or boss calls. Hemogen comes from prisoner donation; hemogen packs are kept by the
+  game's own hemogen-farm bills (no colonist donation).
+- The pollution trend lives in memory: a loaded game starts "steady" and needs a game day to compare.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
+32k, q4_0 KV, `steward_try --playing` on the four `bio_*` samples).** Prompt about 8.5 k tokens (system about 29 k chars
+with the Biotech notes and tools), a cycle 11..30 s. With the samples' food emergency left in, the model spent its turns on
+food and the freezer (sensible) and only the hungry baby got Biotech care, so the live digests were made calm (12 food
+days, nothing missing in BUILD) to see the Biotech choices:
+- Hungry baby, no feeder: every cycle (5 of 5) set Ana to feed Dee "urgent" first, then built a crib and a school desk
+  for the 6-year-old when they were buildable.
+- Mechanitor with 2 bandwidth free and no recharger: it built a mech recharger first (playbook order) and went on to
+  bedrooms; asked in chat to use the spare bandwidth, it built the recharger and queued one lifter (keeping 1 free).
+- Pollution growing, wastepacks near home, no waste stockpile: a waste stockpile in 3 of 7 cycles (other turns went to
+  bedrooms and the table, the other P2-P4 alerts of the sample).
+- Sanguophage at 15% hemogen with a grown prisoner: ignored in 7 cycles while the HEMOGEN line only said who needed it;
+  once the line named "prisoners who could give blood: Cole" it set Cole to give blood in a heartbeat cycle, and at once
+  when the player asked.
+- Fixed from it: the fake bridge did not know the Biotech verbs; `feed` without a feeder reset the baby's feeders (the
+  model sent "none"): feed now needs a named feeder; `bio.hemogen_low` is priority 1 and says "this turn"; the MECHS line
+  says how much bandwidth is free; the HEMOGEN line names grown, non-hemogenic prisoners who could give blood (the mod
+  sends them as `hemogen.prisoners`); the `genes` tool says op donate is blood from a prisoner.
+- Seen, not fixed here: the grammar fills `count` and `until` on a bill (the bill hand refuses both and the model retries),
+  and planned-freezer cooler attempts (phase 2's guard refuses them), as in the earlier live checks.
+
 ## Phase 4: trade, caravans, quests
 
 The ending on Core + Biotech is the ship; trade buys the components and advanced parts the colony cannot make,
@@ -864,7 +968,7 @@ first and refuse with a reason.
 - `Mod/Source/RimWorld/VivariumTradeHands.cs`: the game bodies (`IVivariumHands.TradeOffer/Trade/CaravanPlan/Caravan`),
   `VivariumTradeView.cs`: the digest's `trade`, `caravans` and `quests` blocks; `VivariumCaravanWatch.cs`: gives a
   formed narrator caravan its arrival action and notes arrivals (run from the game component, every 120 ticks).
-- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer`, `trade`, `caravan_plan`, `caravan` tools),
+- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer` and `trade` tools; the caravan tools were removed in the follow-up),
   the digest renderer's TRADE / TRADERS / SETTLEMENTS / CARAVANS / QUESTS lines, the playbook's trade lines.
 
 ### Digest blocks (each fails alone, logged once, like `build`)
@@ -967,10 +1071,11 @@ from the game); refuse over capacity ("too heavy: 260/210 kg"); refuse when food
 `settings.caravans`, `settings.trade_max_deal`, ... in `GET /vivarium`.
 
 ### Steward
-Four tools when the digest has a `trade` block: `trade_offer` (with: look at prices; not an action), `trade` (with,
-buy, sell as "item xN, item xN"), `caravan_plan` (not an action), `caravan` (op form|send|cancel, pawns as names, to,
-quest, goods, purpose). The prompt's playbook lines: sell surplus art, textiles and drugs; buy components early;
-keep a silver reserve (500); never strip the base's defense for a caravan; take quests only when `can` is true.
+Two tools when the digest's `trade` block lists a trader: `trade_offer` (with: look at prices; not an action) and
+`trade` (with, buy, sell as "item xN, item xN"). Caravans are off (below): no `caravan_plan` or `caravan` tool, no
+CARAVANS or SETTLEMENTS lines, no caravan playbook lines. The prompt's playbook lines: sell surplus art, textiles and
+drugs; buy components early; keep a silver reserve (500); trade first in a turn (traders leave); take quests only when
+`can` is true and decline with `choose` an offer that can't.
 
 ### Phase 4 status (what is built)
 - Mod, Verse-free and unit-tested: `VivariumTrade.cs` (deal planner, never-sell rules, day caps), `VivariumCaravan.cs`
@@ -988,7 +1093,7 @@ keep a silver reserve (500); never strip the base's defense for a caravan; take 
   actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
   `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
   reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
-- Decisions: a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
+- Decisions (superseded where the follow-up below says so: trades walk, caravans are off): a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
   caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
   fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
   best doctor (not only the only one) stays home unless the player asks; ship needs in `trade.needs` are approximated
@@ -1015,3 +1120,62 @@ samples, also with food raised to 14 days).** System prompt about 29k chars (use
 - Fixed from it: `growth.trade` only fired above 1500 silver; it now fires when a trader can trade and NEEDS has
   entries; the strategy says to trade first in a turn because traders leave. Seen, not fixed (phase 2): the model
   keeps trying a cooler for a freezer that is only planned (refused with the reason each time).
+
+### Phase 4 follow-up: caravans off, walking trades, trade turns (2026-11-27)
+The keeper's call on the phase 4 recommendations: make trades walk (the ant-farm feel), wake a trade-focused turn when
+a trader arrives instead of raising the routine step budget, and "dont do caravans at all".
+
+**Caravans off.** The narrator never forms, sends or plans caravans. The agent has no `caravan_plan`/`caravan` tools,
+no caravan lines in `steward_system.txt` or the strategy, no `growth.caravan_safety` rule, and the digest renderer shows
+neither CARAVANS nor SETTLEMENTS (settlements only mattered for caravans). The mod keeps the caravan routes, hands, plans
+and watch for scripts and a possible return, but `POST /act/caravan` and `GET /caravan/plan` refuse "caravans are off"
+unless the request says `"script": true` (`?script=true`); with it the old checks apply, `narratorCaravans` included.
+No new setting. `QuestPure.Feasible(..., caravansOff)`: the digest passes true, so `site` and `delivery` quests show
+`can` false, `why_not` "needs a caravan (caravans are off)" (the agent renders `can't: ...`); the QUESTS header, the
+system prompt and the new rule `growth.quest_decline` (fact `quest_offer_cannot`) tell the steward to decline such an
+offer with `choose`.
+
+**Walking trades.** `POST /act/trade` with a `P` (visiting trader pawn) or `S` (orbital) id starts a walk: the hand
+checks the deal now with `DealPlanner`, picks the negotiator (the best talker who can reach the target), gives a
+playerForced Goto to the comms console's interaction cell or a standable cell next to the trader pawn, then queues a
+600-tick wait so the pawn is still there when the watch looks. The reply is ok with `status: "walking"` and the route
+marks the result `Pending`: the Act pipeline posts a short note line instead of the greentext and the action log, and
+the day is not charged. One trade at a time (a second is refused "a trade is already under way: Ana is walking to the
+comms console"). `T<tile>` trades stay instant.
+- Pure, in `Mod/Source/Bridge/VivariumTradeWalk.cs` (tested in `Mod.Tests/VivariumTradeWalkTests.cs`): `PendingTrade`
+  (saved as `trade_walk`), `WalkObs`, `TradeWalk.Decide` and `TradeWalk.Step` (observe, decide, run, charge, chat).
+  Decide: trader gone or unable to trade -> refuse ("couldn't trade with the bulk goods trader: the trader has left");
+  arrived -> run; negotiator downed, drafted, in a mental state or gone -> instant; no path -> instant; 2500 ticks (one
+  in-game hour) -> instant ("Ana took too long"); our job gone (interrupted) -> give it again, up to 3 times, then
+  instant. Run and instant re-check through `IVivariumHands.Trade` (prices, stock, silver, never-sell, the deal cap, the
+  day's caps and deals rolled to now), then charge the day, log the action and post the greentext: "Ana walked to the
+  comms console and bought 10 components, sold 200 cloth (+120 silver), since ..." or "bought ..., Ana negotiated
+  (Ana took too long; traded over the radio)".
+- Game: `VivariumHands.TradeStart/TradeObserve/TradeReissue` (`VivariumTradeHands.cs`; arrived = within one cell of
+  the console's interaction cell, or within two cells of the trader and reachable; the Goto is re-aimed when the trader
+  has moved more than 3 cells), `VivariumTradeWatch.Tick` (every 60 ticks from the game component). When no walk can
+  start at all (nobody can reach), the trade runs at once with "(traded over the radio: why)".
+- The digest's `trade.pending` (`{negotiator, to, with}` or null) and the TRADE line ("a trade is under way: ...")
+  show it to the narrator.
+- Screen director: `scene_trade` (group work, weight 2.5, below the events and battles): a follow shot on the walking
+  negotiator, caption "Camera: Ana trades with the bulk goods trader" (`ScenePawn.TradeWith`).
+
+**Trade turn on arrival.** `GET /vivarium` lists `traders` (`{id, kind, name}` that can trade now, polled every 250
+ticks by `VivariumTradeView.PollTraders` with the digest's own code). The steward (`core/steward.py`) wakes "trade" when
+an id is not yet in `trade_seen` (cleared with the save epoch): after chat, dialogs, urgent events and the real-time gap,
+before the heartbeat; never in a fight, paused or in advisor mode. All listed ids are marked seen when the turn starts
+(once per visit, whatever it does), and a trade turn does not move the heartbeat clock. The turn reads `GET /digest`
+and is skipped (logged) when a fight is on, food is under 3 days (`FOOD_CRITICAL_DAYS`, the playbook's starvation
+threshold) or a critical starvation alert is up. Otherwise: `steward_trade.txt` (~1.1 KB) plus the tool list, a user
+turn with THE TRADE first (ARRIVED, TRADE, NEEDS, STOCK, NEVER SELL, TRADERS), then FOOD and the plan; tools
+`trade_offer`, `trade`, `note`, `do_nothing`; `TRADE_STEPS` 4, `TRADE_BUDGET_S` 60, `TRADE_STEP_TIMEOUT_S` 30,
+`TRADE_MAX_TOKENS` 300, `TRADE_FINAL_MAX` 120. The routine turn's step budget is unchanged (8). `steward_try
+--trade-turn --digest ...` runs one against the fake bridge.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine main
+`custom/use`, 2 x 32k, q4_0 KV, `steward_try --trade-turn`).** Prompt about 3.6k chars (~900 tokens: system 2.8k with
+the tools, user 0.8k), a turn took about 7 s. Orbital exotic trader `S31` (the recorded sample, food raised to 12 days),
+three runs: `trade_offer S31`, then one `trade`: buy components x20, glitterworld medicine x4, advanced components x6,
+sell cloth x40 and the gold sculptures, "since we need components and medicine", then done. Visiting bulk trader
+`P5521`: `trade_offer`, then buy components x6, herbal medicine x4, steel x50, sell cloth x300, the jade sculpture and
+the smokeleaf joints. The recorded orbital sample as is (food 2.4 days): skipped, "food is critical".

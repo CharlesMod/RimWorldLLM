@@ -1148,6 +1148,46 @@ namespace RimWorldLLM.Tests
 
         static PairingApi Api() { return new PairingApi { HelloTimeoutMs = 3000, ShortTimeoutMs = 3000 }; }
 
+        [Theory]
+        [InlineData(",\"model_id\":\"cat-26b\"", "cat-26b", 0)]   // hello names the model: used, /v1/models never asked
+        [InlineData(",\"model_id\":\"\"", "gemma4-e4b", 1)]       // none selected or a custom file: fallback
+        [InlineData("", "gemma4-e4b", 1)]                         // an older engine sends no model_id: fallback
+        public async Task PairingUsesHelloModelIdElseTheModelsList(string extra, string expected, int modelsCalls)
+        {
+            using (var f = new FakePairEngine(Route(r => HelloJson(Id1, false, false, extra), r => Hold().Task)))
+            {
+                var s = Make(f, new List<string>());
+                s.Start();
+                await PhaseIs(s, PairPhase.Open);
+                await RunEnds(s);
+                Assert.Equal(expected, s.Outcome.ModelId);
+                Assert.Equal(modelsCalls, f.Count("GET", "/v1/models"));
+            }
+        }
+
+        [Theory]
+        [InlineData(",\"model_id\":\"cat-26b\"", "cat-26b", 0)]
+        [InlineData(",\"model_id\":\"\"", "gemma4-e4b", 1)]
+        [InlineData("", "gemma4-e4b", 1)]
+        public async Task ReconnectUsesHelloModelIdElseTheModelsList(string extra, string expected, int modelsCalls)
+        {
+            using (var f = new FakePairEngine(ReconnectRoute(Id1, true, r => r.Auth == "Bearer tok-reconnect" ? ",\"paired\":true,\"client_id\":\"c1\"" + extra : "")))
+            {
+                var res = await EngineReconnect.CheckAsync(StoreWith(f.Root), Id1, f.Root, Api(), null);
+                Assert.Equal(EngineAuth.Paired, res.Auth);
+                Assert.Equal(expected, res.ModelId);
+                Assert.Equal(modelsCalls, f.Count("GET", "/v1/models"));
+            }
+        }
+
+        [Fact]
+        public void HelloModelIdIsOptional()
+        {
+            Assert.Equal("", EngineHello.Parse(HelloJson(Id1, true, true)).ModelId);
+            Assert.Equal("cat-26b", EngineHello.Parse(HelloJson(Id1, true, true, ",\"model_id\":\" cat-26b \"")).ModelId);
+            Assert.Equal("", EngineHello.Parse(HelloJson(Id1, true, true, ",\"model_id\":null")).ModelId);
+        }
+
         [Fact]
         public async Task ReconnectPairedAtTheLastAddress()
         {

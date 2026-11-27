@@ -27,6 +27,7 @@ namespace RimWorldLLM.Bridge
         public bool Child;
         public bool Prisoner;
         public int[] Partners;         // lover/spouse/fiance ids
+        public string TradeWith;       // walking trade: who the negotiator trades with ("the bulk goods trader"), null otherwise
     }
 
     /// <summary>A moment with no event behind it, offered to the director in quiet stretches.</summary>
@@ -48,12 +49,12 @@ namespace RimWorldLLM.Bridge
     {
         public const string Meal = "scene_meal", Recreation = "scene_recreation", Work = "scene_work", Night = "scene_night",
             Medical = "scene_medical", Child = "scene_child", Romance = "scene_romance", Prisoner = "scene_prisoner",
-            Taming = "scene_taming";
+            Taming = "scene_taming", Trade = "scene_trade";
 
         public const string GroupMeals = "meals", GroupRecreation = "recreation", GroupWork = "work", GroupNight = "night",
             GroupMedical = "medical", GroupChildren = "children", GroupRomance = "romance";
 
-        public static readonly string[] All = { Meal, Recreation, Work, Night, Medical, Child, Romance, Prisoner, Taming };
+        public static readonly string[] All = { Meal, Recreation, Work, Night, Medical, Child, Romance, Prisoner, Taming, Trade };
 
         public static bool IsScene(string kind) { return kind != null && kind.StartsWith("scene_", StringComparison.Ordinal); }
 
@@ -64,7 +65,7 @@ namespace RimWorldLLM.Bridge
             {
                 case Meal: return GroupMeals;
                 case Recreation: return GroupRecreation;
-                case Work: case Prisoner: case Taming: return GroupWork;
+                case Work: case Prisoner: case Taming: case Trade: return GroupWork;
                 case Night: return GroupNight;
                 case Medical: return GroupMedical;
                 case Child: return GroupChildren;
@@ -303,6 +304,13 @@ namespace RimWorldLLM.Bridge
                     claimed.Add(t.Id);
                 }
 
+            if (on(SceneKinds.Trade))
+                foreach (var t in free.Where(p => p.TradeWith != null && !claimed.Contains(p.Id)).OrderBy(p => p.Id))
+                {
+                    res.Add(Solo(SceneKinds.Trade, t, "Camera: " + t.Name + " trades with " + t.TradeWith));
+                    claimed.Add(t.Id);
+                }
+
             if (on(SceneKinds.Work))
                 foreach (var grp in free.Where(p => !claimed.Contains(p.Id) && WorkPlace(p.WorkType) != null).GroupBy(p => WorkPlace(p.WorkType)).OrderBy(x => x.Key, StringComparer.Ordinal))
                     foreach (var g in Cluster(grp.Select(p => { var q = Copy(p); q.RoomId = -1; return q; }), WorkClusterCells))
@@ -342,7 +350,7 @@ namespace RimWorldLLM.Bridge
             {
                 Id = p.Id, Name = p.Name, X = p.X, Z = p.Z, RoomId = p.RoomId, RoomLabel = p.RoomLabel, Job = p.Job, JoyKind = p.JoyKind,
                 WorkType = p.WorkType, TargetId = p.TargetId, TargetName = p.TargetName, Awake = p.Awake, InBed = p.InBed,
-                InGathering = p.InGathering, AgeYears = p.AgeYears, Child = p.Child, Prisoner = p.Prisoner, Partners = p.Partners
+                InGathering = p.InGathering, AgeYears = p.AgeYears, Child = p.Child, Prisoner = p.Prisoner, Partners = p.Partners, TradeWith = p.TradeWith
             };
         }
     }

@@ -36,6 +36,8 @@ namespace RimWorldLLM.Bridge
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
         /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
         public bool Commentary = true;
+        /// <summary>Biotech: may the narrator implant xenogerms into colonists. Off until the player says so.</summary>
+        public bool MayImplantGenes = false;
         /// <summary>Phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"); the game side refreshes these from the mod settings.</summary>
         public bool Trade = true;
         public bool Caravans = true;
@@ -67,6 +69,7 @@ namespace RimWorldLLM.Bridge
                 ["controls_speed"] = ControlsSpeed,
                 ["slow_for_combat"] = SlowForCombat,
                 ["heartbeat_hours"] = HeartbeatHours,
+                ["may_implant_genes"] = MayImplantGenes,
                 ["trade"] = Trade,
                 ["caravans"] = Caravans,
                 ["trade_max_deal"] = TradeMaxDeal,
@@ -530,6 +533,9 @@ namespace RimWorldLLM.Bridge
         /// <summary>Phase 4: today's trade counters (saved as trade_day) and what each narrator caravan is for (caravan_plans).</summary>
         public readonly TradeDay TradeDay = new TradeDay();
         public readonly CaravanPlans CaravanPlans = new CaravanPlans();
+        /// <summary>Walking trades: the one trade under way (saved as trade_walk), and the traders that can trade now (runtime, never saved).</summary>
+        public PendingTrade TradeWalk;
+        public readonly TraderList Traders = new TraderList();
         static readonly System.Diagnostics.Stopwatch RealClock = System.Diagnostics.Stopwatch.StartNew();
         /// <summary>Real seconds since start (modal windows pause the game, so dialog timeouts use this). Tests may replace it.</summary>
         public static Func<double> NowReal = () => RealClock.Elapsed.TotalSeconds;
@@ -545,6 +551,7 @@ namespace RimWorldLLM.Bridge
                 ["actions_seq"] = Actions.LastSeq,
                 ["undoable"] = Ledger.Count,
                 ["combat"] = Combat.StatusJson(),
+                ["traders"] = Traders.ToJson(),
                 ["settings"] = Settings.ToJson()
             };
         }
@@ -564,7 +571,8 @@ namespace RimWorldLLM.Bridge
                 ["ledger"] = Ledger.Export(),
                 ["combat"] = Combat.Export(),
                 ["trade_day"] = TradeDay.Export(),
-                ["caravan_plans"] = CaravanPlans.Export()
+                ["caravan_plans"] = CaravanPlans.Export(),
+                ["trade_walk"] = TradeWalk != null ? (JToken)TradeWalk.Export() : JValue.CreateNull()
             };
         }
 
@@ -583,12 +591,14 @@ namespace RimWorldLLM.Bridge
             Combat.Import(saved["combat"] as JObject);
             TradeDay.Import(saved["trade_day"] as JObject);
             CaravanPlans.Import(saved["caravan_plans"] as JArray);
+            TradeWalk = PendingTrade.Import(saved["trade_walk"] as JObject);
         }
 
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
             Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Combat.Clear(); Dialogs.Clear(); TradeDay.Clear(); CaravanPlans.Clear();
+            TradeWalk = null; Traders.Clear();
         }
     }
 }

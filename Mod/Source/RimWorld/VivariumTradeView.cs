@@ -71,6 +71,7 @@ namespace RimWorldLLM
                 .Select(p => new JObject { ["id"] = p.thingIDNumber, ["name"] = p.LabelShort, ["capacity"] = (int)Math.Round(MassUtility.Capacity(p)) })));
             Part(o, "never_sell", () => new JArray(TradeRules.ActiveRules(limits)));
             Part(o, "traders", () => Traders(map, comms));
+            o["pending"] = VivariumGame.State.TradeWalk != null ? (JToken)VivariumGame.State.TradeWalk.DigestJson() : JValue.CreateNull();
             Part(o, "settlements", () => Settlements(map));
             Part(o, "today", () => { var d = VivariumGame.State.TradeDay; d.Roll(VivariumGame.NowTick); return d.ToJson(limits); });
             return o;
@@ -171,6 +172,25 @@ namespace RimWorldLLM
             r = r.Take(MaxBuys).ToList();
             buyCache[tk.defName] = r;
             return r;
+        }
+
+        /// <summary>The game-side poll (every 250 ticks): the traders that can trade now, with the digest's own ids, for GET /vivarium.</summary>
+        public static void PollTraders()
+        {
+            var v = VivariumGame.State;
+            if (v == null) return;
+            var map = TradeUtil.Home();
+            var list = new List<TraderStub>();
+            if (map != null && EventGate.GameLive())
+            {
+                Building_CommsConsole console = null;
+                string comms = Try("comms", () => TradeUtil.CommsStatus(map, out console), "none");
+                var rows = Traders(map, comms) as JArray;
+                if (rows != null)
+                    foreach (var r in rows)
+                        if (r["can_trade"] != null && r["can_trade"].Type == JTokenType.Boolean && (bool)r["can_trade"]) list.Add(new TraderStub((string)r["id"], (string)r["kind"], (string)r["name"]));
+            }
+            v.Traders.Set(list);
         }
 
         static JToken Traders(Map map, string comms)
@@ -338,7 +358,7 @@ namespace RimWorldLLM
             if (!active && ticks < 0) ticks = Try("accept", () => q.acceptanceExpireTick - Find.TickManager.TicksGame, -1);
             double expDays = ticks > 0 ? ticks / 60000.0 : double.PositiveInfinity;
             double threat = f.Site != null ? Try("threat", () => (double)f.Site.ActualThreatPoints, 0.0) : 0;
-            var fz = QuestPure.Feasible(f.Kind, threat, colonyPoints, days, expDays, foodDays, healthy);
+            var fz = QuestPure.Feasible(f.Kind, threat, colonyPoints, days, expDays, foodDays, healthy, false, true);
             string what;
             var items = new JArray();
             if (f.Kind == "delivery" && f.Request != null && f.Request.requestThingDef != null)

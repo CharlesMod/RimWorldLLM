@@ -31,8 +31,9 @@ namespace RimWorldLLM
         public override void GameComponentTick()
         {
             base.GameComponentTick();
-            if (Find.TickManager != null && Find.TickManager.TicksGame % 250 == 0) { EventPayload.Safe("vivarium-alerts", VivariumEvents.PollAlerts); VivariumCombatTicker.Tick(); }
+            if (Find.TickManager != null && Find.TickManager.TicksGame % 250 == 0) { EventPayload.Safe("vivarium-alerts", VivariumEvents.PollAlerts); VivariumCombatTicker.Tick(); EventPayload.Safe("vivarium-traders", VivariumTradeView.PollTraders); }
             EventPayload.Safe("vivarium-caravans", VivariumCaravanWatch.Tick);
+            EventPayload.Safe("vivarium-trade-walk", VivariumTradeWatch.Tick);
         }
 
         // Runs every frame, even while paused (GameComponentTick does not).

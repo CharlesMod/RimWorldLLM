@@ -17,6 +17,9 @@ Wakes (one cycle at a time; a chat that arrives mid-cycle is answered by the nex
              ``steward_combat_gap_game_s`` game seconds and ``steward_combat_gap_real_s`` real seconds after the last turn ended
              (GET /combat only, a small prompt, the combat tools, 3 steps); other wakes wait. When ``combat.active`` turns false:
              one full "combat over" cycle, and the speed is put back if we slowed it. Not in advisor mode.
+  trade      while playing and unpaused, when GET /vivarium lists a trader (``traders``) not yet seen in this save: one small trade turn
+             (the trade view, trade_offer and trade, 4 steps) once per visit, after chat, dialogs and urgent events, before the heartbeat;
+             skipped when food is critical or a fight is on. Not in advisor mode.
 Non-chat wakes keep ``steward_min_gap_real_s`` real seconds between cycles (combat has its own gaps). Against a mod without ``/vivarium`` (404) the
 steward switches itself off quietly.
 
@@ -46,6 +49,8 @@ STEPS, BUDGET_S, STEP_TIMEOUT_S = 8, 120.0, 60.0
 FINAL_MAX = 300
 # a combat turn is small: the combat view and the plan line, the combat tools only, three steps (the last is the closing line)
 COMBAT_STEPS, COMBAT_BUDGET_S, COMBAT_STEP_TIMEOUT_S, COMBAT_MAX_TOKENS, COMBAT_FINAL_MAX = 3, 40.0, 30.0, 160, 120
+# a trade turn (a trader arrived): the trade view, the trade tools, a few steps (the last is the closing line)
+TRADE_STEPS, TRADE_BUDGET_S, TRADE_STEP_TIMEOUT_S, TRADE_MAX_TOKENS, TRADE_FINAL_MAX = 4, 60.0, 30.0, 300, 120
 TICKS_PER_GAME_S = 60
 COMBAT_START_STEPS = 5                     # the "combat started" cycle: draft, place, flee, one defence, the line; the combat turns follow
 ENV_STRATEGY = "RIMWORLDLLM_STEWARD_STRATEGY"
@@ -116,6 +121,8 @@ class Steward:
         self.combat_on = False                        # a fight is running and the combat loop owns the cadence
         self.combat_start = False                     # the "combat started" cycle is due
         self.combat_over = False                      # the "combat over" cycle is due
+        self.trade_seen: set[str] = set()             # trader ids already given their trade turn (one per visit)
+        self.trade_new: list[str] = []                # the ids the due trade turn is for
         self.slowed = False                           # we put the game on 1x for the fight
         self.dialog_pending = False                   # a choice window opened: wakes even while the game is paused
         self.vv = {}
@@ -269,10 +276,19 @@ class Steward:
                 self.pause_woken = True
                 return "paused"
             return None
+        if hasattr(self.kit, "trade_session"):
+            ids = self._trader_ids()
+            new = sorted(ids - self.trade_seen)
+            if new:
+                self.trade_new = new
+                return "trade"
         hb = float(((self.vv.get("settings") or {}).get("heartbeat_hours")) or 6.0) * d.day / 24
         if self.last_game is None or env.game < self.last_game or env.game - self.last_game >= hb:
             return "heartbeat"
         return None
+
+    def _trader_ids(self) -> set[str]:
+        return {str(x["id"]) for x in self.vv.get("traders") or [] if isinstance(x, dict) and x.get("id")}
 
     def _combat_wake(self) -> str | None:
         """The combat wakes. "" = a fight is on and nothing is due (nothing else wakes); None = not in a fight, carry on."""
@@ -295,7 +311,9 @@ class Steward:
     def _start(self, reason: str, playing: bool) -> None:
         d = self.d
         chat, self.pending_chat = self.pending_chat, []
-        if reason == "combat":                         # a combat turn leaves the events for the full cycle that follows the fight
+        if reason == "trade":
+            self.trade_seen |= self._trader_ids()      # once per visit, whatever the turn does
+        if reason in ("combat", "trade"):              # a combat or trade turn leaves the events for the full cycle that follows the fight
             events = []
         else:
             events = self.events if playing else []
@@ -303,7 +321,8 @@ class Steward:
         d.leases.narrator_owner = "steward"            # idle narrator work yields from here on
         if d.idle.active() and d.idle.kind in ("chronicle", "art"):
             d.idle.preempt("steward")                  # a running slot-0 job is cancelled; nothing it made is applied
-        self.last_game = d.bridge.env.game
+        if reason != "trade":
+            self.last_game = d.bridge.env.game         # a trade turn does not push the routine look back
         self.last_real = d.clock()
         self.task = d._spawn(self._cycle(reason, chat, events, playing))
 
@@ -359,6 +378,8 @@ class Steward:
         advisor = not playing
         if reason == "combat":
             return await self._run_combat(t)
+        if reason == "trade":
+            return await self._run_trade(t)
         try:
             digest, board = await d.bridge.digest(), await d.bridge.goals()
         except BridgeError as e:
@@ -372,6 +393,9 @@ class Steward:
             self._strategy_note = snote
             if snote:
                 log.info("steward: %s", snote)
+        extra = kit.strategy_extra(digest) if getattr(kit, "strategy_extra", None) else ""   # notes that only some games need (the adapter decides)
+        if extra:
+            strategy = (strategy + "\n\n" + extra) if strategy else extra
         system = kit.system_prompt(advisor) + ("\n\n" + STRATEGY_HEADING + "\n" + strategy if strategy else "") + "\n\n" + gd.DATA_RULE
         session = kit.session(digest, d.bridge, advisor, after_fight=True) if reason == "combat over" else kit.session(digest, d.bridge, advisor)
         tools = session.tools + board_tools(board, advisor)
@@ -512,8 +536,70 @@ class Steward:
         t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, failures=res.failures[-4:],
                  executed=[(e.tool, e.args, e.result) for e in res.executed], elapsed_s=round(res.elapsed_s, 2))
 
+    async def _run_trade(self, t: dict) -> None:
+        """A trade turn: GET /digest, a short prompt with the trade view first, trade_offer and trade, four steps. Skipped (and
+        the trader stays seen) when food is critical or a fight is on. No board edits, no closing chat line."""
+        d, kit = self.d, self.kit
+        try:
+            digest, board = await d.bridge.digest(), await d.bridge.goals()
+        except BridgeError as e:
+            t["error"] = f"read failed: {e}"
+            self.stats.failed += 1
+            return
+        skip = "a fight is on" if self.combat_on or (self.vv.get("combat") or {}).get("active") else kit.trade_skip(digest)
+        session = kit.trade_session(digest, d.bridge) if not skip else None
+        if session is not None and not {"trade_offer", "trade"} <= {x.name for x in session.tools}:
+            skip = "no trader that can be dealt with now"
+        if skip:
+            t["skipped"] = skip
+            log.info("steward: trade turn skipped: %s", skip)
+            return
+        view, food = kit.render_trade(digest, self.trade_new)
+        system = kit.trade_system_prompt() + "\n\n" + gd.DATA_RULE
+        allowed = set(kit.trade_tools)
+        tools = [x for x in session.tools + board_tools(board) if x.name in allowed]
+        user = "\n".join([
+            "=== THE TRADE ===\n" + gd.data_section("trade", view),
+            food + "\n" if food else "",
+            "=== YOUR PLAN ===\n" + (plain(board.get("plan") or "", 300) or "none") + "\n",
+            "Decide now: look at the offer, make the deal this trader is worth, then end with done."])
+        t["system_chars"], t["user_chars"] = len(system), len(user)
+        used = {"notes": 0}
+
+        def validator(tool: str, v: dict) -> str | None:
+            if tool == "note" and used["notes"] >= MAX_NOTES:
+                return f"at most {MAX_NOTES} notes per turn"
+            if agegate.violation(" ".join(str(x) for x in v.values() if isinstance(x, str)), minor_names=d.minor_tokens()):
+                return "not allowed: nothing romantic or sexual involving a minor"
+            return None
+
+        async def executor(tool: str, v: dict):
+            if tool == "do_nothing":
+                return None
+            if tool == "note":
+                line = self._clean_line(v["text"], 160)
+                if line is None:
+                    return {"error": "empty note"}
+                used["notes"] += 1
+                if await self._say("note", line):
+                    self.stats.notes += 1
+                return {"done": "note posted"}
+            out = await session.run(tool, v)
+            if out.ok:
+                self.stats.acts += 1
+            elif "refused" in out.result:
+                self.stats.refused += 1
+            return out.result
+
+        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=TRADE_STEPS, time_budget_s=TRADE_BUDGET_S,
+                              step_timeout_s=TRADE_STEP_TIMEOUT_S)
+        res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
+                                slot=d.cfg.narrator_slot, final_max=TRADE_FINAL_MAX, max_tokens=TRADE_MAX_TOKENS)
+        t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, failures=res.failures[-4:],
+                 executed=[(e.tool, e.args, e.result) for e in res.executed], elapsed_s=round(res.elapsed_s, 2))
+
     def _log_line(self, reason: str, chat: list[dict], acts: list[tuple[str, str]], edits: Edits) -> str:
-        label = {"chat": "Asked", "heartbeat": "Routine look", "paused": "After my pause", "combat over": "After the fight"}.get(reason, "On " + reason)
+        label = {"chat": "Asked", "heartbeat": "Routine look", "paused": "After my pause", "combat over": "After the fight", "trade": "Trade turn"}.get(reason, "On " + reason)
         if reason == "chat" and chat:
             label += f" ({plain(chat[-1].get('text', ''), 50)})"
         did = [n for _, n in acts] + (["updated the goals board"] if edits else [])

@@ -24,6 +24,7 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("version")] public string Version = "";
         [JsonProperty("engine_id")] public string EngineId = "";
         [JsonProperty("model_name")] public string ModelName = "";
+        [JsonProperty("model_id")] public string ModelId = "";   // optional (engines before easyEngine 871f821 omit it); "" = none selected or a custom file
         [JsonProperty("phase")] public string Phase = "";
         [JsonProperty("card")] public string Card = "";
         [JsonProperty("pairing")] public bool Pairing;
@@ -44,7 +45,7 @@ namespace RimWorldLLM.Bridge
                 if (h == null) return null;
                 h.Name = h.Name ?? ""; h.Engine = h.Engine ?? ""; h.Version = h.Version ?? "";
                 h.EngineId = (h.EngineId ?? "").Trim().ToLowerInvariant();
-                h.ModelName = h.ModelName ?? ""; h.Phase = h.Phase ?? ""; h.Card = h.Card ?? ""; h.ClientId = h.ClientId ?? "";
+                h.ModelName = h.ModelName ?? ""; h.ModelId = (h.ModelId ?? "").Trim(); h.Phase = h.Phase ?? ""; h.Card = h.Card ?? ""; h.ClientId = h.ClientId ?? "";
                 return h;
             }
             catch { return null; }
@@ -305,6 +306,12 @@ namespace RimWorldLLM.Bridge
         {
             var r = await SendAsync("GET", root + "/engine/v1/hello", token, null, HelloTimeoutMs, ct).ConfigureAwait(false);
             return (r.Ok ? EngineHello.Parse(r.Body) : null, r);
+        }
+
+        /// <summary>GET /engine/v1/status with a Bearer: a 200 proves the key works (it needs a token on a non-loopback engine).</summary>
+        public Task<PairReply> StatusAsync(string root, string token, CancellationToken ct = default(CancellationToken))
+        {
+            return SendAsync("GET", root + "/engine/v1/status", token, null, ShortTimeoutMs, ct);
         }
 
         public Task<PairReply> AskAsync(string root, string clientName, CancellationToken ct)
@@ -577,8 +584,8 @@ namespace RimWorldLLM.Bridge
 
         async Task Finish(EngineHello h, string token, string clientId, CancellationToken ct)
         {
-            string model = null;
-            try { model = await _api.FirstModelIdAsync(_root, token, ModelsTimeoutMs, ct).ConfigureAwait(false); } catch { }
+            string model = string.IsNullOrEmpty(h.ModelId) ? null : h.ModelId;   // hello's catalog id wins; no /v1/models call
+            if (model == null) try { model = await _api.FirstModelIdAsync(_root, token, ModelsTimeoutMs, ct).ConfigureAwait(false); } catch { }
             var o = new PairOutcome
             {
                 Root = _root,
@@ -645,7 +652,8 @@ namespace RimWorldLLM.Bridge
             res.Auth = EngineAuthCodes.FromHello(h, !string.IsNullOrEmpty(token));
             if (EngineAuthCodes.PairAgain(res.Auth)) { store.ClearToken(engineId); res.TokenCleared = true; }
             else store.Remember(engineId, root);
-            if (res.Auth == EngineAuth.Paired || res.Auth == EngineAuth.Open)
+            if ((res.Auth == EngineAuth.Paired || res.Auth == EngineAuth.Open) && !string.IsNullOrEmpty(h.ModelId)) res.ModelId = h.ModelId;
+            else if (res.Auth == EngineAuth.Paired || res.Auth == EngineAuth.Open)
             {
                 try { res.ModelId = await api.FirstModelIdAsync(root, token, 5000, ct).ConfigureAwait(false); } catch { }
             }
