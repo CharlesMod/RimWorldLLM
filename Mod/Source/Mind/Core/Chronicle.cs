@@ -225,7 +225,14 @@ namespace RimWorldLLM.Mind
                 else if (ledger.Count > 0) ledger.RemoveAt(ledger.Count - 1);
                 else if (recent.Count > 0) recent.RemoveAt(0);
                 else if (notes.Count > 1) notes.Remove(LeastSevere(notes));
-                else if (summary.Length > 0) summary = TailCp(summary, Math.Max(200, limit * 2));
+                else if (summary.Length > 0)
+                {
+                    // Python loops forever here once the summary is down to 200 code points and the fixed text alone is over
+                    // the budget; C# stops instead (the only behaviour difference in this method).
+                    string cut = TailCp(summary, Math.Max(200, limit * 2));
+                    if (cut == summary) break;
+                    summary = cut;
+                }
                 else break;
             }
             return build();

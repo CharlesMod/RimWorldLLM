@@ -117,7 +117,8 @@ namespace RimWorldLLM.Mind
         public static string Plain(object text, int cap = TextMax)
         {
             string s;
-            if (text == null) s = "";
+            if (text == null || (text is string ts && ts.Length == 0) || (text is bool tb && !tb)
+                || (text is long tl && tl == 0) || (text is int ti && ti == 0) || (text is double td && td == 0)) s = "";
             else if (text is JToken tok) s = PyJson.Truthy(tok) ? PyJson.Str(tok) : "";
             else s = PyStr.StrOf(text);
             string t = Control.Replace(s, " ").Replace('<', '(').Replace('>', ')').Replace('{', '(').Replace('}', ')');
