@@ -15,13 +15,14 @@ from ...core import gamedata as gd
 from ...core.bridge import BridgeError
 from ...core.toolloop import Param, ToolSpec
 from .steward_build import BuildKit
+from .steward_combat import CombatKit, render_combat
 from .steward_digest import pawn_names, render_digest
 from .steward_rules import alerts_section
 
 _HERE = Path(__file__).parent
 
 # events that wake the steward at once while the narrator plays
-_WAKE_TYPES = ("raid_start", "mental_break", "death")
+_WAKE_TYPES = ("raid_start", "mental_break", "death")      # raid_end is not heard: the end of a fight is GET /vivarium combat.active turning false
 _WAKE_ALERT_WORDS = ("fire", "starvation", "rescue")        # beside any alert the game marks critical
 # events never listed in "since last time": chatter the colonists have among themselves
 _QUIET_TYPES = frozenset({"social", "thought", "level_up", "first_cue", "gathering", "gathering_end", "player_talk",
@@ -33,6 +34,7 @@ WHY_MAX = 80
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
              "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "draft", "order")
+COMBAT_TOOLS = ("squad", "defend", "draft", "note", "do_nothing")        # what a combat turn may use (core/steward.py)
 
 ADVISOR_NOTE = (
     "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
@@ -66,18 +68,20 @@ def _ci(options, wanted: str) -> str | None:
 class Session:
     """One cycle's game tools, built from one digest."""
 
-    def __init__(self, digest: dict, bridge, advisor: bool):
+    def __init__(self, digest: dict, bridge, advisor: bool, after_fight: bool = False):
         self.d, self.bridge, self.advisor = digest, bridge, advisor
         self.pawns = pawn_names(digest)                      # cleaned name -> id
         self.roles = {gd.name(p.get("name")): p.get("role", "colonist") for p in digest.get("pawns") or []}
+        self.cannot_fight = {gd.name(p.get("name")) for p in digest.get("pawns") or [] if "Violent" in (p.get("incapable") or [])}
         self.beds = {str(b["id"]): b for b in digest.get("beds") or [] if isinstance(b, dict) and b.get("id")}
         self.letters = {str(l["id"]): l for l in digest.get("letters") or [] if isinstance(l, dict) and l.get("id")}
         self.work = [str(w) for w in digest.get("work_types") or []] or WORK_FALLBACK
         self.policies = {k: [str(x) for x in v] for k, v in (digest.get("policies") or {}).items() if isinstance(v, list)}
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
-        self.tools = self._tools() + self.build.tools
-        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names}
+        self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
+        self.tools = self._tools() + self.build.tools + self.combat.tools
+        self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names}
 
     # ---- the tool list for this digest ----------------------------------------------
     def _tools(self) -> list[ToolSpec]:
@@ -196,7 +200,7 @@ class Session:
         if tool == "draft":
             raw = v["pawns"].strip()
             if raw.lower() == "all":
-                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist"]
+                ids = [i for n, i in self.pawns.items() if self.roles.get(n, "colonist") == "colonist" and n not in self.cannot_fight]
             else:
                 ids = []
                 for part in (x for x in raw.split(",") if x.strip()):
@@ -218,12 +222,15 @@ class Session:
             return "order", {"pawn": pid, "order": "hold", "hold": v["hold"] == "yes"}
         if tool in self.build.names:
             return self.build.body(tool, v)
+        if tool in self.combat.names:
+            return self.combat.body(tool, v)
         raise ValueError(f"unknown tool {tool}")
 
 
 class StewardKit:
     """What core/steward.py asks of the RimWorld adapter."""
 
+    combat_tools = COMBAT_TOOLS
     silent_events = frozenset({"letter", "alert"})          # the director never voices these; the steward reads them
 
     def wake(self, e: dict) -> str | None:
@@ -265,5 +272,23 @@ class StewardKit:
     def render_digest(self, digest: dict) -> str:
         return render_digest(digest)
 
-    def session(self, digest: dict, bridge, advisor: bool) -> Session:
-        return Session(digest, bridge, advisor)
+    def session(self, digest: dict, bridge, advisor: bool, after_fight: bool = False) -> Session:
+        return Session(digest, bridge, advisor, after_fight)
+
+    def combat_session(self, view: dict, bridge) -> Session:
+        """The tools of a combat turn: built from the combat view alone (the colonists in it), no digest."""
+        pawns = []
+        for key, cant in (("fighters", False), ("others", True)):
+            for f in view.get(key) or []:
+                if isinstance(f, dict) and f.get("id") and f.get("name"):
+                    pawns.append({"id": f["id"], "name": f["name"], "role": "colonist", **({"incapable": ["Violent"]} if cant else {})})
+        for c in (view.get("downed") or {}).get("colonists") or []:
+            if isinstance(c, dict) and c.get("id") and c.get("name"):
+                pawns.append({"id": c["id"], "name": c["name"], "role": "colonist", "incapable": ["Violent"]})
+        return Session({"pawns": pawns, "combat": view}, bridge, False)
+
+    def combat_system_prompt(self) -> str:
+        return (_HERE / "steward_combat.txt").read_text()
+
+    def render_combat(self, view: dict) -> str:
+        return render_combat(view)

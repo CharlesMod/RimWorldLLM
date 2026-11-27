@@ -75,6 +75,11 @@ Build the first missing item, one room or zone per turn, only when calm and the 
 Never build over beds or graves, never remove what the player built, never repeat a refused build the same way. Mine only when steel or components run short; chop trees only where they block a plan.
 
 ## Combat checklist
+- **Your tools (squad, defend)**
+  - Draft with squad, then move to cover, a door or the chokepoint; fight from cover, never in the open.
+  - Retreat the wounded and bleeding indoors; rescue the downed; send children, the sick and non-fighters indoors (flee); undraft when the fight is over.
+  - Focus the dangerous first. Never melee a centipede or a mech: shoot it from cover.
+  - Manhunters: close the doors, hold inside. Do not wake a mech cluster that is not coming.
 - **Assault or melee rush**
   - Draft fighters to the chokepoint, behind cover.
   - Up to 3 melee blockers just outside the door, shooters behind, spaced 1 tile apart.

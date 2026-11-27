@@ -95,6 +95,15 @@ class BridgeClient:
         await self.http.aclose()
 
     # ---- plumbing -------------------------------------------------------
+    def _speed(self, raw: object) -> int:
+        """The envelope's game speed; a body field of the same name that is not a number (a view's own "speed" block) keeps the last one."""
+        if isinstance(raw, (int, float, str)) and not isinstance(raw, bool):
+            try:
+                return int(raw)
+            except ValueError:
+                pass
+        return self.env.speed if raw is not None else 1
+
     def _absorb(self, body: dict) -> None:
         p = self.protocol
         if not isinstance(body, dict) or p.time_field not in body:
@@ -102,7 +111,7 @@ class BridgeClient:
         old = self._epoch_seen
         self.env = Envelope(
             game=int(body.get(p.time_field, 0)), epoch=int(body.get(p.epoch_field, 0)),
-            paused=bool(body.get("paused", False)), speed=int(body.get("speed", 1)))
+            paused=bool(body.get("paused", False)), speed=self._speed(body.get("speed")))
         self._epoch_seen = self.env.epoch
         if old is not None and old != self.env.epoch:
             self.epoch_changed = True
@@ -235,6 +244,10 @@ class BridgeClient:
     async def digest(self) -> dict:
         """GET /digest: the compact world digest (needs a loaded game)."""
         return await self._req("GET", "/digest")
+
+    async def combat(self) -> dict:
+        """GET /combat: the combat view (threats, fighters, others, downed, fires, defenses, positions, squad, speed); ``active`` false when quiet."""
+        return await self._req("GET", "/combat")
 
     async def chat_since(self, seq: int) -> dict:
         """GET /chat?since=N -> {"entries": [...], "next_seq": N}."""
