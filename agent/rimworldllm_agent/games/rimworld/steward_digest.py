@@ -18,6 +18,16 @@ _LEVELS = [
     dict(skills=2, resources=10, research=5, beds=8, letter=100, alerts=5),
     dict(skills=1, resources=6, research=3, beds=4, letter=60, alerts=3),
 ]
+# the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
+# plants, ores. The last step keeps just BUILD/missing and a short ROOMS.
+_BUILD = [
+    dict(rooms=12, benches=8, bills=5, recipes=8, zones=10, can_build=40, stuff=8, plants=10, ores=6),
+    dict(rooms=8, benches=5, bills=3, recipes=4, zones=6, can_build=20, stuff=6, plants=6, ores=4),
+    dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2),
+    dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0),
+]
+# (base level, build level): the build block shrinks all the way before the rest loses detail
+_STEPS = [(0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (3, 3)]
 
 
 def pawn_names(digest: dict) -> dict[str, int]:
@@ -96,7 +106,70 @@ def _pawn_line(p: dict, lv: dict, common: str) -> str:
     return "\n".join(lines)
 
 
-def _render(d: dict, lv: dict) -> str:
+def _num(v: object) -> str:
+    return f"{v:g}" if isinstance(v, (int, float)) and not isinstance(v, bool) else gd.clean(v, "label") or "?"
+
+
+def _words(items: object, n: int) -> list[str]:
+    return [w for w in (gd.clean(x, "label") for x in (items if isinstance(items, list) else [])[:n]) if w]
+
+
+def _room_line(r: dict) -> str:
+    role = gd.clean(r.get("role", ""), "label")
+    label = gd.clean(r.get("label", ""), "label") or role
+    bits = [f"#{_num(r.get('id'))} {label}" + (f" ({role})" if role and role.lower() not in label.lower() else ""),
+            f"{_num(r.get('w'))}x{_num(r.get('h'))}"]
+    if r.get("impressiveness") is not None:
+        bits.append(f"imp {_num(r['impressiveness'])}")
+    bits += [w for k, w in (("bed", "bed"), ("door", "door"), ("roofed", "roofed")) if r.get(k)]
+    return " ".join(bits)
+
+
+def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
+    """The BUILD block lines; ``counts`` is the old one-line room counts, merged into the ROOMS line."""
+    out = []
+    home = b.get("home") or {}
+    head = "BUILD: " + (f"home ({_num(home.get('x'))},{_num(home.get('z'))})" if home else "home unknown")
+    miss = _words(b.get("missing"), 8)
+    head += "; missing: " + (", ".join(miss) if miss else "nothing")
+    out.append(head)
+    rooms = [r for r in (b.get("rooms") or [])[:bl["rooms"]] if isinstance(r, dict)]
+    if rooms:
+        out.append("ROOMS" + (f" ({counts})" if counts else "") + ": " + "; ".join(_room_line(r) for r in rooms))
+    benches = [x for x in (b.get("benches") or [])[:bl["benches"]] if isinstance(x, dict)]
+    for x in benches:
+        line = f"BENCH: #{_num(x.get('id'))} {gd.clean(x.get('label', ''), 'label')}"
+        if x.get("room"):
+            line += f" ({gd.clean(x['room'], 'label')})"
+        bills = _words(x.get("bills"), bl["bills"])
+        recipes = _words(x.get("recipes"), bl["recipes"])
+        line += ": bills " + (", ".join(bills) if bills else "none")
+        if recipes:
+            line += "; recipes " + ", ".join(recipes)
+        out.append(line)
+    zones = [z for z in (b.get("zones") or [])[:bl["zones"]] if isinstance(z, dict)]
+    if zones:
+        zs = []
+        for z in zones:
+            kind = gd.clean(z.get("kind", ""), "label")
+            what = gd.clean(z.get("plant") or z.get("preset") or "", "label")
+            zs.append(f"#{_num(z.get('id'))} {kind} {what} {_num(z.get('cells'))} cells".replace("  ", " "))
+        out.append("ZONES: " + "; ".join(zs))
+    for key, tag in (("can_build", "CAN BUILD"), ("plants", "PLANTS")):
+        w = _words(b.get(key), bl[key])
+        if w:
+            out.append(f"{tag}: " + ", ".join(w))
+    stuff = [s for s in (b.get("stuff") or [])[:bl["stuff"]] if isinstance(s, dict)]
+    if stuff:
+        out.append("STUFF: " + ", ".join(f"{gd.clean(s.get('stuff', ''), 'label')} {_num(s.get('count'))}" for s in stuff))
+    ores = [o for o in (b.get("ores") or [])[:bl["ores"]] if isinstance(o, dict)]
+    if ores:
+        out.append("ORES: " + "; ".join(f"{gd.clean(o.get('ore', ''), 'label')} {_num(o.get('cells'))} cells {_num(o.get('dist'))} away" for o in ores))
+    return out
+
+
+def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
+    bl = bl or _BUILD[0]
     out = ["DATE: " + _date(d)]
     fd = d.get("food_days")
     if fd is not None:
@@ -144,8 +217,15 @@ def _render(d: dict, lv: dict) -> str:
     out.append("RESEARCH: " + (f"now {gd.clean(cur.get('label', ''), 'label')} ({round(float(cur.get('progress', 0)) * 100)}%)" if cur else "nothing selected") +
                ("; available: " + ", ".join(f"{gd.clean(a.get('label', ''), 'label')} ({a.get('cost', '?')})" for a in avail) if avail else ""))
     rm = d.get("rooms") or {}
-    if rm:
-        out.append("ROOMS: " + ", ".join(f"{k} {'yes' if v is True else 'no' if v is False else v}" for k, v in rm.items()))
+    counts = ", ".join(f"{k} {'yes' if v is True else 'no' if v is False else v}" for k, v in rm.items()) if isinstance(rm, dict) else ""
+    bd = d.get("build")
+    built = _build_lines(bd, bl, counts) if isinstance(bd, dict) and bd else []
+    if built:
+        if not any(l.startswith("ROOMS") for l in built) and counts:
+            built.insert(1, "ROOMS: " + counts)
+        out.extend(built)
+    elif counts:
+        out.append("ROOMS: " + counts)
     pw = d.get("power")
     if pw:
         out.append(f"POWER: produced {pw.get('produced', 0)}, used {pw.get('used', 0)}, stored {pw.get('stored', 0)}")
@@ -155,8 +235,8 @@ def _render(d: dict, lv: dict) -> str:
 def render_digest(d: dict, cap: int = CAP) -> str:
     """The digest as compact text of at most ``cap`` characters (detail shrinks level by level, then a hard cut)."""
     text = ""
-    for lv in _LEVELS:
-        text = _render(d, lv)
+    for base, bld in _STEPS:
+        text = _render(d, _LEVELS[base], _BUILD[bld])
         if len(text) <= cap:
             return text
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

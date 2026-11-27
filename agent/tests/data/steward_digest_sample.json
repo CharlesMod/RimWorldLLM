@@ -458,5 +458,140 @@
   "dlc": [],
   "storyteller": "cassandra",
   "difficulty_threat_scale": 1.0
+ },
+ "build": {
+  "home": {
+   "x": 120,
+   "z": 98
+  },
+  "rooms": [
+   {
+    "id": 12,
+    "role": "bedroom",
+    "label": "Ana's bedroom",
+    "w": 3,
+    "h": 3,
+    "cells": 9,
+    "impressiveness": 24,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 118,
+    "z": 101
+   },
+   {
+    "id": 13,
+    "role": "bedroom",
+    "label": "Bram's bedroom",
+    "w": 3,
+    "h": 3,
+    "cells": 9,
+    "impressiveness": 22,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 122,
+    "z": 101
+   },
+   {
+    "id": 14,
+    "role": "bedroom",
+    "label": "Cy's bedroom",
+    "w": 3,
+    "h": 4,
+    "cells": 12,
+    "impressiveness": 20,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 126,
+    "z": 101
+   },
+   {
+    "id": 15,
+    "role": "barracks",
+    "label": "barracks",
+    "w": 5,
+    "h": 4,
+    "cells": 20,
+    "impressiveness": 16,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 118,
+    "z": 94
+   }
+  ],
+  "missing": [
+   "freezer",
+   "dining table",
+   "research bench"
+  ],
+  "benches": [
+   {
+    "id": 4410,
+    "label": "campfire",
+    "room": "",
+    "bills": [
+     "cook simple meal x10"
+    ],
+    "recipes": [
+     "simple meal",
+     "roasted meat"
+    ]
+   }
+  ],
+  "zones": [
+   {
+    "id": 3,
+    "kind": "grow",
+    "label": "Growing zone 1",
+    "cells": 64,
+    "plant": "potatoes"
+   },
+   {
+    "id": 4,
+    "kind": "stockpile",
+    "label": "Stockpile zone 1",
+    "cells": 36,
+    "preset": "all",
+    "priority": "normal"
+   }
+  ],
+  "can_build": [
+   "wall",
+   "door",
+   "bed",
+   "table",
+   "chair",
+   "campfire",
+   "cooler",
+   "research bench"
+  ],
+  "stuff": [
+   {
+    "stuff": "steel",
+    "count": 410
+   },
+   {
+    "stuff": "wood",
+    "count": 280
+   }
+  ],
+  "plants": [
+   "potatoes",
+   "rice",
+   "corn",
+   "healroot",
+   "haygrass",
+   "cotton"
+  ],
+  "ores": [
+   {
+    "ore": "steel",
+    "cells": 34,
+    "dist": 18
+   }
+  ]
  }
 }
