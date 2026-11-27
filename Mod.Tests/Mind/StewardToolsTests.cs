@@ -289,7 +289,7 @@ namespace RimWorldLLM.Tests.Mind
             for (int i = 0; i < 9; i++) { var p = (JObject)((JArray)build["loose"])[0].DeepClone(); p["label"] = "m" + i; nine.Add(p); }
             build["loose"] = nine;
             string big = StewardDigest.RenderDigest(d, 100000);
-            Assert.Equal(6, big.Split("cells NE").Length - 1);
+            Assert.Equal(6, big.Split('\n').First(l => l.StartsWith("LOOSE")).Split("cells NE").Length - 1);   // the whole text also has the STUCK line (delta3)
             build["loose"] = new JArray();
             Assert.DoesNotContain("LOOSE", StewardDigest.RenderDigest(d));
         }
