@@ -389,3 +389,142 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## Phase 3: combat and defense
+
+On the keeper's install (Core + Biotech) the reachable ending is the ship: research, build, survive 15 days of
+raids after the reactor starts, launch. Phase 3 lets the narrator see a fight, command a squad from cover, and plan
+defenses, with the game slowed while it fights. The model names intent ("move the squad to the chokepoint", "focus
+the grenadiers", "sandbags on the north side"); C# finds the cells. A small controller in the game keeps the squad's
+focus fire, pulls the wounded back and sends someone to carry the downed between the narrator's turns.
+
+### Pieces and where they live
+- `Mod/Source/Bridge/CombatPure.cs` (Verse-free, tested in `CombatPureTests.cs`): `CombatGrid` (walkable, sight,
+  cover, roof, indoors, fog, door, buildable per cell), `LineOfFire` (Bresenham; walls block, sandbags do not),
+  `CoverCalc.CoverFrom` (best neighbour within 45° of the shooter, 0 under 2 cells), `CoverFinder` (standing spots:
+  cover toward the threat first, never open ground unless asked, sees the approach, spaced), `Approach` (BFS path,
+  the narrowest gap on it, compass words), `CombatWords` (threat kinds and groups, heading, defense summary, mood
+  risk, health words), `SquadState` + `SquadTactics` (the controller's brain).
+- `Mod/Source/Bridge/CombatLayout.cs` (tested in `CombatLayoutTests.cs`): `DefenseLayout.Killbox` (a funnel of two
+  wall arms outside a door with traps in it, a killzone inside, a sandbag line with shooter spots behind, turret
+  spots at its ends), `LineAcross`, `TrapsOnPath`, `Buildable`, `TurretSpots`.
+- `Mod/Source/Bridge/VivariumCombat.cs`: `SquadArgs`, `DefendArgs`, `CombatState` (the fight as last seen, the squad
+  and the speed memory; squad and speed are saved in the vivarium JSON as `combat`), `CombatText`.
+- `Mod/Source/Bridge/VivariumRoutesCombat.cs`: `GET /combat`, `POST /act/squad`, `POST /act/defend`; the speed rule
+  is in `VivariumRoutes.Time`. Tests: `Mod.Tests/VivariumCombatTests.cs`.
+- `Mod/Source/RimWorld/VivariumCombatHands.cs`: the game bodies (map → grid, the view, positions, orders as vanilla
+  jobs, defenses as blueprints) and `VivariumCombatTicker` (every 250 game ticks from the GameComponent).
+- Agent: `games/rimworld/steward_combat.py` (`squad`, `defend`, the COMBAT text), `steward_combat.txt` (the combat
+  turn's prompt), the combat cadence and speed rule in `core/steward.py`, playbook lines in `steward_strategy.md`.
+
+### Seeing the fight: `GET /combat` and the digest's `combat` block
+```json
+{"active": true, "home": {"x": 120, "z": 98},
+ "threats": [{"id": 9201, "faction": "Pirates of Ix", "kind": "ranged", "count": 6, "where": "north-east, 38 cells from home",
+              "dist": 38, "heading": "toward home", "labels": ["4 pirate gunners", "1 grenadier"], "ids": [9201, 9202]}],
+ "fighters": [{"id": 101, "name": "Ana", "drafted": true, "health": "hurt, bleeding", "weapon": "assault rifle", "range": 31,
+               "cover": "behind a wall", "mood": "minor", "job": "attacking pirate gunner", "where": "north, 12 cells from home"}],
+ "others": [{"id": 105, "name": "Lu", "why": "child", "safe": true}],
+ "downed": {"colonists": [{"id": 103, "name": "Cy", "bleeding": true, "where": "north, 20 cells from home"}], "enemies": 2},
+ "fires": {"count": 3, "home": 2, "where": "south, 6 cells from home"},
+ "defenses": "2 turrets (2 powered); base walled with 2 doors; chokepoint: north-east gap, 2 wide",
+ "positions": ["cover", "chokepoint", "door", "wall_n", "wall_e", "wall_s", "wall_w", "home", "inside"],
+ "squad": {"members": [101, 102], "stance": "fire_at_will", "focus_group": 9201, "retreat_x": 118, "retreat_z": 96, ...},
+ "speed_rule": {"slowed": true, "before": 3}}
+```
+- `active`: awake hostiles on the map, or a fire in the home area (a downed colonist alone does not start a fight).
+  Dormant mechs are listed with `"dormant": true` but do not make the fight active.
+- Threat groups: same faction, members within 12 cells of each other; kind melee, ranged, mech, siege, infestation,
+  manhunter or mixed; `heading` from where the members were one controller pass (250 ticks) ago; nearest first, 8 at
+  most. A group's id is its smallest member id (the controller follows the group if that member dies).
+- `fighters`: colonists who can fight (up, violence-capable, 13 or older, not sick in bed), drafted first; `cover`
+  against the nearest awake hostile. `others`: everyone else who is up, with why and whether they stand under a
+  roof indoors. `downed.colonists` leaves out those already in a bed.
+- `defenses` in words; `chokepoint` only when the enemy has a real walking path to home with a gap of 3 or less.
+- `positions`: the `at` words that make sense now (no chokepoint or door when there is none).
+- `speed_rule` (not `speed`: the envelope carries the game speed under that name).
+- The digest has the same object as `combat` only while the fight is active. `GET /vivarium` carries
+  `combat: {active, hostiles, since_tick}` (refreshed every 250 game ticks) and the setting `slow_for_combat`.
+
+### The squad: `POST /act/squad`
+Body: `op` and, by op, `pawns` (ids; default the squad), `at` (one of the positions) or `x,z`, `room` (with door or
+inside), `target` (focus: a threat group id or a hostile pawn id), `below` (retreat: the auto-retreat health, 0.1..0.6).
+| op | What the game does |
+|---|---|
+| draft | drafts the listed fighters, or every colonist who can fight; they become the squad (a fresh one) |
+| move | drafts them if needed and sends each to its own spot at `at` (CoverFinder) |
+| hold | they stop where they are and shoot from there (fire at will stays on); the controller stops chasing focus targets |
+| fire_at_will | fire at will on; the controller may move them to keep focus fire |
+| focus | each member attacks the focused group's nearest member (or the one pawn); melee-only members are kept back from mechs; the controller keeps the focus as targets die |
+| retreat | moves them to `at` (default inside) and makes that the squad's fall-back point; `below` sets when the controller pulls a wounded member back on its own |
+| rescue | for each downed colonist outside a bed, the nearest colonist who can reach it carries it to a bed |
+| extinguish | up to 4 firefighters nearest the home-area fires beat them out |
+| flee | non-fighters (children, no-violence, the sick, not those in bed) go to roofed indoor cells away from the enemy and cower for an in-game hour |
+| undraft | undrafts the drafted colonists (or the listed ones) and clears the squad; refused while awake enemies are within 30 cells of home |
+Named fighters in any order but undraft join the squad, so pawns drafted with the plain `draft` hand are looked
+after too. Orders place nothing and cost no caps; each success is an action-log entry and a greentext line, e.g.
+`> sent Ana, Bram and Cy to the north-east chokepoint, since they come through the gap`.
+
+**The controller** (`VivariumCombatTicker`, every 250 game ticks while the squad has members and the fight is on):
+a drafted member under the squad's retreat health (or bleeding and close to it) goes to the fall-back point once
+(greentext `> Ana fell back, badly hurt`; it rejoins when patched up); with a focus set, members not busy and not
+mid-burst attack the focused group's nearest member; one healthy member within 15 cells carries each downed colonist
+to a bed (greentext). It never moves a member who is walking, rescuing or firefighting on an order, and does nothing
+in stance hold except retreat and rescue. Its acts are logged with `by` = `controller`.
+
+### Defenses: `POST /act/defend`
+Body: `kind` turret|sandbags|barricade|killbox|traps|wall; where: `side` n|e|s|w|threat (default threat: the
+nearest awake group's side, else the last raid's side, else the map edge nearest home), or `at` chokepoint|entrance,
+or `x,z`; `count` (turret 1..4, default 1; traps 1..8, default 4); `length` (sandbags/barricade/wall 1..20, default 7);
+`stuff`.
+- Lines (sandbags, barricade, wall) go across the side, three cells inside the base's outer wall on that side (the
+  last player wall before the outdoors; never behind home), else 10 cells out from home.
+- Turrets: mini-turret research, power on the net that a spot would connect to (refused with the watts), a spot in
+  reach of a conduit that sees the approach.
+- Traps: spike traps every other cell on the outdoor stretch of the walking path into the base from that side.
+- Killbox: at the outside door nearest the side (or nearest `x,z`): funnel walls, traps in the funnel (when
+  researched), the sandbag line inside (when researched); refused whole if it would go over the cycle's blueprints.
+Everything is blueprints with `blueprint` marks: the phase 2 caps, `undo_seq`, `left`, and `/undo` apply.
+
+### The fight's speed
+`POST /act/time {"speed": 1, "combat": true}` slows to normal speed when the setting "The narrator slows the game
+for fights" (`narratorSlowsForCombat`, default on) or "controls the speed" is on, and remembers the speed before.
+`{"combat": true, "restore": true}` puts it back, only when the narrator slowed it and the game is still at 1x (if
+the player changed it, it stays). An explicit speed from the narrator clears the memory. The memory is saved.
+
+### The steward in a fight (agent)
+- When `GET /vivarium` says `combat.active` (playing, not paused by the player): the speed rule in code (not the
+  model), then one full "combat started" cycle (the digest with its COMBAT lines, 5 steps), then a **combat turn**
+  every 5 game seconds and at least 4 real seconds after the last turn ended (`steward_combat_gap_game_s`,
+  `steward_combat_gap_real_s`). A combat turn reads only `GET /combat` and the plan line, uses `steward_combat.txt`
+  (~1.3 KB), the tools squad, defend, draft, note and do_nothing, 3 steps, 40 s, 160 tokens: about 1.4k tokens in
+  all. Chat still wins at once; heartbeat and other events wait for the fight to end. When `combat.active` turns
+  false: the speed is put back (if we slowed it and it is still 1x) and one full "combat over" cycle runs (undraft,
+  rescue, tend, back to work). Advisor mode has no combat loop and no speed rule.
+- While the digest has a combat view the single `order` tool is gone (squad orders name places; the grammar writes
+  every field, and x=0, z=0 is now an error anyway). `defend` is there whenever the digest has a build block.
+- Playbook lines (prompt and strategy): retreat the wounded first, fight from cover, focus the dangerous (grenadiers
+  and rockets, then whoever is in melee with your shooters), never melee a centipede or mech, close doors and hold
+  inside against manhunters, don't wake a mech cluster that is not coming, non-fighters flee indoors, undraft when
+  clear.
+
+### Phase 3 status
+- Built and tested: the routes, state, speed rule and save (Mod.Tests 778 in all), the pure helpers, the agent's
+  tools, cadence and prompt (agent pytest 1074 + 1 skipped). The game bodies are compile-checked against the 1.7
+  reference assemblies and reviewed; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section D) is their first run.
+- Not yet: mortars and EMP, caravan/ambush fights, armor and weapon management, tactical micro beyond the
+  controller (kiting, grenade avoidance), raids on other maps.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
+2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge on recorded fights).**
+Combat turns: about 1.4k tokens, 3.7 to 5.7 s each.
+- Tribal melee raid from the west (walled base, west and north doors): draft the four fighters, `squad move at
+  chokepoint` ("hold the west door against the melee raiders"), both runs.
+- Pirate gunners and a grenadier from the north-east: draft Eli, move Dara and Eli (in the open) to cover.
+- Mech cluster waking to the south, Cy badly hurt and bleeding, Dara downed: `squad retreat` Cy inside, `squad rescue`
+  for Dara (after the prompt put retreat first; before, it moved Cy to cover).
+Full cycles with a combat digest (about 8k tokens): 17 to 25 s; draft, chokepoint, hold, flee, focus the group by
+number after one wrong number. Fixed from this check: pawns drafted with the plain draft hand never joined the
+controller's squad (named fighters now join); `order move` with x=0, z=0 (no order tool in a fight, 0,0 refused);
+`below` written as 90 by the grammar (clamped to 10..60%); undraft by name mid-fight (refused near enemies); the
+"combat started" cycle capped at 5 steps.

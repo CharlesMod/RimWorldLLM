@@ -66,6 +66,7 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `evInjury` ... `evGatherings` (17) | true | P | Which event kinds get lines; each now has a tooltip | Events -> Colonists |
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
+| `narratorSlowsForCombat` | true | P | "Narrator plays" group: when a fight starts the narrator sets normal speed and puts the player's speed back after (unless the player changed it); works without "controls the speed" | new (vivarium 3) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
 | `chatPanelShow` | true | U | "Narrator plays" group: the chat panel is always on screen | new (chat panel) |
 | `chatPanelRight` | false | U | Default placement on the right (left of the date/alerts column) instead of the left; used until the panel is dragged | new (chat panel) |
