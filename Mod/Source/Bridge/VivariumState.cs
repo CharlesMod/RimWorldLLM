@@ -467,6 +467,8 @@ namespace RimWorldLLM.Bridge
         public readonly ChatLog Chat = new ChatLog();
         public readonly GoalsBoard Goals = new GoalsBoard();
         public readonly ActionLog Actions = new ActionLog();
+        /// <summary>Live "is thinking / is typing" statuses. Never saved.</summary>
+        public readonly ChatLive Live = new ChatLive();
 
         public JObject StatusJson()
         {
@@ -512,7 +514,7 @@ namespace RimWorldLLM.Bridge
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear();
         }
     }
 }
