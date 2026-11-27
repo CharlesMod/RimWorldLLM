@@ -1,0 +1,119 @@
+{
+ "active": true,
+ "home": {
+  "x": 120,
+  "z": 98
+ },
+ "positions": [
+  "cover",
+  "chokepoint",
+  "door",
+  "wall_n",
+  "wall_e",
+  "wall_s",
+  "wall_w",
+  "home",
+  "inside"
+ ],
+ "tick": 702000,
+ "threats": [
+  {
+   "id": 9301,
+   "faction": "Mechanoids",
+   "kind": "mech",
+   "count": 9,
+   "where": "south, 22 cells from home",
+   "dist": 22,
+   "heading": "toward home",
+   "labels": [
+    "4 scythers",
+    "3 lancers",
+    "2 centipedes"
+   ],
+   "ids": [
+    9301,
+    9302,
+    9303,
+    9304,
+    9305,
+    9306,
+    9307,
+    9308,
+    9309
+   ]
+  }
+ ],
+ "fighters": [
+  {
+   "id": 102,
+   "name": "Bram",
+   "drafted": true,
+   "health": "ok",
+   "weapon": "assault rifle",
+   "range": 31,
+   "cover": "behind a wall",
+   "job": "attacking scyther",
+   "where": "south, 9 cells from home"
+  },
+  {
+   "id": 103,
+   "name": "Cy",
+   "drafted": true,
+   "health": "badly hurt, bleeding",
+   "weapon": "bolt-action rifle",
+   "range": 33,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "south, 8 cells from home"
+  },
+  {
+   "id": 105,
+   "name": "Eli",
+   "drafted": true,
+   "health": "ok",
+   "weapon": "hunting shotgun",
+   "range": 20,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  }
+ ],
+ "others": [
+  {
+   "id": 101,
+   "name": "Ana",
+   "why": "no violence",
+   "safe": true
+  }
+ ],
+ "downed": {
+  "colonists": [
+   {
+    "id": 104,
+    "name": "Dara",
+    "bleeding": true,
+    "where": "south, 7 cells from home"
+   }
+  ],
+  "enemies": 0
+ },
+ "fires": {
+  "count": 0,
+  "home": 0,
+  "where": ""
+ },
+ "defenses": "base walled with 2 doors; no turrets, no traps; chokepoint: south gap, 3 wide",
+ "squad": {
+  "members": [
+   102,
+   103,
+   105
+  ],
+  "stance": "hold",
+  "focus": 0
+ },
+ "speed_rule": {
+  "slowed": true,
+  "before": 2
+ }
+}

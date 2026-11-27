@@ -17,7 +17,7 @@ namespace RimWorldLLM.Tests.Mind
     /// Gate blocks a call; OnCall runs after the call is recorded (the 1-based call count is passed); Throw makes every call raise.</summary>
     internal sealed class StewardFake : IBackend
     {
-        public sealed class CallRec { public List<JObject> Messages; public int? Slot; }
+        public sealed class CallRec { public List<JObject> Messages; public int? Slot; public int MaxTokens; }
         public readonly List<object> Script;
         public readonly List<CallRec> Calls = new List<CallRec>();
         public TaskCompletionSource<bool> Gate;
@@ -33,7 +33,7 @@ namespace RimWorldLLM.Tests.Mind
                                            int maxTokens = 160, double temperature = 0.2, double timeout = 30.0, int? slot = null)
         {
             if (Throw != null) throw Throw;
-            Calls.Add(new CallRec { Messages = messages.Select(m => (JObject)m.DeepClone()).ToList(), Slot = slot });
+            Calls.Add(new CallRec { Messages = messages.Select(m => (JObject)m.DeepClone()).ToList(), Slot = slot, MaxTokens = maxTokens });
             OnCall?.Invoke(Calls.Count);
             if (Gate != null) await Gate.Task.ConfigureAwait(false);
             object item;

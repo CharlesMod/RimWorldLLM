@@ -495,7 +495,7 @@ namespace RimWorldLLM.Mind
         }
 
         // ---- a cycle -----------------------------------------------------------------------
-        private async Task CycleAsync(string reason, List<JObject> chat, List<string> events, bool playing)
+        internal async Task CycleAsync(string reason, List<JObject> chat, List<string> events, bool playing)
         {
             var d = D;
             var t = new JObject

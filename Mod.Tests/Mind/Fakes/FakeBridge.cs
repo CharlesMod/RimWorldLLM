@@ -137,6 +137,7 @@ namespace RimWorldLLM.Mind.Fakes
         public List<JObject> Dialogs = new List<JObject>();    // what GET /dialogs lists; POST /act/choose removes the answered one
         public JObject Digest;                    // what GET /digest returns (null: 409 no_game)
         public JObject Combat;                    // what GET /combat returns (null: {"active": false}); a test sets a recorded view
+        public bool CombatMissing;                // GET /combat answers 404 (a read that fails)
         public int CombatSince;                   // tick the fight began (GET /vivarium combat.since_tick)
         public int? SpeedBeforeCombat;            // /act/time {combat: true, speed: 1} remembers the speed here
         public List<KeyValuePair<string, JObject>> ActLog = new List<KeyValuePair<string, JObject>>();   // (verb, body) of every accepted /act/<verb>
@@ -503,6 +504,7 @@ namespace RimWorldLLM.Mind.Fakes
                 return Ok(("playing", Playing), ("paused_by_narrator", PausedByNarrator), ("chat_seq", ChatSeq),
                     ("goals_rev", GoalsBoard["rev"].DeepClone()), ("actions_seq", Actions.Count), ("settings", VivSettings.DeepClone()),
                     ("combat", CombatBlock()));
+            if (path == "/combat" && method == "GET" && CombatMissing) return Err(404, "not_found", "no combat");
             if (path == "/combat" && method == "GET")
                 return Ok(Combat ?? new JObject { ["active"] = false });
             if (path == "/digest" && method == "GET")
@@ -748,7 +750,7 @@ namespace RimWorldLLM.Mind.Fakes
         }
 
         /// <summary>The settings checks of /act/time and a short success note. Returns the refusal ("" = none).</summary>
-        string ActApply(string verb, JObject b, out string note)
+        internal string ActApply(string verb, JObject b, out string note)
         {
             note = "";
             bool controls = T(VivSettings["controls_speed"]);

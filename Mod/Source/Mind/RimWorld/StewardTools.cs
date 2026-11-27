@@ -284,7 +284,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return (verb, body);
         }
 
-        private (string verb, JObject body) VerbBody(string tool, JObject v)
+        internal (string verb, JObject body) VerbBody(string tool, JObject v)
         {
             switch (tool)
             {

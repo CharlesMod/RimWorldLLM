@@ -48,5 +48,50 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal(2, await RimWorldLLM.Harness.StewardTry.MainAsync(new string[0], so, se));
             Assert.Equal(2, await RimWorldLLM.Harness.StewardTry.MainAsync(new[] { "--digest", "x", "--llm-url", "u" }, so, se));
         }
+
+        // ---- test_steward_combat.py: steward_try --combat -------------------------------------------------------------
+        [Fact]
+        public async Task StewardTryCombatCycleOnEachRecordedFight()
+        {
+            foreach (var kind in CombatData.Kinds)
+            {
+                var be = new StewardFake(new object[] { Rig.Call("squad", new { op = "move", pawns = "Bram", at = "cover" }), Rig.Done });
+                var o = await RimWorldLLM.Harness.StewardTry.TryOnceAsync(null, JObject.FromObject(new { plan = "Hold the line." }), "", false, "http://unused", mode: "grammar",
+                                                                          combat: CombatData.View(kind), combatCycle: true, makeBackend: _ => be);
+                var tr = o.Trace;
+                Assert.True((string)tr["reason"] == "combat" && (bool)tr["playing"], kind);
+                Assert.True(o.WallS >= 0 && (double)tr["elapsed_s"] >= 0);
+                Assert.True((int)tr["system_chars"] > 0 && ((string)o.Messages[0]["content"]).Length + ((string)o.Messages[1]["content"]).Length < 16000);
+                Assert.Contains("Hold the line.", (string)o.Messages[1]["content"]);
+                Assert.True(o.Acts[0].Key == "squad" && JToken.DeepEquals(JObject.Parse("{\"op\":\"move\",\"pawns\":[102],\"at\":\"cover\"}"), o.Acts[0].Value));
+                Assert.DoesNotContain(o.Requests, r => r.Value == "/digest");
+            }
+        }
+
+        [Fact]
+        public async Task StewardTryFullCombatCycleNeedsADigestAndMergesTheView()
+        {
+            var be = new StewardFake(new object[] { Rig.Done });
+            var o = await RimWorldLLM.Harness.StewardTry.TryOnceAsync((JObject)StewardTestData.Sample.DeepClone(), null, "", true, "http://unused", mode: "grammar",
+                                                                      combat: CombatData.View("mech_cluster"), makeBackend: _ => be);
+            Assert.Equal("combat started", (string)o.Trace["reason"]);
+            var user = (string)o.Messages[1]["content"];
+            if (CombatData.DigestHasCombat) Assert.True(user.Contains("COMBAT:") && user.Contains("scythers"));      // the digest's COMBAT lines are delta3-b's
+        }
+
+        [Fact]
+        public async Task StewardTryMainPrintsSizeAndSeconds()
+        {
+            using var tmp = new TempDir();
+            var path = Path.Combine(tmp.Path, "combat.json");
+            File.WriteAllText(path, CombatData.Views["pirate_ranged"].ToString());
+            var so = new StringWriter(); var se = new StringWriter();
+            var be = new StewardFake(new object[] { Rig.Call("squad", new { op = "draft" }), Rig.Done });
+            int rc = await RimWorldLLM.Harness.StewardTry.MainAsync(new[] { "--combat", path, "--combat-cycle", "--mode", "grammar", "--llm-url", "http://unused" }, so, se, _ => be);
+            var o = so.ToString();
+            Assert.True(rc == 0 && o.Contains("PROMPT:") && o.Contains("tokens") && o.Contains("ELAPSED:") && o.Contains("CYCLE: combat"), o + se);
+            Assert.Contains("TOOL squad", o);
+            Assert.Equal(2, await RimWorldLLM.Harness.StewardTry.MainAsync(new[] { "--combat-cycle", "--llm-url", "http://unused" }, new StringWriter(), new StringWriter()));    // needs --combat
+        }
     }
 }

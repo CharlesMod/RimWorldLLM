@@ -240,7 +240,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public (string verb, JObject body) Body(string tool, JObject v)
             => tool == "squad" ? ("squad", Squad(v)) : ("defend", Defend(v));
 
-        private JObject Squad(JObject v)
+        internal JObject Squad(JObject v)
         {
             string op = PyJson.Str(v["op"]);
             var b = new JObject { ["op"] = op };
@@ -282,7 +282,7 @@ namespace RimWorldLLM.Mind.RimWorld
             return b;
         }
 
-        private JObject Defend(JObject v)
+        internal JObject Defend(JObject v)
         {
             string k = PyJson.Str(v["kind"]);
             var b = new JObject { ["kind"] = k };
