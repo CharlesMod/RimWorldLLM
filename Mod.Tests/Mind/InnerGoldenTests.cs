@@ -39,8 +39,8 @@ namespace RimWorldLLM.Tests.Mind
         public void BystanderMessagesAreByteIdentical()
         {
             var m = M();
-            SameMsgs(G["bystander"], BystanderOps.Messages(AD, m, NAMES, new List<int> { 1, 2 }, "Ana -> Bram: insult.", false), true);
-            SameMsgs(G["bystander_minor"], BystanderOps.Messages(AD, m, NAMES, new List<int> { 1, 2 }, "Ana -> Bram: insult.", true, "simple words"), true);
+            SameMsgs(G["bystander"], BystanderOps.Messages(AD, m, NAMES, new List<int> { 1, 2 }, "Ana -> Bram: insult.", false));
+            SameMsgs(G["bystander_minor"], BystanderOps.Messages(AD, m, NAMES, new List<int> { 1, 2 }, "Ana -> Bram: insult.", true, "simple words"));
         }
 
         [Fact]
