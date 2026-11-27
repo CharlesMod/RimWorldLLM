@@ -74,7 +74,9 @@ namespace RimWorldLLM
                 if (group < 1 || group > groups.Count) return HandResult.No(Name(ov) + " has " + groups.Count + " control group" + (groups.Count == 1 ? "" : "s"));
                 var cur = p.GetMechControlGroup();
                 if (cur == groups[group - 1]) return HandResult.No(p.LabelShort + " is already in group " + group);
+                cur?.TryUnassign(p);
                 groups[group - 1].Assign(p);
+                if (p.GetMechControlGroup() != groups[group - 1]) return HandResult.No("the game kept " + p.LabelShort + " in its group");
                 return HandResult.Done("moved " + p.LabelShort + " to " + Name(ov) + "'s group " + group + " (" + BioPure.ModeWord(groups[group - 1].WorkMode?.defName) + ")");
             }
             catch (Exception e) { return Failed(e); }
@@ -108,7 +110,9 @@ namespace RimWorldLLM
                         .Where(r => !r.IsFinished).Select(r => r.LabelCap.ToString()).Distinct().ToList();
                     return HandResult.No(recipe.ProducedThingDef.label + " needs research first" + (miss.Count > 0 ? " (" + string.Join(", ", miss) + ")" : ""));
                 }
-                var m = Mechanitor(0, out no); if (m == null) return no;
+                var m = map.mapPawns.FreeColonistsSpawned.Where(x => MechanitorUtility.IsMechanitor(x) && x.mechanitor != null)
+                          .OrderByDescending(x => x.mechanitor.TotalBandwidth - x.mechanitor.UsedBandwidth).FirstOrDefault();
+                if (m == null) return HandResult.No("the colony has no mechanitor");
                 var gestators = map.listerBuildings.allBuildingsColonist.OfType<Building_MechGestator>().ToList();
                 Building_MechGestator g;
                 if (gestator > 0)
@@ -119,18 +123,22 @@ namespace RimWorldLLM
                 }
                 else
                 {
-                    g = gestators.FirstOrDefault(x => x.def.AllRecipes.Contains(recipe));
+                    var able = gestators.Where(x => x.def.AllRecipes.Contains(recipe)).ToList();
+                    g = able.FirstOrDefault(x => x.PoweredOn && x.ActiveMechBill == null && x.BillStack.Count == 0) ?? able.FirstOrDefault(x => x.PoweredOn) ?? able.FirstOrDefault();
                     if (g == null) return HandResult.No("no mech gestator that can make a " + recipe.ProducedThingDef.label + ": build one first");
                 }
                 int need = VivariumBioView.BandwidthOf(recipe.ProducedThingDef);
                 var t = m.mechanitor;
                 // bills queued but not bound to a mechanitor yet will take bandwidth too
                 int queued = gestators.SelectMany(x => x.BillStack.Bills.OfType<Bill_Mech>()).Where(b => b.BoundPawn == null && !b.suspended)
-                                      .Sum(b => VivariumBioView.BandwidthOf(b.recipe.ProducedThingDef) * Math.Max(1, b.repeatMode == BillRepeatModeDefOf.RepeatCount ? b.repeatCount : 1));
+                                      .Sum(b => (int)Math.Round(b.BandwidthCost * Math.Max(1, b.repeatMode == BillRepeatModeDefOf.RepeatCount ? b.repeatCount : 1)));
                 string reason;
                 if (!BioPure.BandwidthOk(t.UsedBandwidthFromSubjects, t.UsedBandwidthFromGestation + queued, t.TotalBandwidth, need, count, headroom, recipe.ProducedThingDef.label, out reason))
                     return HandResult.No(reason);
                 var bill = recipe.MakeNewBill();
+                var bm = bill as Bill_Mech;
+                if (bm == null) return HandResult.No("that recipe is not a mech gestation");
+                if (!t.HasBandwidthForBill(bm)) return HandResult.No("not enough bandwidth for a " + recipe.ProducedThingDef.label);
                 var bp = bill as Bill_Production;
                 if (bp != null) { bp.repeatMode = BillRepeatModeDefOf.RepeatCount; bp.repeatCount = Math.Max(1, count); }
                 g.BillStack.AddBill(bill);
@@ -170,16 +178,19 @@ namespace RimWorldLLM
                 var banks = map.listerBuildings.allBuildingsColonist.Select(b => b.TryGetComp<CompGenepackContainer>()).Where(c => c != null).ToList();
                 if (bank > 0) banks = banks.Where(c => c.parent.thingIDNumber == bank).ToList();
                 if (banks.Count == 0) return HandResult.No(bank > 0 ? "no gene bank " + bank : "no gene bank: build one first");
+                banks = banks.Where(b => b.PowerOn).ToList();
+                if (banks.Count == 0) return HandResult.No("the gene bank has no power");
                 int sent = 0; var who = new HashSet<string>(); string why = null;
+                var going = new Dictionary<CompGenepackContainer, int>();
                 foreach (var pack in packs.Take(4))
                 {
-                    var c = banks.FirstOrDefault(b => !b.Full && b.ContainedGenepacks.Count + sent < b.Props.maxCapacity);
+                    var c = banks.FirstOrDefault(b => b.CanLoadMore && b.ContainedGenepacks.Count + (going.TryGetValue(b, out int n) ? n : 0) < b.Props.maxCapacity);
                     if (c == null) { why = "the gene banks are full"; break; }
                     var h = Hauler(map, pack, c.parent);
                     if (h == null) { why = "no free colonist can carry it there"; break; }
                     var job = JobMaker.MakeJob(JobDefOf.CarryGenepackToContainer, pack, c.parent);
                     job.count = 1;
-                    if (h.jobs.TryTakeOrderedJob(job, JobTag.Misc, true)) { sent++; who.Add(Name(h)); }
+                    if (h.jobs.TryTakeOrderedJob(job, JobTag.Misc, true)) { sent++; who.Add(Name(h)); going[c] = (going.TryGetValue(c, out int k) ? k : 0) + 1; }
                 }
                 if (sent == 0) return HandResult.No(why ?? "no colonist took the job");
                 return HandResult.Done(string.Join(" and ", who) + " will carry " + sent + " genepack" + (sent == 1 ? "" : "s") + " to the gene bank"
@@ -217,12 +228,19 @@ namespace RimWorldLLM
                     if (!picked.Contains(gp)) picked.Add(gp);
                 }
                 var genes = picked.SelectMany(p => p.GeneSet.GenesListForReading).ToList();
+                var dup = genes.GroupBy(g => g).FirstOrDefault(x => x.Count() > 1);
+                if (dup != null) return HandResult.No(dup.Key.label + " is in two of those packs");
+                for (int x = 0; x < genes.Count; x++)
+                    for (int y = x + 1; y < genes.Count; y++)
+                        if (genes[x].ConflictsWith(genes[y])) return HandResult.No(genes[x].label + " conflicts with " + genes[y].label);
                 int cpx = genes.Sum(g => g.biostatCpx), met = genes.Sum(g => g.biostatMet), arc = genes.Sum(g => g.biostatArc);
                 if (cpx > asm.MaxComplexity()) return HandResult.No("complexity " + cpx + " is over the assembler's " + asm.MaxComplexity() + " (build gene processors)");
                 if (met < GeneTuning.BiostatRange.TrueMin) return HandResult.No("metabolism " + met + " is below " + GeneTuning.BiostatRange.TrueMin);
                 if (arc > 0 && asm.ArchitesCount < arc) return HandResult.No("it needs " + arc + " archite capsules");
                 var icon = DefDatabase<XenotypeIconDef>.AllDefsListForReading.FirstOrDefault();
+                if (icon == null) return HandResult.No("the game has no xenotype icons");
                 string name = Clip(a.Name, 40);
+                if (name.Length == 0) name = "xenogerm";
                 asm.Start(picked, arc, name, icon);
                 return HandResult.Done("started assembling the xenogerm \"" + name + "\" from " + string.Join(", ", picked.Select(p => p.LabelNoCount)) + " (complexity " + cpx + ", metabolism " + met + "; plan: " + Clip(a.Plan, 120) + ")");
             }
@@ -308,7 +326,7 @@ namespace RimWorldLLM
                 string reason = BioPure.CheckChildHours(age, h);
                 if (reason != null) return HandResult.No(reason);
                 for (int i = 0; i < 24; i++) p.timetable.SetAssignment(i, Assignment(h[i]));
-                string word = p.DevelopmentalStage.Baby() ? "a baby's day (sleep 19-6)" : "the " + preset + " day (" + BioWords.Hours(h) + ")";
+                string word = "the " + preset + " day (" + BioWords.Hours(h) + ")";
                 return HandResult.Done("set " + Name(p) + "'s schedule to " + word);
             }
             catch (Exception e) { return Failed(e); }
@@ -325,7 +343,7 @@ namespace RimWorldLLM
             {
                 HandResult no = NoBiotech(); if (no != null) return no;
                 var b = Mine(baby, out no); if (b == null) return no;
-                if (!b.DevelopmentalStage.Baby()) return HandResult.No(Name(b) + " is not a baby");
+                if (!(b.DevelopmentalStage.Baby() || b.DevelopmentalStage.Newborn())) return HandResult.No(Name(b) + " is not a baby");
                 AutofeedMode m = mode == "never" ? AutofeedMode.Never : mode == "urgent" ? AutofeedMode.Urgent : AutofeedMode.Childcare;
                 if (feeder == 0)
                 {
@@ -345,7 +363,7 @@ namespace RimWorldLLM
                 b.mindState.SetAutofeeder(who, m);
                 string how = m == AutofeedMode.Never ? "never feeds " : m == AutofeedMode.Urgent ? "feeds " + Name(b) + " first, even before work" : "feeds ";
                 string note = m == AutofeedMode.Urgent ? Name(who) + " " + how : Name(who) + " " + how + Name(b) + (m == AutofeedMode.Childcare ? " during childcare" : "");
-                return HandResult.Done("set it so " + note + (ChildcareUtility.CanBreastfeed(who, out _) ? " (breastfeeding)" : " (baby food)"));
+                return HandResult.Done("set it so " + note + (m == AutofeedMode.Never ? "" : ChildcareUtility.CanBreastfeed(who, out _) ? " (breastfeeding)" : " (baby food)"));
             }
             catch (Exception e) { return Failed(e); }
         }
@@ -365,9 +383,7 @@ namespace RimWorldLLM
                 var w = WorkTypeDefOf.Childcare;
                 if (w == null) return HandResult.No("the game has no Childcare work");
                 if (p.WorkTypeIsDisabled(w)) return HandResult.No(Name(p) + " is incapable of Childcare");
-                if (!Current.Game.playSettings.useWorkPriorities && priority > 0) Current.Game.playSettings.useWorkPriorities = true;
-                p.workSettings.SetPriority(w, priority);
-                return HandResult.Done(priority == 0 ? "took " + Name(p) + " off child care" : "set " + Name(p) + "'s Childcare to " + BioWords.Ordinal(priority));
+                return SetWork(pawn, new Dictionary<string, int> { { w.defName, priority } });   // the work hand: priorities on, every pawn refreshed
             }
             catch (Exception e) { return Failed(e); }
         }

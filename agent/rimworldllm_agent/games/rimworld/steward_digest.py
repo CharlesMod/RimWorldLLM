@@ -357,7 +357,7 @@ def _bio_lines(b: dict, bl: dict, ages: dict | None = None) -> list[str]:
         if show:
             out.append("BABIES: " + "; ".join(
                 f"{c(x.get('name'))} {_num(x.get('age_days'))} days, " + (f"hungry {_num(x.get('food_pct'))}%" if x.get("hungry") else f"fed {_num(x.get('food_pct'))}%")
-                + (f", fed by {c(x['feeder'])}" + (f" ({c(x['feeding'])})" if x.get("feeding") else "") if x.get("feeder") else ", no feeder") for x in show[:6]))
+                + (f", fed by {c(x['feeder'])}" + (f" ({c(x['feeding'])})" if x.get("feeding") else "") if x.get("feeder") else (f", fed by {c(x['feeding'])}" if x.get("feeding") and x.get("feeding") != "no one assigned" else ", no feeder")) for x in show[:6]))
     kid_ids = {k.get("pawn") for k in kids}
     preg = [x for x in L("pregnancies") if x.get("pawn") not in kid_ids and (ages or {}).get(x.get("pawn"), 99) >= 18]
     if preg and not urgent:

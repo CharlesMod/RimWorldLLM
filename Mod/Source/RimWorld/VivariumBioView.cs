@@ -16,7 +16,7 @@ namespace RimWorldLLM
         const int MaxMechs = 12, MaxPeople = 12, MaxBuildings = 6, MaxPacks = 8, MaxGestate = 10;
         static readonly HashSet<string> logged = new HashSet<string>();
         // pollution trend: the polluted home-cell count a day ago (not saved: a loaded game starts "steady")
-        static int trendPrev = -1, trendNow = -1, trendTick = -1, trendMap = -1;
+        static int trendPrev = -1, trendNow = -1, trendPrevPacks = -1, trendNowPacks = -1, trendTick = -1, trendMap = -1;
 
         static void Part(JObject o, string name, Func<JToken> f)
         {
@@ -39,6 +39,7 @@ namespace RimWorldLLM
             var mechs = map.mapPawns.SpawnedColonyMechs ?? new List<Pawn>();
             Part(o, "mechanitors", () => Mechanitors(people));
             Part(o, "mechs", () => Mechs(mechs));
+            if (mechs.Count > MaxMechs) o["mechs_total"] = mechs.Count;
             Part(o, "gestators", () => Gestators(map));
             Part(o, "rechargers", () => Rechargers(map));
             Part(o, "can_gestate", () => CanGestate(people));
@@ -192,7 +193,7 @@ namespace RimWorldLLM
                 foreach (var c in homeArea.ActiveCells) { homeCells++; if (map.pollutionGrid.IsPolluted(c)) homePolluted++; }
             o["home_polluted_pct"] = homeCells == 0 ? 0 : (int)Math.Round(100.0 * homePolluted / homeCells);
             o["map_polluted_pct"] = Pct(map.pollutionGrid.TotalPollutionPercent);
-            o["trend"] = Trend(map, homePolluted + near);
+            o["trend"] = Trend(map, homePolluted, near);
             var tox = new JArray();
             foreach (var p in people)
             {
@@ -207,13 +208,15 @@ namespace RimWorldLLM
             return o;
         }
 
-        static string Trend(Map map, int now)
+        static string Trend(Map map, int cells, int packs)
         {
             int tick = Find.TickManager.TicksGame;
-            if (trendMap != map.uniqueID || trendTick < 0 || tick < trendTick) { trendMap = map.uniqueID; trendPrev = now; trendNow = now; trendTick = tick; }
-            else if (tick - trendTick >= GenDate.TicksPerDay) { trendPrev = trendNow; trendNow = now; trendTick = tick; }
-            else trendNow = Math.Max(trendNow, now);
-            return BioPure.Trend(trendPrev, now);
+            if (trendMap != map.uniqueID || trendTick < 0 || tick < trendTick)
+            { trendMap = map.uniqueID; trendPrev = trendNow = cells; trendPrevPacks = trendNowPacks = packs; trendTick = tick; }
+            else if (tick - trendTick >= GenDate.TicksPerDay)
+            { trendPrev = trendNow; trendPrevPacks = trendNowPacks; trendTick = tick; }
+            trendNow = cells; trendNowPacks = packs;   // the last reading of the day becomes tomorrow's yesterday
+            return BioPure.Trend(trendPrev, cells) == "growing" || BioPure.Trend(trendPrevPacks, packs) == "growing" ? "growing" : "steady";
         }
 
         // ---- genes ----
@@ -266,7 +269,7 @@ namespace RimWorldLLM
             var needing = carriers.Select(p => new { p, h = HemogenGene(p) }).Where(x => x.h.Value / Math.Max(0.01f, x.h.Max) < 0.35f)
                                   .Select(x => x.p.LabelShort + " " + Pct(x.h.Value / Math.Max(0.01f, x.h.Max)) + "%").ToList();
             if (needing.Count > 0) o["needing"] = new JArray(needing);
-            var prisoners = map.mapPawns.PrisonersOfColonySpawned.Where(p => p.RaceProps.Humanlike && !donors.Contains(p)).Take(MaxPeople).ToList();
+            var prisoners = map.mapPawns.PrisonersOfColonySpawned.Where(p => p.RaceProps.Humanlike && !donors.Contains(p) && p.DevelopmentalStage.Adult() && HemogenGene(p) == null).Take(MaxPeople).ToList();
             if (prisoners.Count > 0) o["prisoners"] = new JArray(prisoners.Select(p => new JObject { ["id"] = p.thingIDNumber, ["name"] = p.LabelShort }));
             return o;
         }
@@ -350,20 +353,24 @@ namespace RimWorldLLM
             }));
         }
 
+        static bool IsBaby(Pawn p) { var s = p.DevelopmentalStage; return s.Baby() || s.Newborn(); }
+
         static JToken Babies(List<Pawn> people)
         {
-            var babies = people.Where(p => p.DevelopmentalStage.Baby()).Take(MaxPeople).ToList();
+            var babies = people.Where(IsBaby).Take(MaxPeople).ToList();
             if (babies.Count == 0) return null;
             return new JArray(babies.Select(b =>
             {
                 var food = b.needs?.food;
                 Pawn feeder = null; AutofeedMode mode = AutofeedMode.Never;
-                foreach (var f in b.mindState.Autofeeders())
+                foreach (var f in b.mindState.Autofeeders())   // the player's explicit choices (the baby's feeding tab)
                 {
                     var m = b.mindState.AutofeedSetting(f);
                     if (m != AutofeedMode.Never && (feeder == null || m > mode)) { feeder = f; mode = m; }
                 }
-                string feeding = feeder == null ? "no one assigned" : (ChildcareUtility.CanBreastfeed(feeder, out _) ? "breastfed" : "baby food");
+                // no explicit choice: whoever does Childcare feeds the baby (the game's default), so name the carers' rule
+                bool carers = WorkTypeDefOf.Childcare != null && people.Any(x => x != b && x.DevelopmentalStage.Adult() && x.workSettings != null && x.workSettings.EverWork && x.workSettings.WorkIsActive(WorkTypeDefOf.Childcare));
+                string feeding = feeder == null ? (carers ? "carers at childcare" : "no one assigned") : (ChildcareUtility.CanBreastfeed(feeder, out _) ? "breastfed" : "baby food");
                 long ageTicks = b.ageTracker.AgeBiologicalTicks;
                 return new JObject
                 {
@@ -382,7 +389,7 @@ namespace RimWorldLLM
             {
                 if (p.ageTracker.AgeBiologicalYears < 18) continue;   // the age gate: only grown women
                 var h = p.health?.hediffSet?.GetFirstHediff<Hediff_Pregnant>();
-                if (h == null) continue;
+                if (h == null || !h.Visible) continue;
                 float total = p.RaceProps.gestationPeriodDays;
                 a.Add(new JObject
                 {
@@ -415,7 +422,7 @@ namespace RimWorldLLM
                 BasicMechtech = ResearchProjectDefOf.BasicMechtech != null && ResearchProjectDefOf.BasicMechtech.IsFinished,
                 Children = people.Count(p => p.DevelopmentalStage.Child()),
                 SchoolDesks = HasSchoolDesk(map) ? 1 : 0,
-                Babies = people.Count(p => p.DevelopmentalStage.Baby()),
+                Babies = people.Count(IsBaby),
                 Cribs = bld.Count(b => b.def == crib || b.def == babySpot),
                 Wastepacks = ThingDefOf.Wastepack != null ? Wastepacks(map.listerThings.ThingsOfDef(ThingDefOf.Wastepack).Where(t => t.Spawned)) : 0,
                 WasteStockpile = map.zoneManager.AllZones.OfType<Zone_Stockpile>().Any(IsWasteStockpile),
