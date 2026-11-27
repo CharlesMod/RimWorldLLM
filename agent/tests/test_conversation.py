@@ -1,7 +1,7 @@
 import random
 
 from conftest import run
-from hermesvoice_agent.core.conversation import Conversation, opener_obliges, repetitive, template_memory, template_relation
+from rimworldllm_agent.core.conversation import Conversation, opener_obliges, repetitive, template_memory, template_relation
 
 
 def mk(**kw):

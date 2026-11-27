@@ -1,9 +1,9 @@
 from conftest import run
-from hermesvoice_agent.core.minds import Memory, Mind
-from hermesvoice_agent.games.rimworld.builders import build_fixed_bio, build_voice_card
-from hermesvoice_agent.games.rimworld.fakes import default_pawn
-from hermesvoice_agent.core.prompt import Scene, build_prefix, line_messages, intent_messages, grammar_for
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.minds import Memory, Mind
+from rimworldllm_agent.games.rimworld.builders import build_fixed_bio, build_voice_card
+from rimworldllm_agent.games.rimworld.fakes import default_pawn
+from rimworldllm_agent.core.prompt import Scene, build_prefix, line_messages, intent_messages, grammar_for
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 AD = RimWorldAdapter()
 BLOCK_A, INTENTS = AD.block_a, AD.intent_labels
@@ -64,7 +64,7 @@ def test_lease_prefix_stable_through_director(world):
 
 def test_tic_rule_in_block_g():
     m = mk_mind(1, "Ana")
-    from hermesvoice_agent.core.prompt import block_g
+    from rimworldllm_agent.core.prompt import block_g
     assert "Habits (this line)" in block_g(m, "Ana", 0)
     assert "No habits this line." in block_g(m, "Ana", 1)
     assert "No habits this line." in block_g(m, "Ana", 2)

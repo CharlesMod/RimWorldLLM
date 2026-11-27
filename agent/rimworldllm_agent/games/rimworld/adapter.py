@@ -201,7 +201,7 @@ class RimWorldAdapter:
 
     def default_bridge_json(self) -> Path:
         home = Path(os.environ.get("HOME", "~")).expanduser()
-        return home / ".config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/HermesVoice/bridge.json"
+        return home / ".config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/RimWorldLLM/bridge.json"
 
     def is_controlled(self, actor_id: int) -> bool:
         return False                            # RimWorld has no single player character

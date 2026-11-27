@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>One eating-or-not sample of one awake colonist: which room they are in.</summary>
     public struct MealSample

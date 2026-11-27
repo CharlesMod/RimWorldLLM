@@ -17,7 +17,7 @@ from .bridge import BridgeError
 from .minds import Memory
 from .toolloop import IMPORTANCE, Action, Param, ToolHarness, ToolSpec
 
-log = logging.getLogger("hermesvoice.wants")
+log = logging.getLogger("rimworldllm.wants")
 
 TOOL_NAMES = ("seek_out", "avoid", "remember", "do_nothing")
 SOCIAL = {"seek_out", "avoid"}

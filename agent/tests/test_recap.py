@@ -1,6 +1,6 @@
 from conftest import run
-from hermesvoice_agent.core import recap as rc
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import recap as rc
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 ENTRIES = [
     {"day": 1, "kind": "day", "text": "Ana dug the first trench. Bram sulked.", "tick": 1},

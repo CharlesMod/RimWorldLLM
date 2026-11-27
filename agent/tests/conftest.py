@@ -4,12 +4,12 @@ import random
 import httpx
 import pytest
 
-from hermesvoice_agent.core.bridge import BridgeClient
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.director import Director
-from hermesvoice_agent.core.fakes import FakeLLM
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge
+from rimworldllm_agent.core.bridge import BridgeClient
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.director import Director
+from rimworldllm_agent.core.fakes import FakeLLM
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge
 
 
 CLASSIC_CREATIVE = dict(aim_ground=False, creative_ground_for=(), creative_plan_for=(), creative_best_of_for=())
@@ -47,7 +47,7 @@ def world(tmp_path):
 
 @pytest.fixture(autouse=True)
 def _adult_setting_default():
-    from hermesvoice_agent.core import adult
+    from rimworldllm_agent.core import adult
     adult.set_enabled(False)
     yield
     adult.set_enabled(False)

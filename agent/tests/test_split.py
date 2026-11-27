@@ -3,11 +3,11 @@ import re
 from pathlib import Path
 
 from conftest import run
-from hermesvoice_agent.core.adapter import GameAdapter
-from hermesvoice_agent.core.bridge import Bridge, BridgeClient, EventPoller, EventSource
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.adapter import GameAdapter
+from rimworldllm_agent.core.bridge import Bridge, BridgeClient, EventPoller, EventSource
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
-CORE = Path(__file__).parent.parent / "hermesvoice_agent" / "core"
+CORE = Path(__file__).parent.parent / "rimworldllm_agent" / "core"
 # words that belong to one game; core says actor, game time, scene, character
 TERMS = re.compile(r"\b(rimworld|colony|colonist|colonists|pawn|pawns|tick|ticks|raid|raids|raider|raiders|"
                    r"injury|injuries|prisoner|prisoners|hediff|ideology|biotech|royalty|anomaly|xenotype|"

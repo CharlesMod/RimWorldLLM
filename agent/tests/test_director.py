@@ -3,7 +3,7 @@ import json
 import httpx
 
 from conftest import run
-from hermesvoice_agent.core.minds import Mind
+from rimworldllm_agent.core.minds import Mind
 
 
 def test_epoch_change_drops_and_reloads_minds(world):

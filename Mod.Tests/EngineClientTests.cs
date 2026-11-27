@@ -5,11 +5,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     /// <summary>A fake engine: HttpListener on a free loopback port that records requests and answers canned JSON.</summary>
     sealed class FakeEngine : IDisposable

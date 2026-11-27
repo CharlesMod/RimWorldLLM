@@ -2,13 +2,13 @@
 import json
 
 from conftest import run
-from hermesvoice_agent.core import habits as H
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.minds import Mind, VoiceCard
-from hermesvoice_agent.core.prompt import block_b
-from hermesvoice_agent.core.reflection import (REFLECT_SCHEMA, ReflectResult, apply_reflection, parse_result,
+from rimworldllm_agent.core import habits as H
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.minds import Mind, VoiceCard
+from rimworldllm_agent.core.prompt import block_b
+from rimworldllm_agent.core.reflection import (REFLECT_SCHEMA, ReflectResult, apply_reflection, parse_result,
                                                reflection_messages, schema_for)
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 DAY = 60000
 AD = RimWorldAdapter()

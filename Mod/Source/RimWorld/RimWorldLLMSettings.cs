@@ -1,15 +1,15 @@
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Mod settings. Public fields are auto-persisted by RimWorld (ModSettings is IExposable).
     /// </summary>
-    public class HermesVoiceSettings : ModSettings
+    public class RimWorldLLMSettings : ModSettings
     {
         public bool enabled = true;
 
-        // In-mod HTTP bridge: the Hermes agent reads colony state and issues /say commands here.
+        // In-mod HTTP bridge: the agent reads colony state and issues /say commands here.
         public int bridgePort = 9765;
         public string bindAddress = "127.0.0.1";
 
@@ -25,7 +25,7 @@ namespace HermesVoice
         public string llmModel = "";
         public string llmApiKey = "";
 
-        // Where the agent's LLM comes from: "local" (the HermesVoice engine, default) or "own" (the fields above).
+        // Where the agent's LLM comes from: "local" (the RimWorldLLM engine, default) or "own" (the fields above).
         public string llmSource = "local";
         // Launch or attach the local engine when the game starts.
         public bool engineAutoStart = true;
@@ -71,7 +71,7 @@ namespace HermesVoice
         public bool evThought = true;
         public bool evArt = true;
         public bool evSleep = true;                     // sleep_start events (feed dreams)
-        public bool shareFooter = true;                 // "Share this moment": add the HermesVoice footer to shared text and images
+        public bool shareFooter = true;                 // "Share this moment": add the RimWorldLLM footer to shared text and images
         public bool dreamsEnabled = true;               // sleepers get a dream cloud (POST /thought kind "dream"); also GET /config dreams
         public bool evFirsts = true;
         public bool evGatherings = true;                // gathering / gathering_end events (meals, parties, weddings, rituals, speeches)

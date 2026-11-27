@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// Read-only, tolerant view of an agent mind blob for display. The blob is the agent's format: unknown keys are ignored

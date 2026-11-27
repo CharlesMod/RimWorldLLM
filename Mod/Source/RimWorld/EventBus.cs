@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>What a patch hands to the bus. Game thread only.</summary>
     public sealed class EventSpec
@@ -100,7 +100,7 @@ namespace HermesVoice
         public static JObject Publish(EventSpec spec, bool push = true)
         {
             var ev = Build(spec);
-            HermesBridge.Events.Add(ev);
+            RWLBridge.Events.Add(ev);
             DirectorCamera.OnEvent(spec);
             if (push) AgentDialOut.Push(ev);
             return ev;
@@ -108,7 +108,7 @@ namespace HermesVoice
 
         public static void Reset()
         {
-            HermesBridge.Events.Clear();
+            RWLBridge.Events.Clear();
             Ledger.Clear();
         }
     }

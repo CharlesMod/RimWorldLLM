@@ -5,16 +5,16 @@ using Newtonsoft.Json;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
-    public class HermesVoiceGameComponent : GameComponent
+    public class RimWorldLLMGameComponent : GameComponent
     {
-                public static HermesVoiceGameComponent Instance { get; private set; }
+                public static RimWorldLLMGameComponent Instance { get; private set; }
         public readonly Bridge.AvoidTable Avoids = new Bridge.AvoidTable();
         public readonly ConversationLog ConversationLog = new ConversationLog();
-        public Bridge.MindBook Minds { get { return HermesBridge.Minds; } }
+        public Bridge.MindBook Minds { get { return RWLBridge.Minds; } }
 
-        public HermesVoiceGameComponent(Game game) : base()
+        public RimWorldLLMGameComponent(Game game) : base()
         {
             Instance = this;
         }
@@ -63,10 +63,10 @@ namespace HermesVoice
             switch (_starter.Update(EngineManager.Status != null, EngineManager.Status != null ? EngineManager.Status.ModelTier : null))
             {
                 case Bridge.StarterWatch.Event.Starter:
-                    Messages.Message(UiUtil.T("HV_Starter_MessageText"), MessageTypeDefOf.NeutralEvent, false);
+                    Messages.Message(UiUtil.T("RWL_Starter_MessageText"), MessageTypeDefOf.NeutralEvent, false);
                     break;
                 case Bridge.StarterWatch.Event.Ready:
-                    Messages.Message(UiUtil.T("HV_Starter_ReadyText", EngineManager.TargetName()), MessageTypeDefOf.PositiveEvent, false);
+                    Messages.Message(UiUtil.T("RWL_Starter_ReadyText", EngineManager.TargetName()), MessageTypeDefOf.PositiveEvent, false);
                     break;
             }
         }
@@ -75,21 +75,21 @@ namespace HermesVoice
         {
             CheckStarter();
             long now = Environment.TickCount64;
-            bool hidden = HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.hideFallbackWarning;
+            bool hidden = RimWorldLLMMod.Settings != null && RimWorldLLMMod.Settings.hideFallbackWarning;
             if (!_fallbackNotice.Waiting(now, hidden)) return;
             EngineManager.Touch();
             if (_fallbackNotice.Check(now, EngineManager.Status != null, EngineManager.FallbackInUse && !EngineManager.StarterInUse, hidden))
-                Messages.Message(UiUtil.T("HV_Fallback_MessageText"), MessageTypeDefOf.NeutralEvent, false);
+                Messages.Message(UiUtil.T("RWL_Fallback_MessageText"), MessageTypeDefOf.NeutralEvent, false);
         }
 
         /// <summary>Called when the game ends (return to main menu): stop serving and drop per-game state.</summary>
         public static void OnGameEnd()
         {
-            HermesBridge.OpIds.Clear();
+            RWLBridge.OpIds.Clear();
             SayEffects.Reset();
-            HermesBridge.Minds.Clear();
-            HermesBridge.Chronicle.Clear();
-            HermesBridge.Art.Clear();
+            RWLBridge.Minds.Clear();
+            RWLBridge.Chronicle.Clear();
+            RWLBridge.Art.Clear();
             SpeechBubbles.Clear();
             DirectorCamera.Reset();
             _fallbackNotice.Disarm();
@@ -114,8 +114,8 @@ namespace HermesVoice
             _fallbackNotice.Arm(Environment.TickCount64);
             RecapGate.Arm(SaveEpoch, false, Environment.TickCount64);
             Minds.Clear();
-            HermesBridge.Chronicle.Clear();
-            HermesBridge.Art.Clear();
+            RWLBridge.Chronicle.Clear();
+            RWLBridge.Art.Clear();
             SpeechBubbles.Clear();
             DirectorCamera.OnGameStart();
         }
@@ -130,9 +130,9 @@ namespace HermesVoice
             List<int> avoids = null;
             int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
             if (Scribe.mode == LoadSaveMode.Saving) avoids = Avoids.Export(nowTick);
-            Scribe_Collections.Look(ref avoids, "hermesAvoids", LookMode.Value);
+            Scribe_Collections.Look(ref avoids, "rwlAvoids", LookMode.Value);
             if (Scribe.mode == LoadSaveMode.PostLoadInit) Avoids.Import(avoids, Find.TickManager != null ? Find.TickManager.TicksGame : 0);
-            Scribe_Collections.Look(ref ConversationLog.Entries, "hermesConversation", LookMode.Deep);
+            Scribe_Collections.Look(ref ConversationLog.Entries, "rwlConversation", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.PostLoadInit && ConversationLog.Entries == null)
                 ConversationLog.Entries = new List<ConversationEntry>();
         }
@@ -142,7 +142,7 @@ namespace HermesVoice
             List<MindSave> list = null;
             if (Scribe.mode == LoadSaveMode.Saving)
                 list = Minds.Records.Select(kv => new MindSave { Id = kv.Key, Rec = kv.Value }).ToList();
-            Scribe_Collections.Look(ref list, "hermesMinds", LookMode.Deep);
+            Scribe_Collections.Look(ref list, "rwlMinds", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 Minds.Clear();
@@ -152,11 +152,11 @@ namespace HermesVoice
 
         void ExposeChronicle()
         {
-            var book = HermesBridge.Chronicle;
+            var book = RWLBridge.Chronicle;
             List<ChronicleSave> list = null;
             if (Scribe.mode == LoadSaveMode.Saving)
                 list = book.Entries.Select(e => new ChronicleSave { Day = e.Day, Kind = e.Kind, Text = e.Text, Tick = e.Tick }).ToList();
-            Scribe_Collections.Look(ref list, "hermesChronicle", LookMode.Deep);
+            Scribe_Collections.Look(ref list, "rwlChronicle", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 // A save without the list (older saves) loads an empty chronicle, not the one from the game just left.
@@ -169,11 +169,11 @@ namespace HermesVoice
 
         void ExposeArt()
         {
-            var book = HermesBridge.Art;
+            var book = RWLBridge.Art;
             List<ArtSave> list = null;
             if (Scribe.mode == LoadSaveMode.Saving)
                 list = book.Entries.Select(e => new ArtSave { Thing = e.Thing, Text = e.Text, Tick = e.Tick }).ToList();
-            Scribe_Collections.Look(ref list, "hermesArt", LookMode.Deep);
+            Scribe_Collections.Look(ref list, "rwlArt", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 // Older saves have no book: they load an empty one, not the one from the game just left.
@@ -184,7 +184,7 @@ namespace HermesVoice
             }
         }
 
-        public void RestartBridge() { HermesBridge.Start(); }
+        public void RestartBridge() { RWLBridge.Start(); }
     }
 
     /// <summary>Save wrapper for one pawn's MindRecord.</summary>

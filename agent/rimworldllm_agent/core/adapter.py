@@ -7,7 +7,7 @@ subtracts it. Characters may appear and vanish; there is no fixed cast. Events m
 or from an external sensor: core only needs an ``EventSource``.
 
 The core (this package) knows actors, scenes, events and minds in the abstract. A game adapter
-(``hermesvoice_agent/games/<game>/``) supplies the vocabulary, the prompt's world rules, how a
+(``rimworldllm_agent/games/<game>/``) supplies the vocabulary, the prompt's world rules, how a
 snapshot becomes a bio and a voice card, how events rank, and how a scene reads. Core imports
 nothing from ``games/``.
 """

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <KeyBindingCategoryDef>
-    <defName>HV_Keys</defName>
-    <label>HermesVoice</label>
-    <description>HermesVoice keyboard shortcuts.</description>
+    <defName>RWL_Keys</defName>
+    <label>RimWorldLLM</label>
+    <description>RimWorldLLM keyboard shortcuts.</description>
     <isGameUniversal>false</isGameUniversal>
   </KeyBindingCategoryDef>
 
   <KeyBindingDef>
-    <defName>HV_ToggleDirectorCamera</defName>
+    <defName>RWL_ToggleDirectorCamera</defName>
     <label>toggle director camera</label>
-    <category>HV_Keys</category>
+    <category>RWL_Keys</category>
   </KeyBindingDef>
 </Defs>

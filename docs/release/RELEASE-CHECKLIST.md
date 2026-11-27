@@ -1,11 +1,11 @@
-# Release checklist: HermesVoice 2.1.0 beta
+# Release checklist: RimWorldLLM 2.1.0 beta
 
 From the release-prep branch to a published Nexus page and GitHub release. **[keeper]** marks the steps only the keeper
 can do or decide; the rest the coordinator can do.
 
 ## Done
 - [x] **[keeper]** License: MIT for both repos, copyright (c) 2026 Charleszard (RimWorldLLM f9cfb26, easyEngine d64ec90).
-- [x] About.xml description, author Charleszard, modVersion 2.1.0 (packageId stays `charless.HermesVoice`).
+- [x] About.xml description, author Charleszard, modVersion 2.1.0 (packageId stays `charleszard.rimworldllm`).
 - [x] README for players; technical sections moved to docs/DEVELOPING.md.
 - [x] Nexus page text: docs/release/NEXUS-PAGE.md.
 - [x] CHANGELOG.md, PLAYTEST.md, this file.
@@ -39,8 +39,8 @@ can do or decide; the rest the coordinator can do.
 ## Publishing
 10. Tag RimWorldLLM `v2.1.0-beta` at the shipped commit (the zip's `BUILD` names it); tag easyEngine at its commit if
    wanted.
-11. GitHub release on RimWorldLLM: title "HermesVoice 2.1.0 beta", body = the CHANGELOG entry plus the beta note, assets
-    `HermesVoice-2.1.0-beta.zip` and its `.sha256`. Mark it as a pre-release.
+11. GitHub release on RimWorldLLM: title "RimWorldLLM 2.1.0 beta", body = the CHANGELOG entry plus the beta note, assets
+    `RimWorldLLM-2.1.0-beta.zip` and its `.sha256`. Mark it as a pre-release.
 12. **[keeper] Nexus upload**: create the mod page (name, summary, category, tags, requirements from NEXUS-PAGE.md),
     paste the BBCode, upload the zip as the main file (version 2.1.0 beta, game 1.7), add the preview image and clip,
     set the adult flag as decided.

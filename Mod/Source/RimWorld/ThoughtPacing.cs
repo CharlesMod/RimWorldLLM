@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Pacing for the map's thought clouds (Verse-free, tested). Rules: at most one thought cloud per pawn at a time;

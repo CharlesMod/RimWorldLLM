@@ -1,7 +1,7 @@
 """Item 10: gathering talk (core/group.py): group scenes, eulogies, vows, speeches."""
 from conftest import run
-from hermesvoice_agent.core import group as G
-from hermesvoice_agent.core.minds import Mind, Relation
+from rimworldllm_agent.core import group as G
+from rimworldllm_agent.core.minds import Mind, Relation
 
 LINES = ["Remember the night the wolves came to the gate.", "I do, and Bram held that door alone.",
          "Somebody pass the salt, this stew needs help.", "We built this place out of splinters and stubbornness.",
@@ -207,7 +207,7 @@ def test_minor_at_a_meal_carries_the_minor_rule(world):
     gather(w, "meal", [1, 2, 3])
     run(step(w))
     assert w.d.said
-    from hermesvoice_agent.core.agegate import MINOR_RULE
+    from rimworldllm_agent.core.agegate import MINOR_RULE
     assert all(MINOR_RULE in c["messages"][0][1] for c in lines(w))
 
 

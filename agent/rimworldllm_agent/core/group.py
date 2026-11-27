@@ -27,7 +27,7 @@ from . import creative, grounding
 from .passes import Dropped, Spoken, speak
 from .prompt import line_messages
 
-log = logging.getLogger("hermesvoice")
+log = logging.getLogger("rimworldllm")
 
 KINDS = ("meal", "party", "wedding", "funeral", "speech", "ritual")
 CEREMONIES = frozenset({"wedding", "funeral", "speech", "ritual"})

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
-    /// Public API for other mods. Reference HermesVoice.dll and call these statics (or reflect on them).
+    /// Public API for other mods. Reference RimWorldLLM.dll and call these statics (or reflect on them).
     /// See docs/HOOK-API.md.
     /// </summary>
-    public static class HermesVoiceAPI
+    public static class RimWorldLLMAPI
     {
         static readonly Dictionary<string, Func<Pawn, string>> Contexts = new Dictionary<string, Func<Pawn, string>>();
         static readonly object Lock = new object();
@@ -29,7 +29,7 @@ namespace HermesVoice
         public static void RequestTalk(Pawn pawn, string text)
         {
             if (pawn == null || string.IsNullOrWhiteSpace(text)) return;
-            HermesBridge.Talk.Add(pawn.thingIDNumber, text, "mod");
+            RWLBridge.Talk.Add(pawn.thingIDNumber, text, "mod");
         }
 
         internal static JObject CollectContext(Pawn p)
@@ -44,7 +44,7 @@ namespace HermesVoice
                     string v = kv.Value(p);
                     if (v != null) o[kv.Key] = v;
                 }
-                catch (Exception e) { Log.WarningOnce("[HermesVoice] pawn context '" + kv.Key + "' failed: " + e.Message, kv.Key.GetHashCode()); }
+                catch (Exception e) { Log.WarningOnce("[RimWorldLLM] pawn context '" + kv.Key + "' failed: " + e.Message, kv.Key.GetHashCode()); }
             }
             return o;
         }

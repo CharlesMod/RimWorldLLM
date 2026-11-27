@@ -1,8 +1,8 @@
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class MindViewTests
     {
@@ -82,7 +82,7 @@ namespace HermesVoice.Tests
     }
 }
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class PawnHueTests
     {
@@ -121,7 +121,7 @@ namespace HermesVoice.Tests
     }
 }
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class EventTailTests
     {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <InteractionDef>
-    <defName>HV_Say</defName>
+    <defName>RWL_Say</defName>
     <label>spoken line</label>
     <symbol>Things/Mote/SpeechSymbols/Chitchat</symbol>
     <logRulesInitiator>

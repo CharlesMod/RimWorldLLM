@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// Verse-free mapping of game defs to the "first_cue" names the agent knows (snow, eclipse, corpse ...).

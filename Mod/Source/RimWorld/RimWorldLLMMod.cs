@@ -2,11 +2,11 @@ using UnityEngine;
 using Verse;
 using HarmonyLib;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
-    public class HermesVoiceMod : Mod
+    public class RimWorldLLMMod : Mod
     {
-        public static HermesVoiceMod Instance { get; private set; }
+        public static RimWorldLLMMod Instance { get; private set; }
         const string FallbackVersion = "2.0.0";
         /// <summary>Mod version, read from About.xml (modVersion) when available.</summary>
         public static string Version
@@ -23,16 +23,16 @@ namespace HermesVoice
             }
         }
 
-        public static HermesVoiceSettings Settings => Instance?.GetSettings<HermesVoiceSettings>();
+        public static RimWorldLLMSettings Settings => Instance?.GetSettings<RimWorldLLMSettings>();
 
-        public HermesVoiceMod(ModContentPack content) : base(content)
+        public RimWorldLLMMod(ModContentPack content) : base(content)
         {
             Instance = this;
-            Log.Message("[HermesVoice] Mod loaded — applying Harmony patches");
-            new Harmony("charless.hermesvoice").PatchAll(typeof(HermesVoiceMod).Assembly);
+            Log.Message("[RimWorldLLM] Mod loaded — applying Harmony patches");
+            new Harmony("charleszard.rimworldllm").PatchAll(typeof(RimWorldLLMMod).Assembly);
         }
 
-        public override string SettingsCategory() => "HermesVoice";
+        public override string SettingsCategory() => "RimWorldLLM";
 
         public override void DoSettingsWindowContents(Rect inRect)
         {

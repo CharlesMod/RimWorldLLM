@@ -2,11 +2,11 @@
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core import adult
-from hermesvoice_agent.core.minds import Mind
-from hermesvoice_agent.core.prompt import Scene, build_prefix
-from hermesvoice_agent.core.sanitize import sanitize_line, sanitize_prose
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import adult
+from rimworldllm_agent.core.minds import Mind
+from rimworldllm_agent.core.prompt import Scene, build_prefix
+from rimworldllm_agent.core.sanitize import sanitize_line, sanitize_prose
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 from test_prompt import mk_mind
 
 KW = dict(speaker_names={"Ana"}, known_names={"Bram"}, all_names={"Ana", "Bram"}, prompt_words=set())

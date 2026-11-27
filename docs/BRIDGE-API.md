@@ -1,4 +1,4 @@
-# HermesVoice bridge API v2 (contract)
+# RimWorldLLM bridge API v2 (contract)
 
 The contract between the mod (C#, in game) and the agent (Python, its own program). Both sides
 build against this file. A change to it goes in its own commit, and both sides update together.
@@ -17,7 +17,7 @@ It is implemented by `Mod/Source/RimWorld/`.
 
 - **Default port 9765**, falling back through 9766–9774 when a port is taken. (8765 is used by
   RIMAPI, Antfarm and rimbridge.)
-- On start, the mod writes **`<RimWorld config dir>/HermesVoice/bridge.json`**, and rewrites it
+- On start, the mod writes **`<RimWorld config dir>/RimWorldLLM/bridge.json`**, and rewrites it
   on every restart of the bridge:
   `{"port": 9765, "bind": "127.0.0.1", "token": "<random per run>", "pid": 1234, "version": "2.0.0", "save_epoch": 3}`.
   The token is regenerated per run unless the player has set a fixed shared token in settings,
@@ -68,7 +68,7 @@ Every POST and PUT body carries:
 ## Endpoints
 
 ### `GET /health`
-The envelope plus `{"mod": "HermesVoice", "version": "2.0.0", "game_loaded": true}`.
+The envelope plus `{"mod": "RimWorldLLM", "version": "2.0.0", "game_loaded": true}`.
 Unauthenticated, so the Test button and the agent can identify the bridge before auth.
 
 ### `GET /events?since=<seq>`
@@ -113,7 +113,7 @@ reply has `"gap": true`. Each event:
   and within hearing range. Otherwise `conflict`.
 - The mod shows the bubble and writes a play-log entry (and a combat-log entry when `combat`).
 - It applies the intent's effect under the C# caps (SPEC §8), unless effects are off.
-- Reply: `{"applied": {"bubble": true, "log": true, "effect": "comfort", "thoughts": ["HV_Comforted"]}}`,
+- Reply: `{"applied": {"bubble": true, "log": true, "effect": "comfort", "thoughts": ["RWL_Comforted"]}}`,
   or `{"refused": {"effect": "<reason>"}}` with the bubble still shown. Reasons: `pair_cap`
   (the per-pair daily cap is reached), `effects_off`, `not_negative` (`comfort` when the
   listener has no negative mood thought), `no_about`.
@@ -214,11 +214,11 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
   `memories`, `relations`, `notes`); unknown keys are ignored.
 
 ### `POST /social_action`
-One small social move chosen by the agent's wants-with-follow-through window (agent/hermesvoice_agent/core/wants.py).
+One small social move chosen by the agent's wants-with-follow-through window (agent/rimworldllm_agent/core/wants.py).
 Body: `{op_id, pawn, action: "seek_out"|"avoid", target: <pawn id>, topic?: <short text, <= 80 chars>}`.
 Reply `{ok: true, applied: true}` (plus `topic_dropped: true` when the topic was dropped, see below).
 
-`seek_out`: the pawn takes the job `HV_SeekOut` (not player-forced; a current interruptible job resumes afterwards),
+`seek_out`: the pawn takes the job `RWL_SeekOut` (not player-forced; a current interruptible job resumes afterwards),
 walks to chatting distance of the target and starts one normal vanilla interaction (Chitchat, or DeepTalk between two
 adults) through `TryInteractWith`, so the existing vanilla-interaction hook voices it. The job gives up after 1500 game
 ticks or 60 real seconds, and ends early if the target is despawned, downed, dead, in a mental state or hostile.
@@ -352,7 +352,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   `surface`; the mod needs nothing new. The agent works out who heard a `/say` itself, from the `present`
   list of `GET /scene/{id}` and hearing range.
 - `thought` events are notable new mood thoughts only: absolute mood offset of at least 5.
-  The mod's own `HV_` thoughts never produce one.
+  The mod's own `RWL_` thoughts never produce one.
 - Per-event toggles in settings apply to the ring as well as to the push. Events are throttled
   by per-pawn cooldowns (injury 30 s, social 60 s, tend 20 s, mental break and thought 10 s).
   The 20 per real minute cap applies only to the push to the agent URL, not to `/events`.
@@ -364,7 +364,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - Diary entries (`POST /thought` with `kind: "diary"`) and inner thoughts are saved per pawn with
   the game, as part of the pawn's mind record, and are shown in the pawn's Mind tab: the Diary
   section lists the last 7 entries, newest first, each with the game date of its arrival.
-- The chronicle is saved with the game in the mod's game component (`hermesChronicle`), so loading
+- The chronicle is saved with the game in the mod's game component (`rwlChronicle`), so loading
   an earlier save rolls it back with everything else; a new game starts it empty. It is shown as
   the second tab of the Voices window (the main-bar button), newest first, each entry with the
   game date of its `day`; `major` entries are highlighted.

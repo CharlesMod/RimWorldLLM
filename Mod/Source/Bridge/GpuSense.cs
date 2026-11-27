@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>The graphics adapter the game renders on, as the game's engine reports it. Verse-free.</summary>
     public sealed class HostAdapterInfo
@@ -75,10 +75,10 @@ namespace HermesVoice.Bridge
     /// <summary>The one status line about the graphics card. Pure: the translator is passed in (key, args) so tests and the game share it.</summary>
     public static class GpuLine
     {
-        public const string KeyHostAndModel = "HV_Gpu_HostAndModel";   // Game on {0} · {1}: {2} free for the model
-        public const string KeyModelOnly = "HV_Gpu_ModelOnly";         // {0}: {1} free for the model
-        public const string KeyShared = "HV_Gpu_Shared";               // Game and model share {0}: {1} free for the model
-        public const string KeyCpu = "HV_Gpu_Cpu";                     // No graphics card in use: the model runs on the processor
+        public const string KeyHostAndModel = "RWL_Gpu_HostAndModel";   // Game on {0} · {1}: {2} free for the model
+        public const string KeyModelOnly = "RWL_Gpu_ModelOnly";         // {0}: {1} free for the model
+        public const string KeyShared = "RWL_Gpu_Shared";               // Game and model share {0}: {1} free for the model
+        public const string KeyCpu = "RWL_Gpu_Cpu";                     // No graphics card in use: the model runs on the processor
 
         static readonly Regex Paren = new Regex(@"\((?:R|TM|C)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static readonly Regex Noise = new Regex(@"\b(?:NVIDIA|GeForce|AMD|Laptop GPU|Notebook|Max-Q|with Max-Q Design|Graphics|GPU|Series)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);

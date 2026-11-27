@@ -5,11 +5,11 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     static class Net
     {
@@ -245,7 +245,7 @@ namespace HermesVoice.Tests
             {
                 Assert.True(h.StartServer("secret", Net.FreeBase()));
                 var (st, j) = await Get(h.Server.Port, "/health");
-                Assert.Equal(200, st); Assert.Equal("HermesVoice", (string)j["mod"]); Assert.True((bool)j["game_loaded"]);
+                Assert.Equal(200, st); Assert.Equal("RimWorldLLM", (string)j["mod"]); Assert.True((bool)j["game_loaded"]);
                 Assert.Equal(3, (int)j["save_epoch"]);
             }
         }
@@ -390,7 +390,7 @@ namespace HermesVoice.Tests
         [Fact]
         public void BridgeJsonPath()
         {
-            Assert.Equal(Path.Combine("cfg", "HermesVoice", "bridge.json"), BridgeInfo.PathIn("cfg"));
+            Assert.Equal(Path.Combine("cfg", "RimWorldLLM", "bridge.json"), BridgeInfo.PathIn("cfg"));
         }
 
         [Fact]

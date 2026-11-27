@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class ShareTests
     {
@@ -20,14 +20,14 @@ namespace HermesVoice.Tests
         {
             string t = ShareFormat.Text(Doc(), true);
             Assert.Equal("New Arrivals — 5th of Aprimay, 5501, 14h\n\nAnna: Nice day.\nAnna (thinking): I wonder if he knows.\nBob: Is it?\n\n"
-                + "— HermesVoice: local AI colonist dialogue for RimWorld\n", t);
+                + "— RimWorldLLM: local AI colonist dialogue for RimWorld\n", t);
         }
 
         [Fact]
         public void FooterOffOmitsFooter()
         {
             string t = ShareFormat.Text(Doc(), false);
-            Assert.DoesNotContain("HermesVoice", t);
+            Assert.DoesNotContain("RimWorldLLM", t);
             Assert.EndsWith("Bob: Is it?\n", t);
         }
 

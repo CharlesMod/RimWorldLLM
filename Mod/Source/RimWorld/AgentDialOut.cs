@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Outbound events (mod -> agent). Send() serializes on the game thread and hands the JSON to one
@@ -36,7 +36,7 @@ namespace HermesVoice
         /// <summary>Call on the game thread: push an event object (the same one GET /events returns). No-op when pushing is off.</summary>
         public static void Push(JObject ev)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null || !s.enabled || !s.sendColonyEvents || string.IsNullOrWhiteSpace(s.agentUrl)) return;
             if (!EventGate.GlobalCapOk()) return;
             string json = ev.ToString(Formatting.None);
@@ -51,7 +51,7 @@ namespace HermesVoice
                 Queue.AddLast(item);
                 if (_thread == null)
                 {
-                    _thread = new Thread(SenderLoop) { IsBackground = true, Name = "HermesVoice-DialOut" };
+                    _thread = new Thread(SenderLoop) { IsBackground = true, Name = "RimWorldLLM-DialOut" };
                     _thread.Start();
                 }
                 Monitor.Pulse(Gate);
@@ -120,7 +120,7 @@ namespace HermesVoice
                 if (_lastLogTs >= 0 && (now - _lastLogTs) < LogInterval.TotalSeconds * Stopwatch.Frequency) return;
                 _lastLogTs = now;
                 if (LogLines.Count < MaxLogLines)
-                    LogLines.Enqueue($"[HermesVoice] Dial-out to agent: {_failures} failure(s), {_dropped} dropped event(s) since last report (last error: {_lastFailure})");
+                    LogLines.Enqueue($"[RimWorldLLM] Dial-out to agent: {_failures} failure(s), {_dropped} dropped event(s) since last report (last error: {_lastFailure})");
                 _failures = 0; _dropped = 0;
             }
         }

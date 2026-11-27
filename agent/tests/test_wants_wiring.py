@@ -2,10 +2,10 @@
 import asyncio
 
 from conftest import run
-from hermesvoice_agent.core import cli
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.toolloop import OpenAIBackend
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+from rimworldllm_agent.core import cli
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.toolloop import OpenAIBackend
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter
 from test_wants import Fake, call, DONE
 
 

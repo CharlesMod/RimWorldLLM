@@ -2,11 +2,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Game-side owner of the local engine: launches or attaches it at startup, keeps the latest status/plan/hardware for the
@@ -40,7 +40,7 @@ namespace HermesVoice
         /// <summary>Error text of the last button action (install, cancel, import...), or null.</summary>
         public static string ActionError { get { return _actionError; } }
 
-        public static bool LocalSource { get { var s = HermesVoiceMod.Settings; return s == null || s.llmSource != "own"; } }
+        public static bool LocalSource { get { var s = RimWorldLLMMod.Settings; return s == null || s.llmSource != "own"; } }
 
         static long Now { get { return Environment.TickCount64; } }
 
@@ -59,14 +59,14 @@ namespace HermesVoice
 
         static string ModRoot()
         {
-            try { return HermesVoiceMod.Instance.Content.RootDir; } catch { return null; }
+            try { return RimWorldLLMMod.Instance.Content.RootDir; } catch { return null; }
         }
 
         // ---------------------------------------------------------------------------------- startup
         /// <summary>Called once at game start (after the bridge has started and written bridge.json). Never blocks.</summary>
         public static void StartAtStartup()
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null || !s.engineAutoStart) return;
             LaunchAsync();
         }
@@ -88,18 +88,18 @@ namespace HermesVoice
                     var r = await EngineLauncher.EnsureRunningAsync(new LaunchOptions { ModRoot = root, BridgeJsonPath = bridgeJson, Pid = pid, HostAdapter = hostCard }).ConfigureAwait(false);
                     _launch = r;
                     if (r.Outcome == LaunchOutcome.NoBinary || r.Outcome == LaunchOutcome.SpawnFailed)
-                        Log.Warning("[HermesVoice] Engine: " + r.Error);
+                        Log.Warning("[RimWorldLLM] Engine: " + r.Error);
                     else if (r.AttachError != null)
-                        Log.Warning("[HermesVoice] Engine attach: " + r.AttachError);
+                        Log.Warning("[RimWorldLLM] Engine attach: " + r.AttachError);
                     if (r.Client != null)
                     {
                         _client = r.Client;
                         await PushSourceAsync().ConfigureAwait(false);
                         await FetchStatusAsync().ConfigureAwait(false);
-                        HermesBridge.RefreshLlm();   // bridge.json carries the engine's real port
+                        RWLBridge.RefreshLlm();   // bridge.json carries the engine's real port
                     }
                 }
-                catch (Exception e) { Log.Warning("[HermesVoice] Engine launch failed: " + e.Message); }
+                catch (Exception e) { Log.Warning("[RimWorldLLM] Engine launch failed: " + e.Message); }
                 finally { _launching = false; }
             });
         }
@@ -122,7 +122,7 @@ namespace HermesVoice
         public static Task PushSourceAsync()
         {
             var c = _client;
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (c == null || s == null) return Task.CompletedTask;
             var st = new EngineSettings();
             if (s.llmSource == "own")
@@ -140,7 +140,7 @@ namespace HermesVoice
             Task.Run(async () =>
             {
                 try { await PushSourceAsync().ConfigureAwait(false); } catch { }
-                HermesBridge.RefreshLlm();
+                RWLBridge.RefreshLlm();
             });
         }
 
@@ -167,7 +167,7 @@ namespace HermesVoice
             try
             {
                 var c = await EnginePlatformDiscover().ConfigureAwait(false);
-                if (c != null) { _client = c; await FetchStatusAsync().ConfigureAwait(false); HermesBridge.RefreshLlm(); }
+                if (c != null) { _client = c; await FetchStatusAsync().ConfigureAwait(false); RWLBridge.RefreshLlm(); }
             }
             catch { }
         }
@@ -255,7 +255,7 @@ namespace HermesVoice
                 try
                 {
                     var r = await c.TestAsync().ConfigureAwait(false);
-                    _test = r.Ok && r.Value != null ? r.Value : new EngineTestResult { Light = "red", Message = r.Error == EngineClient.YieldedError ? UiUtil.T("HV_Probe_Paused") : (r.Error ?? ("HTTP " + r.HttpStatus)) };
+                    _test = r.Ok && r.Value != null ? r.Value : new EngineTestResult { Light = "red", Message = r.Error == EngineClient.YieldedError ? UiUtil.T("RWL_Probe_Paused") : (r.Error ?? ("HTTP " + r.HttpStatus)) };
                 }
                 finally { _testRunning = false; }
             });
@@ -301,7 +301,7 @@ namespace HermesVoice
         public static void CheckCustom(string path)
         {
             var c = _client;
-            if (c == null) { _customCheckError = UiUtil.T("HV_Custom_NoEngine"); return; }
+            if (c == null) { _customCheckError = UiUtil.T("RWL_Custom_NoEngine"); return; }
             if (_customCheckInFlight) return;
             _customCheckInFlight = true;
             _customCheck = null;
@@ -367,7 +367,7 @@ namespace HermesVoice
             try
             {
                 var c = _client;
-                if (c == null) { _removeNote = UiUtil.T("HV_Storage_MemorySkippedEngine"); return; }
+                if (c == null) { _removeNote = UiUtil.T("RWL_Storage_MemorySkippedEngine"); return; }
                 var clock = Stopwatch.StartNew();
                 bool saw = false, ok = false;
                 while (clock.ElapsedMilliseconds < 120000)
@@ -381,17 +381,17 @@ namespace HermesVoice
                     }
                     await Task.Delay(500).ConfigureAwait(false);
                 }
-                if (!ok) { _removeNote = UiUtil.T("HV_Storage_MemorySkippedAgent"); return; }
+                if (!ok) { _removeNote = UiUtil.T("RWL_Storage_MemorySkippedAgent"); return; }
                 string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 var guard = new[] { home, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("XDG_DATA_HOME"),
                     Path.Combine(home, ".local", "share"), Path.Combine(home, "AppData", "Local"),
                     EngineClient.DataDir(plat.Os, n => Environment.GetEnvironmentVariable(n), home) };
                 var d = AgentDataDir.Delete(where, where.Path, guard);
-                if (d.Outcome == AgentDataDir.DeleteOutcome.Deleted) _removeNote = UiUtil.T("HV_Storage_MemoryDeleted", Window_EngineSetup.Bytes(d.FreedBytes));
-                else if (d.Outcome == AgentDataDir.DeleteOutcome.NothingThere) _removeNote = UiUtil.T("HV_Storage_MemoryNone");
-                else { _removeNote = UiUtil.T("HV_Storage_MemoryRefused", where.Path, d.Reason); Log.Warning("[HermesVoice] Agent memory not deleted: " + d.Reason); }
+                if (d.Outcome == AgentDataDir.DeleteOutcome.Deleted) _removeNote = UiUtil.T("RWL_Storage_MemoryDeleted", Window_EngineSetup.Bytes(d.FreedBytes));
+                else if (d.Outcome == AgentDataDir.DeleteOutcome.NothingThere) _removeNote = UiUtil.T("RWL_Storage_MemoryNone");
+                else { _removeNote = UiUtil.T("RWL_Storage_MemoryRefused", where.Path, d.Reason); Log.Warning("[RimWorldLLM] Agent memory not deleted: " + d.Reason); }
             }
-            catch (Exception e) { _removeNote = UiUtil.T("HV_Storage_MemoryRefused", where != null ? where.Path : "", e.Message); }
+            catch (Exception e) { _removeNote = UiUtil.T("RWL_Storage_MemoryRefused", where != null ? where.Path : "", e.Message); }
         }
 
         /// <summary>The model name to show: the engine's human name, the custom file's name, or the model id.</summary>
@@ -416,7 +416,7 @@ namespace HermesVoice
             var p = st.Upgrade.Progress;
             int pct = p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
             string name = !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName : st.Upgrade.Target;
-            return pct >= 0 ? UiUtil.T("HV_Switch_Line", name, pct) : UiUtil.T("HV_Switch_LineNoPct", name);
+            return pct >= 0 ? UiUtil.T("RWL_Switch_Line", name, pct) : UiUtil.T("RWL_Switch_LineNoPct", name);
         }
 
         public static void Install(string modelId) { Act(c => c.InstallAsync(modelId)); }
@@ -468,20 +468,20 @@ namespace HermesVoice
             var l = _launch;
             if (st == null)
             {
-                if (_launching) return UiUtil.T("HV_Eng_Launching");
-                if (l != null && (l.Outcome == LaunchOutcome.NoBinary || l.Outcome == LaunchOutcome.SpawnFailed)) return UiUtil.T("HV_Eng_LaunchError", l.Error);
-                if (l != null && l.Client == null) return UiUtil.T("HV_Eng_NoAnswer");
-                return UiUtil.T("HV_Eng_NotRunning");
+                if (_launching) return UiUtil.T("RWL_Eng_Launching");
+                if (l != null && (l.Outcome == LaunchOutcome.NoBinary || l.Outcome == LaunchOutcome.SpawnFailed)) return UiUtil.T("RWL_Eng_LaunchError", l.Error);
+                if (l != null && l.Client == null) return UiUtil.T("RWL_Eng_NoAnswer");
+                return UiUtil.T("RWL_Eng_NotRunning");
             }
             string phase = PhaseLabel(st.Phase);
             string line = phase;
             if (st.Progress != null && st.Progress.TotalBytes > 0)
-                line += " " + (st.Progress.Verifying ? UiUtil.T("HV_Eng_Verifying") + " " : "")
-                     + UiUtil.T("HV_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
+                line += " " + (st.Progress.Verifying ? UiUtil.T("RWL_Eng_Verifying") + " " : "")
+                     + UiUtil.T("RWL_Eng_Percent", Mathf.RoundToInt((float)st.Progress.Fraction * 100f));
             string mlabel = ModelLabel();
-            if (!string.IsNullOrEmpty(mlabel)) line = UiUtil.T("HV_Eng_ModelPrefix", mlabel) + " | " + line;
-            if (st.Shape != null && st.Shape.Slots > 0) line += " | " + UiUtil.T("HV_Eng_Shape", st.Shape.Slots, Ctx(st.Shape.CtxPerSlot));
-            if (st.TokS.HasValue && st.TokS.Value > 0) line += " | " + UiUtil.T("HV_Eng_TokS", Mathf.RoundToInt((float)st.TokS.Value));
+            if (!string.IsNullOrEmpty(mlabel)) line = UiUtil.T("RWL_Eng_ModelPrefix", mlabel) + " | " + line;
+            if (st.Shape != null && st.Shape.Slots > 0) line += " | " + UiUtil.T("RWL_Eng_Shape", st.Shape.Slots, Ctx(st.Shape.CtxPerSlot));
+            if (st.TokS.HasValue && st.TokS.Value > 0) line += " | " + UiUtil.T("RWL_Eng_TokS", Mathf.RoundToInt((float)st.TokS.Value));
             if (st.Phase == EnginePhase.Error && st.Errors != null && st.Errors.Count > 0) line += " | " + st.Errors[st.Errors.Count - 1];
             return line;
         }
@@ -516,7 +516,7 @@ namespace HermesVoice
         /// <summary>The engine's note about the fallback model, or the stock sentence when it sent none.</summary>
         public static string FallbackNote(string fromEngine)
         {
-            return string.IsNullOrWhiteSpace(fromEngine) ? UiUtil.T("HV_Fallback_DefaultNote") : fromEngine.Trim();
+            return string.IsNullOrWhiteSpace(fromEngine) ? UiUtil.T("RWL_Fallback_DefaultNote") : fromEngine.Trim();
         }
 
         /// <summary>The amber warning line for the status area, or null when the model in use is not a fallback.</summary>
@@ -526,11 +526,11 @@ namespace HermesVoice
             {
                 int pct = StarterPercent();
                 var up = _status.Upgrade != null ? _status.Upgrade.Progress : null;
-                if (up != null && up.Verifying) return UiUtil.T("HV_Starter_StatusLineVerifying", pct < 0 ? 0 : pct);
-                return pct >= 0 ? UiUtil.T("HV_Starter_StatusLine", pct) : UiUtil.T("HV_Starter_StatusLineNoPct");
+                if (up != null && up.Verifying) return UiUtil.T("RWL_Starter_StatusLineVerifying", pct < 0 ? 0 : pct);
+                return pct >= 0 ? UiUtil.T("RWL_Starter_StatusLine", pct) : UiUtil.T("RWL_Starter_StatusLineNoPct");
             }
             if (!FallbackInUse) return null;
-            return UiUtil.T("HV_Fallback_StatusLine", FallbackNote(_status.ModelNote));
+            return UiUtil.T("RWL_Fallback_StatusLine", FallbackNote(_status.ModelNote));
         }
 
         public static string Ctx(int ctx) { return ctx % 1024 == 0 ? (ctx / 1024) + "k" : ctx.ToString(); }
@@ -539,26 +539,26 @@ namespace HermesVoice
         {
             switch (phase)
             {
-                case EnginePhase.NotInstalled: return UiUtil.T("HV_Eng_Phase_NotInstalled");
-                case EnginePhase.Downloading: return UiUtil.T("HV_Eng_Phase_Downloading");
-                case EnginePhase.Installing: return UiUtil.T("HV_Eng_Phase_Installing");
-                case EnginePhase.Starting: return UiUtil.T("HV_Eng_Phase_Starting");
-                case EnginePhase.Loading: return UiUtil.T("HV_Eng_Phase_Loading");
-                case EnginePhase.Ready: return UiUtil.T("HV_Eng_Phase_Ready");
-                case EnginePhase.Resizing: return UiUtil.T("HV_Eng_Phase_Resizing");
-                case EnginePhase.Sleeping: return UiUtil.T("HV_Eng_Phase_Sleeping");
-                case EnginePhase.External: return UiUtil.T("HV_Eng_Phase_External");
-                case EnginePhase.Error: return UiUtil.T("HV_Eng_Phase_Error");
+                case EnginePhase.NotInstalled: return UiUtil.T("RWL_Eng_Phase_NotInstalled");
+                case EnginePhase.Downloading: return UiUtil.T("RWL_Eng_Phase_Downloading");
+                case EnginePhase.Installing: return UiUtil.T("RWL_Eng_Phase_Installing");
+                case EnginePhase.Starting: return UiUtil.T("RWL_Eng_Phase_Starting");
+                case EnginePhase.Loading: return UiUtil.T("RWL_Eng_Phase_Loading");
+                case EnginePhase.Ready: return UiUtil.T("RWL_Eng_Phase_Ready");
+                case EnginePhase.Resizing: return UiUtil.T("RWL_Eng_Phase_Resizing");
+                case EnginePhase.Sleeping: return UiUtil.T("RWL_Eng_Phase_Sleeping");
+                case EnginePhase.External: return UiUtil.T("RWL_Eng_Phase_External");
+                case EnginePhase.Error: return UiUtil.T("RWL_Eng_Phase_Error");
                 default: return phase ?? "?";
             }
         }
 
         // ---------------------------------------------------------------------------------- first run
-        /// <summary>Game thread, every frame (from HermesBridge.FrameUpdate): shows the first-run prompt once.</summary>
+        /// <summary>Game thread, every frame (from RWLBridge.FrameUpdate): shows the first-run prompt once.</summary>
         public static void Tick()
         {
             if (!_showFirstRun || _firstRunShown) return;
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null || s.engineSetupDismissed || s.llmSource == "own") { _showFirstRun = false; return; }
             if (Find.WindowStack == null) return;
             _firstRunShown = true;

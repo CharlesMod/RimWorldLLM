@@ -5,10 +5,10 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Shared payload helpers for colony events. Game thread only.</summary>
     public static class EventPayload
@@ -29,7 +29,7 @@ namespace HermesVoice
         public static void Safe(string what, Action a)
         {
             try { a(); }
-            catch (Exception e) { Log.Warning("[HermesVoice] event '" + what + "' failed: " + e.Message); }
+            catch (Exception e) { Log.Warning("[RimWorldLLM] event '" + what + "' failed: " + e.Message); }
         }
     }
 
@@ -50,7 +50,7 @@ namespace HermesVoice
             EventBus.Reset();
             Pollers.Reset();
             Routes.TrendBook.Clear();
-            HermesBridge.Talk.Clear();
+            RWLBridge.Talk.Clear();
         }
 
         public override void GameComponentTick()
@@ -652,7 +652,7 @@ namespace HermesVoice
 
         public static InteractionPolicy.Tier Tier(string defName)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null) return InteractionPolicy.Tier.Skip;
             if (!ReferenceEquals(_hi, s.interactionHigh) && _hi != s.interactionHigh) { _hi = s.interactionHigh; _high = InteractionPolicy.ParseList(_hi); }
             if (!ReferenceEquals(_id, s.interactionIdle) && _id != s.interactionIdle) { _id = s.interactionIdle; _idle = InteractionPolicy.ParseList(_id); }
@@ -662,7 +662,7 @@ namespace HermesVoice
         public static bool Decide(Pawn a, Pawn b, InteractionDef def, out InteractionPolicy.Tier tier)
         {
             tier = InteractionPolicy.Tier.Skip;
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null || !s.voiceVanillaSocial || a == null || b == null || def == null) return false;
             tier = Tier(def.defName);
             if (tier == InteractionPolicy.Tier.Skip) return false;
@@ -716,7 +716,7 @@ namespace HermesVoice
                 Collect(recipient, snap.Before);
                 __state = snap;
             }
-            catch (Exception e) { Log.Warning("[HermesVoice] social prefix: " + e.Message); }
+            catch (Exception e) { Log.Warning("[RimWorldLLM] social prefix: " + e.Message); }
         }
 
         static bool FastCheck() { return EventGate.GameLive() && EventGate.KindEnabled(EventKind.Social); }
@@ -783,7 +783,7 @@ namespace HermesVoice
     }
 
     // ----------------------------------------------------------------- thoughts
-    /// <summary>Notable new mood thoughts: absolute mood offset of at least 5. Our own HV_ thoughts never count.</summary>
+    /// <summary>Notable new mood thoughts: absolute mood offset of at least 5. Our own RWL_ thoughts never count.</summary>
     [HarmonyPatch(typeof(MemoryThoughtHandler), nameof(MemoryThoughtHandler.TryGainMemory),
         new[] { typeof(Thought_Memory), typeof(Pawn) })]
     public static class Patch_Thought
@@ -797,7 +797,7 @@ namespace HermesVoice
             EventPayload.Safe("thought", () =>
             {
                 var pawn = newThought.pawn;
-                if (newThought.def == null || newThought.def.defName.StartsWith("HV_", System.StringComparison.Ordinal)) return;
+                if (newThought.def == null || newThought.def.defName.StartsWith("RWL_", System.StringComparison.Ordinal)) return;
                 Pollers.FirstCue(pawn, FirstCues.ThoughtCue(newThought.def.defName));
                 if (newThought.def.IsSocial) return;
                 float off = newThought.MoodOffset();

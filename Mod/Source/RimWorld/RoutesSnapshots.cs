@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public static partial class Routes
     {
@@ -54,7 +54,7 @@ namespace HermesVoice
         }
 
         // ------------------------------------------------------------- config
-        public static JObject EventToggles(HermesVoiceSettings s)
+        public static JObject EventToggles(RimWorldLLMSettings s)
         {
             return new JObject
             {
@@ -66,7 +66,7 @@ namespace HermesVoice
 
         static ApiResult Config(RouteContext c)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             return ApiResult.Success(new JObject
             {
                 ["effects"] = s.effects,
@@ -75,8 +75,8 @@ namespace HermesVoice
                 ["wants_enabled"] = s.wantsEnabled,
                 ["recap"] = s.recapOnLoad,
                 ["adult_content"] = s.adultContent,
-                ["recap_open"] = HermesVoiceGameComponent.Instance != null
-                    && HermesVoiceGameComponent.Instance.RecapGate.IsOpen(Environment.TickCount64, s.recapOnLoad),
+                ["recap_open"] = RimWorldLLMGameComponent.Instance != null
+                    && RimWorldLLMGameComponent.Instance.RecapGate.IsOpen(Environment.TickCount64, s.recapOnLoad),
                 ["dreams"] = s.dreamsEnabled,
                 ["art_descriptions"] = s.artDescriptions,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
@@ -86,7 +86,7 @@ namespace HermesVoice
         }
 
         /// <summary>The agent's LLM endpoint for GET /config. Never contains the key, only whether one is set.</summary>
-        public static JObject LlmConfig(HermesVoiceSettings s)
+        public static JObject LlmConfig(RimWorldLLMSettings s)
         {
             return new JObject
             {
@@ -400,7 +400,7 @@ namespace HermesVoice
             if (!string.IsNullOrEmpty(app)) o["appearance"] = app;
 
             // other mods' context (hook API)
-            var extra = HermesVoiceAPI.CollectContext(p);
+            var extra = RimWorldLLMAPI.CollectContext(p);
             o["extra"] = extra;
             return o;
         }

@@ -42,7 +42,7 @@ from .dreams import DreamBook
 from .prompt import build_prefix
 from .sanitize import prompt_cap_words
 
-log = logging.getLogger("hermesvoice")
+log = logging.getLogger("rimworldllm")
 
 
 def merge_player_edits(mind: Mind, theirs: dict | None) -> bool:

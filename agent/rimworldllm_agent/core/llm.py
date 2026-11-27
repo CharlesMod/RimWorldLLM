@@ -43,7 +43,7 @@ class LLMAway(LLMError):
         self.message, self.retry_after = message, retry_after
 
 
-log = logging.getLogger("hermesvoice")
+log = logging.getLogger("rimworldllm")
 AWAY_CAP_S = 30.0
 
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>Last few samples per named series, oldest first. Samples are taken at most once per interval.</summary>
     public sealed class Trends

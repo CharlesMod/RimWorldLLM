@@ -125,7 +125,7 @@ class FakeBridge:
         path = req.url.path
         self.requests.append((req.method, path))
         if path == "/health":
-            return self._ok(mod="HermesVoice", version="2.0.0", game_loaded=self.epoch > 0)
+            return self._ok(mod="RimWorldLLM", version="2.0.0", game_loaded=self.epoch > 0)
         auth = req.headers.get("authorization", "")
         if auth != f"Bearer {self.token}" and not (req.method == "GET" and req.url.params.get("token") == self.token):
             return self._err(401, "unauthorized")

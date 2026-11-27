@@ -1,18 +1,18 @@
 using System;
 using System.Collections;
 using System.IO;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Preview of a share card with Copy text / Save image. The card is drawn with immediate-mode GUI in a fixed rect;
     /// Save image reads that rect back from the screen at the end of the frame (ReadPixels) and writes a PNG.
     /// </summary>
-    public class Window_HermesShare : Window
+    public class Window_RWLShare : Window
     {
         const float CardWidth = 560f, StripHeight = 56f;
         static readonly Color CardColor = new Color(0.09f, 0.09f, 0.11f, 1f);
@@ -28,7 +28,7 @@ namespace HermesVoice
         public override Vector2 InitialSize { get { return new Vector2(lay.Width, lay.Height + StripHeight); } }
         protected override float Margin { get { return 0f; } }
 
-        public Window_HermesShare(ShareDoc doc, bool footer)
+        public Window_RWLShare(ShareDoc doc, bool footer)
         {
             this.doc = doc;
             this.footer = footer;
@@ -114,7 +114,7 @@ namespace HermesVoice
                 {
                     GUI.color = border;
                     Widgets.Label(new Rect(bubble.x + ShareCardLayout.Inner + 4f, ty, bubble.width, Text.LineHeight),
-                        b.Line.Thought ? b.Line.Speaker + " (" + UiUtil.T("HV_Share_Thinking") + ")" : b.Line.Speaker);
+                        b.Line.Thought ? b.Line.Speaker + " (" + UiUtil.T("RWL_Share_Thinking") + ")" : b.Line.Speaker);
                     ty += Text.LineHeight;
                 }
                 GUI.color = b.Line.Thought ? new Color(txt.r, txt.g, txt.b, 0.8f) : txt;
@@ -128,7 +128,7 @@ namespace HermesVoice
             {
                 GUI.color = Color.gray;
                 Widgets.Label(new Rect(bx, card.y + lay.Blocks[lay.Blocks.Count - 1].Y + lay.Blocks[lay.Blocks.Count - 1].Height + 4f, card.width, Text.LineHeight),
-                    UiUtil.T("HV_Share_More", lay.Dropped));
+                    UiUtil.T("RWL_Share_More", lay.Dropped));
             }
             if (lay.FooterY >= 0f)
             {
@@ -173,14 +173,14 @@ namespace HermesVoice
             Widgets.DrawWindowBackground(strip);
             float bw = (strip.width - 40f) / 3f;
             float by = strip.y + 8f, bh = 30f;
-            if (Widgets.ButtonText(new Rect(10f, by, bw, bh), UiUtil.T("HV_Share_CopyText")))
+            if (Widgets.ButtonText(new Rect(10f, by, bw, bh), UiUtil.T("RWL_Share_CopyText")))
             {
                 GUIUtility.systemCopyBuffer = ShareFormat.Text(doc, footer);
-                status = UiUtil.T("HV_Share_Copied");
+                status = UiUtil.T("RWL_Share_Copied");
                 Messages.Message(status, MessageTypeDefOf.TaskCompletion, false);
             }
-            if (Widgets.ButtonText(new Rect(20f + bw, by, bw, bh), UiUtil.T("HV_Share_SaveImage")) && !capturing) pendingSave = true;
-            if (Widgets.ButtonText(new Rect(30f + 2 * bw, by, bw, bh), UiUtil.T("HV_Share_Close"))) Close();
+            if (Widgets.ButtonText(new Rect(20f + bw, by, bw, bh), UiUtil.T("RWL_Share_SaveImage")) && !capturing) pendingSave = true;
+            if (Widgets.ButtonText(new Rect(30f + 2 * bw, by, bw, bh), UiUtil.T("RWL_Share_Close"))) Close();
             if (status.Length > 0)
             {
                 GUI.color = Color.gray;
@@ -208,15 +208,15 @@ namespace HermesVoice
                 string name = ShareFormat.NextFileName(ShareService.ColonyName(), doc.Date, f => File.Exists(Path.Combine(dir, f)));
                 string path = Path.Combine(dir, name);
                 File.WriteAllBytes(path, png);
-                status = UiUtil.T("HV_Share_Saved", name);
+                status = UiUtil.T("RWL_Share_Saved", name);
                 Messages.Message(status, MessageTypeDefOf.TaskCompletion, false);
-                Find.WindowStack.Add(new Dialog_MessageBox(UiUtil.T("HV_Share_SavedBody", path), UiUtil.T("HV_Share_OpenFolder"),
-                    () => ShareService.OpenFolder(dir), UiUtil.T("HV_Share_Close")));
+                Find.WindowStack.Add(new Dialog_MessageBox(UiUtil.T("RWL_Share_SavedBody", path), UiUtil.T("RWL_Share_OpenFolder"),
+                    () => ShareService.OpenFolder(dir), UiUtil.T("RWL_Share_Close")));
             }
             catch (Exception ex)
             {
-                status = UiUtil.T("HV_Share_Failed", ex.Message);
-                Log.Warning("[HermesVoice] share image failed: " + ex);
+                status = UiUtil.T("RWL_Share_Failed", ex.Message);
+                Log.Warning("[RimWorldLLM] share image failed: " + ex);
             }
             capturing = false;
         }

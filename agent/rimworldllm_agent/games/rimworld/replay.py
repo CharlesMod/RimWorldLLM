@@ -1,4 +1,4 @@
-"""``hermesvoice-agent replay <events.jsonl>``: run the director over recorded events against a
+"""``rimworldllm-agent replay <events.jsonl>``: run the director over recorded events against a
 fake bridge and print what would be said.
 
 File format, one JSON object per line:
@@ -56,7 +56,7 @@ async def replay(path: str | Path, cfg: Config, llm: LLMClient | None = None) ->
         fb.add_pawn(i, f"Pawn{i}")
     adapter = RimWorldAdapter()
     upd = adapter.units_per_day
-    with tempfile.TemporaryDirectory(prefix="hermesvoice-replay-") as tmp:     # never touch the real chronicle
+    with tempfile.TemporaryDirectory(prefix="rimworldllm-replay-") as tmp:     # never touch the real chronicle
         cfg = cfg.model_copy(update={"data_dir": Path(tmp), "turn_gap_ticks": 0, "turn_gap_floor_real_s": 0.0})   # offline: no reading time
         bridge = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", fb.token, adapter.protocol)
         d = Director(cfg, bridge, llm or FakeLLM(), adapter, clock=lambda: fb.tick / 60.0)

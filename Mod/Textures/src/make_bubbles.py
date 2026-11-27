@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the speech-balloon textures under Mod/Textures/HermesVoice/Bubbles/.
+"""Generate the speech-balloon textures under Mod/Textures/RimWorldLLM/Bubbles/.
 
 Run:  python3 -m venv --system-site-packages $SCRATCH/venv && $SCRATCH/venv/bin/python Mod/Textures/src/make_bubbles.py
 Needs Pillow only (no numpy). Constants come from bubble_metrics.json (shared with the C# code and preview.py).
@@ -15,7 +15,7 @@ import json, math, os, sys
 from PIL import Image, ImageDraw, ImageChops
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "HermesVoice", "Bubbles")
+OUT = os.path.join(HERE, "..", "RimWorldLLM", "Bubbles")
 M = json.load(open(os.path.join(HERE, "bubble_metrics.json")))
 B, INK, RIM = M["border"], M["ink"], M["rim"]
 SS = 4  # supersampling

@@ -1,7 +1,7 @@
 """Agent configuration.
 
 Sources, lowest to highest priority: defaults, a TOML or JSON file (``--config`` or
-``$HERMESVOICE_CONFIG``), environment variables (``HERMESVOICE_*``). When no LLM URL came from the file or the environment, the ``llm`` block of
+``$RIMWORLDLLM_CONFIG``), environment variables (``RIMWORLDLLM_*``). When no LLM URL came from the file or the environment, the ``llm`` block of
 ``bridge.json`` (``base_url``, ``model``, ``api_key``) is used if ``bridge_json`` is known, so the order for the
 LLM endpoint is env > file > bridge.json > default.
 """
@@ -20,15 +20,15 @@ def _windows() -> bool:
 
 
 def default_data_dir() -> Path:
-    env = os.environ.get("HERMESVOICE_DATA_DIR")
+    env = os.environ.get("RIMWORLDLLM_DATA_DIR")
     if env:
         return Path(env)
     if _windows():
-        # Windows: %LOCALAPPDATA%\hermesvoice-agent, beside the engine's %LOCALAPPDATA%\HermesEngine
+        # Windows: %LOCALAPPDATA%\rimworldllm-agent, beside the engine's %LOCALAPPDATA%\HermesEngine
         # (not a Linux-style %USERPROFILE%\.local\share).
         local = os.environ.get("LOCALAPPDATA")
-        return Path(local if local else Path.home() / "AppData" / "Local") / "hermesvoice-agent"
-    return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "hermesvoice-agent"
+        return Path(local if local else Path.home() / "AppData" / "Local") / "rimworldllm-agent"
+    return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "rimworldllm-agent"
 
 
 class LLMConfig(BaseModel):
@@ -187,18 +187,18 @@ class Config(BaseModel):
 
 
 _ENV = {
-    "HERMESVOICE_LLM_URL": ("llm", "base_url"),
-    "HERMESVOICE_LLM_KEY": ("llm", "api_key"),
-    "HERMESVOICE_LLM_MODEL": ("llm", "model"),
-    "HERMESVOICE_LLM_MODE": ("llm", "mode"),
-    "HERMESVOICE_BRIDGE_URL": ("bridge_url",),
-    "HERMESVOICE_BRIDGE_TOKEN": ("bridge_token",),
-    "HERMESVOICE_WINDOWS": ("windows",),
+    "RIMWORLDLLM_LLM_URL": ("llm", "base_url"),
+    "RIMWORLDLLM_LLM_KEY": ("llm", "api_key"),
+    "RIMWORLDLLM_LLM_MODEL": ("llm", "model"),
+    "RIMWORLDLLM_LLM_MODE": ("llm", "mode"),
+    "RIMWORLDLLM_BRIDGE_URL": ("bridge_url",),
+    "RIMWORLDLLM_BRIDGE_TOKEN": ("bridge_token",),
+    "RIMWORLDLLM_WINDOWS": ("windows",),
 }
 
 
 def load_config(path: str | os.PathLike | None = None) -> Config:
-    path = path or os.environ.get("HERMESVOICE_CONFIG")
+    path = path or os.environ.get("RIMWORLDLLM_CONFIG")
     data: dict = {}
     if path:
         p = Path(path)
@@ -210,8 +210,8 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
             for k in keys[:-1]:
                 d = d.setdefault(k, {})
             d[keys[-1]] = os.environ[env]
-    if "HERMESVOICE_BRIDGE_JSON" in os.environ:
-        data["bridge_json"] = os.environ["HERMESVOICE_BRIDGE_JSON"]
+    if "RIMWORLDLLM_BRIDGE_JSON" in os.environ:
+        data["bridge_json"] = os.environ["RIMWORLDLLM_BRIDGE_JSON"]
     _llm_from_bridge_json(data)
     return Config(**data)
 

@@ -1,4 +1,4 @@
-# HermesVoice 2 — game-side design spec
+# RimWorldLLM 2 — game-side design spec
 
 Status: draft 1, 2026-11-24. Scope: the RimWorld side (mod, agent behaviour, how the model's
 slots are used). The one-click engine and installer are a separate spec, written later.
@@ -70,7 +70,7 @@ Three parts, with a strict split of duties:
 | Part | Owns | Never does |
 |---|---|---|
 | **Mod** (C#, in game) | Senses: events, pawn data, who witnessed what. Display: bubbles, log, inspect pane. Effects: applying thoughts, with all sizes and caps. Saving minds inside the save file. | Call the model. Decide what anyone says. |
-| **Agent** (Hermes, its own program) | Minds: bios, memories, relations, wants. Direction: who speaks and when. Prompt building and slot leasing. | Touch game state except through the mod's endpoints. Set the size of any effect. |
+| **Agent** (its own program) | Minds: bios, memories, relations, wants. Direction: who speaks and when. Prompt building and slot leasing. | Touch game state except through the mod's endpoints. Set the size of any effect. |
 | **Model server** (llama.cpp, Gemma 26B, 3 slots) | Text generation. | Hold anything that must survive: slots are disposable. |
 
 The agent is its own small program, not part of the model server and not inside the game.

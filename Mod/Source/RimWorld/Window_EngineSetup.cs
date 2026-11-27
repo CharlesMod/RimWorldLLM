@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Local model setup, the in-game twin of the engine's setup page: hardware, the recommended model with Install,
@@ -32,7 +32,7 @@ namespace HermesVoice
             closeOnClickedOutside = false;
             absorbInputAroundWindow = false;
             preventCameraMotion = false;
-            optionalTitle = UiUtil.T("HV_Setup_Title");
+            optionalTitle = UiUtil.T("RWL_Setup_Title");
             EngineManager.PollNow();
             if (EngineManager.Client == null && !EngineManager.Launching) EngineManager.LaunchAsync();
         }
@@ -45,20 +45,20 @@ namespace HermesVoice
             Text.Font = GameFont.Small;
         }
 
-        static string Mib(int mib) { return mib >= 1024 ? UiUtil.T("HV_Unit_GB", (mib / 1024f).ToString("0.#")) : UiUtil.T("HV_Unit_MB", mib); }
+        static string Mib(int mib) { return mib >= 1024 ? UiUtil.T("RWL_Unit_GB", (mib / 1024f).ToString("0.#")) : UiUtil.T("RWL_Unit_MB", mib); }
         public static string Bytes(long b)
         {
-            if (b >= 1L << 30) return UiUtil.T("HV_Unit_GB", (b / (double)(1L << 30)).ToString("0.0"));
-            if (b >= 1L << 20) return UiUtil.T("HV_Unit_MB", (b / (double)(1L << 20)).ToString("0.0"));
-            return UiUtil.T("HV_Unit_KB", b / 1024L);
+            if (b >= 1L << 30) return UiUtil.T("RWL_Unit_GB", (b / (double)(1L << 30)).ToString("0.0"));
+            if (b >= 1L << 20) return UiUtil.T("RWL_Unit_MB", (b / (double)(1L << 20)).ToString("0.0"));
+            return UiUtil.T("RWL_Unit_KB", b / 1024L);
         }
         static string Eta(double s)
         {
             if (s <= 0) return "-";
             int t = (int)s;
-            if (t < 90) return UiUtil.T("HV_Unit_Sec", t);
-            if (t < 5400) return UiUtil.T("HV_Unit_Min", t / 60);
-            return UiUtil.T("HV_Unit_HourMin", t / 3600, (t % 3600) / 60);
+            if (t < 90) return UiUtil.T("RWL_Unit_Sec", t);
+            if (t < 5400) return UiUtil.T("RWL_Unit_Min", t / 60);
+            return UiUtil.T("RWL_Unit_HourMin", t / 3600, (t % 3600) / 60);
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -91,18 +91,18 @@ namespace HermesVoice
             if (st != null && st.Agent != null && !string.IsNullOrEmpty(st.Agent.Phase))
             {
                 string am = string.IsNullOrEmpty(st.Agent.Message) ? "" : " - " + st.Agent.Message;
-                Dim(l, UiUtil.T("HV_Setup_Agent", st.Agent.Phase, st.Agent.Restarts) + am);
+                Dim(l, UiUtil.T("RWL_Setup_Agent", st.Agent.Phase, st.Agent.Restarts) + am);
             }
             string swLine = EngineManager.SwitchLine();
             if (swLine != null) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber); l.Label(swLine); GUI.color = Color.white; }
             if (st != null && st.Previous != null) SettingsWindow.PreviousOffer(l, st.Previous);
             string err = EngineManager.ActionError;
-            if (!string.IsNullOrEmpty(err)) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Red); l.Label(UiUtil.T("HV_Setup_ActionError", err)); GUI.color = Color.white; }
+            if (!string.IsNullOrEmpty(err)) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Red); l.Label(UiUtil.T("RWL_Setup_ActionError", err)); GUI.color = Color.white; }
 
             if (EngineManager.Client == null)
             {
                 l.Gap(6f);
-                if (!EngineManager.Launching && l.ButtonText(UiUtil.T("HV_Setup_Retry"))) EngineManager.LaunchAsync();
+                if (!EngineManager.Launching && l.ButtonText(UiUtil.T("RWL_Setup_Retry"))) EngineManager.LaunchAsync();
                 l.End();
                 _viewHeight = l.CurHeight + 12f;
                 Widgets.EndScrollView();
@@ -122,24 +122,24 @@ namespace HermesVoice
 
             // Own file.
             l.GapLine();
-            Dim(l, UiUtil.T("HV_Setup_OwnFileHelp"));
-            if (l.ButtonText(UiUtil.T("HV_Model_UseOwnFile"))) Find.WindowStack.Add(new Window_CustomGguf());
+            Dim(l, UiUtil.T("RWL_Setup_OwnFileHelp"));
+            if (l.ButtonText(UiUtil.T("RWL_Model_UseOwnFile"))) Find.WindowStack.Add(new Window_CustomGguf());
 
             // Import.
             l.GapLine();
-            Head(l, UiUtil.T("HV_Setup_ImportTitle"));
-            Dim(l, UiUtil.T("HV_Setup_ImportHelp"));
+            Head(l, UiUtil.T("RWL_Setup_ImportTitle"));
+            Dim(l, UiUtil.T("RWL_Setup_ImportHelp"));
             var irow = l.GetRect(28f);
             _importPath = Widgets.TextField(new Rect(irow.x, irow.y, irow.width - 130f, 26f), _importPath ?? "");
             bool busy = st != null && EnginePhase.IsBusy(st.Phase);
-            if (Widgets.ButtonText(new Rect(irow.xMax - 120f, irow.y, 120f, 26f), UiUtil.T("HV_Setup_ImportButton"), true, true, !busy && !string.IsNullOrWhiteSpace(_importPath)))
+            if (Widgets.ButtonText(new Rect(irow.xMax - 120f, irow.y, 120f, 26f), UiUtil.T("RWL_Setup_ImportButton"), true, true, !busy && !string.IsNullOrWhiteSpace(_importPath)))
                 EngineManager.Import(_importPath.Trim());
 
             // Footer.
             l.GapLine();
             if (st != null && st.Shape != null && st.Shape.Slots > 0)
-                l.Label(UiUtil.T("HV_Setup_Shape", st.Shape.Slots, EngineManager.Ctx(st.Shape.CtxPerSlot), st.Shape.NCpuMoe, st.Shape.KvType ?? "", Mib(st.Shape.VramMib)));
-            if (l.ButtonText(UiUtil.T("HV_Setup_OpenPage"))) Application.OpenURL(EngineManager.SetupUrl);
+                l.Label(UiUtil.T("RWL_Setup_Shape", st.Shape.Slots, EngineManager.Ctx(st.Shape.CtxPerSlot), st.Shape.NCpuMoe, st.Shape.KvType ?? "", Mib(st.Shape.VramMib)));
+            if (l.ButtonText(UiUtil.T("RWL_Setup_OpenPage"))) Application.OpenURL(EngineManager.SetupUrl);
             if (st != null && st.Errors != null && st.Errors.Count > 0)
             {
                 GUI.color = EngineManager.ColorOf(EngineManager.Light.Red);
@@ -161,16 +161,16 @@ namespace HermesVoice
 
         void DrawHardware(Listing_Standard l)
         {
-            Head(l, UiUtil.T("HV_Setup_HardwareTitle"));
+            Head(l, UiUtil.T("RWL_Setup_HardwareTitle"));
             var hw = EngineManager.Hardware;
-            if (hw == null) { Dim(l, UiUtil.T("HV_Setup_Probing")); return; }
+            if (hw == null) { Dim(l, UiUtil.T("RWL_Setup_Probing")); return; }
             if (hw.Gpus != null && hw.Gpus.Count > 0)
                 foreach (var g in hw.Gpus)
-                    l.Label(UiUtil.T("HV_Setup_Gpu", g.Name, Mib(g.VramTotalMiB), Mib(Math.Max(0, g.VramTotalMiB - g.VramUsedMiB))));
-            else l.Label(UiUtil.T("HV_Setup_NoGpu"));
-            l.Label(UiUtil.T("HV_Setup_Ram", Mib(hw.RamTotalMiB), Mib(hw.RamAvailMiB)));
-            l.Label(UiUtil.T("HV_Setup_Disk", Mib(hw.DiskFreeMiB)));
-            if (l.ButtonText(UiUtil.T("HV_Setup_Reprobe"))) EngineManager.RefreshHardware();
+                    l.Label(UiUtil.T("RWL_Setup_Gpu", g.Name, Mib(g.VramTotalMiB), Mib(Math.Max(0, g.VramTotalMiB - g.VramUsedMiB))));
+            else l.Label(UiUtil.T("RWL_Setup_NoGpu"));
+            l.Label(UiUtil.T("RWL_Setup_Ram", Mib(hw.RamTotalMiB), Mib(hw.RamAvailMiB)));
+            l.Label(UiUtil.T("RWL_Setup_Disk", Mib(hw.DiskFreeMiB)));
+            if (l.ButtonText(UiUtil.T("RWL_Setup_Reprobe"))) EngineManager.RefreshHardware();
         }
 
         void DrawProgress(Listing_Standard l, EngineStatus st)
@@ -185,18 +185,18 @@ namespace HermesVoice
             {
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Widgets.Label(new Rect(bar.x, bar.y, bar.width - 110f, bar.height),
-                    Bytes(p.DoneBytes) + " / " + Bytes(p.TotalBytes) + "   " + UiUtil.T("HV_Setup_Speed", Bytes((long)p.RateBps)) + "   " + UiUtil.T("HV_Setup_Eta", Eta(p.EtaSeconds)));
+                    Bytes(p.DoneBytes) + " / " + Bytes(p.TotalBytes) + "   " + UiUtil.T("RWL_Setup_Speed", Bytes((long)p.RateBps)) + "   " + UiUtil.T("RWL_Setup_Eta", Eta(p.EtaSeconds)));
                 Text.Anchor = TextAnchor.UpperLeft;
             }
-            if (Widgets.ButtonText(new Rect(bar.xMax - 100f, bar.y, 100f, 24f), UiUtil.T("HV_Setup_Cancel"))) EngineManager.Cancel();
-            if (p != null && !string.IsNullOrEmpty(p.Step)) Dim(l, UiUtil.T("HV_Setup_Step", p.Step));
+            if (Widgets.ButtonText(new Rect(bar.xMax - 100f, bar.y, 100f, 24f), UiUtil.T("RWL_Setup_Cancel"))) EngineManager.Cancel();
+            if (p != null && !string.IsNullOrEmpty(p.Step)) Dim(l, UiUtil.T("RWL_Setup_Step", p.Step));
         }
 
         void DrawModels(Listing_Standard l, EngineStatus st)
         {
             var plan = EngineManager.Plan;
-            Head(l, UiUtil.T("HV_Setup_ModelsTitle"));
-            if (plan == null || plan.Models == null) { Dim(l, UiUtil.T("HV_Setup_Probing")); return; }
+            Head(l, UiUtil.T("RWL_Setup_ModelsTitle"));
+            if (plan == null || plan.Models == null) { Dim(l, UiUtil.T("RWL_Setup_Probing")); return; }
             bool busy = st != null && EnginePhase.IsBusy(st.Phase);
             var models = plan.Models;
 
@@ -204,7 +204,7 @@ namespace HermesVoice
             if (rec != null)
             {
                 Text.Font = GameFont.Medium;
-                l.Label(UiUtil.T("HV_Setup_Recommended"));
+                l.Label(UiUtil.T("RWL_Setup_Recommended"));
                 Text.Font = GameFont.Small;
                 ModelRow(l, rec, busy, st, true);
                 l.GapLine();
@@ -221,38 +221,38 @@ namespace HermesVoice
                      : m.Fits == "tight" ? EngineManager.ColorOf(EngineManager.Light.Amber)
                      : EngineManager.ColorOf(EngineManager.Light.Red);
             string head = (string.IsNullOrEmpty(m.Name) ? m.Id : m.Name) + "  (" + Bytes(m.Size) + ")";
-            if (m.Installed) head += "  " + UiUtil.T("HV_Setup_Installed");
+            if (m.Installed) head += "  " + UiUtil.T("RWL_Setup_Installed");
             bool inUse = st != null && st.Model == m.Id && st.Phase == EnginePhase.Ready;
-            if (inUse) head += "  " + UiUtil.T("HV_Setup_InUse");
-            if (EngineManager.Plan != null && EngineManager.Plan.Recommended == m.Id) head += "  " + UiUtil.T("HV_Setup_RecommendedMark");
+            if (inUse) head += "  " + UiUtil.T("RWL_Setup_InUse");
+            if (EngineManager.Plan != null && EngineManager.Plan.Recommended == m.Id) head += "  " + UiUtil.T("RWL_Setup_RecommendedMark");
             Widgets.Label(new Rect(row.x, row.y, row.width - btnW - 10f, 22f), head);
             GUI.color = vc;
-            string verdict = UiUtil.T(m.Fits == "yes" ? "HV_Setup_FitYes" : m.Fits == "tight" ? "HV_Setup_FitTight" : "HV_Setup_FitNo");
+            string verdict = UiUtil.T(m.Fits == "yes" ? "RWL_Setup_FitYes" : m.Fits == "tight" ? "RWL_Setup_FitTight" : "RWL_Setup_FitNo");
             string why = string.IsNullOrEmpty(m.Why) ? "" : " - " + m.Why;
-            string est = m.EstVramMib > 0 ? "  " + UiUtil.T("HV_Setup_Est", Mib(m.EstVramMib), Mib(m.EstRamMib)) : "";
+            string est = m.EstVramMib > 0 ? "  " + UiUtil.T("RWL_Setup_Est", Mib(m.EstVramMib), Mib(m.EstRamMib)) : "";
             var planNow = EngineManager.Plan;
             long free = planNow != null ? planNow.DiskFreeBytes : -1;
             bool noSpace = !m.Installed && m.DiskNeedBytes > 0 && free >= 0 && m.DiskNeedBytes > free;
-            if (!m.Installed && m.DiskNeedBytes > 0 && free >= 0) est += "  " + UiUtil.T(noSpace ? "HV_Setup_DiskShort" : "HV_Setup_DiskNeed", Bytes(m.DiskNeedBytes), Bytes(free));
+            if (!m.Installed && m.DiskNeedBytes > 0 && free >= 0) est += "  " + UiUtil.T(noSpace ? "RWL_Setup_DiskShort" : "RWL_Setup_DiskNeed", Bytes(m.DiskNeedBytes), Bytes(free));
             Widgets.Label(new Rect(row.x, row.y + 20f, row.width - btnW - 10f, big ? 38f : 32f), verdict + why + est);
             GUI.color = Color.white;
             if (m.Fallback)
             {
                 GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber);
-                Widgets.Label(new Rect(row.x, row.y + (big ? 58f : 52f), row.width - btnW - 10f, 36f), UiUtil.T("HV_Fallback_RowWarning", EngineManager.FallbackNote(m.FallbackNote)));
-                Widgets.Label(new Rect(row.xMax - btnW, row.y + 34f, btnW, 22f), UiUtil.T("HV_Fallback_Badge"));
+                Widgets.Label(new Rect(row.x, row.y + (big ? 58f : 52f), row.width - btnW - 10f, 36f), UiUtil.T("RWL_Fallback_RowWarning", EngineManager.FallbackNote(m.FallbackNote)));
+                Widgets.Label(new Rect(row.xMax - btnW, row.y + 34f, btnW, 22f), UiUtil.T("RWL_Fallback_Badge"));
                 GUI.color = Color.white;
             }
             var btn = new Rect(row.xMax - btnW, row.y + 4f, btnW, 28f);
-            if (m.ImportOnly && !m.Installed) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("HV_Setup_ImportOnly")); GUI.color = Color.white; }
-            else if (inUse) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("HV_Setup_InUse")); GUI.color = Color.white; }
-            else if (Widgets.ButtonText(btn, UiUtil.T(m.Installed ? "HV_Setup_Use" : (st != null && st.Phase == EnginePhase.Ready ? "HV_Setup_Switch" : "HV_Setup_Install")), true, true, !busy && m.Fits != "no" && !noSpace))
+            if (m.ImportOnly && !m.Installed) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("RWL_Setup_ImportOnly")); GUI.color = Color.white; }
+            else if (inUse) { GUI.color = Color.gray; Widgets.Label(btn, UiUtil.T("RWL_Setup_InUse")); GUI.color = Color.white; }
+            else if (Widgets.ButtonText(btn, UiUtil.T(m.Installed ? "RWL_Setup_Use" : (st != null && st.Phase == EnginePhase.Ready ? "RWL_Setup_Switch" : "RWL_Setup_Install")), true, true, !busy && m.Fits != "no" && !noSpace))
             {
                 if (!m.Fallback) EngineManager.Install(m.Id);
                 else
                 {
                     string id = m.Id;
-                    Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(UiUtil.T("HV_Fallback_ConfirmText", EngineManager.FallbackNote(m.FallbackNote)), () => EngineManager.Install(id)));
+                    Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(UiUtil.T("RWL_Fallback_ConfirmText", EngineManager.FallbackNote(m.FallbackNote)), () => EngineManager.Install(id)));
                 }
             }
         }

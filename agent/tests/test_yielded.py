@@ -3,9 +3,9 @@ import logging
 import httpx
 
 from conftest import run
-from hermesvoice_agent.core.config import LLMConfig
-from hermesvoice_agent.core.llm import HttpLLM, LLMAway, LLMError
-from hermesvoice_agent.core.toolloop.backend import BackendAway, BackendError, OpenAIBackend
+from rimworldllm_agent.core.config import LLMConfig
+from rimworldllm_agent.core.llm import HttpLLM, LLMAway, LLMError
+from rimworldllm_agent.core.toolloop.backend import BackendAway, BackendError, OpenAIBackend
 
 YIELDED = {"error": {"code": "yielded", "type": "unavailable_error", "message": "Paused while RimWorld runs"}}
 LOADING = {"error": {"code": 503, "type": "unavailable_error", "message": "Loading model"}}
@@ -53,7 +53,7 @@ def test_retry_after_capped_and_defaulted():
 def test_backoff_skips_network_and_logs_once(caplog):
     s = Server()
     c = llm(s)
-    with caplog.at_level(logging.INFO, logger="hermesvoice"):
+    with caplog.at_level(logging.INFO, logger="rimworldllm"):
         for _ in range(5):
             try:
                 call(c)
@@ -67,7 +67,7 @@ def test_backoff_skips_network_and_logs_once(caplog):
 def test_comes_back_after_backoff(caplog):
     s = Server()
     c = llm(s)
-    with caplog.at_level(logging.INFO, logger="hermesvoice"):
+    with caplog.at_level(logging.INFO, logger="rimworldllm"):
         try:
             call(c)
         except LLMAway:
@@ -96,7 +96,7 @@ def backend(srv):
 def test_backend_yielded_away_and_backoff(caplog):
     s = Server()
     b = backend(s)
-    with caplog.at_level(logging.INFO, logger="hermesvoice"):
+    with caplog.at_level(logging.INFO, logger="rimworldllm"):
         for _ in range(3):
             try:
                 run(b.chat([{"role": "user", "content": "x"}]))

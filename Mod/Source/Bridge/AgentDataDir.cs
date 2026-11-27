@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
-    /// <summary>Where the agent keeps its memory and logs, and a careful way to empty it. Mirrors agent/hermesvoice_agent/core/config.py default_data_dir(). Verse-free.</summary>
+    /// <summary>Where the agent keeps its memory and logs, and a careful way to empty it. Mirrors agent/rimworldllm_agent/core/config.py default_data_dir(). Verse-free.</summary>
     public static class AgentDataDir
     {
-        public const string LeafName = "hermesvoice-agent";
+        public const string LeafName = "rimworldllm-agent";
 
         /// <summary>True when the removal job is over and the agent is down, so its folder may be emptied. <paramref name="sawRemoving"/>: the engine has reported phase "removing" at least once.</summary>
         public static bool RemovalFinished(string phase, string agentPhase, bool sawRemoving, long elapsedMs)
@@ -34,14 +34,14 @@ namespace HermesVoice.Bridge
         public sealed class Resolved
         {
             public string Path;
-            /// <summary>True when HERMESVOICE_DATA_DIR chose the folder (the leaf name is then the player's own).</summary>
+            /// <summary>True when RIMWORLDLLM_DATA_DIR chose the folder (the leaf name is then the player's own).</summary>
             public bool Overridden;
         }
 
         /// <summary><paramref name="os"/> is windows, linux or darwin; <paramref name="env"/> returns null for an unset variable.</summary>
         public static Resolved Resolve(string os, Func<string, string> env, string home)
         {
-            string over = env("HERMESVOICE_DATA_DIR");
+            string over = env("RIMWORLDLLM_DATA_DIR");
             if (!string.IsNullOrEmpty(over)) return new Resolved { Path = over, Overridden = true };
             if (os == "windows")
             {

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public static partial class Routes
     {
@@ -84,8 +84,8 @@ namespace HermesVoice
             // Show.
             SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
             DirectorCamera.OnConversation(speaker, listener);
-            bool fromPlayer = talkId != null && HermesBridge.Talk.Contains(talkId);
-            if (talkId != null) HermesBridge.Talk.Remove(talkId);
+            bool fromPlayer = talkId != null && RWLBridge.Talk.Contains(talkId);
+            if (talkId != null) RWLBridge.Talk.Remove(talkId);
 
             // A line for a vanilla interaction goes onto that interaction's log entry and thoughts, and adds no effect of its own.
             string attach = null;
@@ -115,17 +115,17 @@ namespace HermesVoice
             if (!attached)
                 try
                 {
-                    var idef = DefDatabase<InteractionDef>.GetNamedSilentFail("HV_Say");
+                    var idef = DefDatabase<InteractionDef>.GetNamedSilentFail("RWL_Say");
                     if (idef != null)
                     {
-                        Find.PlayLog.Add(new PlayLogEntry_HermesSay(idef, speaker, listener, text, outcome.Effect));
+                        Find.PlayLog.Add(new PlayLogEntry_RWLSay(idef, speaker, listener, text, outcome.Effect));
                         logged = true;
                     }
-                    if (combat) Find.BattleLog.Add(new BattleLogEntry_HermesSay(speaker, listener, text));
+                    if (combat) Find.BattleLog.Add(new BattleLogEntry_RWLSay(speaker, listener, text));
                 }
-                catch (Exception e) { Log.Warning("[HermesVoice] play log write failed: " + e.Message); }
+                catch (Exception e) { Log.Warning("[RimWorldLLM] play log write failed: " + e.Message); }
 
-            var logEntry = HermesVoiceGameComponent.Instance?.ConversationLog.Add(speaker.thingIDNumber, speaker.LabelCap, text);
+            var logEntry = RimWorldLLMGameComponent.Instance?.ConversationLog.Add(speaker.thingIDNumber, speaker.LabelCap, text);
             if (logEntry != null)
             {
                 logEntry.ListenerId = listener != null ? listener.thingIDNumber : 0;
@@ -165,13 +165,13 @@ namespace HermesVoice
                 if (!MindBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"thought\", \"diary\" or \"dream\"");
             }
             int tick = Find.TickManager.TicksGame;
-            if (kind == MindBook.KindDiary) HermesBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
-            else HermesBridge.Minds.AddThought(p.thingIDNumber, tick, text);
+            if (kind == MindBook.KindDiary) RWLBridge.Minds.AddDiary(p.thingIDNumber, tick, text);
+            else RWLBridge.Minds.AddThought(p.thingIDNumber, tick, text);
             // A thought also shows on the map as a short cloud (never a diary). "surface" is the short line for the map.
             if (kind == MindBook.KindThought) SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
             // A dream is stored like a thought and drawn as the same cloud, even over a sleeper (the draw path never
             // skips sleeping pawns); the dreams setting turns the cloud off, the Mind tab still shows it.
-            else if (kind == MindBook.KindDream && HermesVoiceMod.Settings != null && HermesVoiceMod.Settings.dreamsEnabled)
+            else if (kind == MindBook.KindDream && RimWorldLLMMod.Settings != null && RimWorldLLMMod.Settings.dreamsEnabled)
                 SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
@@ -191,7 +191,7 @@ namespace HermesVoice
                 kind = kt.Type == JTokenType.String ? (string)kt : "";
                 if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\", \"major\" or \"lore\"");
             }
-            int count = HermesBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
+            int count = RWLBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
         }
 
@@ -200,7 +200,7 @@ namespace HermesVoice
             int since = 0;
             string q = c.Q("since_day");
             if (!string.IsNullOrEmpty(q) && !int.TryParse(q, out since)) return ApiResult.Fail("bad_request", "since_day must be an integer");
-            return ApiResult.Success(new JObject { ["entries"] = HermesBridge.Chronicle.Since(since) });
+            return ApiResult.Success(new JObject { ["entries"] = RWLBridge.Chronicle.Since(since) });
         }
 
         // ------------------------------------------------------------- recap
@@ -220,12 +220,12 @@ namespace HermesVoice
             }
             var lines = RecapGate.CleanLines(raw);
             if (lines.Count == 0) return ApiResult.Fail("bad_request", "lines is empty");
-            var comp = HermesVoiceGameComponent.Instance;
+            var comp = RimWorldLLMGameComponent.Instance;
             if (comp == null) return ApiResult.Fail("no_game");
-            var verdict = comp.RecapGate.Check(b.Value<int>("epoch"), Environment.TickCount64, HermesVoiceMod.Settings.recapOnLoad);
+            var verdict = comp.RecapGate.Check(b.Value<int>("epoch"), Environment.TickCount64, RimWorldLLMMod.Settings.recapOnLoad);
             if (verdict != RecapVerdict.Accept) return ApiResult.Fail(RecapGate.ErrorCode(verdict), verdict.ToString());
             string colony = Faction.OfPlayer != null ? Faction.OfPlayer.Name : "";
-            Find.LetterStack.ReceiveLetter(UiUtil.T("HV_Recap_Title", colony), string.Join("\n\n", lines), LetterDefOf.NeutralEvent);
+            Find.LetterStack.ReceiveLetter(UiUtil.T("RWL_Recap_Title", colony), string.Join("\n\n", lines), LetterDefOf.NeutralEvent);
             return ApiResult.Success(new JObject { ["shown"] = true });
         }
 
@@ -240,7 +240,7 @@ namespace HermesVoice
             Pawn p;
             var err = MindPawn(c, out p);
             if (err != null) return err;
-            return ApiResult.Success(HermesBridge.Minds.Get(p.thingIDNumber));
+            return ApiResult.Success(RWLBridge.Minds.Get(p.thingIDNumber));
         }
 
         static ApiResult MindPut(RouteContext c)
@@ -252,7 +252,7 @@ namespace HermesVoice
             if (b["rev"] == null || b["rev"].Type != JTokenType.Integer) return ApiResult.Fail("bad_request", "rev (integer) is required");
             if (b["mind"] == null) return ApiResult.Fail("bad_request", "mind is required (an object, or null to clear)");
             int newRev;
-            var minds = HermesBridge.Minds;
+            var minds = RWLBridge.Minds;
             switch (minds.Put(p.thingIDNumber, b.Value<int>("rev"), b["mind"], out newRev))
             {
                 case MindBook.PutResult.Conflict:
@@ -266,7 +266,7 @@ namespace HermesVoice
         // -------------------------------------------------------------- talk
         static ApiResult Talk(RouteContext c)
         {
-            return ApiResult.Success(new JObject { ["requests"] = HermesBridge.Talk.ToJson() });
+            return ApiResult.Success(new JObject { ["requests"] = RWLBridge.Talk.ToJson() });
         }
     }
 }

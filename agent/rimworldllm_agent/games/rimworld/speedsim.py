@@ -4,7 +4,7 @@ The same events, in game ticks, are compressed in real time; the director runs u
 bridge with a fake LLM that has realistic latency (3 slots, jitter). Time is virtual: a loop whose clock jumps to
 the next timer, so a day at speed 1 (1000 s) costs a second of CPU and results are deterministic.
 
-``python -m hermesvoice_agent.games.rimworld.speedsim`` prints the table; tests/test_speed_sim.py asserts bounds.
+``python -m rimworldllm_agent.games.rimworld.speedsim`` prints the table; tests/test_speed_sim.py asserts bounds.
 """
 from __future__ import annotations
 
@@ -314,7 +314,7 @@ async def _simulate(events: list[SimEvent], schedule: Schedule, cfg: Config, *, 
     adapter = RimWorldAdapter()
     bridge = BridgeClient(httpx.AsyncClient(transport=tr), "http://fake", fb.token, adapter.protocol)
     llm = SimLLM(random.Random(seed + 1))
-    with tempfile.TemporaryDirectory(prefix="hermesvoice-speedsim-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="rimworldllm-speedsim-") as tmp:
         cfg = cfg.model_copy(update={"data_dir": Path(tmp)})
         d = Director(cfg, bridge, llm, adapter, clock=loop.time, rng=random.Random(seed + 2))
         # ---- probes (the director is not modified for them)

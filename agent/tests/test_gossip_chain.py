@@ -1,8 +1,8 @@
 """Aliveness item 3: gossip source chains, per-hop decay, duplicate merge, pass-on hints and reputations."""
 from conftest import run
-from hermesvoice_agent.core import gossip, memory
-from hermesvoice_agent.core.minds import CRel, Memory, Mind
-from hermesvoice_agent.core.prompt import block_c, block_d
+from rimworldllm_agent.core import gossip, memory
+from rimworldllm_agent.core.minds import CRel, Memory, Mind
+from rimworldllm_agent.core.prompt import block_c, block_d
 
 NAMES = {1: "Ana", 2: "Bram", 3: "Cy", 4: "Dee"}
 
@@ -130,7 +130,7 @@ def test_reputation_lines_from_heard_memories_and_in_block_c():
     assert set(reps) == {3} and reps[3].startswith("Cy hoards food") and "(2 people)" in reps[3]
     assert 1 not in reps                                           # the teller is not the subject
     m = Mind(actor_id=4, name="Dee")
-    from hermesvoice_agent.core.minds import Relation
+    from rimworldllm_agent.core.minds import Relation
     for i in (1, 2, 3):
         m.relations[str(i)] = Relation(name=NAMES[i], opinion=10 - i)
     m.freeze_relations(reputations={"3": reps[3], "1": "Ana is kind", "2": "Bram is loud"}, rep_limit=2)

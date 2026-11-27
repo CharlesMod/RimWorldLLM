@@ -1,5 +1,5 @@
 """Game-agnostic CLI shell: run | test-endpoint | replay, for the adapter passed to ``main``.
-``hermesvoice_agent.cli`` is the entry point that supplies one."""
+``rimworldllm_agent.cli`` is the entry point that supplies one."""
 from __future__ import annotations
 
 import argparse
@@ -29,7 +29,7 @@ def _cfg(args) -> Config:
     return cfg
 
 
-log = logging.getLogger("hermesvoice.cli")
+log = logging.getLogger("rimworldllm.cli")
 BRIDGE_POLL_S = 2.0
 
 
@@ -117,8 +117,8 @@ async def _replay(cfg: Config, adapter: GameAdapter, path: str, use_llm: bool) -
 
 
 def main(adapter: GameAdapter, argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="hermesvoice-agent")
-    ap.add_argument("--config", help="TOML or JSON config file (or $HERMESVOICE_CONFIG)")
+    ap = argparse.ArgumentParser(prog="rimworldllm-agent")
+    ap.add_argument("--config", help="TOML or JSON config file (or $RIMWORLDLLM_CONFIG)")
     ap.add_argument("-v", "--verbose", action="store_true")
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run", help="run the agent against the bridge")

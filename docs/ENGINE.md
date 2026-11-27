@@ -1,4 +1,4 @@
-# The local engine (easyEngine) in HermesVoice
+# The local engine (easyEngine) in RimWorldLLM
 
 The one-click local LLM engine lives in its own repo, **[easyEngine](https://github.com/CharlesMod/easyEngine)**,
 because it is game-agnostic. Its design and contract (control API, game profile, CLI, the context
@@ -23,7 +23,7 @@ then `agent/build-wheel.sh` here.
   for one confirmation), as an amber line under the status in Settings, Connection, and once per game
   session as a neutral message after a save loads (`Bridge/FallbackNotice.cs` holds the once-only logic).
   The setting "Don't warn about the small model again" silences the message. All text is Keyed
-  (`HV_Fallback_*`); the note text itself comes from the engine.
+  (`RWL_Fallback_*`); the note text itself comes from the engine.
 - Settings, Connection section: **LLM source: Local engine (default) | My own endpoint.**
   Local shows the engine's phase light and one line (model, slots × ctx, tok/s) and a
   **Set up / Change model…** button that opens `Window_EngineSetup` (the same content as the
@@ -31,7 +31,7 @@ then `agent/build-wheel.sh` here.
   endpoint keeps today's fields and Test button, saved to the engine as external mode and to
   `bridge.json` as today.
 - First run: if the engine says `not_installed`, the mod shows one dismissible letter
-  ("HermesVoice can set up a local model: Set up / Use my own endpoint / Later").
+  ("RimWorldLLM can set up a local model: Set up / Use my own endpoint / Later").
 - Nothing here blocks the game thread: all engine calls are async with short timeouts, results
   marshalled to the main thread.
 

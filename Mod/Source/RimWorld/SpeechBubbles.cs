@@ -4,7 +4,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public class Bubble
     {
@@ -74,7 +74,7 @@ namespace HermesVoice
         /// </summary>
         public static void AddThought(Pawn pawn, string surface, string text)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (pawn == null || s == null || !s.showBubbles || !s.showThoughts || s.bubbleStyle == "classic") return;
             string line = ThoughtPacing.Surface(surface, text);
             if (line == null) return;
@@ -105,7 +105,7 @@ namespace HermesVoice
         }
 
         // Release waiting thoughts whose pawn has stopped speaking (called once per frame by the comic draw path).
-        static void PromoteThoughts(Map map, HermesVoiceSettings s, int now, int durationTicks)
+        static void PromoteThoughts(Map map, RimWorldLLMSettings s, int now, int durationTicks)
         {
             if (Pacing.PendingCount == 0) return;
             _ready.Clear();
@@ -134,13 +134,13 @@ namespace HermesVoice
         {
             if (Event.current == null || Event.current.type != EventType.Repaint) return;
             var map = Find.CurrentMap;
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (map == null || s == null) return;
             if (s.bubbleStyle == "classic") DrawClassic(map, s); else DrawComic(map, s);
         }
 
         /// <summary>The original rectangular boxes, kept for the "Classic" bubble style.</summary>
-        static void DrawClassic(Map map, HermesVoiceSettings s)
+        static void DrawClassic(Map map, RimWorldLLMSettings s)
         {
             bool draw = s.showBubbles;
 
@@ -211,7 +211,7 @@ namespace HermesVoice
             [HarmonyPrefix]
             public static void Prefix()
             {
-                HermesVoiceGameComponent.OnGameEnd();
+                RimWorldLLMGameComponent.OnGameEnd();
             }
         }
 

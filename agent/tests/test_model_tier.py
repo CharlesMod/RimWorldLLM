@@ -3,10 +3,10 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.config import Config, LLMConfig
-from hermesvoice_agent.core.llm import HttpLLM
-from hermesvoice_agent.core.model_tier import ModelTier, classify
-from hermesvoice_agent.core.passes import Spoken
+from rimworldllm_agent.core.config import Config, LLMConfig
+from rimworldllm_agent.core.llm import HttpLLM
+from rimworldllm_agent.core.model_tier import ModelTier, classify
+from rimworldllm_agent.core.passes import Spoken
 
 PATS = ("e2b", "e4b")
 AIM = "I wish somebody would notice how tired I am"

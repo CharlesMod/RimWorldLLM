@@ -28,7 +28,7 @@ from .sanitize import prompt_cap_words, sanitize_prose, Sanitized
 if TYPE_CHECKING:
     from .director import Director
 
-log = logging.getLogger("hermesvoice")
+log = logging.getLogger("rimworldllm")
 
 MAX_DIARY_MEMORIES = 10
 

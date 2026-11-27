@@ -3,17 +3,17 @@ reflection and diary reading the stream, and the master switch off == today's ca
 import re
 
 from conftest import run
-from hermesvoice_agent.core import gamedata as gd
-from hermesvoice_agent.core import inner
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.lease import Cls, Lease, Now
-from hermesvoice_agent.core.minds import InnerThought, Memory, Mind
-from hermesvoice_agent.core.passes import (Spoken, SanitizeCtx, intent_pass_aim, parse_intent_aim, speak)
-from hermesvoice_agent.core.prompt import (AIM_ONLY_GRAMMAR, DELIVERIES, Scene, block_d, block_g, build_prefix,
+from rimworldllm_agent.core import gamedata as gd
+from rimworldllm_agent.core import inner
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.lease import Cls, Lease, Now
+from rimworldllm_agent.core.minds import InnerThought, Memory, Mind
+from rimworldllm_agent.core.passes import (Spoken, SanitizeCtx, intent_pass_aim, parse_intent_aim, speak)
+from rimworldllm_agent.core.prompt import (AIM_ONLY_GRAMMAR, DELIVERIES, Scene, block_d, block_g, build_prefix,
                                            grammar_for, intent_request, line_messages)
-from hermesvoice_agent.core.fakes import FakeLLM
-from hermesvoice_agent.core.reflection import reflection_messages
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.fakes import FakeLLM
+from rimworldllm_agent.core.reflection import reflection_messages
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 AD = RimWorldAdapter()
 LABELS = AD.intent_labels
@@ -338,7 +338,7 @@ def test_reflection_sees_the_stream_and_keeps_two():
     assert on[1][1].count("<game_data") == on[1][1].count("</game_data>")
     off = reflection_messages(AD, m, {}, 10, DAY)
     assert "THINKING" not in off[1][1]
-    from hermesvoice_agent.core.reflection import ReflectResult, apply_reflection
+    from rimworldllm_agent.core.reflection import ReflectResult, apply_reflection
     apply_reflection(m, ReflectResult(bio="I am changing slowly now.", wants=[], relations=[], merge=[]), 10, {}, inner_keep=2)
     assert [t.text for t in m.inner] == ["I keep thinking about 3", "I keep thinking about 4"]
     inner.add_inner(m, "more", "aim", 11)
@@ -422,8 +422,8 @@ def test_master_off_keeps_the_stream_out_of_prompts_even_with_old_entries(world)
 
 
 def test_repeated_aim_is_not_stored_twice():
-    from hermesvoice_agent.core import inner
-    from hermesvoice_agent.core.minds import Mind
+    from rimworldllm_agent.core import inner
+    from rimworldllm_agent.core.minds import Mind
     m = Mind(actor_id=1, name="Ana")
     inner.add_inner(m, "I hope the food tastes good enough to keep us going.", "aim", 10)
     assert inner.repeats_recent_aim(m, "I hope the food tastes good enough to keep us going.")

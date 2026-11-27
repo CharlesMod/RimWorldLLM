@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     public sealed class ArtEntry
     {

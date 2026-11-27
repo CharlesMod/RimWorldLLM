@@ -1,6 +1,6 @@
 using System;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>What the bridge needs from a host game. A RimWorld implementation lives in the mod; another game supplies its own.</summary>
     public interface IGameAdapter

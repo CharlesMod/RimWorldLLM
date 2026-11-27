@@ -2,7 +2,7 @@
 Prints one JSON object per label (means over reps, sums for counts)."""
 import json, os, statistics as st, sys
 sys.path.insert(0, "/var/home/cmod/rimworld-hermes/.claude/worktrees/gpubench/agent")
-from hermesvoice_agent.core import loopguard as LG
+from rimworldllm_agent.core import loopguard as LG
 
 def ld(d, f):
     p = os.path.join(d, f + ".json")

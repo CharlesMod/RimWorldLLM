@@ -1,4 +1,4 @@
-# Milestone 0 results: measurements for HermesVoice 2
+# Milestone 0 results: measurements for RimWorldLLM 2
 
 Run 2026-11-24 on the sprinter's RTX 5080. Harness: `bench/m0/` (README there has the rerun recipe). Raw data: `bench/m0/results/` (`summary.md` has every table in full).
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import random
 
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge, rich_pawn
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge, rich_pawn
 
 DAY = 60000
 BASE_DAY = 40          # game day number of soak day 0 (so tales can point at earlier days)

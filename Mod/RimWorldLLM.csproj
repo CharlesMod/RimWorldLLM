@@ -4,8 +4,8 @@
         <OutputType>Library</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <PlatformTarget>x64</PlatformTarget>
-        <RootNamespace>HermesVoice</RootNamespace>
-        <AssemblyName>HermesVoice</AssemblyName>
+        <RootNamespace>RimWorldLLM</RootNamespace>
+        <AssemblyName>RimWorldLLM</AssemblyName>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <Nullable>disable</Nullable>
         <LangVersion>latest</LangVersion>
@@ -23,7 +23,7 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         </ItemGroup>
 
-    <!-- Newtonsoft.Json is not part of RimWorld; it is copied next to HermesVoice.dll in $(GameVersion)/Assemblies by the build and deployed with it. -->
+    <!-- Newtonsoft.Json is not part of RimWorld; it is copied next to RimWorldLLM.dll in $(GameVersion)/Assemblies by the build and deployed with it. -->
 
     <!-- Deploy to the RimWorld Mods folder when RIMWORLD_DIR / RimWorldDir is set.
          Layouts: <dir>/Mods (Linux, Windows, and macOS from 1.7 on), <dir>/RimWorldMac.app/Mods (macOS before 1.7), or <dir> itself being a Mods folder. -->
@@ -33,7 +33,7 @@
             <ModsDir Condition=" Exists('$(RimWorldDir)/Mods') ">$(RimWorldDir)/Mods</ModsDir>
             <ModsDir Condition=" '$(ModsDir)' == '' And Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
             <ModsDir Condition=" '$(ModsDir)' == '' ">$(RimWorldDir)/Mods</ModsDir>
-            <DeployPath>$(ModsDir)/HermesVoice/</DeployPath>
+            <DeployPath>$(ModsDir)/RimWorldLLM/</DeployPath>
         </PropertyGroup>
         <ItemGroup>
             <DeployAbout Include="$(ProjectDir)About/**/*" />
@@ -53,7 +53,7 @@
         <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
         <Copy SourceFiles="@(DeployEngine)" DestinationFiles="@(DeployEngine->'$(DeployPath)Engine/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployEngine)' != '' " />
         <Copy SourceFiles="@(DeployWheel)" DestinationFiles="@(DeployWheel->'$(DeployPath)Engine/agent/%(Filename)%(Extension)')" Condition=" '@(DeployWheel)' != '' " />
-        <Message Text="--- HermesVoice deployed to $(DeployPath) ---" Importance="high" />
+        <Message Text="--- RimWorldLLM deployed to $(DeployPath) ---" Importance="high" />
     </Target>
 
 </Project>

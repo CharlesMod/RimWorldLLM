@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>One line of a shared moment. PawnId 0 / empty Speaker = the narrator or an unattributed text.</summary>
     public sealed class ShareLine
@@ -25,8 +25,8 @@ namespace HermesVoice.Bridge
     /// <summary>Plain-text export, file naming, grouping of an exchange. No game types.</summary>
     public static class ShareFormat
     {
-        public const string Footer = "— HermesVoice: local AI colonist dialogue for RimWorld";
-        public const string CardFooter = "HermesVoice · local AI colonist dialogue for RimWorld";
+        public const string Footer = "— RimWorldLLM: local AI colonist dialogue for RimWorld";
+        public const string CardFooter = "RimWorldLLM · local AI colonist dialogue for RimWorld";
 
         static string Clean(string s)
         {

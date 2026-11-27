@@ -1,12 +1,12 @@
 """Ongoing concerns (core/concerns.py): births, cap, fade, resolution, payoff, block C, wants, reflection, blob."""
 from conftest import run
-from hermesvoice_agent.core import concerns as cn
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.lease import Cls
-from hermesvoice_agent.core.minds import Mind, Relation
-from hermesvoice_agent.core.prompt import block_c
-from hermesvoice_agent.core.reflection import REFLECT_SCHEMA, ReflectResult, reflection_messages
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import concerns as cn
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.lease import Cls
+from rimworldllm_agent.core.minds import Mind, Relation
+from rimworldllm_agent.core.prompt import block_c
+from rimworldllm_agent.core.reflection import REFLECT_SCHEMA, ReflectResult, reflection_messages
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 DAY = 60000
 
@@ -155,7 +155,7 @@ def test_raid_worry_ends_with_the_raid_ledger_entry(world):
 
 
 def test_raid_worry_prefers_those_with_a_loved_one_and_is_deterministic():
-    from hermesvoice_agent.games.rimworld.concern_rules import raid_worriers
+    from rimworldllm_agent.games.rimworld.concern_rules import raid_worriers
     e = {"type": "raid_start", "ledger_id": "raid:1", "witnesses": [5, 3, 9, 1]}
     holders = [1, 3, 5, 9]
     assert raid_worriers(e, holders, lambda h, o: False) == [1, 3]
@@ -189,7 +189,7 @@ def test_prefix_carries_the_worry_and_switch_off_does_not(world, tmp_path):
         love(w)
         m = w.d.minds[1]
         cn.add_concern(m, "I worry about Bram.", [2], "hurt", "healed:2", 0.6, 1, 2)
-        from hermesvoice_agent.core.lease import Lease, Now
+        from rimworldllm_agent.core.lease import Lease, Now
         lease = Lease(1, 1, Cls.SOCIAL, "x", Now(1, 0.0), 0.0)
         await w.d._prepare(1, "Ana looks around.", None, lease)
         return lease.data["prefix"]
@@ -206,7 +206,7 @@ def test_switch_off_means_no_birth_and_no_prefix_line(tmp_path):
         await w.go()
         love(w)
         hurt(w); await step(w)
-        from hermesvoice_agent.core.lease import Lease, Now
+        from rimworldllm_agent.core.lease import Lease, Now
         lease = Lease(1, 1, Cls.SOCIAL, "x", Now(1, 0.0), 0.0)
         await w.d._prepare(1, "Ana looks around.", None, lease)
         return lease.data["prefix"]
@@ -223,7 +223,7 @@ def test_wants_prompt_sees_the_worries(world):
         love(w)
         cn.add_concern(w.d.minds[1], "I worry about Bram.", [2], "hurt", "healed:2", 0.6, 1, 2)
         be = Fake([call("do_nothing"), DONE])
-        from hermesvoice_agent.core.wants import run_wants
+        from rimworldllm_agent.core.wants import run_wants
         await run_wants(w.d, 1, be, "grammar")
         return be
     be = run(go())

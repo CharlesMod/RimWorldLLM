@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>Text clean-up for the /pawn snapshot (no game references): markup stripped, whitespace collapsed,
     /// capped at a sentence end, list caps.</summary>

@@ -3,7 +3,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public enum EventKind { Injury, Death, MentalBreak, LevelUp, Tend, Social, Raid, Quest, Lodger, Prisoner, Funeral, Weather, Thought, Art, Sleep, Firsts, Gatherings }
 
@@ -28,7 +28,7 @@ namespace HermesVoice
 
         public static bool KindEnabled(EventKind kind)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (s == null || !s.enabled) return false;
             switch (kind)
             {

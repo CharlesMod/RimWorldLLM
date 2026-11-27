@@ -6,9 +6,9 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.config import LLMConfig
-from hermesvoice_agent.core.llm import HttpLLM, is_known_gemma4, sampler_profile
-from hermesvoice_agent.core.toolloop import OpenAIBackend
+from rimworldllm_agent.core.config import LLMConfig
+from rimworldllm_agent.core.llm import HttpLLM, is_known_gemma4, sampler_profile
+from rimworldllm_agent.core.toolloop import OpenAIBackend
 
 ENGINE_STATUS = {"phase": "ready", "sampler": {"policy": "enforce"}}
 FIELDS = ("temperature", "top_k", "top_p", "min_p", "repeat_penalty", "dry_multiplier")

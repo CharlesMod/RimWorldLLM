@@ -24,7 +24,7 @@ from .sanitize import prompt_cap_words, sanitize_prose
 if TYPE_CHECKING:
     from .director import Director
 
-log = logging.getLogger("hermesvoice")
+log = logging.getLogger("rimworldllm")
 
 SLEEP_EVENT = "sleep_start"
 DREAM_KIND = "dream"

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>Remembers write results by op_id for a window of real time, so a repeat gets the original result.</summary>
     public sealed class OpIdStore

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// In-game .gguf file browser: folders and model files, one pick. The listing is read only when the folder changes.
@@ -31,7 +31,7 @@ namespace HermesVoice
             closeOnClickedOutside = false;
             absorbInputAroundWindow = false;
             preventCameraMotion = false;
-            optionalTitle = UiUtil.T("HV_FileBrowser_Title");
+            optionalTitle = UiUtil.T("RWL_FileBrowser_Title");
             string dir = FileBrowserModel.StartDir(startPath);
             if (dir == null) ShowRoots(); else Navigate(dir);
         }
@@ -65,27 +65,27 @@ namespace HermesVoice
             string parent = _listing != null ? _listing.Parent : null;
             bool canUp = _roots == null; // from a root folder, Up goes to the roots list
             var up = new Rect(top.x, top.y, 70f, 28f);
-            if (Widgets.ButtonText(up, UiUtil.T("HV_FileBrowser_Up"), true, true, canUp))
+            if (Widgets.ButtonText(up, UiUtil.T("RWL_FileBrowser_Up"), true, true, canUp))
             {
                 if (parent != null) Navigate(parent); else ShowRoots();
             }
-            TooltipHandler.TipRegion(up, UiUtil.T("HV_FileBrowser_UpTip"));
+            TooltipHandler.TipRegion(up, UiUtil.T("RWL_FileBrowser_UpTip"));
             var rootsBtn = new Rect(up.xMax + 6f, top.y, 140f, 28f);
-            if (Widgets.ButtonText(rootsBtn, UiUtil.T("HV_FileBrowser_Roots"))) ShowRoots();
-            TooltipHandler.TipRegion(rootsBtn, UiUtil.T("HV_FileBrowser_RootsTip"));
+            if (Widgets.ButtonText(rootsBtn, UiUtil.T("RWL_FileBrowser_Roots"))) ShowRoots();
+            TooltipHandler.TipRegion(rootsBtn, UiUtil.T("RWL_FileBrowser_RootsTip"));
             var pathRect = new Rect(rootsBtn.xMax + 8f, top.y + 3f, top.xMax - rootsBtn.xMax - 8f, 26f);
-            string shown = _roots != null ? UiUtil.T("HV_FileBrowser_Roots") : _listing.Path;
+            string shown = _roots != null ? UiUtil.T("RWL_FileBrowser_Roots") : _listing.Path;
             Widgets.Label(pathRect, shown);
             TooltipHandler.TipRegion(pathRect, shown);
 
             // Footer: selection, Select, Cancel.
             var foot = new Rect(inRect.x, inRect.yMax - 32f, inRect.width, 30f);
             var cancel = new Rect(foot.xMax - 110f, foot.y, 110f, 30f);
-            if (Widgets.ButtonText(cancel, UiUtil.T("HV_FileBrowser_Cancel"))) { Close(); return; }
-            TooltipHandler.TipRegion(cancel, UiUtil.T("HV_FileBrowser_CancelTip"));
+            if (Widgets.ButtonText(cancel, UiUtil.T("RWL_FileBrowser_Cancel"))) { Close(); return; }
+            TooltipHandler.TipRegion(cancel, UiUtil.T("RWL_FileBrowser_CancelTip"));
             var select = new Rect(cancel.x - 116f, foot.y, 110f, 30f);
-            if (Widgets.ButtonText(select, UiUtil.T("HV_FileBrowser_Select"), true, true, _selected != null)) { Pick(_selected); return; }
-            TooltipHandler.TipRegion(select, UiUtil.T("HV_FileBrowser_SelectTip"));
+            if (Widgets.ButtonText(select, UiUtil.T("RWL_FileBrowser_Select"), true, true, _selected != null)) { Pick(_selected); return; }
+            TooltipHandler.TipRegion(select, UiUtil.T("RWL_FileBrowser_SelectTip"));
             var selRect = new Rect(foot.x, foot.y + 4f, select.x - foot.x - 8f, 24f);
             if (_selected != null)
             {
@@ -160,7 +160,7 @@ namespace HermesVoice
             {
                 GUI.color = hasError ? new Color(0.9f, 0.4f, 0.4f) : Color.gray;
                 Widgets.Label(new Rect(6f, entries.Count * RowH + 2f, view.width - 12f, RowH),
-                    hasError ? UiUtil.T("HV_FileBrowser_Error", _listing.Error) : UiUtil.T("HV_FileBrowser_Empty"));
+                    hasError ? UiUtil.T("RWL_FileBrowser_Error", _listing.Error) : UiUtil.T("RWL_FileBrowser_Empty"));
                 GUI.color = Color.white;
             }
             Widgets.EndScrollView();

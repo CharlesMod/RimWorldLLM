@@ -7,7 +7,7 @@ from pathlib import Path
 W = Path("/var/home/cmod/rimworld-hermes/.claude/worktrees/gpubench/bench/models")
 sys.path.insert(0, str(W)); sys.path.insert(0, str(W.parent.parent / "agent"))
 import httpx
-from hermesvoice_agent.core.llm import gemma_prompt
+from rimworldllm_agent.core.llm import gemma_prompt
 E = os.environ.get("ENGINE_URL", "http://127.0.0.1:47480")
 N = int(os.environ.get("N", "20"))
 SYS = ("You are Rook, the colony cook: gruff, few words, starts lines with 'Hm.'. Speak one short line in "

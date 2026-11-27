@@ -4,8 +4,8 @@ import random
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core import agegate as G
-from hermesvoice_agent.core.sanitize import sanitize_line, sanitize_prose
+from rimworldllm_agent.core import agegate as G
+from rimworldllm_agent.core.sanitize import sanitize_line, sanitize_prose
 
 
 class Always(random.Random):
@@ -222,13 +222,13 @@ def test_intent_refusal_is_the_last_guard(world):
         w = _world_with_ages(world, {1: 30, 2: 15, 3: 30})
         await w.go()
         w.adapter.__class__.intent_labels = ["none", "kind", "flirt"]
-        from hermesvoice_agent.core.passes import Spoken
+        from rimworldllm_agent.core.passes import Spoken
         ok = await w.d._say(1, Spoken("Good morning.", "flirt"), listener=2, expires=None)
         return w, ok
     try:
         w, ok = run(go())
     finally:
-        from hermesvoice_agent.games.rimworld import RimWorldAdapter
+        from rimworldllm_agent.games.rimworld import RimWorldAdapter
         RimWorldAdapter.intent_labels = ["none", "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain"]
     assert ok and w.d.said[-1]["intent"] == "none" and w.d.gate.refused_intents == 1
 

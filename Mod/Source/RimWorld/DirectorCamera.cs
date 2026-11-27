@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// Optional "director camera": when on, the map camera follows the most interesting pawn on the current map
@@ -41,7 +41,7 @@ namespace HermesVoice
 
         public static bool Allowed
         {
-            get { var s = HermesVoiceMod.Settings; return s != null && s.directorCameraAllowed; }
+            get { var s = RimWorldLLMMod.Settings; return s != null && s.directorCameraAllowed; }
         }
 
         /// <summary>True while it follows: on, allowed, and not paused by the player's own camera input.</summary>
@@ -53,7 +53,7 @@ namespace HermesVoice
             if (Enabled == on) return;
             Enabled = on;
             Reset();
-            if (announce) Messages.Message(UiUtil.T(on ? "HV_Camera_MsgOn" : "HV_Camera_MsgOff"), MessageTypeDefOf.SilentInput, false);
+            if (announce) Messages.Message(UiUtil.T(on ? "RWL_Camera_MsgOn" : "RWL_Camera_MsgOff"), MessageTypeDefOf.SilentInput, false);
         }
 
         public static void Toggle() { SetEnabled(!Enabled, true); }
@@ -61,7 +61,7 @@ namespace HermesVoice
         /// <summary>A game starts or loads: the start setting decides, nothing is followed yet.</summary>
         public static void OnGameStart()
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             Enabled = s != null && s.directorCameraAllowed && s.directorCameraOnAtStart;
             Reset();
         }
@@ -175,7 +175,7 @@ namespace HermesVoice
             }
             else if (dist > DeadZoneCells)
             {
-                float speed = Mathf.Clamp(HermesVoiceMod.Settings.directorPanSpeed, 0.2f, 8f);
+                float speed = Mathf.Clamp(RimWorldLLMMod.Settings.directorPanSpeed, 0.2f, 8f);
                 float k = 1f - Mathf.Exp(-speed * Mathf.Min(Time.unscaledDeltaTime, 0.1f));
                 var n = c + (t - c) * k;
                 cam.SetRootPosAndSize(new Vector3(n.x, camPos.y, n.y), size);
@@ -231,7 +231,7 @@ namespace HermesVoice
         public static void OnGUIKey()
         {
             if (Event.current == null || Event.current.type != EventType.KeyDown || !Allowed) return;
-            if (_key == null) _key = DefDatabase<KeyBindingDef>.GetNamedSilentFail("HV_ToggleDirectorCamera");
+            if (_key == null) _key = DefDatabase<KeyBindingDef>.GetNamedSilentFail("RWL_ToggleDirectorCamera");
             if (_key != null && _key.KeyDownEvent) { Toggle(); Event.current.Use(); }
         }
     }

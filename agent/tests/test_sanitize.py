@@ -1,6 +1,6 @@
 import pytest
 
-from hermesvoice_agent.core.sanitize import sanitize_line, name_tokens
+from rimworldllm_agent.core.sanitize import sanitize_line, name_tokens
 
 KW = dict(speaker_names={"Ana"}, known_names={"Bram"}, all_names={"Ana", "Bram", "Cy"},
           prompt_words={"Kitchen"})
@@ -95,14 +95,14 @@ def test_possessive_of_unknown_or_unaware_name_dropped():
 
 
 def test_reflection_prose_accepts_possessive():
-    from hermesvoice_agent.core.sanitize import sanitize_prose
+    from rimworldllm_agent.core.sanitize import sanitize_prose
     r = sanitize_prose("I keep Bram's shelf exact and it calms me down.", known_names={"Bram"},
                        all_names={"Ana", "Bram"}, prompt_words=set(), speaker_names={"Ana"})
     assert r.ok, r.reason
 
 
 def test_prompt_cap_words_drops_possessive_tail():
-    from hermesvoice_agent.core.sanitize import prompt_cap_words
+    from rimworldllm_agent.core.sanitize import prompt_cap_words
     assert prompt_cap_words("Biscuit's bowl and Hana’s shelf") == {"Biscuit", "Hana"}
     assert s("Biscuit's not gonna stop.", prompt_words=prompt_cap_words("Biscuit's bowl")).ok
 
@@ -129,7 +129,7 @@ def test_not_self_narration(raw):
 
 def test_guard_is_opt_in_and_off_for_third_person_voices():
     assert s("Ana hunts. Ana eats.").ok                          # guard off (prose, or a third-person voice card)
-    from hermesvoice_agent.core.minds import VoiceCard
+    from rimworldllm_agent.core.minds import VoiceCard
     v = VoiceCard(examples=["Ana hunts. Ana eats. Simple.", "Good meat."])
     assert v.speaks_third_person({"Ana"})
     assert not VoiceCard(examples=["Hold still.", "Ana, wait."]).speaks_third_person({"Ana"})
@@ -139,9 +139,9 @@ def test_guard_is_opt_in_and_off_for_third_person_voices():
 
 def test_line_pass_applies_guard_unless_card_says_third_person():
     import asyncio
-    from hermesvoice_agent.core.fakes import FakeLLM
-    from hermesvoice_agent.core.minds import Mind
-    from hermesvoice_agent.core.passes import SanitizeCtx, line_pass
+    from rimworldllm_agent.core.fakes import FakeLLM
+    from rimworldllm_agent.core.minds import Mind
+    from rimworldllm_agent.core.passes import SanitizeCtx, line_pass
 
     def go(third):
         llm = FakeLLM()
@@ -181,12 +181,12 @@ _LABELS = ("none", "kind", "comfort", "slight", "insult", "confide", "gossip", "
     ("Stop it. Kind words cost nothing", "Stop it. Kind words cost nothing"),          # capitalised, more words
 ])
 def test_a_trailing_intent_label_is_cut(raw, want):
-    from hermesvoice_agent.core.sanitize import strip_trailing_label
+    from rimworldllm_agent.core.sanitize import strip_trailing_label
     assert strip_trailing_label(raw, _LABELS) == want
 
 
 def test_sanitize_line_cuts_the_label_only_when_given_labels():
-    from hermesvoice_agent.core.sanitize import sanitize_line
+    from rimworldllm_agent.core.sanitize import sanitize_line
     kw = dict(speaker_names=set(), known_names=set(), all_names=set())
     assert sanitize_line("Good meat here. Not bad like that scrap yesterday. kind", intent_labels=_LABELS, **kw).text \
         == "Good meat here. Not bad like that scrap yesterday."
@@ -194,7 +194,7 @@ def test_sanitize_line_cuts_the_label_only_when_given_labels():
 
 
 def test_a_sentence_said_twice_keeps_its_first_saying():
-    from hermesvoice_agent.core.sanitize import drop_repeated_sentences
+    from rimworldllm_agent.core.sanitize import drop_repeated_sentences
     assert drop_repeated_sentences("This meal marks the end. Enough. This meal marks the end.") == "This meal marks the end. Enough."
     assert drop_repeated_sentences("Enough. We eat now. We eat now.") == "Enough. We eat now."
     assert drop_repeated_sentences("No. No. Not again.") == "No. No. Not again."      # one-word beats are kept

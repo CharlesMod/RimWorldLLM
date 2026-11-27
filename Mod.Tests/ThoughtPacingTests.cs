@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class ThoughtPacingTests
     {

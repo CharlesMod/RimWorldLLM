@@ -2,7 +2,7 @@
 from __future__ import annotations
 import copy, re
 from common import *
-from hermesvoice_agent.core.passes import speak, Spoken, Dropped
+from rimworldllm_agent.core.passes import speak, Spoken, Dropped
 import checks as C
 
 

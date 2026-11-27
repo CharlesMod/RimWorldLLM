@@ -2,9 +2,9 @@
 from __future__ import annotations
 import re, time
 from common import *
-from hermesvoice_agent.core.passes import line_pass
-from hermesvoice_agent.core.prompt import line_messages
-from hermesvoice_agent.core.sanitize import _REFUSAL
+from rimworldllm_agent.core.passes import line_pass
+from rimworldllm_agent.core.prompt import line_messages
+from rimworldllm_agent.core.sanitize import _REFUSAL
 import checks as C
 
 CAP = 48

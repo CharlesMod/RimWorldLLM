@@ -6,7 +6,7 @@ import json, os, re, sys
 sys.path.insert(0, "/var/home/cmod/rimworld-hermes/.claude/worktrees/gpubench/bench/models")
 from common import ADAPTER, NAME_TOKENS, ACTOR_ID, prefix_for
 import lines as L
-from hermesvoice_agent.core.sanitize import strip_trailing_label
+from rimworldllm_agent.core.sanitize import strip_trailing_label
 LAB = ADAPTER.intent_labels
 SC = {s["id"]: s for _, s in L.scenarios()}
 CAPCHK = ("within_cap", "no_think")

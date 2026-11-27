@@ -2,10 +2,10 @@
 from pathlib import Path
 
 from conftest import run
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.core.cli import _replay
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
-from hermesvoice_agent.games.rimworld.replay import replay
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.core.cli import _replay
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.games.rimworld.replay import replay
 
 DATA = Path(__file__).parent / "data" / "multiday.jsonl"
 

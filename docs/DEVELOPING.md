@@ -1,4 +1,4 @@
-# Developing HermesVoice
+# Developing RimWorldLLM
 
 Technical notes moved here from the README when it was rewritten for players (2.1.0 beta).
 For the engine see [ENGINE.md](ENGINE.md) (RimWorld side) and the
@@ -10,7 +10,7 @@ To build a release zip, run `scripts/package-release.sh` (see its `--help`).
 
 Two HTTP channels:
 
-1. **Inbound bridge** - the mod runs an HTTP server (default port `9765`, falling back through `9774`). The agent reads colony state, events and pawn minds, and makes pawns speak. Every request needs a bearer token; the mod writes the port and token to `<RimWorld config dir>/HermesVoice/bridge.json` for the agent to read.
+1. **Inbound bridge** - the mod runs an HTTP server (default port `9765`, falling back through `9774`). The agent reads colony state, events and pawn minds, and makes pawns speak. Every request needs a bearer token; the mod writes the port and token to `<RimWorld config dir>/RimWorldLLM/bridge.json` for the agent to read.
 2. **Outbound dial-out** - the mod POSTs colony events to a configurable agent URL so the agent can react to things happening in the world. It sends the same event objects as `GET /events`.
 
 ### Bridge API
@@ -50,12 +50,12 @@ Every payload has `pawn` (`{id, name}`), `map` (`{index, home}`) and a human-rea
 Requires [.NET](https://dotnet.microsoft.com/) (SDK 10+).
 
 ```sh
-dotnet build Mod/HermesVoice.csproj
+dotnet build Mod/RimWorldLLM.csproj
 ```
 
-The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) and outputs `HermesVoice.dll` to `Mod/1.7/Assemblies/`. `Newtonsoft.Json.dll` is copied next to it (RimWorld does not ship it); Harmony is not (it comes from the Harmony mod).
+The build compiles against the pinned RimWorld 1.7 API (`Krafs.Rimworld.Ref`) and outputs `RimWorldLLM.dll` to `Mod/1.7/Assemblies/`. `Newtonsoft.Json.dll` is copied next to it (RimWorld does not ship it); Harmony is not (it comes from the Harmony mod).
 
-Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install directory to deploy to `<dir>/Mods/HermesVoice` on every build (macOS from 1.7 uses the same `<dir>/Mods`; older macOS builds used `<dir>/RimWorldMac.app/Mods`). `About/`, the `1.7/` assemblies, `Defs/`, `Languages/` and `Textures/` are copied; `.pdb` files are skipped.
+Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install directory to deploy to `<dir>/Mods/RimWorldLLM` on every build (macOS from 1.7 uses the same `<dir>/Mods`; older macOS builds used `<dir>/RimWorldMac.app/Mods`). `About/`, the `1.7/` assemblies, `Defs/`, `Languages/` and `Textures/` are copied; `.pdb` files are skipped.
 
 ## Repository layout
 
@@ -63,15 +63,15 @@ Set `RIMWORLD_DIR` (or pass `-p:RimWorldDir=...`) to your RimWorld install direc
 Mod/
   About/About.xml            mod metadata
   Defs/                      thought and interaction defs used by the effects
-  HermesVoice.csproj         build + deploy project
+  RimWorldLLM.csproj         build + deploy project
   Source/
     Bridge/                  game-agnostic bridge: HTTP server, auth, envelope, op ids, event ring, minds, talk queue (no game references)
     RimWorld/                RimWorld side: snapshots, events, Harmony hooks, say/effects, settings, hook API
   Languages/English/Keyed/   all player-facing text
-  Textures/HermesVoice/      speech bubble art (Textures/src/ holds its generator; not shipped)
+  Textures/RimWorldLLM/      speech bubble art (Textures/src/ holds its generator; not shipped)
   1.7/Assemblies/            build output
 Mod.Tests/                   xUnit tests for Bridge/ and the pure rules (not shipped); run `dotnet test Mod.Tests`
-agent/                       the Python agent (hermesvoice-agent wheel, shipped in Engine/agent/); see agent/README.md
+agent/                       the Python agent (rimworldllm-agent wheel, shipped in Engine/agent/); see agent/README.md
 bench/                       model benches and soak tools (not shipped)
 scripts/package-release.sh   builds and checks the release zip
 docs/                        BRIDGE-API, HOOK-API, ENGINE, SPEC, SPEED, MODEL-BENCH, E4B-PASS, CREATIVE-ROUND, release/
@@ -79,17 +79,17 @@ docs/                        BRIDGE-API, HOOK-API, ENGINE, SPEC, SPEED, MODEL-BE
 
 With `EasyEngineDir` (default a sibling `../easyEngine` checkout) built, the deploy also copies the engine binaries to
 `Engine/<os>-<arch>/` and `agent/dist/*.whl` to `Engine/agent/` (run `agent/build-wheel.sh` first). Note the deploy copies
-all of `Textures/`, including `Textures/src/`; the release script ships only `Textures/HermesVoice/`.
+all of `Textures/`, including `Textures/src/`; the release script ships only `Textures/RimWorldLLM/`.
 
 ## Running the agent by hand (no local engine)
 
 1. Install the [Harmony](https://steamcommunity.com/workshop/file/filedetails/?id=2009463077) mod (v3, Steam Workshop) and this mod.
 2. Run the agent (`agent/README.md`) on your agent machine, or choose "My own endpoint" for just the LLM.
-3. In RimWorld settings, enable HermesVoice and set:
+3. In RimWorld settings, enable RimWorldLLM and set:
    - **Bridge port** / **bind address** - where the in-mod HTTP server listens
    - **Agent dial-out URL** - where the mod POSTs colony events
    - **Shared token** - used for auth in both directions
 
 ## Settings keys and old saves
 
-`HermesVoiceSettings.ExposeData` reads and writes each setting by its field name. The setting `language` was removed (the mod saved and sent it but nothing read it): old settings files that still hold a `<language>` node load fine, because Scribe only looks up the keys the code asks for and ignores the rest. The same holds for any later removal. New in the settings rework: `customGgufPath` (the last path typed or picked under "Use my own GGUF file"; the engine holds the real choice). `GET /config` no longer carries `language`.
+`RimWorldLLMSettings.ExposeData` reads and writes each setting by its field name. The setting `language` was removed (the mod saved and sent it but nothing read it): old settings files that still hold a `<language>` node load fine, because Scribe only looks up the keys the code asks for and ignores the rest. The same holds for any later removal. New in the settings rework: `customGgufPath` (the last path typed or picked under "Use my own GGUF file"; the engine holds the real choice). `GET /config` no longer carries `language`.

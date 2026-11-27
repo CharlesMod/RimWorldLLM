@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>OS and CPU as the engine names them: linux|windows|darwin and amd64|arm64.</summary>
     public sealed class EnginePlatform
@@ -164,7 +164,7 @@ namespace HermesVoice.Bridge
             catch { return null; }
         }
 
-        /// <summary>The game profile for HermesVoice (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
+        /// <summary>The game profile for RimWorldLLM (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
         public const int HostReserveEstimateMib = 1500;
 
         /// <summary>How far the agent's own files may still grow on the engine's disk (docs/ENGINE.md §7c host_files_mib):
@@ -189,11 +189,11 @@ namespace HermesVoice.Bridge
             {
                 o["agent"] = new JObject
                 {
-                    ["id"] = "hermesvoice-agent",
+                    ["id"] = "rimworldllm-agent",
                     ["wheel"] = wheelPath,
                     ["python"] = "3.12",
                     ["args"] = new JArray("run"),
-                    ["env"] = new JObject { ["HERMESVOICE_BRIDGE_JSON"] = bridgeJsonPath }
+                    ["env"] = new JObject { ["RIMWORLDLLM_BRIDGE_JSON"] = bridgeJsonPath }
                 };
             }
             return o;
@@ -270,7 +270,7 @@ namespace HermesVoice.Bridge
                 if (plat.IsUnix) MakeExecutable(bin);
 
                 r.ProfilePath = WriteProfile(o.BridgeJsonPath, FindWheel(o.ModRoot), o.Pid, o.HostAdapter);
-                var env = new Dictionary<string, string> { ["HERMESVOICE_BRIDGE_JSON"] = o.BridgeJsonPath };
+                var env = new Dictionary<string, string> { ["RIMWORLDLLM_BRIDGE_JSON"] = o.BridgeJsonPath };
                 try { o.Starter.Start(bin, ServeArgs(r.ProfilePath, o.Pid), env); }
                 catch (Exception e)
                 {

@@ -2,12 +2,12 @@
 import json
 
 from conftest import run
-from hermesvoice_agent.core.lease import Cls, Lease, Now
-from hermesvoice_agent.core.memory import record_told_line  # noqa: F401
-from hermesvoice_agent.core.minds import BIO_HISTORY_KEEP, Memory, Mind, Relation
-from hermesvoice_agent.core.prompt import block_c
-from hermesvoice_agent.core.concerns import reflect_schema
-from hermesvoice_agent.core.reflection import (REFLECT_SCHEMA, ReflectMerge, ReflectRelation, ReflectResult,
+from rimworldllm_agent.core.lease import Cls, Lease, Now
+from rimworldllm_agent.core.memory import record_told_line  # noqa: F401
+from rimworldllm_agent.core.minds import BIO_HISTORY_KEEP, Memory, Mind, Relation
+from rimworldllm_agent.core.prompt import block_c
+from rimworldllm_agent.core.concerns import reflect_schema
+from rimworldllm_agent.core.reflection import (REFLECT_SCHEMA, ReflectMerge, ReflectRelation, ReflectResult,
                                                apply_reflection, parse_result, reflection_due, schema_for)
 
 DAY = 60000

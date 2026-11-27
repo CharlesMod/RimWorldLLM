@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>What happened, as the director camera scores it.</summary>
     public enum FocusSignal

@@ -1,8 +1,8 @@
 """Item 6: dreams. sleep_start -> one surreal cloud per night (POST /thought kind dream) and an inner-stream entry."""
 from conftest import run
-from hermesvoice_agent.core import dreams, inner
-from hermesvoice_agent.core import gamedata as gd
-from hermesvoice_agent.core.minds import Memory
+from rimworldllm_agent.core import dreams, inner
+from rimworldllm_agent.core import gamedata as gd
+from rimworldllm_agent.core.minds import Memory
 
 DAY = 60000
 TEXT = "I am chasing a berry bush through the kitchen"

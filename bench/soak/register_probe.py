@@ -22,24 +22,24 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve()
 for _p in HERE.parents:                      # find <repo>/agent whatever the worktree
-    if (_p / "agent" / "hermesvoice_agent").is_dir():
+    if (_p / "agent" / "rimworldllm_agent").is_dir():
         sys.path.insert(0, str(_p / "agent"))
         break
 
 import httpx  # noqa: E402
 
-from hermesvoice_agent.core import agegate, gamedata as gd, speech  # noqa: E402
-from hermesvoice_agent.core.common_words import COMMON_SENTENCE_START  # noqa: E402
-from hermesvoice_agent.core.config import LLMConfig  # noqa: E402
-from hermesvoice_agent.core.fakes import FakeLLM  # noqa: E402
-from hermesvoice_agent.core.llm import HttpLLM, LLMError  # noqa: E402
-from hermesvoice_agent.core.minds import FixedBio, Mind  # noqa: E402
-from hermesvoice_agent.core.passes import SanitizeCtx, line_pass  # noqa: E402
-from hermesvoice_agent.core.prompt import BIO_LINE_CAP, EVOLVING_CAP, block_b, build_prefix  # noqa: E402
-from hermesvoice_agent.core.sanitize import name_tokens, prompt_cap_words, sanitize_prose  # noqa: E402
-from hermesvoice_agent.games.rimworld import builders, register  # noqa: E402
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
-from hermesvoice_agent.games.rimworld.fakes import rich_pawn  # noqa: E402
+from rimworldllm_agent.core import agegate, gamedata as gd, speech  # noqa: E402
+from rimworldllm_agent.core.common_words import COMMON_SENTENCE_START  # noqa: E402
+from rimworldllm_agent.core.config import LLMConfig  # noqa: E402
+from rimworldllm_agent.core.fakes import FakeLLM  # noqa: E402
+from rimworldllm_agent.core.llm import HttpLLM, LLMError  # noqa: E402
+from rimworldllm_agent.core.minds import FixedBio, Mind  # noqa: E402
+from rimworldllm_agent.core.passes import SanitizeCtx, line_pass  # noqa: E402
+from rimworldllm_agent.core.prompt import BIO_LINE_CAP, EVOLVING_CAP, block_b, build_prefix  # noqa: E402
+from rimworldllm_agent.core.sanitize import name_tokens, prompt_cap_words, sanitize_prose  # noqa: E402
+from rimworldllm_agent.games.rimworld import builders, register  # noqa: E402
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
+from rimworldllm_agent.games.rimworld.fakes import rich_pawn  # noqa: E402
 
 ADAPTER = RimWorldAdapter()
 METRICS = ["mean_word_len", "words_per_sentence", "rare_share", "mattr50", "drop_rate"]

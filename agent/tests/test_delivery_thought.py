@@ -1,10 +1,10 @@
 """Delivery (POST /say kind) decided inside the intent pass, bounded; short map thoughts (POST /thought surface)."""
 import pytest
 from conftest import run
-from hermesvoice_agent.core.minds import Memory
-from hermesvoice_agent.core.passes import parse_delivery, parse_intent
-from hermesvoice_agent.core.prompt import DELIVERIES, grammar_for
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.minds import Memory
+from rimworldllm_agent.core.passes import parse_delivery, parse_intent
+from rimworldllm_agent.core.prompt import DELIVERIES, grammar_for
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 DAY = 60000
 LABELS = RimWorldAdapter().intent_labels

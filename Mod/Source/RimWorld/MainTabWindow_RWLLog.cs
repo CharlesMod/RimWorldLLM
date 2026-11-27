@@ -4,10 +4,10 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Scrollable log of every spoken line, newest first, filterable by pawn; click a name to jump to the pawn.</summary>
-    public class MainTabWindow_HermesLog : MainTabWindow
+    public class MainTabWindow_RWLLog : MainTabWindow
     {
         Vector2 scroll;
         int filterPawn;               // 0 = everyone
@@ -20,20 +20,20 @@ namespace HermesVoice
         public override void DoWindowContents(Rect inRect)
         {
             Text.Font = GameFont.Medium;
-            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "HV_LogTitle" : "HV_ChronTitle"));
+            Widgets.Label(new Rect(inRect.x, inRect.y, inRect.width, 34f), UiUtil.T(tab == 0 ? "RWL_LogTitle" : "RWL_ChronTitle"));
             Text.Font = GameFont.Small;
             if (DirectorCamera.Allowed)
             {
                 var camBtn = new Rect(inRect.xMax - 210f, inRect.y + 2f, 210f, 30f);
-                if (Widgets.ButtonText(camBtn, UiUtil.T(DirectorCamera.Enabled ? "HV_Camera_ButtonOn" : "HV_Camera_ButtonOff"))) DirectorCamera.Toggle();
-                TooltipHandler.TipRegion(camBtn, UiUtil.T("HV_Camera_Tip"));
+                if (Widgets.ButtonText(camBtn, UiUtil.T(DirectorCamera.Enabled ? "RWL_Camera_ButtonOn" : "RWL_Camera_ButtonOff"))) DirectorCamera.Toggle();
+                TooltipHandler.TipRegion(camBtn, UiUtil.T("RWL_Camera_Tip"));
             }
 
             var body = new Rect(inRect.x, inRect.y + 74f, inRect.width, inRect.height - 74f);
             var tabs = new List<TabRecord>
             {
-                new TabRecord(UiUtil.T("HV_TabConversation"), () => tab = 0, tab == 0),
-                new TabRecord(UiUtil.T("HV_TabChronicle"), () => tab = 1, tab == 1)
+                new TabRecord(UiUtil.T("RWL_TabConversation"), () => tab = 0, tab == 0),
+                new TabRecord(UiUtil.T("RWL_TabChronicle"), () => tab = 1, tab == 1)
             };
             TabDrawer.DrawTabs(body, tabs);
             if (tab == 0) DrawLog(body); else DrawChronicle(body);
@@ -41,12 +41,12 @@ namespace HermesVoice
 
         void DrawChronicle(Rect inRect)
         {
-            var entries = HermesBridge.Chronicle.History();
+            var entries = RWLBridge.Chronicle.History();
             Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(new Rect(inRect.x, inRect.y + 6f, inRect.width, 28f), UiUtil.T("HV_ChronCount", entries.Count, Bridge.ChronicleBook.MaxEntries));
+            Widgets.Label(new Rect(inRect.x, inRect.y + 6f, inRect.width, 28f), UiUtil.T("RWL_ChronCount", entries.Count, Bridge.ChronicleBook.MaxEntries));
             Text.Anchor = TextAnchor.UpperLeft;
             var outRect = new Rect(inRect.x, inRect.y + 38f, inRect.width, inRect.height - 40f);
-            if (entries.Count == 0) { Widgets.Label(outRect, UiUtil.T("HV_ChronEmpty")); return; }
+            if (entries.Count == 0) { Widgets.Label(outRect, UiUtil.T("RWL_ChronEmpty")); return; }
 
             float w = outRect.width - 18f;
             var heights = new float[entries.Count];
@@ -67,11 +67,11 @@ namespace HermesVoice
                     bool major = e.Kind == Bridge.ChronicleBook.KindMajor;
                     if (major) { GUI.color = new Color(0.9f, 0.55f, 0.35f, 0.25f); GUI.DrawTexture(r, BaseContent.WhiteTex); GUI.color = Color.white; }
                     else if (i % 2 == 0) Widgets.DrawLightHighlight(r);
-                    string head = UiUtil.DateOfDay(e.Day) + (major ? "  |  " + UiUtil.T("HV_ChronMajor") : "");
+                    string head = UiUtil.DateOfDay(e.Day) + (major ? "  |  " + UiUtil.T("RWL_ChronMajor") : "");
                     GUI.color = major ? new Color(1f, 0.8f, 0.55f) : Color.gray;
                     Widgets.Label(new Rect(r.x + 4f, r.y + 2f, r.width - 8f, Text.LineHeight), head);
                     GUI.color = Color.white;
-                    if (Widgets.ButtonText(new Rect(r.xMax - 74f, r.y + 2f, 70f, Text.LineHeight), UiUtil.T("HV_Share_Button"))) ShareService.ShareChronicle(e);
+                    if (Widgets.ButtonText(new Rect(r.xMax - 74f, r.y + 2f, 70f, Text.LineHeight), UiUtil.T("RWL_Share_Button"))) ShareService.ShareChronicle(e);
                     Widgets.Label(new Rect(r.x + 4f, r.y + 2f + Text.LineHeight, r.width - 8f, r.height - Text.LineHeight - 4f), e.Text);
                 }
                 cy += heights[i];
@@ -81,15 +81,15 @@ namespace HermesVoice
 
         void DrawLog(Rect inRect)
         {
-            var comp = HermesVoiceGameComponent.Instance;
+            var comp = RimWorldLLMGameComponent.Instance;
             var entries = comp != null ? comp.ConversationLog.Entries : new List<ConversationEntry>();
 
             float y = inRect.y + 6f;
-            Widgets.Label(new Rect(inRect.x, y + 3f, 60f, 26f), UiUtil.T("HV_LogFilterLabel"));
-            string current = filterPawn == 0 ? UiUtil.T("HV_LogFilterAll") : filterName;
+            Widgets.Label(new Rect(inRect.x, y + 3f, 60f, 26f), UiUtil.T("RWL_LogFilterLabel"));
+            string current = filterPawn == 0 ? UiUtil.T("RWL_LogFilterAll") : filterName;
             if (Widgets.ButtonText(new Rect(inRect.x + 64f, y, 220f, 28f), current))
             {
-                var opts = new List<FloatMenuOption> { new FloatMenuOption(UiUtil.T("HV_LogFilterAll"), () => { filterPawn = 0; filterName = ""; scroll = Vector2.zero; }) };
+                var opts = new List<FloatMenuOption> { new FloatMenuOption(UiUtil.T("RWL_LogFilterAll"), () => { filterPawn = 0; filterName = ""; scroll = Vector2.zero; }) };
                 foreach (var kv in Participants(entries))
                 {
                     int id = kv.Key; string nm = kv.Value;
@@ -100,13 +100,13 @@ namespace HermesVoice
 
             var shown = entries.Where(e => filterPawn == 0 || e.PawnId == filterPawn || e.ListenerId == filterPawn).Reverse().ToList();
             Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(new Rect(inRect.x + 290f, y, inRect.width - 290f, 28f), UiUtil.T("HV_LogCount", shown.Count, entries.Count, ConversationLog.MaxEntries));
+            Widgets.Label(new Rect(inRect.x + 290f, y, inRect.width - 290f, 28f), UiUtil.T("RWL_LogCount", shown.Count, entries.Count, ConversationLog.MaxEntries));
             Text.Anchor = TextAnchor.UpperLeft;
 
             var outRect = new Rect(inRect.x, y + 34f, inRect.width, inRect.height - 40f);
             if (shown.Count == 0)
             {
-                Widgets.Label(outRect, UiUtil.T("HV_LogEmpty"));
+                Widgets.Label(outRect, UiUtil.T("RWL_LogEmpty"));
                 return;
             }
 
@@ -144,7 +144,7 @@ namespace HermesVoice
 
         static string RefusedText(string code)
         {
-            string key = "HV_Refused_" + code;
+            string key = "RWL_Refused_" + code;
             return key.CanTranslate() ? UiUtil.T(key) : code;
         }
 
@@ -167,18 +167,18 @@ namespace HermesVoice
             }
 
             // Share buttons, right-aligned on line 1.
-            if (Widgets.ButtonText(new Rect(r.xMax - 74f, y, 70f, lh), UiUtil.T("HV_Share_Button"))) ShareService.ShareLineOf(e);
-            if (Widgets.ButtonText(new Rect(r.xMax - 74f - 124f, y, 120f, lh), UiUtil.T("HV_Share_Exchange"))) ShareService.ShareExchangeOf(all, e);
+            if (Widgets.ButtonText(new Rect(r.xMax - 74f, y, 70f, lh), UiUtil.T("RWL_Share_Button"))) ShareService.ShareLineOf(e);
+            if (Widgets.ButtonText(new Rect(r.xMax - 74f - 124f, y, 120f, lh), UiUtil.T("RWL_Share_Exchange"))) ShareService.ShareExchangeOf(all, e);
 
             // Line 2: trigger, intent, effect.
-            string trig = UiUtil.T(e.Trigger == "player" ? "HV_LogTriggerPlayer" : "HV_LogTriggerAgent");
+            string trig = UiUtil.T(e.Trigger == "player" ? "RWL_LogTriggerPlayer" : "RWL_LogTriggerAgent");
             string eff;
             Color col;
-            if (!string.IsNullOrEmpty(e.Effect)) { eff = UiUtil.T("HV_LogEffectApplied", e.Effect); col = new Color(0.55f, 0.85f, 0.55f); }
-            else if (!string.IsNullOrEmpty(e.Refused)) { eff = UiUtil.T("HV_LogEffectRefused", RefusedText(e.Refused)); col = new Color(0.95f, 0.75f, 0.4f); }
-            else { eff = UiUtil.T("HV_LogNoEffect"); col = Color.gray; }
+            if (!string.IsNullOrEmpty(e.Effect)) { eff = UiUtil.T("RWL_LogEffectApplied", e.Effect); col = new Color(0.55f, 0.85f, 0.55f); }
+            else if (!string.IsNullOrEmpty(e.Refused)) { eff = UiUtil.T("RWL_LogEffectRefused", RefusedText(e.Refused)); col = new Color(0.95f, 0.75f, 0.4f); }
+            else { eff = UiUtil.T("RWL_LogNoEffect"); col = Color.gray; }
             GUI.color = Color.gray;
-            Widgets.Label(new Rect(x, y + lh, 230f, lh), trig + (string.IsNullOrEmpty(e.Intent) || e.Intent == "none" ? "" : "  |  " + UiUtil.T("HV_LogIntent", e.Intent)));
+            Widgets.Label(new Rect(x, y + lh, 230f, lh), trig + (string.IsNullOrEmpty(e.Intent) || e.Intent == "none" ? "" : "  |  " + UiUtil.T("RWL_LogIntent", e.Intent)));
             GUI.color = col;
             Widgets.Label(new Rect(x + 236f, y + lh, r.width - 244f, lh), eff);
             GUI.color = Color.white;
@@ -192,7 +192,7 @@ namespace HermesVoice
             float w = Text.CalcSize(name).x + 4f;
             var r = new Rect(x, y, w, Text.LineHeight);
             Widgets.DrawHighlightIfMouseover(r);
-            UiUtil.Tip(r, UiUtil.T("HV_LogJumpTip", name));
+            UiUtil.Tip(r, UiUtil.T("RWL_LogJumpTip", name));
             if (Widgets.ButtonInvisible(r)) UiUtil.Jump(id, name);
             GUI.color = new Color(0.75f, 0.9f, 1f);
             Widgets.Label(r, name);

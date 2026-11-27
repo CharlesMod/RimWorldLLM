@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import pytest
 
-from hermesvoice_agent.games.rimworld import speedsim as ss
+from rimworldllm_agent.games.rimworld import speedsim as ss
 
 DAY = ss.DAY
 
