@@ -20,11 +20,10 @@ Host-based tests use `Fakes/InnerHost.cs` (implements all three host interfaces;
 ## Deferred Python tests (need the Director, IdleScheduler or full conversation/line prompt assembly; the next-wave Director owns them)
 - test_inner (world): spoken line adds its aim, cloud via d._inner_after_say, diary and idle-thought prompts, master-off.
 - test_bystanders (world, ~7): vanilla insult cloud, one reaction per argument, template when windows busy, applied say, minor rule in prompt, switch off/failure.
-- test_reflection (world): prefix bytes unchanged, idle window runs, interval/failure backoff, PUT /mind conflict tests (notes, voice).
 - test_habits end_to_end "not asked again inside the interval" step (Director); the single call + tic change is ported.
-- test_concerns prefix tests (`_prepare`); raid_worriers (ConcernRules port, not this module).
-- test_wants: idle_window_schedules_wants_with_pacing, director_runs_a_wants_window_end_to_end; test_wants_wiring CLI tests.
-- test_grudges: "has come to apologise to" in line prompts, arrival-chat flow (partly covered via ReunionFor/NoteFor/OnConversationDone).
+- test_concerns: raid_worriers (ConcernRules port, not this module).
+- test_wants_wiring CLI tests (cli.py, not the Director).
+- Ported through the Director in `Mind/MindWorldTests.cs` (18 tests): concerns prefix pair, grudges arrival chat ("has come to apologise to" in the line prompts), wants idle window / end to end / bridge-config off / seek_out fields, gossip_chain director wiring, upkeep once per day, private memory hinted not quoted, adapter pins, all test_reflection world tests (prefix bytes, idle window + schema + save, interval/failure backoff, ungrounded bio, PUT /mind conflicts for notes and voice).
 - test_delivery_thought world tests: shout justification, thought surface, age-gate theory.
 
 ## Behaviour differences
