@@ -95,6 +95,7 @@ def test_chitchat_memory_text_does_not_name_the_interaction(world):
                                               data={"interaction": "Chitchat", "interaction_label": "Chitchat"}))
     t = ad.first_person(e, 1)
     assert "chitchat" not in t.lower() and "Ana and Bram" in t
+    assert "the work, the food, the weather" in t           # what it was about, so the thought has a subject other than the talking
 
 
 def test_drops_meta_only_with_a_chitchat_scene(world):

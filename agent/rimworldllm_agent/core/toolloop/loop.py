@@ -279,7 +279,7 @@ async def _interpret(reply: Reply, protocol: str, by_name: dict[str, ToolSpec], 
                     msg = f"the check failed ({type(e).__name__})"
                 if msg:
                     return [], str(msg), False
-            key = spec.name + json.dumps(values, sort_keys=True, default=str)
+            key = spec.call_key(values)
             if key in seen or key in batch_seen:
                 return [], f"{spec.name} with these arguments was already done", False
             batch_seen.add(key)
@@ -299,7 +299,7 @@ async def _run_calls(actions, by_name, executor, res: LoopResult, seen: set[str]
         except Exception as e:
             ex.error = f"{type(e).__name__}: {e}"[:200]
             ex.result = f"error: {ex.error}"
-        seen.add(a.tool + json.dumps(values, sort_keys=True, default=str))
+        seen.add(by_name[a.tool].call_key(values))
         res.executed.append(ex)
         done_calls.append((a, ex))
     if protocol == "native":

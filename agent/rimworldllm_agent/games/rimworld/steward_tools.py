@@ -30,7 +30,7 @@ WORK_FALLBACK = ["Firefighter", "Patient", "Doctor", "Cooking", "Hunting", "Cons
                  "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research"]
 WHY_MAX = 80
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
-             "it is shown to the player beside what you did", max_len=WHY_MAX, required=False)
+             "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)
 ACTING = ("set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "draft", "order")
 
 ADVISOR_NOTE = (

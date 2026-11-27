@@ -260,7 +260,7 @@ class RimWorldAdapter:
         summary = event.get("summary", "").strip()
         m = _CHITCHAT_SUMMARY.match(summary) if event.get("type") == "social" else None
         if m:                                              # the game's label names the interaction, not what was said
-            summary = f"{m['a']} and {m['b']} had a {_PASSING}."
+            summary = f"{m['a']} and {m['b']} had a {_PASSING} about whatever was around: the work, the food, the weather."
         roles = {int(a["id"]): a.get("role", "") for a in event.get("actors", [])}
         if roles.get(actor_id) in _SUBJECT_ROLES:
             return f"It happened to me: {summary}"

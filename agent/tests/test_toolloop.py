@@ -137,6 +137,16 @@ def test_repeating_the_same_call_is_refused_and_ends_the_loop():
     assert any("already" in x for x in r.failures)
 
 
+def test_a_commentary_param_does_not_make_a_repeat_a_new_call():
+    ts = [ToolSpec("count", "A number.", [Param("n", "int", lo=1, hi=5), Param("why", max_len=40, required=False, same_call=True)]),
+          ToolSpec("do_nothing", "Nothing.")]
+    f = Fake([call("count", n=2, why="since one"), call("count", n=2, why="since two"), call("count", n=3, why="since one")])
+    rec = Rec()
+    r = run(run_loop(f, ts, system="s", user="u", executor=rec, protocol="grammar", fallback=Action("call", "do_nothing"), max_steps=6))
+    assert [v["n"] for _, v in rec.calls] == [2, 3]          # the second n=2 is the same call with another reason: refused
+    assert any("already" in x for x in r.failures)
+
+
 def test_fallback_after_actions_is_opt_in():
     f = Fake([call("say", line="Hi."), "garbage"])
     r, rec = go(f, fallback_after_actions=True)

@@ -351,7 +351,8 @@ class Steward:
                                     slot=d.cfg.narrator_slot, final_max=FINAL_MAX, max_tokens=220)
         finally:
             await self._status("idle", stream_id)
-        t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, executed=[(e.tool, e.args, e.result) for e in res.executed],
+        t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, failures=res.failures[-4:],
+                 executed=[(e.tool, e.args, e.result) for e in res.executed],
                  elapsed_s=round(res.elapsed_s, 2))
 
         # no automatic chat notes: the game writes one greentext line per act itself (from the act's "why")

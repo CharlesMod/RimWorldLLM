@@ -32,6 +32,7 @@ class Param:
     scale: Scale | None = None
     choices: list[str] | None = None   # enum values (names the caller knows are valid, for example)
     required: bool = True
+    same_call: bool = False       # commentary (a reason, say): two calls that differ only here are the same call
 
     def __post_init__(self):
         if self.kind not in ("text", "int", "scale", "enum"):
@@ -137,6 +138,11 @@ class ToolSpec:
     params: list[Param] = field(default_factory=list)
     result_scales: dict[str, Scale] = field(default_factory=dict)
     ends_turn: bool = False
+
+    def call_key(self, values: dict[str, Any]) -> str:
+        """What makes two calls the same call (the repeat rule): the values, without the commentary params."""
+        skip = {p.name for p in self.params if p.same_call}
+        return self.name + json.dumps({k: v for k, v in values.items() if k not in skip}, sort_keys=True, default=str)
 
     def __post_init__(self):
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", self.name):
