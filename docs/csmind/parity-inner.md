@@ -18,14 +18,15 @@ Namespace `RimWorldLLM.Mind`, Verse-free, net10.0. Goldens generated from the ve
 Host-based tests use `Fakes/InnerHost.cs` (implements all three host interfaces; FakeBridge pawns Ana 1 Kind, Bram 2 Abrasive, Cy 3).
 
 ## Deferred Python tests (need the Director, IdleScheduler or full conversation/line prompt assembly; the next-wave Director owns them)
-- test_inner (world): spoken line adds its aim, cloud via d._inner_after_say, diary and idle-thought prompts, master-off.
-- test_bystanders (world, ~7): vanilla insult cloud, one reaction per argument, template when windows busy, applied say, minor rule in prompt, switch off/failure.
 - test_reflection (world): prefix bytes unchanged, idle window runs, interval/failure backoff, PUT /mind conflict tests (notes, voice).
-- test_habits end_to_end "not asked again inside the interval" step (Director); the single call + tic change is ported.
 - test_concerns prefix tests (`_prepare`); raid_worriers (ConcernRules port, not this module).
 - test_wants: idle_window_schedules_wants_with_pacing, director_runs_a_wants_window_end_to_end; test_wants_wiring CLI tests.
 - test_grudges: "has come to apologise to" in line prompts, arrival-chat flow (partly covered via ReunionFor/NoteFor/OnConversationDone).
-- test_delivery_thought world tests: shout justification, thought surface, age-gate theory.
+
+## World tests ported over the Director (Mod.Tests/Mind/InnerWorldTests.cs, helper w3)
+All with `World` (Director + FakeBridge + FakeLlm): test_bystanders (7 world tests), test_inner_monologue (14: line adds aim, second turn, prefix block D, solo aim x2, cloud x5, diary, idle thought, master-off x2),
+test_delivery_thought (11 incl. the age-gate theory), test_vanilla_social (7 world tests plus plain_social_event_is_not_vanilla), test_habits (end_to_end incl. "not asked again inside the interval", off switch, bad habits through the Director).
+Test seams added to Core (no behaviour change): `Director.InnerKw` / `InnerArgs` / `InnerAfterSayAsync` public (Python calls `_inner_kw`, `_inner_after_say`), `Director.ListenerHook` (Python monkeypatches `d._listener`), `LeaseManager.SubmitHook` (Python wraps `leases.submit`).
 
 ## Behaviour differences
 - `memories.remove` uses reference removal (Python used equality; identical for distinct objects).
