@@ -828,7 +828,7 @@
    "category": "biotech",
    "condition": "hemogen_min_pct < 25",
    "action": "A hemogen-needing colonist is under 25% (craving soon): this turn set a grown prisoner to give blood (genes tool, op donate), or get hemogen packs. Never strip food for it.",
-   "priority": 2,
+   "priority": 1,
    "sources": [
     "W-hemogen"
    ],
