@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased: the mind moves into the mod (C#)
+
+The narrator's and colonists' mind (the agent) is now C# inside the mod, namespace `RimWorldLLM.Mind`. It was a Python program
+that the engine installed and ran.
+
+- **No Python.** No uv, no Python 3.12, no wheel: nothing is downloaded or launched for the mind, the zip is smaller and the
+  engine profile has no agent block. The last commit with the Python agent is `36515840a97cbbbf576ffdfd782d0726f07b7443`.
+- **My own endpoint needs no engine.** The mind calls your endpoint directly (with your key); the mod launches and attaches no
+  engine in that mode. Chat is answered there too (the Python helper was never installed in own-endpoint mode).
+- **A live narrator line.** Answers stream: "thinking..." with prompt progress, then "typing..." with the line growing, on an
+  easyEngine (and as a streamed reply on other OpenAI-compatible endpoints; a non-stream fallback stays).
+- **Memory carries over.** The data folder and every file format are unchanged: minds, diaries, the chronicle and `calls.jsonl`
+  from a Python-era install load as they are. Storage and Remove memory work without an engine.
+- **Status line.** Settings shows "Narrator and colonists: running / waiting for the model / waiting for a game / off / error".
+  Edits to `config.toml` in the data folder restart the mind.
+- **Never in a frame.** The mind runs on a background thread and reaches the game through the same queue the HTTP bridge uses
+  (served per frame under a budget); the HTTP bridge is now opt-in for external tools. See docs/BRIDGE-API.md.
+- **Differences from the Python** (full list in docs/CSHARP-MIND.md): `narrator_cover` is gone, caravans were not ported, the
+  Chronicle no longer loops forever on a tiny budget, timeouts are per request, new `X-Request-Id` on every call.
+- `bench/` is pinned to the last Python commit (bench/README.md). What to check in game: docs/release/CSHARP-MIND-PLAYTEST.md.
+
 ## 2.1.0 beta (first public release)
 
 Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are included but untested.

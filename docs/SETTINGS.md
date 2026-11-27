@@ -161,7 +161,7 @@ Options > Controls. The trade and caravan rows show their sliders and the never-
 |---|---|---|---|
 | `adultContent` | false | P | Adult themes between adults; turning it on needs the confirmation dialog (unchanged) |
 
-The age gate is not a setting: a plain line on the tab says it is always on (agent `core/agegate.py`, mod Wants/Quotes guards).
+The age gate is not a setting: a plain line on the tab says it is always on (`Mind/Core/AgeGate.cs`, mod Wants/Quotes guards).
 
 ### Storage (new tab, no saved settings)
 
@@ -211,6 +211,7 @@ Where a setting comes from, highest first:
 
 The only environment variable is `RIMWORLDLLM_DATA_DIR` (moves the memory folder). One exception: the steward's strategy file can also be
 chosen with `RIMWORLDLLM_STEWARD_STRATEGY` (it wins over `steward_strategy_path`).
+The older `RIMWORLDLLM_LLM_*`, `_BRIDGE_*`, `_WINDOWS` and `_CONFIG` variables are not read by the mod; only the test harness (`tools/MindHarness`) honours them.
 
 The LLM endpoint: in local mode the mind uses the engine's `/v1` and the selected model, with a 900 s request timeout (the engine holds a
 request while a model loads; for a streamed answer the timeout is the idle time between pieces). In own mode (`llmSource` = own) it calls your
@@ -267,20 +268,20 @@ in the file to change either.
 | `diary_enabled` | true | file |  |
 | `diary_day_fraction` | 0.6 | file | write a day's entry once this much of the day has passed |
 | `diary_max_tokens` | 160 | file |  |
-| `wants` | true | mod (`wantsEnabled`) | wants with follow-through (wants.py); also needs the mod's wants_enabled |
+| `wants` | true | mod (`wantsEnabled`) | wants with follow-through (Wants.cs); also needs the mod's wants_enabled |
 | `chronicle_enabled` | true | file |  |
-| `steward` | true | file | the vivarium steward (steward.py); it stays off against a mod without /vivarium |
+| `steward` | true | file | the vivarium steward (Steward.cs); it stays off against a mod without /vivarium |
 | `steward_min_gap_real_s` | 20.0 | file | least real seconds between two steward cycles that are not chat (chat ignores it) |
 | `steward_combat_gap_game_s` | 5.0 | file | a fight: least game seconds between two combat turns |
 | `steward_combat_gap_real_s` | 4.0 | file | a fight: least real seconds after the last turn ended |
 | `steward_strategy_path` | "" | file | a strategy playbook file for the steward prompt; env RIMWORLDLLM_STEWARD_STRATEGY wins; "" = the shipped one |
 | `steward_strategy_max_bytes` | 12288 | file |  |
-| `art_enabled` | true | mod (`artDescriptions`) | LLM art descriptions (art.py); also needs the mod's art_descriptions |
+| `art_enabled` | true | mod (`artDescriptions`) | LLM art descriptions (Art.cs); also needs the mod's art_descriptions |
 | `art_max_tokens` | 110 | file |  |
 | `text_fill` | true | mod (`textGen`) | per-instance texts (the game's text queue; adapter.idle_fill); also needs the mod's text_fill not False |
 | `chronicle_bridge` | true | file | also POST /chronicle (contract: the mod saves the chronicle with the game) |
 | `chronicle_max_tokens` | 220 | file |  |
-| `recap_enabled` | true | mod (`recapOnLoad`) | "Previously on..." recap after a save load (recap.py; also the mod's recap setting) |
+| `recap_enabled` | true | mod (`recapOnLoad`) | "Previously on..." recap after a save load (Recap.cs; also the mod's recap setting) |
 | `narrator_context_tokens` | 6000 | file |  |
 | `narrator_min_gap_game` | 6000 | file | coverage lines: min gap on both clocks; major events bypass |
 | `shout_gap_real_s` | 45.0 | file | one speaker shouts at most this often (a calm scene cannot burst every line) |
@@ -290,42 +291,42 @@ in the file to change either.
 | `thought_max_chars` | 90 | file |  |
 | `idle_retry_real_s` | 60.0 | file | backoff after a failed idle job |
 | `use_llm_voice_cards` | false | file | optional pass for the 3 example lines |
-| `repeat_guard` | true | file | a conversation turn that repeats an earlier line is refused (loopguard.py) |
+| `repeat_guard` | true | file | a conversation turn that repeats an earlier line is refused (Loopguard.cs) |
 | `repeat_retries` | 1 | file | retries with the reason in the prompt, then the talk ends with no line |
-| `dreams` | true | mod (`dreamsEnabled`) | sleepers get one surreal dream cloud a night (dreams.py; also the mod's dreams setting) |
+| `dreams` | true | mod (`dreamsEnabled`) | sleepers get one surreal dream cloud a night (Dreams.cs; also the mod's dreams setting) |
 | `dream_chance` | 0.5 | file | per actor per night: chance the night brings a dream |
 | `dreams_per_night` | 1 | file |  |
 | `dream_max_tokens` | 30 | file |  |
 | `dream_max_age_game` | 2500 | file | a dream not ready this long (game units, 1 game hour) after falling asleep is dropped |
-| `inner_monologue` | true | file | master: aim in the intent pass, inner stream in the Mind, contrast clouds (inner.py) |
+| `inner_monologue` | true | file | master: aim in the intent pass, inner stream in the Mind, contrast clouds (Inner.cs) |
 | `inner_stream_keep` | 6 | file | inner thoughts kept per Mind |
 | `inner_solo_aim` | true | file | a line with no listener still gets an aim-only call |
-| `small_model_patterns` | { e2b, e4b } | file | model ids containing any of these count as small (model_tier.py) |
+| `small_model_patterns` | { e2b, e4b } | file | model ids containing any of these count as small (ModelTier.cs) |
 | `inner_cloud_small` | true | file | contrast clouds on a small model (False = off there; the aim is still made and stored) |
 | `art_small` | true | file | art descriptions on a small model (E4B, starter, E2B fallback): on (keeper 2026-11-26; E4B judged 2.9-3.0 after the creative round) |
 | `inner_cloud` | true | file | sometimes show the aim as a thought cloud after a line |
 | `inner_cloud_chance` | 0.35 | file |  |
 | `inner_cloud_gap_real_s` | 90.0 | file | per actor, on the play clock |
 | `inner_aim_fresh_days` | 0.25 | file | an aim guides the next line for this many game days |
-| `gossip_chain` | true | file | retold gossip carries a source chain, decays per hop, merges duplicates; pass-on hint (gossip.py) |
+| `gossip_chain` | true | file | retold gossip carries a source chain, decays per hop, merges duplicates; pass-on hint (Gossip.cs) |
 | `gossip_hop_decay` | 0.8 | file | confidence factor per retelling beyond the first |
-| `reputation` | true | file | "people say: ..." per actor in block C, rebuilt by rules (gossip.py) |
+| `reputation` | true | file | "people say: ..." per actor in block C, rebuilt by rules (Gossip.cs) |
 | `reputation_show` | 3 | file | at most this many relation lines carry a reputation |
-| `lore` | true | file | shared lore: shared names coined after a major chronicle entry (lore.py) |
+| `lore` | true | file | shared lore: shared names coined after a major chronicle entry (Lore.cs) |
 | `lore_max` | 12 | file | lore entries kept; the oldest fade |
-| `habits` | true | file | reflection may evolve a voice-card tic (habits.py) |
+| `habits` | true | file | reflection may evolve a voice-card tic (Habits.cs) |
 | `habit_every_days` | 3.0 | file | at most one habit change per this many game days, per actor |
-| `firsts` | true | file | first-time reactions (firsts.py; also the mod's first_cue event toggle) |
+| `firsts` | true | file | first-time reactions (Firsts.cs; also the mod's first_cue event toggle) |
 | `firsts_per_day` | 2 | file | first-time lines per actor per game day |
-| `bystanders` | true | file | a bystander's reaction cloud to an argument (bystanders.py) |
+| `bystanders` | true | file | a bystander's reaction cloud to an argument (Bystanders.cs) |
 | `bystander_gap_real_s` | 120.0 | file | per actor, on the play clock |
-| `concerns` | true | file | ongoing worries per actor (concerns.py): born from events and reflection |
+| `concerns` | true | file | ongoing worries per actor (Concerns.cs): born from events and reflection |
 | `concerns_max` | 2 | file | open concerns per actor at most |
 | `concern_fade_days` | 5.0 | file | an open concern nobody resolved fades after this many game days |
 | `concern_keep_days` | 1.0 | file | a resolved or faded concern stays on record this long for the diary |
 | `concern_loved_opinion` | 30 | file | opinion of someone at or above this makes their trouble a worry |
 | `concern_payoff` | true | file | one spoken line when a worry is resolved |
-| `grudges` | true | file | grudge and make-up loop (grudges.py); needs the mod's wants_enabled, effects on |
+| `grudges` | true | file | grudge and make-up loop (Grudges.cs); needs the mod's wants_enabled, effects on |
 | `grudge_avoid_days` | 0.25 | file | the avoid phase, in game days (the mod's avoid table has its own hours setting) |
 | `grudge_cooldown_days` | 0.75 | file | from the offence to the first seek-out |
 | `grudge_retry_days` | 0.25 | file | between seek-out attempts the mod refused or that came to nothing |
@@ -334,16 +335,16 @@ in the file to change either.
 | `grudge_cooldown_floor_real_s` | 300.0 | file | grudge would otherwise cycle in a few real minutes. Each phase waits |
 | `grudge_retry_floor_real_s` | 120.0 | file | for both its game-time length and this much play time |
 | `grudge_recover_opinion` | 10 | file | opinion of the other at or above this counts as recovered (make up, not confront) |
-| `gatherings` | true | file | group scenes and ceremonies (group.py; also the mod's gatherings event toggle) |
+| `gatherings` | true | file | group scenes and ceremonies (Group.cs; also the mod's gatherings event toggle) |
 | `meal_talk` | true | file | meals (3+ eating in one room) may become a group scene |
 | `group_max_speakers` | 4 | file | speakers in one group scene (two windows rotate between them) |
 | `group_turns` | { 5, 4, 2, 0 } | file | meal/party turn cap at 1x, 2x, 3x, 4x (0 = no scene; ceremonies keep at least their lead) |
 | `eulogy_max_tokens` | 70 | file | the lead's line at a funeral |
 | `repeat_own_recent` | 5 | file | the speaker's own last lines (across conversations) kept for the check |
-| `creative_ground` | false | file | richer data in art / recap / lore / eulogy and vow prompts (art.py, recap.py, lore.py, group.py) |
-| `aim_ground` | true | file | (judge: aims +0.3..+0.6 on E4B) the aim request carries the scene's tension and one subtext kind (inner.py) |
-| `creative_plan` | false | file | a one-line private plan before the piece (creative.py) |
-| `creative_best_of` | 1 | file | candidates per piece (creative.py) |
+| `creative_ground` | false | file | richer data in art / recap / lore / eulogy and vow prompts (Art.cs, Recap.cs, Lore.cs, Group.cs) |
+| `aim_ground` | true | file | (judge: aims +0.3..+0.6 on E4B) the aim request carries the scene's tension and one subtext kind (Inner.cs) |
+| `creative_plan` | false | file | a one-line private plan before the piece (Creative.cs) |
+| `creative_best_of` | 1 | file | candidates per piece (Creative.cs) |
 | `creative_ground_for` | { lore, recap, eulogy } | file | judged better on E4B (art and vows were not); kinds ("art", "lore", "recap", "eulogy", "vow") that get creative_ground; the bool above means all kinds |
 | `creative_plan_for` | { lore, eulogy } | file | kinds that get creative_plan (judged better on E4B) |
 | `creative_best_of_for` | { recap } | file | kinds that get best-of creative_best_of_n candidates (recap: once per load) |
