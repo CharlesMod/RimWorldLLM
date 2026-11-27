@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -45,21 +46,29 @@ namespace RimWorldLLM.Harness
             public List<KeyValuePair<string, JObject>> Acts = new List<KeyValuePair<string, JObject>>();
             public JObject Board;
             public List<string> DialogsLeft = new List<string>();
+            public double WallS;                                                  // the seconds the cycle took
+            public List<KeyValuePair<string, JObject>> SpeedActs = new List<KeyValuePair<string, JObject>>();   // the /act/time bodies
+            public List<KeyValuePair<string, string>> Requests = new List<KeyValuePair<string, string>>();       // fb.requests
         }
 
         /// <param name="makeBackend">builds the tool backend (default: MindRunner.MakeToolBackend, the real one at llmUrl); tests pass a scripted fake.</param>
         /// <param name="wrapTransport">taps the fake bridge (goldens record the writes through it).</param>
+        /// <param name="combat">a recorded GET /combat body: the game is in this fight (the digest gets it as its combat block)</param>
+        /// <param name="combatCycle">run one small combat turn (the steward is playing and the fight is already known)</param>
         public static async Task<Outcome> TryOnceAsync(JObject digest, JObject goals, string chat, bool playing, string llmUrl, string model = "", string mode = "auto",
-                                                       Func<MindConfig, IBackend> makeBackend = null, Func<IBridgeTransport, IBridgeTransport> wrapTransport = null)
+                                                       Func<MindConfig, IBackend> makeBackend = null, Func<IBridgeTransport, IBridgeTransport> wrapTransport = null,
+                                                       JObject combat = null, bool combatCycle = false)
         {
+            digest = digest == null ? new JObject() : new JObject(digest);
+            if (combat != null && !digest.ContainsKey("combat")) digest["combat"] = combat.DeepClone();
             string tmp = Path.Combine(Path.GetTempPath(), "rimworldllm-steward-try-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmp);
             try
             {
-                var cfg = new MindConfig { DataDir = tmp, BridgeUrl = "http://fake", BridgeToken = "tok", Wants = false, Steward = true, StewardMinGapRealS = 0.0 };
+                var cfg = new MindConfig { DataDir = tmp, BridgeUrl = "http://fake", BridgeToken = "tok", Wants = false, Steward = true, StewardMinGapRealS = 0.0, StewardCombatGapRealS = 0.0 };
                 cfg.Llm.BaseUrl = llmUrl;
                 if (!string.IsNullOrEmpty(model)) cfg.Llm.Model = model;
-                var fb = new FakeBridge("tok") { Digest = digest };
+                var fb = new FakeBridge("tok") { Digest = digest, Combat = combat };
                 if (goals != null)
                     foreach (string k in new[] { "goals", "plan", "orders", "log" })
                         if (goals[k] != null) fb.GoalsBoard[k] = goals[k].DeepClone();
@@ -71,21 +80,26 @@ namespace RimWorldLLM.Harness
                 await d.StartAsync();
                 var tap = new StewardTap(makeBackend != null ? makeBackend(cfg) : MindRunner.MakeToolBackend(cfg));
                 d.ToolBackend = tap; d.ToolMode = mode;
+                double wall = 0.0;
                 try
                 {
                     fb.Playing = false;
                     await d.Steward.StepAsync();                 // first sight: the chat cursor starts here
-                    fb.Playing = playing;
+                    fb.Playing = playing || combatCycle;
+                    if (combatCycle) d.Steward.CombatOn = true;         // as if the "combat started" cycle had run: the next wake is a combat turn
                     if (!string.IsNullOrEmpty(chat)) fb.AddChat("player", chat);
+                    var t0 = System.Diagnostics.Stopwatch.StartNew();
                     await d.StepAsync();
                     await d.DrainAsync();
+                    wall = t0.Elapsed.TotalSeconds;
                 }
                 finally { tap.Dispose(); d.Dispose(); }
                 var trace = d.Steward.Stats.Trace.Count > 0 ? d.Steward.Stats.Trace[d.Steward.Stats.Trace.Count - 1] : new JObject();
                 return new Outcome
                 {
                     Messages = tap.First, Trace = trace, Chat = fb.Chat.ToList(), Acts = fb.ActLog.ToList(), Board = fb.GoalsBoard,
-                    DialogsLeft = new List<string>(),
+                    DialogsLeft = new List<string>(), WallS = wall,
+                    SpeedActs = fb.ActLog.Where(a => a.Key == "time").ToList(), Requests = fb.Requests.ToList(),
                 };
             }
             finally { try { Directory.Delete(tmp, true); } catch (Exception) { } }
@@ -99,11 +113,15 @@ namespace RimWorldLLM.Harness
             var tr = o.Trace;
             if (o.Messages == null || o.Messages.Count == 0)
             {
-                w.WriteLine("no cycle ran: " + (tr["error"] != null ? (string)tr["error"] : "the steward did not wake"));
+                w.WriteLine("no cycle ran: " + (BridgeJson.Truthy(tr["error"], false) ? (string)tr["error"]
+                    : BridgeJson.Truthy(tr["skipped"], false) ? "trade turn skipped: " + (string)tr["skipped"] : "the steward did not wake"));
                 return 1;
             }
-            w.WriteLine("SYSTEM PROMPT: " + PyStr.Len(Content(o.Messages[0])) + " chars");
+            int sysN = PyStr.Len(Content(o.Messages[0])), userN = PyStr.Len(Content(o.Messages[1]));
+            w.WriteLine("SYSTEM PROMPT: " + sysN + " chars");
             w.WriteLine("USER TURN:\n" + Content(o.Messages[1]) + "\n");
+            w.WriteLine("PROMPT: " + (sysN + userN) + " chars, about " + ((sysN + userN) / 4) + " tokens (system " + sysN + ", user " + userN + "; the tool list is part of the system prompt)");
+            w.WriteLine("ELAPSED: " + o.WallS.ToString("F2", CultureInfo.InvariantCulture) + " s for the cycle (" + (tr["elapsed_s"] == null ? "?" : PyJson.Str(tr["elapsed_s"])) + " s in the tool loop)");
             bool pl = tr["playing"] != null && BridgeJson.Truthy(tr["playing"], false);
             string reason = tr["reason"] == null ? "None" : (string)tr["reason"];
             string outcome = tr["outcome"] == null ? "None" : (string)tr["outcome"];
@@ -117,20 +135,22 @@ namespace RimWorldLLM.Harness
             w.WriteLine("DIALOGS STILL OPEN: " + (o.DialogsLeft.Count == 0 ? "none" : string.Join(", ", o.DialogsLeft)));
             if (o.Acts.Count > 0)
                 w.WriteLine("BRIDGE ACTS: " + PyJson.Dumps(new JArray(o.Acts.Select(a => (JToken)new JArray(a.Key, a.Value)))));
+            if (BridgeJson.Truthy(tr["skipped"], false)) w.WriteLine("SKIPPED: " + (string)tr["skipped"]);
             if (tr["error"] != null && BridgeJson.Truthy(tr["error"], false)) w.WriteLine("ERROR: " + (string)tr["error"]);
             return 0;
         }
 
         public const string Usage =
             "steward-try --digest FILE [--goals FILE] [--chat TEXT] [--playing] --llm-url URL [--model M] [--mode auto|grammar|json|native]\n" +
+            "      [--combat FILE [--combat-cycle]]   (a recorded GET /combat body; --combat-cycle runs one small combat turn and needs no --digest)\n" +
             "  Runs one steward cycle on a recorded GET /digest body against the fake bridge with the real tool backend at URL; prints the system prompt size,\n" +
             "  the user turn, each tool call with its result, the chat lines and the REJECTED failures. Nothing here touches a game.";
 
         /// <summary>steward_try.main: arguments after the command word. Exit code 2 on a usage error (argparse).</summary>
         public static async Task<int> MainAsync(string[] argv, TextWriter stdout, TextWriter stderr, Func<MindConfig, IBackend> makeBackend = null)
         {
-            string digest = null, goals = null, chat = "", url = null, model = "", mode = "auto";
-            bool playing = false;
+            string digest = null, goals = null, chat = "", url = null, model = "", mode = "auto", combat = null;
+            bool playing = false, combatCycle = false;
             for (int i = 0; i < argv.Length; i++)
             {
                 string a = argv[i];
@@ -143,6 +163,8 @@ namespace RimWorldLLM.Harness
                         case "--goals": goals = Next(); break;
                         case "--chat": chat = Next(); break;
                         case "--playing": playing = true; break;
+                        case "--combat": combat = Next(); break;
+                        case "--combat-cycle": combatCycle = true; break;
                         case "--llm-url": url = Next(); break;
                         case "--model": model = Next(); break;
                         case "--mode":
@@ -154,11 +176,14 @@ namespace RimWorldLLM.Harness
                 }
                 catch (ArgumentException e) { stderr.WriteLine("steward_try: error: " + e.Message); return 2; }
             }
-            if (digest == null || url == null) { stderr.WriteLine("steward_try: error: the following arguments are required: --digest, --llm-url"); return 2; }
-            if (chat.Length == 0 && !playing) { stderr.WriteLine("steward_try: error: nothing would wake the steward: give --chat or --playing"); return 2; }
-            var dj = (JObject)BridgeJson.Parse(File.ReadAllText(digest));
+            if (url == null) { stderr.WriteLine("steward_try: error: the following arguments are required: --llm-url"); return 2; }
+            if (combatCycle && combat == null) { stderr.WriteLine("steward_try: error: --combat-cycle needs --combat"); return 2; }
+            if (digest == null && !combatCycle) { stderr.WriteLine("steward_try: error: --digest is required (except with --combat-cycle)"); return 2; }
+            if (chat.Length == 0 && !playing && !combatCycle) { stderr.WriteLine("steward_try: error: nothing would wake the steward: give --chat or --playing"); return 2; }
+            var dj = digest == null ? new JObject() : (JObject)BridgeJson.Parse(File.ReadAllText(digest));
+            var cj = combat == null ? null : (JObject)BridgeJson.Parse(File.ReadAllText(combat));
             var gj = goals == null ? null : (JObject)BridgeJson.Parse(File.ReadAllText(goals));
-            var o = await TryOnceAsync(dj, gj, chat, playing, url, model, mode, makeBackend);
+            var o = await TryOnceAsync(dj, gj, chat, playing, url, model, mode, makeBackend, null, cj, combatCycle);
             return Report(o, stdout);
         }
     }

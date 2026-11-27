@@ -23,7 +23,7 @@ namespace RimWorldLLM.Harness
             "      FakeLlm by default; with --llm a real HttpLlm, --data-dir is then required: it gets replay-calls.jsonl (the CallLog)",
             "      and replay-requests.jsonl (every raw HTTP request body and reply, plus one 'decision' row per LLM call).",
             "  speedsim [--speed N | --all] [--events FILE] [--slots N] [--seed N]   (virtual-time speed simulation)",
-            "  steward-try --digest FILE --llm-url URL [--goals FILE] [--chat TEXT] [--playing] [--model M] [--mode auto|grammar|json|native]",
+            "  steward-try --digest FILE --llm-url URL [--goals FILE] [--chat TEXT] [--playing] [--model M] [--mode auto|grammar|json|native] [--combat FILE [--combat-cycle]]",
             "  comment-try --events FILE [--llm-url URL --model M --key K]   (documentary voice on sample events; FakeLlm without --llm-url)");
 
         static int Main(string[] a)
