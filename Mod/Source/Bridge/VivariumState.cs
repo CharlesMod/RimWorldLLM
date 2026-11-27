@@ -40,7 +40,9 @@ namespace RimWorldLLM.Bridge
         }
     }
 
-    /// <summary>One chat line. Who: player, narrator, note, colonist. To: a pawn id for "@Name" lines and colonist answers, else 0.</summary>
+    /// <summary>One chat line. Who: one of <see cref="ChatKinds"/> (player, narrator, note, colonist, thought, dream, diary,
+    /// chronicle, recap, art, action, refused). To: a pawn id for "@Name" lines and colonist lines, else 0.
+    /// Listener: the addressee's label on a colonist line ("Ana → Bram"), else empty.</summary>
     public sealed class ChatEntry
     {
         public int Seq;
@@ -49,9 +51,12 @@ namespace RimWorldLLM.Bridge
         public int To;
         public string Name;   // speaker or addressee label for display ("Ana")
         public string Text;
+        public string Listener = "";
         public JObject ToJson()
         {
-            return new JObject { ["seq"] = Seq, ["tick"] = Tick, ["who"] = Who ?? "", ["to"] = To, ["name"] = Name ?? "", ["text"] = Text ?? "" };
+            var o = new JObject { ["seq"] = Seq, ["tick"] = Tick, ["who"] = Who ?? "", ["to"] = To, ["name"] = Name ?? "", ["text"] = Text ?? "" };
+            if (!string.IsNullOrEmpty(Listener)) o["listener"] = Listener;
+            return o;
         }
     }
 
@@ -67,11 +72,11 @@ namespace RimWorldLLM.Bridge
         public IReadOnlyList<ChatEntry> Entries { get { return _entries; } }
 
         /// <summary>Appends; text trimmed and capped at 500 chars; returns the entry (null for empty text).</summary>
-        public ChatEntry Add(string who, string text, int tick, int to = 0, string name = null)
+        public ChatEntry Add(string who, string text, int tick, int to = 0, string name = null, string listener = null)
         {
             text = VivJson.Clean(text, MaxText);
             if (text.Length == 0) return null;
-            var e = new ChatEntry { Seq = ++_seq, Tick = tick, Who = string.IsNullOrEmpty(who) ? "note" : who, To = to, Name = name ?? "", Text = text };
+            var e = new ChatEntry { Seq = ++_seq, Tick = tick, Who = string.IsNullOrEmpty(who) ? "note" : who, To = to, Name = name ?? "", Text = text, Listener = VivJson.Clean(listener, 60) };
             _entries.Add(e);
             while (_entries.Count > Max) _entries.RemoveAt(0);
             return e;
@@ -111,7 +116,7 @@ namespace RimWorldLLM.Bridge
                 if (text.Length == 0) continue;
                 int seq = VivJson.Int(o["seq"]);
                 if (seq <= _seq) seq = _seq + 1;
-                _entries.Add(new ChatEntry { Seq = seq, Tick = VivJson.Int(o["tick"]), Who = VivJson.Str(o["who"], "note"), To = VivJson.Int(o["to"]), Name = VivJson.Str(o["name"]), Text = text });
+                _entries.Add(new ChatEntry { Seq = seq, Tick = VivJson.Int(o["tick"]), Who = VivJson.Str(o["who"], "note"), To = VivJson.Int(o["to"]), Name = VivJson.Str(o["name"]), Text = text, Listener = VivJson.Clean(VivJson.Str(o["listener"]), 60) });
                 _seq = seq;
             }
             while (_entries.Count > Max) _entries.RemoveAt(0);
