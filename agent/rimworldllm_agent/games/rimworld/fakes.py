@@ -404,7 +404,7 @@ class FakeBridge:
             return self._ok(actions=[a for a in self.actions if a["seq"] > since], next_seq=len(self.actions) + 1)
         if path.startswith("/act/") and req.method == "POST":
             verb = path[5:]
-            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan"):
+            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care"):
                 return None
             if verb == "caravan":
                 return self._err(409, "refused", "caravans are off")
@@ -585,7 +585,7 @@ class FakeBridge:
                  "letter": lambda: f"letter {b['letter']}: {b['choice']}",
                  "draft": lambda: ("drafted" if b["drafted"] else "undrafted") + f" {len(b['pawns'])} pawn(s)",
                  "order": lambda: f"{b['order']} order for pawn {b['pawn']}"}
-        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
+        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
             notes[vb] = lambda vb=vb: vb + ": " + ", ".join(f"{k} {x}" for k, x in b.items() if k != "why")
         return "", notes[verb]()
 

@@ -656,6 +656,53 @@ Full shapes and behaviour: docs/VIVARIUM.md "Phase 3".
 the remembered speed and the last raid side are saved in the vivarium JSON (`combat`). The digest gains `combat`
 (the `GET /combat` object) while a fight is active.
 
+### Biotech: mechs, genes, children (game needed)
+Full behaviour: docs/VIVARIUM.md "Biotech". Every route refuses "Biotech is not active" without the DLC, and "Biotech
+hands are not available" when the hands object has no Biotech bodies.
+
+| Route | Example body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/mech_mode` | `{"group": 2, "mode": "recharge"}` | group 1..12; mode work, escort, recharge, shutdown (dormant, self-shutdown, selfshutdown → shutdown); `mechanitor` optional id (0 = the first) |
+| `/act/mech_group` | `{"mech": 501, "group": 2}` | ids positive, group 1..12 |
+| `/act/mech_gestate` | `{"kind": "lifter", "count": 2}` | kind 1..40 chars (label or defName); count 1..3 (1); `gestator` optional id. The hand keeps 1 bandwidth free. Reply adds `undo_seq`, `left` (a bill mark) |
+| `/act/genepack` | `{}` / `{"genepack": 7301, "bank": 7400}` | optional ids; none = all loose packs (up to 4 a call), any bank with space |
+| `/act/xenogerm` | `{"op": "assemble", "genepacks": ["robust", "fast runner"], "name": "Quick", "plan": "..."}` / `{"op": "implant", "xenogerm": 7710, "pawn": 102, "plan": "..."}` | op assemble\|implant; assemble: genepacks 1..12 (labels or ids), name 1..40; implant: xenogerm, pawn ids; plan 10..200 chars (both). Implant: 409 refused unless the setting **may_implant_genes** is on |
+| `/act/hemogen` | `{"op": "donate", "prisoner": 108}` | op donate\|stop; prisoner id |
+| `/act/child_schedule` | `{"pawn": 106, "preset": "school"}` | preset school\|play\|default (age rules in the hand) |
+| `/act/feed` | `{"baby": 107, "feeder": 101, "mode": "urgent"}` | mode never\|childcare\|urgent (childcare); feeder 0 or absent = reset to the carers' default |
+| `/act/child_care` | `{"pawn": 101, "priority": 1}` | priority 0..4 (1) |
+
+The digest gains `bio` (absent without Biotech; every key may be missing):
+```json
+"bio": {
+  "mechanitors": [{"pawn": 101, "name": "Ana", "bandwidth_used": 3, "bandwidth_total": 6, "gestating_bandwidth": 1,
+                   "groups": [{"group": 1, "mode": "work", "mechs": 2}]}],
+  "mechs": [{"id": 501, "name": "Lifter 1", "kind": "lifter", "overseer": "Ana", "group": 1, "mode": "work",
+             "job": "hauling steel", "energy": 45, "problem": null}],
+  "mechs_total": 14,
+  "gestators": [{"id": 610, "label": "mech gestator", "state": "gestating lifter (40%)"}],
+  "rechargers": [{"id": 620, "label": "basic recharger", "state": "charging Lifter 1"}],
+  "can_gestate": [{"kind": "lifter", "bandwidth": 1}],
+  "pollution": {"wastepacks": 12, "wastepacks_near_home": 4, "home_polluted_pct": 3, "map_polluted_pct": 1, "trend": "growing",
+                "toxic_buildup": ["Ana 12%"], "atomizer": false, "can_atomize": true, "waste_stockpile": false},
+  "genes": [{"pawn": 102, "name": "Bram", "xenotype": "Sanguophage", "effects": ["needs hemogen", "deathrest"], "hemogen_pct": 18}],
+  "hemogen": {"packs": 4, "donors": ["prisoner Cole (hemogen farm)"], "needing": ["Bram 18%"],
+              "prisoners": [{"id": 140, "name": "Vex"}]},
+  "genebank": {"genepacks": 3, "unstored": 1, "banks": 1, "bank_space": 4, "assembler": "idle (max complexity 6)",
+               "packs": ["robust (complexity 1)"]},
+  "xenogerms": [{"id": 7710, "name": "Quick"}],
+  "children": [{"pawn": 106, "name": "Fay", "age": 6, "stage": "child", "growth_tier": 3, "learning_pct": 60,
+                "learning": "lessontaking", "desk": true}],
+  "babies": [{"pawn": 107, "name": "Dee", "age_days": 20, "food_pct": 22, "hungry": true, "feeder": null, "feeding": "carers at childcare"}],
+  "pregnancies": [{"pawn": 101, "name": "Ana", "progress_pct": 40, "days_left": 11}],
+  "carers": ["Ana"],
+  "may_implant": false,
+  "missing": ["mech recharger", "school desk"]
+}
+```
+`hemogen.prisoners` lists grown, non-hemogenic prisoners not yet giving blood. `GET /vivarium` `settings` gains
+`may_implant_genes`; `GET /config` gains `vivarium_may_implant_genes`. `POST /act/zone` takes `preset: "waste"`.
+
 ### Phase 4: trade, caravans, quests (game needed)
 Full shapes and behaviour: docs/VIVARIUM.md "Phase 4". Same rules as the other `/act/*`. Nothing here is undoable;
 the hands check first and refuse with a reason. The JObject reads (`/trade/offer`, `/caravan/plan`) answer `409 refused`

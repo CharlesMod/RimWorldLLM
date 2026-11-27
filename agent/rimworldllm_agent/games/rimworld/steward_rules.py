@@ -301,7 +301,31 @@ def derive_facts(digest: dict) -> dict:
             fill("power_net_w", pw["produced"] - pw["used"])
         if _num(pw.get("stored")):
             fill("battery_wd", pw["stored"])
+    _bio_facts(digest.get("bio"), fill)
     return f
+
+
+def _bio_facts(bio: object, fill) -> None:
+    """Biotech facts from the digest's ``bio`` block (absent block: none). Only what the block states."""
+    if not isinstance(bio, dict):
+        return
+    babies = [x for x in bio.get("babies") or [] if isinstance(x, dict)]
+    if "babies" in bio:
+        fill("bio_babies_hungry", sum(1 for x in babies if x.get("hungry")))
+    pct = [g["hemogen_pct"] for g in bio.get("genes") or [] if isinstance(g, dict) and _num(g.get("hemogen_pct"))]
+    if pct:
+        fill("hemogen_min_pct", min(pct))
+    free = [m["bandwidth_total"] - m["bandwidth_used"] - (m.get("gestating_bandwidth") or 0) for m in bio.get("mechanitors") or []
+            if isinstance(m, dict) and _num(m.get("bandwidth_total")) and _num(m.get("bandwidth_used")) and _num(m.get("gestating_bandwidth") or 0)]
+    if free:
+        fill("bandwidth_free", max(free))
+        fill("mech_kinds_ready", len([k for k in bio.get("can_gestate") or [] if isinstance(k, dict)]))
+    p = bio.get("pollution")
+    if isinstance(p, dict):
+        if p.get("trend"):
+            fill("pollution_growing", p.get("trend") == "growing")
+        if _num(p.get("wastepacks_near_home")):
+            fill("wastepacks_near_home", p["wastepacks_near_home"])
 
 
 # ---- selection and rendering ---------------------------------------------------------------

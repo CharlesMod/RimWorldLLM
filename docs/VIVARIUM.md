@@ -845,6 +845,110 @@ manipulation. Dara was idle.
   construction."
 - The system prompt was 25.1k chars. Outputs are in ~/.local/share/rimworld-hermes-engine/xlate/live/.
 
+## Biotech: mechs, genes, children
+
+The narrator plays the Biotech parts of the game: mechanitors and their mechs, pollution and wastepacks, genes and
+xenogerms, hemogen, children and babies. Everything switches off when Biotech is not active: the digest has no `bio`
+block, the steward gets no Biotech tool or strategy notes, and the routes refuse "Biotech is not active".
+
+### Pieces and where they live
+- `Mod/Source/Bridge/VivariumBio.cs` (Verse-free, tested in `Mod.Tests/VivariumBioTests.cs`): `IVivariumBioHands` (a
+  separate interface: a hands object without it answers "Biotech hands are not available"), `XenogermArgs`, `BioPure`
+  (bandwidth math, mech mode words, gene effect words, children's day presets and their age rules, the `missing` list,
+  the pollution trend) and `BioWords` (note text).
+- `Mod/Source/Bridge/VivariumRoutesBio.cs`: the nine `POST /act/*` routes below, through the same Act pipeline as every
+  hand (op_id, `why`, greentext, 409 refusals, the action log).
+- `Mod/Source/RimWorld/VivariumBioView.cs`: the digest's `bio` block. `Mod/Source/RimWorld/VivariumBioHands.cs`: the game
+  bodies. The `waste` stockpile preset lives in the phase 2 zone hand (`VivariumBuildHands.cs`).
+- Agent: `games/rimworld/steward_bio.py` (tools `mechs`, `genes`, `children`), the BIO lines in `steward_digest.py`,
+  four playbook rules in `strategy/rules.json` (`bio.baby_hungry`, `bio.hemogen_low`, `bio.bandwidth_idle`,
+  `bio.pollution_growing`, from facts derived in `steward_rules.py`), and `strategy/steward_biotech.md`, added to the
+  strategy section only when the digest has a `bio` block (so other games pay nothing for it and the main strategy file
+  stays under its 12 KB cap).
+
+### What the narrator sees (`bio` block; wire shape in BRIDGE-API.md)
+Mechanitors with bandwidth used/total and what is gestating, control groups and their modes; mechs by kind with their
+job, energy and a problem word (low power, no recharger, downed, dormant, out of command range); gestators and
+rechargers in words; the mech kinds a gestator could take now with their bandwidth. Pollution: wastepacks (and how many
+lie in the home area outside a waste stockpile), polluted share of home and map, a day-over-day trend, toxic buildup,
+whether an atomizer is built or researched, whether a waste stockpile exists. Genes: each colonist's xenotype with the
+effects that matter for play in words ("fast, aggressive, needs go-juice"; "needs hemogen, deathrest"), hemogen percent
+for hemogen carriers; hemogen packs, prisoners giving blood and who is low; genepacks (stored and loose), gene banks and
+their space, the assembler's state, xenogerms on the map. Children: age, growth tier, learning need and what they are
+learning now, whether there is a school desk; babies: age in days, food and hunger, who feeds them (the baby's feeding
+tab, else "carers at childcare"); pregnancies of grown women only (visible ones, with days left); colonists with
+Childcare on; and a short `missing` list (mech recharger, mech gestator, school desk, crib, waste stockpile, hemogen
+packs, gene bank). The agent renders it as MECHS, GESTATORS/RECHARGERS, CAN GESTATE, POLLUTION, GENES, HEMOGEN,
+GENEBANK, XENOGERMS, CHILDREN, BABIES, PREGNANT, CARERS and BIO MISSING lines; under the 6 KB cap they shrink after the
+BUILD lines, and the last step keeps only BIO MISSING, hungry babies and low hemogen.
+
+### The hands
+| Route | Does | Refuses (examples) |
+|---|---|---|
+| `mech_mode` | a control group's work mode: work, escort, recharge, shutdown (dormant/self-shutdown accepted) | no mechanitor; no such group; already in that mode |
+| `mech_group` | moves a mech to another of its overseer's groups (unassigns from the old one, checks it moved) | not a colony mech; no overseer; already there |
+| `mech_gestate` | queues a gestation bill (repeat count 1..3) at an idle powered gestator that takes the recipe, for the mechanitor with the most free bandwidth | unknown kind (lists the game's); research missing (names it); no gestator ("build one first"); bandwidth: "not enough bandwidth: 5 of 6 used, a lifter needs 1 and 1 stays free" (used + gestating + queued unbound bills + the new mechs + 1 spare must fit; the game's own `HasBandwidthForBill` checks too). The bill is a ledger mark: `/undo` deletes it. |
+| `genepack` | a free grown hauler carries loose genepacks (up to 4 a call) to a powered gene bank with space | no loose genepacks; no bank; banks full or unpowered; nobody can carry |
+| `xenogerm` assemble | starts the gene assembler on named genepacks from the banks next to it, with a name and a plan (10..200 chars) the player reads in the greentext | no assembler; working; no power; unknown pack; duplicate gene; conflicting genes; complexity over the assembler's maximum; metabolism below the game's floor; archites missing |
+| `xenogerm` implant | sets a grown free colonist to receive a xenogerm (a doctor implants it), with a plan | the setting "The narrator may implant xenogerms" is off (default); children always ("the narrator never implants genes in children"); prisoners and slaves; the colonist's beliefs; the game's own target check |
+| `hemogen` | turns a prisoner's hemogen-farm interaction on (donate) or off (stop) | not the colony's prisoner; a child; hemogenic |
+| `child_schedule` | a child's whole day from a preset: school, play, default (the hand builds the 24 hours from the child's age with `BioPure.ChildHours` and checks them with `CheckChildHours`) | not a child; babies (no timetable); a preset that breaks the age rules |
+| `feed` | who feeds a baby and when (never, childcare, urgent = before other work); feeder 0 resets the baby's feeders to the carers' default | not a baby; the feeder is a child or can't feed |
+| `child_care` | a grown colonist's Childcare priority (through the work hand, so priorities turn on and every pawn refreshes) | a child; incapable |
+
+Children's days (ages: baby under 3, child 3..12; 13+ is not a child): every preset sleeps 21-6; school has recreation
+17-19 (learning happens in the free "anything" hours), play has recreation 9-12 and 15-18, default has recreation 16-18
+and, for ages 7..12 only, light work 13-15. The rules: babies at least 10 sleep hours and no work or recreation blocks;
+children at least 9 sleep hours, at least 4 free hours, at most 3 work hours and none under 7. Children's work stays
+where the game allows (the work hand already refuses what a child can't do); the steward's `draft` and `order` tools
+refuse children ("children stay out of fights"), and drafting "all" skips them.
+
+Pollution has no hand of its own: the zone tool gains preset `waste` (a wastepack-only stockpile placed like a dump,
+12..30 cells from the base), and the build tool's words gain the Biotech buildings when researched (mech gestator,
+large mech gestator, mech/basic/standard recharger, school desk, blackboard, crib, baby sleeping spot, toy box, gene
+bank, gene assembler, gene extractor, growth vat, wastepack atomizer, band node, deathrest casket).
+
+### Steward
+Three tools, each only when the digest holds what it needs, each op too: `mechs` (op mode|group|gestate), `genes` (op
+store|assemble|implant|donate; implant only when the digest says the player allows it and a xenogerm exists), `children`
+(op schedule|feed|care). Names resolve to ids from the digest; an unknown name comes back listing the known ones. The
+Biotech notes: a mechanitor early for labor mechs once Basic mechtech is done, keep one bandwidth free, a recharger
+before gestating; wastepacks to a waste stockpile far from home and an atomizer once researched, never dump near home;
+hemogen from packs or a prisoner donor, never strip food for it; children learn daily, babies are fed before work,
+children never fight; genes only with a plan the player can read. The three tools add about 2.5 k characters of tool
+text when all are offered (about 0.7..0.9 k for one).
+
+### Limits
+- The game bodies are compile-checked against the 1.7 reference assemblies only; the playtest (VIVARIUM-PLAYTEST.md,
+  section K) is their first run.
+- Mechs are not squad members: the combat squad drafts colonists and slaves only (drafting mechs needs the mechanitor
+  in range and its own controller); mech control groups in escort mode follow their mechanitor into fights.
+- No growth vats, no gene extraction, no deathrest management, no ovum/embryo work, no baby naming (the game names
+  babies), no mech resurrection or boss calls. Hemogen comes from prisoner donation; hemogen packs are kept by the
+  game's own hemogen-farm bills (no colonist donation).
+- The pollution trend lives in memory: a loaded game starts "steady" and needs a game day to compare.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
+32k, q4_0 KV, `steward_try --playing` on the four `bio_*` samples).** Prompt about 8.5 k tokens (system about 29 k chars
+with the Biotech notes and tools), a cycle 11..30 s. With the samples' food emergency left in, the model spent its turns on
+food and the freezer (sensible) and only the hungry baby got Biotech care, so the live digests were made calm (12 food
+days, nothing missing in BUILD) to see the Biotech choices:
+- Hungry baby, no feeder: every cycle (5 of 5) set Ana to feed Dee "urgent" first, then built a crib and a school desk
+  for the 6-year-old when they were buildable.
+- Mechanitor with 2 bandwidth free and no recharger: it built a mech recharger first (playbook order) and went on to
+  bedrooms; asked in chat to use the spare bandwidth, it built the recharger and queued one lifter (keeping 1 free).
+- Pollution growing, wastepacks near home, no waste stockpile: a waste stockpile in 3 of 7 cycles (other turns went to
+  bedrooms and the table, the other P2-P4 alerts of the sample).
+- Sanguophage at 15% hemogen with a grown prisoner: ignored in 7 cycles while the HEMOGEN line only said who needed it;
+  once the line named "prisoners who could give blood: Cole" it set Cole to give blood in a heartbeat cycle, and at once
+  when the player asked.
+- Fixed from it: the fake bridge did not know the Biotech verbs; `feed` without a feeder reset the baby's feeders (the
+  model sent "none"): feed now needs a named feeder; `bio.hemogen_low` is priority 1 and says "this turn"; the MECHS line
+  says how much bandwidth is free; the HEMOGEN line names grown, non-hemogenic prisoners who could give blood (the mod
+  sends them as `hemogen.prisoners`); the `genes` tool says op donate is blood from a prisoner.
+- Seen, not fixed here: the grammar fills `count` and `until` on a bill (the bill hand refuses both and the model retries),
+  and planned-freezer cooler attempts (phase 2's guard refuses them), as in the earlier live checks.
+
 ## Phase 4: trade, caravans, quests
 
 The ending on Core + Biotech is the ship; trade buys the components and advanced parts the colony cannot make,

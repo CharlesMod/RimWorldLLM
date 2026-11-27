@@ -308,9 +308,6 @@ Save first so each step can be retried.
     indoors, no orders repeated over and over, and roughly how long each combat turn takes (the agent log's
     `elapsed_s`; the live check measured 4-6 s).
 
-Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
-twitchy, sensible?).
-
 ## I. The narrator's view: reasons, food, clocks
 
 Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field, then let the narrator look once
@@ -379,3 +376,38 @@ Needs: a colony with a comms console (Microelectronics) and power, some surplus 
     declines it with `choose`. A raid/bandit-camp quest shows "needs combat (not yet)"; a lodger quest `hosting`.
 66. **Save/load.** Save while the negotiator walks and load: the trade is still pending (`trade.pending`), the walk goes
     on (or the job is given again) and the deal runs on arrival. The day's trade counters survive.
+
+## K. Biotech: mechs, genes, children (Biotech on; agent with the 26B for the narrator steps)
+Without Biotech first: `jq .bio` on the digest is `null`, the steward log lists no `mechs`/`genes`/`children` tool,
+and the settings window shows no "implant xenogerms" box. Then load a Biotech colony (dev mode is fine to set up the
+scene; switch it off before the narrator plays).
+
+67. **Seeing it.** `curl -s -H "Authorization: Bearer $T" $B/digest | jq .bio`: mechanitor bandwidth matches the
+    bandwidth gizmo; control groups and modes match; each mech's job/energy match its inspect pane; gestator and recharger
+    states read sensibly; `can_gestate` lists only researched mechs with their bandwidth; genes: a Hussar shows "fast,
+    aggressive, needs go-juice"-like words, a sanguophage "needs hemogen, deathrest" with a hemogen % matching the bar;
+    a child shows age, growth tier and learning %; a baby shows food % and hunger; a (visible) pregnancy shows % and days
+    left. Nothing shows coordinates.
+68. **Mechs.** Ask in chat "put group 2 on recharge" → greentext "set Ana's control group 2 (N mechs) to recharge" and
+    the gizmo agrees. "Move Lifter 1 to group 2" → it moves (check the mech's gizmo). "Gestate two lifters" with bandwidth
+    to spare → a gestator bill "x2" appears; with no spare bandwidth → "couldn't start gestating a lifter: not enough
+    bandwidth: ..."; with no gestator → "... build one first". `/undo` removes the gestation bill.
+69. **Genes.** Loose genepack + a gene bank: the narrator (or "store the genepacks") gets a colonist to carry it in.
+    "Make a xenogerm from robust and ..." with a plan → the assembler starts; conflicting packs → refused with the two
+    gene names. Implant with the setting off → "the player has not let the narrator implant genes"; turn it on and ask
+    for a grown colonist → the implant bill appears on them; ask for a child → refused, always.
+70. **Blood.** A sanguophage below a third of hemogen and a grown prisoner: the narrator should set the prisoner to
+    hemogen farm (prisoner tab shows it), not cut food. A hemogenic or child prisoner is refused.
+71. **Children.** A child of 6: "give Fay a school day" → her schedule shows sleep 21-6, recreation 17-19, anything
+    otherwise; a child of 8 on "default" gets work 13-15; a child of 5 never gets work hours. Drafting "Fay" in chat is
+    refused ("children stay out of fights"); "draft everyone" leaves children out. Childcare: "Ana looks after the
+    babies" → Ana's Childcare priority 1. A hungry baby: the narrator sets a feeder (the baby's feeding tab shows the
+    choice) or turns Childcare on for someone; "urgent" makes the feeder drop other work.
+72. **Pollution.** Wastepacks lying in the home area: BIO MISSING says "waste stockpile"; the narrator makes a waste
+    stockpile (zone accepts only wastepacks, away from the base); with the atomizer researched it builds one. Wastepacks
+    never get a stockpile in the base.
+73. **Size.** A colony with mechs, genes and children at once: the rendered digest stays under 6000 chars and the turn
+    still fits its time.
+
+Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
+twitchy, sensible?).
