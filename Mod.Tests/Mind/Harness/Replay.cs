@@ -52,7 +52,8 @@ namespace RimWorldLLM.Tests.Mind.ReplayTool
 
         /// <summary>Run the director over recorded events. Across days, the evening and the turn of the day are given idle time, so
         /// reflections, diaries and chronicle entries appear after the lines they follow.</summary>
-        public static async Task<List<JObject>> RunAsync(string path, MindConfig cfg, ILlmClient llm = null)
+        /// <param name="wrapTransport">wraps the fake bridge (goldens and the harness record the writes through it).</param>
+        public static async Task<List<JObject>> RunAsync(string path, MindConfig cfg, ILlmClient llm = null, Func<IBridgeTransport, IBridgeTransport> wrapTransport = null)
         {
             var (pawns, events) = LoadJsonl(path);
             var fb = new FakeBridge();
@@ -72,7 +73,7 @@ namespace RimWorldLLM.Tests.Mind.ReplayTool
             {
                 var c = Copy(cfg);
                 c.DataDir = tmp; c.TurnGapTicks = 0; c.TurnGapFloorRealS = 0.0;       // offline: no reading time
-                var bridge = FakeBridge.Client(fb, fb.Token);
+                var bridge = wrapTransport == null ? FakeBridge.Client(fb, fb.Token) : new BridgeClient(wrapTransport(fb), RimWorldAdapter.WireNames, fb.Token);
                 var d = new Director(c, bridge, llm ?? new FakeLlm(), adapter, null, () => fb.Tick / 60.0);
                 try
                 {
