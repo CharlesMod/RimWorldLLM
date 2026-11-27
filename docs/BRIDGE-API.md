@@ -673,3 +673,9 @@ rejects (too long, already taken) is refused with the reason.
 `{"type": "dialog", "severity": 0.6, "data": {"dialog": "L4021", "kind": "joiner", "title": "Refugee", "options":
 ["Accept the refugee", "Reject"], "default": "Accept the refugee", "timeout_s": 90}}`, published once when a dialog is first
 seen. `pawns` is empty; the director does not voice it. The steward wakes on it even while the game is paused.
+
+### Event `colony_lost`
+`{"type": "colony_lost", "severity": 1.0, "data": {}}`, published once when the colony is gone (the game's
+game-ending flag, or three polls in a row with no free colonist on a player map and none in a caravan, after
+tick 2500). It is re-armed by a new game or load. Empty `pawns`. The mod then follows the "When the colony is
+lost" setting (docs/VIVARIUM.md, "Unattended play: stability and restart"); it never deletes a save.

@@ -326,6 +326,20 @@ namespace RimWorldLLM
             float dlgT = s.narratorDialogTimeoutS;
             SliderRow(l, "RWL_Viv_DialogTimeout", s.narratorDialogTimeoutS, ref dlgT, 10f, 300f, "RWL_Viv_DialogTimeoutTip");
             s.narratorDialogTimeoutS = Mathf.RoundToInt(dlgT / 5f) * 5;
+            Check(l, "RWL_Viv_Autosave", ref s.narratorAutosave, "RWL_Viv_AutosaveTip");
+            if (s.narratorAutosave)
+            {
+                SliderRow(l, "RWL_Viv_AutosaveDays", s.narratorAutosaveDays.ToString("0.#"), ref s.narratorAutosaveDays, 0.25f, 7f, "RWL_Viv_AutosaveDaysTip");
+                s.narratorAutosaveDays = Mathf.Round(s.narratorAutosaveDays * 4f) / 4f;
+                float keep = s.narratorAutosaveKeep;
+                SliderRow(l, "RWL_Viv_AutosaveKeep", s.narratorAutosaveKeep, ref keep, 1f, 20f, "RWL_Viv_AutosaveKeepTip");
+                s.narratorAutosaveKeep = Mathf.Clamp(Mathf.RoundToInt(keep), 1, 20);
+            }
+            s.narratorRestartMode = Mathf.Clamp(s.narratorRestartMode, 0, 2);
+            var modeRect = l.GetRect(30f);
+            TooltipHandler.TipRegion(modeRect, UiUtil.T("RWL_Viv_RestartModeTip"));
+            if (Widgets.ButtonText(modeRect, UiUtil.T("RWL_Viv_RestartMode", UiUtil.T("RWL_Viv_RestartMode_" + s.narratorRestartMode))))
+                s.narratorRestartMode = (s.narratorRestartMode + 1) % 3;
             int undoable = Current.Game != null ? VivariumGame.State.Ledger.Count : 0;
             if (Button(l, "RWL_Viv_Undo", "RWL_Viv_UndoTip", undoable > 0)) VivariumChat.UndoNarrator(1);
             Check(l, "RWL_Chat_Show", ref s.chatPanelShow, "RWL_Chat_ShowTip");
