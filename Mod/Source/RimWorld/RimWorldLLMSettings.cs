@@ -100,6 +100,14 @@ namespace RimWorldLLM
         public bool narratorControlsSpeed = false;
         public float stewardHeartbeatHours = 6f;
 
+        // The chat panel (always on, MOBA style).
+        public bool chatPanelShow = true;
+        public bool chatPanelRight = false;
+        public bool chatPanelMedium = false;     // font: false = small, true = medium
+        public float chatPanelOpacity = 0.3f;    // background alpha while the mouse is elsewhere
+        public float chatPanelWidth = 420f;
+        public int chatPanelLines = 10;
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -173,6 +181,12 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
+            Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
+            Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
+            Scribe_Values.Look(ref chatPanelMedium, "chatPanelMedium", false);
+            Scribe_Values.Look(ref chatPanelOpacity, "chatPanelOpacity", 0.3f);
+            Scribe_Values.Look(ref chatPanelWidth, "chatPanelWidth", 420f);
+            Scribe_Values.Look(ref chatPanelLines, "chatPanelLines", 10);
         }
     }
 }

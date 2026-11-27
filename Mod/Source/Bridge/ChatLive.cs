@@ -224,6 +224,9 @@ namespace RimWorldLLM.Bridge
 
         public int Count { get { lock (_lock) return _streams.Count; } }
 
+        /// <summary>True when ended streams wait for <see cref="Pump"/> to append their final lines.</summary>
+        public bool HasFinals { get { lock (_lock) return _finals.Count > 0; } }
+
         public void Clear()
         {
             lock (_lock) { _streams.Clear(); _finals.Clear(); _ended.Clear(); _endedOrder.Clear(); }

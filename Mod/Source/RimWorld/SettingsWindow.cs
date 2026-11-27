@@ -308,6 +308,16 @@ namespace RimWorldLLM
             Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
             s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
+            Check(l, "RWL_Chat_Show", ref s.chatPanelShow, "RWL_Chat_ShowTip");
+            Check(l, "RWL_Chat_Right", ref s.chatPanelRight, "RWL_Chat_RightTip");
+            Check(l, "RWL_Chat_Medium", ref s.chatPanelMedium, "RWL_Chat_MediumTip");
+            SliderRow(l, "RWL_Chat_Opacity", Mathf.RoundToInt(s.chatPanelOpacity * 100f), ref s.chatPanelOpacity, 0f, 0.8f, "RWL_Chat_OpacityTip");
+            s.chatPanelOpacity = Mathf.Round(s.chatPanelOpacity * 20f) / 20f;
+            SliderRow(l, "RWL_Chat_Width", Mathf.RoundToInt(s.chatPanelWidth), ref s.chatPanelWidth, 260f, 720f, "RWL_Chat_WidthTip");
+            s.chatPanelWidth = Mathf.Round(s.chatPanelWidth / 10f) * 10f;
+            float lines = s.chatPanelLines;
+            SliderRow(l, "RWL_Chat_Lines", s.chatPanelLines, ref lines, 3f, 20f, "RWL_Chat_LinesTip");
+            s.chatPanelLines = Mathf.RoundToInt(lines);
 
             l.GapLine();
             Title(l, "RWL_Events_Title");
