@@ -1,0 +1,128 @@
+[
+ {
+  "seq": 1,
+  "game": 121000,
+  "type": "raid_start",
+  "map": 0,
+  "actors": [],
+  "summary": "Raiders from a pirate band are attacking the colony from the east.",
+  "severity": 0.9,
+  "witnesses": [],
+  "data": {}
+ },
+ {
+  "seq": 2,
+  "game": 123000,
+  "type": "death",
+  "map": 0,
+  "actors": [
+   {
+    "id": 2,
+    "role": "subject"
+   }
+  ],
+  "summary": "Bram was shot dead by a raider.",
+  "severity": 1.0,
+  "witnesses": [
+   1
+  ],
+  "data": {}
+ },
+ {
+  "seq": 3,
+  "game": 129000,
+  "type": "birth",
+  "map": 0,
+  "actors": [
+   {
+    "id": 1,
+    "role": "subject"
+   }
+  ],
+  "summary": "Ana gave birth to a baby girl named Wren.",
+  "severity": 0.6,
+  "witnesses": [],
+  "data": {
+   "pawn": {
+    "id": 9,
+    "name": "Wren"
+   }
+  }
+ },
+ {
+  "seq": 4,
+  "game": 140000,
+  "type": "gathering",
+  "map": 0,
+  "actors": [
+   {
+    "id": 1,
+    "role": "host"
+   },
+   {
+    "id": 3,
+    "role": "host"
+   }
+  ],
+  "summary": "Ana and Cy are getting married.",
+  "severity": 0.6,
+  "witnesses": [],
+  "data": {
+   "kind": "wedding"
+  }
+ },
+ {
+  "seq": 5,
+  "game": 150000,
+  "type": "masterwork",
+  "map": 0,
+  "actors": [
+   {
+    "id": 3,
+    "role": "maker"
+   }
+  ],
+  "summary": "Cy made a masterwork longsword.",
+  "severity": 0.5,
+  "witnesses": [],
+  "data": {
+   "thing": "MeleeWeapon_LongSword",
+   "label": "longsword",
+   "quality": "masterwork",
+   "maker": {
+    "id": 3,
+    "name": "Cy"
+   }
+  }
+ },
+ {
+  "seq": 6,
+  "game": 160000,
+  "type": "ship_part",
+  "map": 0,
+  "actors": [],
+  "summary": "A ship reactor was completed.",
+  "severity": 0.7,
+  "witnesses": [],
+  "data": {
+   "thing": "ShipReactor",
+   "label": "ship reactor"
+  }
+ },
+ {
+  "seq": 7,
+  "game": 165000,
+  "type": "tend",
+  "map": 0,
+  "actors": [
+   {
+    "id": 1,
+    "role": "doctor"
+   }
+  ],
+  "summary": "Ana tended Cy.",
+  "severity": 0.2,
+  "witnesses": [],
+  "data": {}
+ }
+]

@@ -43,6 +43,7 @@ namespace RimWorldLLM
             Part(o, "stuff", () => Stuff(map));
             Part(o, "plants", () => Plants(map));
             if (home != null) Part(o, "ores", () => Ores(map, home));
+            if (home != null) Part(o, "loose", () => Loose(map, home));
             return o;
         }
 
@@ -234,7 +235,7 @@ namespace RimWorldLLM
             {
                 var def = DefDatabase<ThingDef>.GetNamedSilentFail(kv.Value);
                 if (def == null) continue;
-                int n = map.resourceCounter.GetCount(def);
+                int n = VivariumLoose.Usable(map, def);
                 if (n > 0) rows.Add(new KeyValuePair<string, int>(kv.Key, n));
             }
             return new JArray(rows.OrderByDescending(r => r.Value).Take(MaxStuff).Select(r => new JObject { ["stuff"] = r.Key, ["count"] = r.Value }));
@@ -254,6 +255,14 @@ namespace RimWorldLLM
                 words.Add(kv.Key);
             }
             return new JArray(words);
+        }
+
+        static JToken Loose(Map map, int[] home)
+        {
+            return new JArray(BuildView.GroupLoose(VivariumLoose.Get(map).Items, home[0], home[1]).Select(p => new JObject
+            {
+                ["label"] = p.Label, ["count"] = p.Count, ["dist"] = p.Dist, ["dir"] = p.Dir, ["forbidden"] = p.Forbidden
+            }));
         }
 
         static JToken Ores(Map map, int[] home)

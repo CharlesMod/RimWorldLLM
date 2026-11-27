@@ -19,7 +19,7 @@ namespace RimWorldLLM
         static Vector2 _scroll;
         static float _viewHeight = 600f;
         static bool _revealToken, _revealKey, _confirmRegen;
-        static string _portBuf, _speedBuf, _durBuf, _thoughtPawnBuf, _thoughtGlobalBuf;
+        static string _portBuf, _speedBuf, _durBuf, _thoughtPawnBuf, _thoughtGlobalBuf, _watchPauseBuf;
 
         static readonly Color Green = new Color(0.4f, 0.85f, 0.4f), Amber = new Color(0.95f, 0.75f, 0.25f), Red = new Color(0.9f, 0.3f, 0.3f);
 
@@ -323,6 +323,25 @@ namespace RimWorldLLM
             Check(l, "RWL_Viv_SlowForCombat", ref s.narratorSlowsForCombat, "RWL_Viv_SlowForCombatTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
             s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
+            Check(l, "RWL_Viv_AnswerDialogs", ref s.narratorAnswerDialogs, "RWL_Viv_AnswerDialogsTip");
+            float dlgT = s.narratorDialogTimeoutS;
+            SliderRow(l, "RWL_Viv_DialogTimeout", s.narratorDialogTimeoutS, ref dlgT, 10f, 300f, "RWL_Viv_DialogTimeoutTip");
+            s.narratorDialogTimeoutS = Mathf.RoundToInt(dlgT / 5f) * 5;
+            Check(l, "RWL_Viv_Commentary", ref s.narratorCommentary, "RWL_Viv_CommentaryTip");
+            Check(l, "RWL_Viv_Autosave", ref s.narratorAutosave, "RWL_Viv_AutosaveTip");
+            if (s.narratorAutosave)
+            {
+                SliderRow(l, "RWL_Viv_AutosaveDays", s.narratorAutosaveDays.ToString("0.#"), ref s.narratorAutosaveDays, 0.25f, 7f, "RWL_Viv_AutosaveDaysTip");
+                s.narratorAutosaveDays = Mathf.Round(s.narratorAutosaveDays * 4f) / 4f;
+                float keep = s.narratorAutosaveKeep;
+                SliderRow(l, "RWL_Viv_AutosaveKeep", s.narratorAutosaveKeep, ref keep, 1f, 20f, "RWL_Viv_AutosaveKeepTip");
+                s.narratorAutosaveKeep = Mathf.Clamp(Mathf.RoundToInt(keep), 1, 20);
+            }
+            s.narratorRestartMode = Mathf.Clamp(s.narratorRestartMode, 0, 2);
+            var modeRect = l.GetRect(30f);
+            TooltipHandler.TipRegion(modeRect, UiUtil.T("RWL_Viv_RestartModeTip"));
+            if (Widgets.ButtonText(modeRect, UiUtil.T("RWL_Viv_RestartMode", UiUtil.T("RWL_Viv_RestartMode_" + s.narratorRestartMode))))
+                s.narratorRestartMode = (s.narratorRestartMode + 1) % 3;
             int undoable = Current.Game != null ? VivariumGame.State.Ledger.Count : 0;
             if (Button(l, "RWL_Viv_Undo", "RWL_Viv_UndoTip", undoable > 0)) VivariumChat.UndoNarrator(1);
             Check(l, "RWL_Chat_Show", ref s.chatPanelShow, "RWL_Chat_ShowTip");
@@ -399,6 +418,13 @@ namespace RimWorldLLM
             {
                 Check(l, "RWL_Camera_OnAtStart", ref s.directorCameraOnAtStart, "RWL_Camera_OnAtStartTip");
                 SliderRow(l, "RWL_Camera_PanSpeed", s.directorPanSpeed.ToString("0.0"), ref s.directorPanSpeed, 0.5f, 6f, "RWL_Tip_PanSpeed");
+            }
+            l.GapLine();
+            Check(l, "RWL_Watch_Mode", ref s.watchMode, "RWL_Watch_ModeTip");
+            if (s.watchMode)
+            {
+                Check(l, "RWL_Watch_Captions", ref s.watchCaptions, "RWL_Watch_CaptionsTip");
+                NumRow(l, "RWL_Watch_PauseSec", ref s.watchPlayerPauseSec, ref _watchPauseBuf, 3, 300, "RWL_Watch_PauseSecTip");
             }
             l.GapLine();
             Check(l, "RWL_Share_Footer", ref s.shareFooter, "RWL_Share_FooterTip");

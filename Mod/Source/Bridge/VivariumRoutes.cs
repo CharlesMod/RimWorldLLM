@@ -38,6 +38,12 @@ namespace RimWorldLLM.Bridge
             router.Add("POST", "/act/letter", true, c => Act(c, vivarium, hands, "letter", Letter));
             router.Add("POST", "/act/draft", true, c => Act(c, vivarium, hands, "draft", Draft));
             router.Add("POST", "/act/order", true, c => Act(c, vivarium, hands, "order", Order));
+            router.Add("GET", "/dialogs", false, c =>
+            {
+                var v = vivarium();
+                return ApiResult.Success(v.Dialogs.ToJson(v.Settings.DialogTimeoutS, Vivarium.NowReal()));
+            });
+            router.Add("POST", "/act/choose", true, c => Choose(c, vivarium, hands));
             RegisterBuild(router, vivarium, hands);
             RegisterCombat(router, vivarium, hands);
         }
@@ -74,7 +80,7 @@ namespace RimWorldLLM.Bridge
         {
             var b = c.Body;
             string who = b["who"] != null && b["who"].Type == JTokenType.String ? b.Value<string>("who") : null;
-            if (who != "narrator" && who != "note") return Bad("who must be \"narrator\" or \"note\"");
+            if (who != "narrator" && who != "note" && who != ChatKinds.Comment) return Bad("who must be \"narrator\", \"note\" or \"comment\"");
             if (b["text"] == null || b["text"].Type != JTokenType.String) return Bad("text is required");
             string text = b.Value<string>("text").Trim();
             if (text.Length == 0) return Bad("text is empty");

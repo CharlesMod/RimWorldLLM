@@ -22,7 +22,7 @@ namespace RimWorldLLM
 
         // Instances queued this session, so a fill can be put on them at once (art title cache, book fields, log caches).
         static readonly Dictionary<string, System.WeakReference<object>> Live = new Dictionary<string, System.WeakReference<object>>();
-        static readonly HashSet<string> Applied = new HashSet<string>();
+        static readonly BoundedSet Applied = new BoundedSet(20000);
         [ThreadStatic] static bool _building;
         static bool _warned;
 

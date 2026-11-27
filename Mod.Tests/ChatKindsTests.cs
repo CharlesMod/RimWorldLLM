@@ -19,6 +19,8 @@ namespace RimWorldLLM.Tests
         [InlineData("chronicle", "story")]
         [InlineData("recap", "story")]
         [InlineData("art", "story")]
+        [InlineData("camera", "story")]
+        [InlineData("comment", "story")]
         public void GroupOfKind(string who, string group) { Assert.Equal(group, ChatKinds.Group(who)); }
 
         [Fact]

@@ -15,12 +15,14 @@ namespace RimWorldLLM.Bridge
     ///   art       Name = artist label or "", Text = the artwork's one-liner (title and/or description).
     ///   action    Text = plain-English what the narrator did, with ", since why" when given (no leading "> ").
     ///   refused   Text = "couldn't {what}: {reason}" (no leading "> ").
+    ///   camera    Text = the camera director's short caption ("Camera: a raid arrives from the north").
+    ///   comment   Text = the narrator's documentary commentary or daily recap line (low priority).
     /// </summary>
     public static class ChatKinds
     {
         public const string Player = "player", Narrator = "narrator", Note = "note", Colonist = "colonist",
             Thought = "thought", Dream = "dream", Diary = "diary", Chronicle = "chronicle", Recap = "recap",
-            Art = "art", Action = "action", Refused = "refused";
+            Art = "art", Action = "action", Refused = "refused", Camera = "camera", Comment = "comment";
 
         /// <summary>Filter groups, in chip order.</summary>
         public const string Talk = "talk", Thoughts = "thoughts", NarratorGroup = "narrator", Actions = "actions", Story = "story";
@@ -34,7 +36,7 @@ namespace RimWorldLLM.Bridge
                 case Player: case Colonist: return Talk;
                 case Thought: case Dream: case Diary: return Thoughts;
                 case Action: case Refused: return Actions;
-                case Chronicle: case Recap: case Art: return Story;
+                case Chronicle: case Recap: case Art: case Camera: case Comment: return Story;
                 default: return NarratorGroup;
             }
         }

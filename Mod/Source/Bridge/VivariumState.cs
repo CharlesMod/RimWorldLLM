@@ -31,10 +31,18 @@ namespace RimWorldLLM.Bridge
         public float HeartbeatHours = 6f;
         /// <summary>Phase 3: the narrator may slow the game to normal speed while a fight is on (and put it back after).</summary>
         public bool SlowForCombat = true;
+        /// <summary>Unattended play: answer open dialogs with the safe default after DialogTimeoutS real seconds, while Narrator plays is on.</summary>
+        public bool AnswerDialogs = true;
+        public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
+        /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
+        public bool Commentary = true;
         public JObject ToJson()
         {
             return new JObject
             {
+                ["answer_dialogs"] = AnswerDialogs,
+                ["commentary"] = Commentary,
+                ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,
                 ["slow_for_combat"] = SlowForCombat,
@@ -488,6 +496,11 @@ namespace RimWorldLLM.Bridge
         public readonly BuildBudget Budget = new BuildBudget();
         /// <summary>Phase 3: the fight (refreshed by the game), the squad and the speed memory (saved).</summary>
         public readonly CombatState Combat = new CombatState();
+        /// <summary>Unattended play: the choice windows and letters open right now. Never saved.</summary>
+        public readonly DialogBook Dialogs = new DialogBook();
+        static readonly System.Diagnostics.Stopwatch RealClock = System.Diagnostics.Stopwatch.StartNew();
+        /// <summary>Real seconds since start (modal windows pause the game, so dialog timeouts use this). Tests may replace it.</summary>
+        public static Func<double> NowReal = () => RealClock.Elapsed.TotalSeconds;
 
         public JObject StatusJson()
         {
@@ -539,7 +552,7 @@ namespace RimWorldLLM.Bridge
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Combat.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Combat.Clear(); Dialogs.Clear();
         }
     }
 }

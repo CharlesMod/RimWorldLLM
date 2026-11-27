@@ -161,45 +161,125 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
 
-## D. Phase 3: combat and defense
+## D. Unattended play: dialogs
+
+Narrator plays on, the agent running with the model, `$B` and `$T` as above. Use dev mode (Debug actions) to fire
+incidents: `Incidents > Refugee chased`, `Wanderer joins`, `Ransom demand`, `Quest`, `Give quest`; change the settings
+first: timeout 15 s in the mod settings (Narrator plays group).
+
+26. **See.** Fire a refugee incident. `curl -s -H "Authorization: Bearer $T" $B/dialogs | jq` lists `L<id>` kind joiner
+    with two options (Accept / Reject, nothing disabled). `GET /events` has a `dialog` event with the same id.
+27. **Answer by the model.** Leave the agent running: within a few seconds a `> chose "Accept ..." on "Refugee", since ...`
+    green line appears and the refugee joins. Check the order of the options in `/dialogs` against the real letter
+    (index 0 must be the accepting one; if vanilla's order differs, the default picks the wrong one: report it).
+28. **Paused window.** Fire the colony naming dialog (new game start, or Debug > "Name colony"/rename faction in the
+    faction tab) while the game is running: the game is paused by the window. The steward still answers (reason `dialog` in
+    its trace) with a fitting name; the window closes and the name shows in the faction tab.
+29. **Default.** Stop the agent (or set the agent's choice off). Fire `Ransom demand`: after 15 s a chat note "No answer in
+    15 s: chose "Refuse..." on ... (default)" and an action line; no silver is paid. Fire a refugee: after 15 s accepted.
+    Fire a quest offer: declined (the letter disappears, the quest does not start).
+30. **Message box and node tree.** Trigger a trader/faction comms dialog (Debug > "Make trader caravan arrive", open the
+    comms console), leave it: after the timeout it closes via its harmless option. Raise a Dialog_MessageBox (for
+    example "Abandon colony" confirm via the caravan tab) with the agent off: after the timeout the Cancel button is
+    pressed, not the destructive one.
+31. **Growth moment** (Biotech): a child turning 3, 7 or 10 gives a letter and a choice window. With the agent off, the
+    default takes the first passion(s) and the first trait; the child's skills and traits show it. With the agent on,
+    `GET /dialogs` shows `growth` (passions, how many, traits with descriptions, the child in brief) and
+    `POST /act/choose {dialog, passions:[..], trait, why}` sets exactly those; too many passions or an unknown trait
+    is refused with the reason and the child is unchanged.
+32. **Toggle.** Turn "Answer popups when the narrator plays" off: nothing is auto-answered; the model's `choose` still
+    works. Turn Narrator plays off: nothing is auto-answered either.
+33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
+    stays open with no default; after three tries (none, when no option is enabled) one chat note says so. Nothing loops.
+
+## E. Unattended play: camera director (watch mode)
+
+1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
+   (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
+2. With watch mode on and nothing happening, the camera drifts to a colonist about every 25 s (no chat line).
+3. Dev mode: fire a raid; within a second the camera cuts to the raiders, chat gets "Camera: a raid arrives from the <side>".
+4. Start a fight, a mental break and a social fight (dev tools) one after another: shots follow, the chat does not flood
+   (at most one camera line per 12 s). The same colonist is not shown again and again while others have events.
+5. Move or zoom the camera yourself: it stays still for the pause time (default 20 s), then resumes by itself.
+6. A funeral, a wedding or a party each get a shot and a line. Kill a colonist: cut to the body, "Camera: X has died".
+7. Biotech: a birth gives "Camera: X gives birth" and a `birth` event on GET /events. Without Biotech: no errors in the log.
+8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
+9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).
+
+## F. Unattended play: stability and restart
+Needs the mod; the agent is optional except where noted. Switch Narrator plays on.
+
+34. **Chat kinds.** `POST /chat` with who=comment and a camera-kind line: the comment shows gold italic, the camera
+    line dim blue-grey, both under the Story filter.
+35. **Panel cost.** Leave the panel open at 3x speed for a game day with a chat stream going: no stutter, no
+    growing frame time. Scroll and resize still feel immediate.
+36. **Rotating autosave.** Options: game autosave off. Run 3 game days (days slider 1, keep 3): saves
+    `RWL-Narrator-1..3` appear, then the oldest is overwritten. Your own saves are untouched. No save starts
+    during a long event, an open dialog, or in the middle of a raid (a raid holds it at most half a day).
+37. **Game autosave on.** The mod does not save at all (the game handles it).
+38. **Colony lost, ask.** Let everyone die (or use a dev kill). One `colony_lost` event; the dialog offers New
+    colony on this world, New world, Stop. Vanilla's own game-over window may also show; either is fine.
+39. **Same world.** Pick it: the vanilla wanderers dialog opens; accept it. A chronicle entry "story continues" and
+    the chat carry on; Narrator plays is still on. Nothing was deleted.
+40. **New world.** Pick it: the lost world is saved as `<colony>-lost-<n>` first (never overwriting), then the
+    quick-start world loads; Narrator plays is on, the chronicle has the "story continues" entry.
+41. **Auto.** Setting auto: a chat note, 20 s later the same-world dialog opens. Leave it: after 3 minutes the lost
+    world is saved and a new world starts. Off: nothing happens.
+42. **Save failed.** If the lost-world save is refused (disabled saving), the leave is cancelled with a chat note.
+
+## G. Unattended play: documentary voice (agent with the 26B)
+Needs the mod setting `narratorCommentary` (Colonists -> Narrator plays), on by default.
+1. **On.** Narrator plays on, setting on. A raid starts: within a minute one short wry line appears in the chat (Story
+   group, "comment" kind), one sentence, no quotes, only names that exist. A death right after it: a second line once 30 s
+   have passed.
+2. **Gaps.** Several ordinary moments (a funeral, a masterwork, a party) in a row: at most one line per 3 minutes and per 6
+   game hours. Deaths, raids and births may follow within 30 s.
+3. **Recap.** When the day turns, one recap sentence of the day's big moments, once per day, none on a quiet day.
+4. **Yields.** Chat to the narrator while a comment is being written: the comment is dropped, the steward's answer is
+   not delayed.
+5. **Off.** Switch the setting off, or Narrator plays off: no more comment lines.
+6. **Age gate.** A wedding or a birth involving a minor: no romantic wording, ever.
+Report: how it read (too chatty, too quiet, too grim?), any line with an invented name or a quote.
+
+## H. Phase 3: combat and defense
 
 Use a colony with 4-6 colonists, some guns, walls around part of the base and one or two outside doors. `$B` and
 `$T` as above. Raids on demand: dev mode → "Execute incident" → Raid (the narrator never uses dev mode; you do).
 Save first so each step can be retried.
 
-28. **Fight view.** Start a pirate raid and wait until they appear. `curl -s -H "Authorization: Bearer $T" $B/combat | jq`:
+43. **Fight view.** Start a pirate raid and wait until they appear. `curl -s -H "Authorization: Bearer $T" $B/combat | jq`:
     `active` true; one threat group with the right faction, count, kind (ranged), `where` matching where they really
     are (compass from your base), `heading` "toward home" once they walk in; your fighters with weapon, range, health,
     cover that matches what you see (a pawn behind a wall says "behind a wall", one in the field "in the open");
     children/pacifists under `others`; `defenses` a sane sentence about your walls, turrets and doors. `GET /vivarium`
     shows `combat.active` true within ~4 game seconds of the raid's arrival. `jq .combat` on `/digest` has the same.
-29. **Squad orders.** `-X POST $B/act/squad -d '{"op_id":"s1","op":"draft"}'` → every capable colonist drafted (not
+44. **Squad orders.** `-X POST $B/act/squad -d '{"op_id":"s1","op":"draft"}'` → every capable colonist drafted (not
     children, pacifists, the sick in bed), greentext names them. `{"op":"move","at":"cover"}` → each walks to its own
     cell next to a wall or sandbag on the enemy's side, none in the open, none two to a cell. Try `at` chokepoint,
     door, wall_n (etc.), inside: the spots should match the words (behind the gap, just inside the door, behind that
     wall, under a roof away from the enemy). A position that does not exist → refused with a reason, nobody moves.
-30. **Focus and hold.** `{"op":"focus","target":<group id from /combat>}` → the squad shoots that group; as one dies
+45. **Focus and hold.** `{"op":"focus","target":<group id from /combat>}` → the squad shoots that group; as one dies
     they switch to the next of the same group without new orders. A melee-only colonist against mechs stays back
     (the note says so). `{"op":"hold"}` → they stop and shoot from where they stand; no chasing.
-31. **The controller.** Set `{"op":"retreat","below":0.5}` then `{"op":"move","at":"cover"}`; let a colonist get hurt
+46. **The controller.** Set `{"op":"retreat","below":0.5}` then `{"op":"move","at":"cover"}`; let a colonist get hurt
     below half: they walk back to the retreat point by themselves with a greentext "Ana fell back, badly hurt", once.
     When a colonist goes down near a healthy squad member, that member carries them to a bed ("is carrying ... to
     safety"). Nothing should twitch every few seconds (orders re-issued while pawns are shooting).
-32. **Rescue, fires, flee, undraft.** `rescue` with a downed colonist → someone carries them to a (medical) bed.
+47. **Rescue, fires, flee, undraft.** `rescue` with a downed colonist → someone carries them to a (medical) bed.
     Start a fire in the home area: `extinguish` → up to 4 firefighters go to it. `flee` → children and pacifists go
     indoors, away from the enemy, and stay a while. `undraft` while enemies are within 30 cells → refused; after the
     raid → everyone undrafted, squad cleared.
-33. **Defenses.** `-X POST $B/act/defend -d '{"op_id":"d1","kind":"sandbags","side":"n"}'` → a line of 7 sandbag
+48. **Defenses.** `-X POST $B/act/defend -d '{"op_id":"d1","kind":"sandbags","side":"n"}'` → a line of 7 sandbag
     blueprints across the north side, a few cells inside your north wall (never outside it, never behind your base's
     middle). `{"kind":"turret"}` without the research → refused naming it; with research but no power → refused with
     the watts; with a conduit nearby → a turret blueprint that sees the way in. `{"kind":"traps","side":"e"}` → spike
     traps on the path into the base from the east, outdoors. `{"kind":"killbox"}` → funnel walls outside your door
     toward the enemy, traps in the funnel, a sandbag line inside. `/undo` removes each of these.
-34. **The speed rule.** Play at 3x, Narrator plays on, "The narrator slows the game for fights" on (Colonists →
+49. **The speed rule.** Play at 3x, Narrator plays on, "The narrator slows the game for fights" on (Colonists →
     Narrator plays). Start a raid: the game drops to 1x with a greentext line; when the last raider is gone or flees,
     it goes back to 3x. Repeat, but change the speed yourself mid-fight: it must not be changed back. Turn the
     setting off: no slow-down.
-35. **Steward in a fight.** Narrator plays on, the 26B running. Start a tribal melee raid, a pirate raid and (with
+50. **Steward in a fight.** Narrator plays on, the 26B running. Start a tribal melee raid, a pirate raid and (with
     Royalty/Biotech mechs) a mech raid, one per save. Watch the chat: a "combat started" look drafts and places the
     squad, then short combat turns every few game seconds (orders only, no chatter), then a "combat over" look that
     undrafts, rescues and gets back to work. Check: wounded pulled back, nobody meleeing a centipede, non-fighters

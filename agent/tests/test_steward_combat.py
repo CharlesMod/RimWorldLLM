@@ -794,3 +794,24 @@ def test_fake_refuses_undraft_while_enemies_are_near():
     assert "within 30 cells" in refusal
     fb.combat = {"active": True, "threats": [{"id": 1, "dist": 50}]}
     assert fb._act_apply("squad", {"op": "undraft"})[0] == ""
+
+
+def test_a_dialog_in_a_fight_is_answered_before_the_next_combat_turn(world):
+    async def go():
+        w, st, fake = await boot(world, script=(DONE, DONE, DONE))
+        start_fight(w)
+        await cycle(w)
+        assert reasons(st) == ["combat started"]
+        st.dialog_pending = True                                         # a ransom letter arrives mid-fight (the game runs on)
+        w.fb.tick += 300
+        st.last_real = w.d.clock() - 1.0                                 # inside the combat real gap: nothing yet
+        await cycle(w)
+        assert reasons(st) == ["combat started"] and st.dialog_pending
+        st.last_real = w.d.clock() - 5.0
+        await cycle(w)
+        assert reasons(st) == ["combat started", "dialog"]               # the dialog first, though a combat turn was due too
+        st.last_real = w.d.clock() - 5.0
+        w.fb.tick += 300
+        await cycle(w)
+        assert reasons(st)[-1] == "combat"
+    run(go())

@@ -70,6 +70,7 @@ namespace RimWorldLLM
         {
             Focus.Clear(); Pawns.Clear(); DeathUntil.Clear();
             _mapId = -1; _pausedUntil = 0; _haveSet = false;
+            WatchCamera.Reset();
         }
 
         // ------------------------------------------------------------------ signals (one-line hooks elsewhere)
@@ -106,6 +107,7 @@ namespace RimWorldLLM
         /// <summary>A colony event was published (death, injury, mental break).</summary>
         public static void OnEvent(EventSpec e)
         {
+            WatchCamera.OnEvent(e);
             if (!Active || e == null || e.Map == null || e.Map != Find.CurrentMap || e.Pawns.Count == 0) return;
             var p = e.Pawns[0].Key;
             switch (e.Type)
@@ -121,6 +123,7 @@ namespace RimWorldLLM
         /// <summary>A raid arrived: look at the first raider on the map (or at a colonist when none is on the map yet).</summary>
         public static void OnRaid(Map map, List<Pawn> raiders)
         {
+            WatchCamera.OnRaid(map, raiders);
             if (!Active || map == null || map != Find.CurrentMap) return;
             if (raiders != null)
                 foreach (var r in raiders)
@@ -133,6 +136,7 @@ namespace RimWorldLLM
         /// <summary>Called every frame (also paused) by the game component.</summary>
         public static void Update()
         {
+            if (WatchCamera.Enabled) { WatchCamera.Update(); return; }   // watch mode drives the camera instead
             if (!Active) return;
             var map = Find.CurrentMap;
             if (map == null || Current.ProgramState != ProgramState.Playing) return;
@@ -157,15 +161,31 @@ namespace RimWorldLLM
             Vector3 target;
             if (!Resolve(id, map, now, out target)) { Focus.Remove(id); Pawns.Remove(id); DeathUntil.Remove(id); return; }
 
-            Vector3 camPos = cam.MyCamera.transform.position;
-            var c = new Vector2(camPos.x, camPos.z);
-            float size = cam.RootSize;
-            if (_haveSet && ((c - _lastSet).magnitude > ManualJumpCells || Mathf.Abs(size - _lastSize) > 0.05f))
+            if (MovedByOthers(cam))
             {
                 _pausedUntil = now + ManualPauseSec;      // a jump from a letter or the log, or a zoom: the player moved it
                 _haveSet = false;
                 return;
             }
+            Pan(cam, target);
+        }
+
+        /// <summary>True when the camera is not where we left it (a jump from a letter or the log, or a zoom): someone else moved it.</summary>
+        internal static bool MovedByOthers(CameraDriver cam)
+        {
+            if (!_haveSet) return false;
+            Vector3 camPos = cam.MyCamera.transform.position;
+            var c = new Vector2(camPos.x, camPos.z);
+            if ((c - _lastSet).magnitude > ManualJumpCells || Mathf.Abs(cam.RootSize - _lastSize) > 0.05f) { _haveSet = false; return true; }
+            return false;
+        }
+
+        /// <summary>One frame of camera motion toward a world position: a cut when far, a smooth pan when near, nothing in the dead zone.</summary>
+        internal static void Pan(CameraDriver cam, Vector3 target)
+        {
+            Vector3 camPos = cam.MyCamera.transform.position;
+            var c = new Vector2(camPos.x, camPos.z);
+            float size = cam.RootSize;
             var t = new Vector2(target.x, target.z);
             float dist = (t - c).magnitude;
             if (dist > JumpCells)
@@ -212,7 +232,7 @@ namespace RimWorldLLM
         }
 
         // Keys, wheel, middle-button drag, or the mouse parked on a screen edge (edge scrolling).
-        static bool ManualInput()
+        internal static bool ManualInput()
         {
             if (KeyBindingDefOf.MapDolly_Up.IsDown || KeyBindingDefOf.MapDolly_Down.IsDown
                 || KeyBindingDefOf.MapDolly_Left.IsDown || KeyBindingDefOf.MapDolly_Right.IsDown

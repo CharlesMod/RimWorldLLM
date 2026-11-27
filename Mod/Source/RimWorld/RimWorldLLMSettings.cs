@@ -54,6 +54,11 @@ namespace RimWorldLLM
         public bool directorCameraOnAtStart = false;  // following is intrusive: off until the player turns it on
         public float directorPanSpeed = 2.5f;         // how quickly the camera closes in on its subject (1/seconds)
 
+        // Watch mode (unattended play): the camera director cuts between events by itself. Setting, not per game.
+        public bool watchMode = false;
+        public int watchPlayerPauseSec = 20;         // the player touching the camera pauses the director this long
+        public bool watchCaptions = true;            // one short 'Camera: ...' chat line per shot of interest
+
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
         public bool evInjury = true;
@@ -103,6 +108,14 @@ namespace RimWorldLLM
         public bool narratorControlsSpeed = false;
         public bool narratorSlowsForCombat = true;
         public float stewardHeartbeatHours = 6f;
+        public bool narratorAnswerDialogs = true;
+        public int narratorDialogTimeoutS = 90;
+        public bool narratorCommentary = true;
+        // Unattended play: the mod's own rotating autosave (only while the game's autosave is off) and what happens when the colony is lost.
+        public bool narratorAutosave = true;
+        public float narratorAutosaveDays = 1f;
+        public int narratorAutosaveKeep = 5;
+        public int narratorRestartMode = 0;   // 0 ask, 1 auto, 2 off (Bridge.RestartMode)
 
         // The chat panel (always on, MOBA style).
         public bool chatPanelShow = true;
@@ -153,6 +166,9 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref directorCameraAllowed, "directorCameraAllowed", true);
             Scribe_Values.Look(ref directorCameraOnAtStart, "directorCameraOnAtStart", false);
             Scribe_Values.Look(ref directorPanSpeed, "directorPanSpeed", 2.5f);
+            Scribe_Values.Look(ref watchMode, "watchMode", false);
+            Scribe_Values.Look(ref watchPlayerPauseSec, "watchPlayerPauseSec", 20);
+            Scribe_Values.Look(ref watchCaptions, "watchCaptions", true);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);
@@ -198,6 +214,13 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
             Scribe_Values.Look(ref narratorSlowsForCombat, "narratorSlowsForCombat", true);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
+            Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);
+            Scribe_Values.Look(ref narratorDialogTimeoutS, "narratorDialogTimeoutS", 90);
+            Scribe_Values.Look(ref narratorCommentary, "narratorCommentary", true);
+            Scribe_Values.Look(ref narratorAutosave, "narratorAutosave", true);
+            Scribe_Values.Look(ref narratorAutosaveDays, "narratorAutosaveDays", 1f);
+            Scribe_Values.Look(ref narratorAutosaveKeep, "narratorAutosaveKeep", 5);
+            Scribe_Values.Look(ref narratorRestartMode, "narratorRestartMode", 0);
             Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
             Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
             Scribe_Values.Look(ref chatPanelMedium, "chatPanelMedium", false);
