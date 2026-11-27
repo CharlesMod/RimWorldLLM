@@ -160,3 +160,17 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
+
+## G. Documentary voice (agent with the 26B)
+Needs the mod setting `narratorCommentary` (Colonists -> Narrator plays), on by default.
+1. **On.** Narrator plays on, setting on. A raid starts: within a minute one short wry line appears in the chat (Story
+   group, "comment" kind), one sentence, no quotes, only names that exist. A death right after it: a second line once 30 s
+   have passed.
+2. **Gaps.** Several ordinary moments (a funeral, a masterwork, a party) in a row: at most one line per 3 minutes and per 6
+   game hours. Deaths, raids and births may follow within 30 s.
+3. **Recap.** When the day turns, one recap sentence of the day's big moments, once per day, none on a quiet day.
+4. **Yields.** Chat to the narrator while a comment is being written: the comment is dropped, the steward's answer is
+   not delayed.
+5. **Off.** Switch the setting off, or Narrator plays off: no more comment lines.
+6. **Age gate.** A wedding or a birth involving a minor: no romantic wording, ever.
+Report: how it read (too chatty, too quiet, too grim?), any line with an invented name or a quote.

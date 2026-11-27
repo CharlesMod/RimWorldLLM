@@ -67,6 +67,7 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
+| `narratorCommentary` | true | P | "Narrator plays" group: the narrator adds a short documentary line at big moments (raids, deaths, births, weddings, masterworks, ship parts) and a recap line each game day; mirrored as `settings.commentary` in GET /vivarium (the agent reads it with default true) | new (unattended: voice) |
 | `chatPanelShow` | true | U | "Narrator plays" group: the chat panel is always on screen | new (chat panel) |
 | `chatPanelRight` | false | U | Default placement on the right (left of the date/alerts column) instead of the left; used until the panel is dragged | new (chat panel) |
 | `chatPanelMedium` | false | U | Medium font instead of small | new (chat panel) |
