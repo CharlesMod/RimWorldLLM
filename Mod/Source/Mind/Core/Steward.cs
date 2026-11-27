@@ -25,7 +25,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind.Py;
-using RimWorldLLM.Mind.RimWorld;
 using RimWorldLLM.Mind.ToolLoop;
 
 namespace RimWorldLLM.Mind
@@ -676,16 +675,16 @@ namespace RimWorldLLM.Mind
             string system = kit.SystemPrompt(advisor) + (strategy.Length > 0 ? "\n\n" + StrategyHeading + "\n" + strategy : "") + "\n\n" + GameData.DataRule;
             var session = reason == "combat over" && kit is IStewardCombatKit afterKit ? afterKit.SessionAfterFight(digest, d.Bridge, advisor) : kit.Session(digest, d.Bridge, advisor);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board, advisor)).ToList();
-            VisionKit vision = null;                                       // the look tool: routine turns with a build block, when the model reads pictures
-            if (reason != "combat started" && reason != "combat over" && digest != null && digest["build"] is JObject && await VisionOpenAsync().ConfigureAwait(false))
+            IVisionLook vision = null;                                     // the look tool: routine turns only, when the setting allows it and the model reads pictures
+            if (reason != "combat started" && reason != "combat over" && kit is IStewardVisionKit vk && await VisionOpenAsync().ConfigureAwait(false))
             {
-                vision = new VisionKit(d.Bridge, VisionDelay);
-                tools.Add(VisionKit.Spec());
+                vision = vk.NewLook(digest, d.Bridge, VisionDelay);
+                if (vision != null) tools.Add(vision.Spec);
             }
             HashSet<string> allowed = advisor
                 ? new HashSet<string>(session.Tools.Select(x => x.Name)) { "note", "add_order", "do_nothing" }
                 : new HashSet<string>(tools.Select(x => x.Name));
-            if (vision != null) allowed.Add(VisionKit.ToolName);
+            if (vision != null) allowed.Add(vision.ToolName);
             string alerts = "";
             try { alerts = kit.PlaybookAlerts(digest) ?? ""; }
             catch (Exception e) { LlmLog.Warning("rimworldllm.steward", "steward: playbook alerts failed: " + e); }     // the playbook never takes a cycle down
@@ -709,7 +708,7 @@ namespace RimWorldLLM.Mind
             async Task<JToken> executor(string tool, JObject v)
             {
                 if (tool == "do_nothing") return null;
-                if (tool == VisionKit.ToolName && vision != null) return await vision.RunAsync(v).ConfigureAwait(false);
+                if (vision != null && tool == vision.ToolName) return await vision.RunAsync(v).ConfigureAwait(false);
                 if (tool == "note")
                 {
                     string line = CleanLine(Need(v, "text"), 160);

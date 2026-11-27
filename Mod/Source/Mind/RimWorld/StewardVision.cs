@@ -13,9 +13,10 @@ namespace RimWorldLLM.Mind.RimWorld
 {
     /// <summary>One turn's look tool: GET /vision, the per-turn limits, and the picture waiting to go into the next request. A new
     /// VisionKit per turn; nothing here outlives the turn.</summary>
-    public sealed class VisionKit
+    public sealed class VisionKit : IVisionLook
     {
-        public const string ToolName = "look";
+        public const string Name = "look";
+        public string ToolName => Name;
         public static readonly string[] Kinds = { "close", "base", "wide" };
         public const int PollMs = 250, PollTotalMs = 3000;
         public const string NoMore = "no more looks this turn";
@@ -24,7 +25,9 @@ namespace RimWorldLLM.Mind.RimWorld
             @"^(room:\d{1,9}|thing:\d{1,9}|pawn:\d{1,9}|cell:\d{1,4},\d{1,4}|dir:(north|south|east|west|northeast|northwest|southeast|southwest):\d{1,3})$",
             RegexOptions.CultureInvariant);
 
-        public static ToolSpec Spec() => new ToolSpec(ToolName,
+        public ToolSpec Spec { get; } = Make();
+
+        private static ToolSpec Make() => new ToolSpec(Name,
             "Look at a picture of the colony from above, north up (not an action). base = the whole base for layout; wide = the surroundings for fields, ore, "
             + "approaches and raids; close = a few cells around one target (target: room:<id>, thing:<id>, pawn:<id>, cell:x,z, dir:<side>:<cells>) for doors, "
             + "blueprints and missing walls.",
