@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)   # physical path: the build caches absolute paths (a /home -> /var/home link lost Newtonsoft.Json.dll)
 GO=${GO:-$HOME/.local/go/bin/go}
 UV=${UV:-$(command -v uv || echo "$HOME/.local/bin/uv")}
 DOTNET=${DOTNET:-$HOME/.dotnet/dotnet}
@@ -240,6 +240,13 @@ nsrc=$(find "$MODSRC/Textures/RimWorldLLM/Bubbles" -name '*.png' | wc -l)
 [ "$nbub" = "$nsrc" ] && [ "$nbub" -gt 0 ] && pass "bubble PNGs: $nbub" || fail "bubble PNGs: $nbub vs source $nsrc"
 nw=$(find "$V/Engine/agent" -name '*.whl' | wc -l)
 [ "$nw" = 1 ] && pass "exactly one wheel ($WHEEL)" || fail "wheel count $nw"
+
+# mod identity (the mod was called HermesVoice before 2.1.0)
+grep -q '<name>RimWorldLLM</name>' "$V/About/About.xml" && grep -q '<packageId>charleszard.rimworldllm</packageId>' "$V/About/About.xml" \
+  && pass "About.xml name RimWorldLLM, packageId charleszard.rimworldllm" || fail "About.xml name/packageId"
+case "$WHEEL" in rimworldllm_agent-*-py3-none-any.whl) pass "wheel is rimworldllm_agent";; *) fail "wheel name $WHEEL";; esac
+old=$(grep -E -i 'hermesvoice|hermes-engine' <<<"$LIST" || true)
+[ -z "$old" ] && pass "no old names in file paths" || fail "old names in paths: $(head -3 <<<"$old" | tr '\n' ' ')"
 
 # top folder + exec bits
 tops=$(grep -vE '^RimWorldLLM/' <<<"$LIST" || true)
