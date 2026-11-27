@@ -7,7 +7,7 @@ Contract (small on purpose; a C# port follows it):
 - ``run_once()`` (every step): speak at most one pending moment, else the recap of a finished game day. Only while the
   vivarium is there, the narrator plays and commentary is on, the narrator slot is free (``narrator_may_do_idle_work``)
   and no idle job holds it. Gates: ``commentary_min_gap_real_s`` real seconds since the last line AND
-  ``commentary_min_gap_game`` game units; an urgent moment (the adapter marks them) skips the game gap but never
+  ``commentary_min_gap_game`` game units; an urgent moment (the adapter marks them) skips both gaps but never
   the ``URGENT_FLOOR_REAL_S`` floor. The recap needs only the floor.
 - ``preempt_if_wanted()``: a steward cycle owns slot 0 from its start; the running call is cancelled and nothing is posted.
 - One narrator call (kind "narrator", stop at newline), game text through ``gd.clean``, the answer through
@@ -122,7 +122,7 @@ class Commentary:
             return None
         game_gap_ok = now_game - self.last_game >= c.commentary_min_gap_game
         real_ok = real_gap >= c.commentary_min_gap_real_s
-        ok = [m for m in self.pending if m.urgent or game_gap_ok] if real_ok else []
+        ok = [m for m in self.pending if m.urgent or (game_gap_ok and real_ok)]
         return max(ok, key=lambda m: (m.weight, m.game)) if ok else None
 
     def run_once(self) -> None:

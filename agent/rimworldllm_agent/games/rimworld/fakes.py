@@ -312,8 +312,8 @@ class FakeBridge:
                 since = int(req.url.params.get("since", 0))
                 return self._ok(entries=[e for e in self.chat if e["seq"] > since], next_seq=self.chat_seq)
             text = str(body.get("text", "")).strip()
-            if body.get("who") not in ("narrator", "note"):
-                return self._err(400, "bad_request", "who must be narrator or note")
+            if body.get("who") not in ("narrator", "note", "comment"):
+                return self._err(400, "bad_request", "who must be narrator, note or comment")
             if not 1 <= len(text) <= 500:
                 return self._err(400, "bad_request", "text 1..500 chars")
             e = self.add_chat(body["who"], text)
