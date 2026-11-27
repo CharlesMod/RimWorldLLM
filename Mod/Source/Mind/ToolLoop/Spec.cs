@@ -36,12 +36,15 @@ namespace RimWorldLLM.Mind.ToolLoop
         public Scale Scale;
         public List<string> Choices;
         public bool Required = true;
+        /// <summary>Commentary (a reason, say): two calls that differ only here are the same call.</summary>
+        public bool SameCall;
 
         private static readonly Regex IntText = new Regex(@"\A\s*-?\d+\s*\z", RegexOptions.CultureInvariant);
 
         public Param(string name, string kind = "text", string description = "", int maxLen = 200, int minLen = 1, long? lo = null, long? hi = null,
-                     Scale scale = null, IEnumerable<string> choices = null, bool required = true)
+                     Scale scale = null, IEnumerable<string> choices = null, bool required = true, bool sameCall = false)
         {
+            SameCall = sameCall;
             Name = name; Kind = kind; Description = description; MaxLen = maxLen; MinLen = minLen; Lo = lo; Hi = hi; Scale = scale;
             Choices = choices?.ToList(); Required = required;
             if (Kind != "text" && Kind != "int" && Kind != "scale" && Kind != "enum") throw new PyValueError("bad param kind " + Kind);
@@ -177,6 +180,15 @@ namespace RimWorldLLM.Mind.ToolLoop
             ResultScales = resultScales ?? new Dictionary<string, Scale>();
             EndsTurn = endsTurn;
             if (!NameRe.IsMatch(Name)) throw new PyValueError("bad tool name " + Name);
+        }
+
+        /// <summary>What makes two calls the same call (the repeat rule): the values, without the commentary params.</summary>
+        public string CallKey(JObject values)
+        {
+            var skip = new HashSet<string>(Params.Where(p => p.SameCall).Select(p => p.Name));
+            var kept = new JObject();
+            foreach (var prop in values.Properties()) if (!skip.Contains(prop.Name)) kept[prop.Name] = prop.Value;
+            return Name + PyJson.Compact(kept, true, true);
         }
 
         public string Signature()
