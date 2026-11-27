@@ -56,7 +56,7 @@ namespace RimWorldLLM.Tests.Mind
             await s.RunAsync("set_schedule", V(new { pawn = "Dara", from_hour = 22, to_hour = 6, assignment = "sleep" }));
             await s.RunAsync("order", V(new { pawn = "Bram", order = "attack", x = 0, z = 0, target_id = 5512, hold = "no" }));
             await s.RunAsync("order", V(new { pawn = "Bram", order = "hold", x = 0, z = 0, target_id = 0, hold = "yes" }));
-            var o = await s.RunAsync("set_time", V(new { pause = "yes", speed = "leave", emergency = "yes", reason = "raid at the gate" }));
+            var o = await s.RunAsync("set_time", V(new { pause = "yes", speed = "leave", emergency = "yes", why = "since raiders are at the gate" }));
             Assert.True(o.Ok);
             var log = fb.ActLog;
             Assert.Equal("schedule", log[0].Key);
@@ -65,7 +65,40 @@ namespace RimWorldLLM.Tests.Mind
             Assert.True(JToken.DeepEquals(JObject.Parse("{\"pawn\":102,\"order\":\"hold\",\"hold\":true}"), log[2].Value));
             Assert.Equal("time", log[3].Key);
             Assert.True((bool)log[3].Value["pause"] && (bool)log[3].Value["emergency"] && log[3].Value["speed"] == null);
+            Assert.True((string)log[3].Value["why"] == "since raiders are at the gate" && log[3].Value["reason"] == null);
             Assert.True(fb.PausedByNarrator);
+        }
+
+        [Fact]
+        public async Task WhyPassesFromToolToActBodyAndMissingWhySendsNone()
+        {
+            var (s, fb) = Boot();
+            await s.RunAsync("set_work", V(new { pawn = "Ana", work = "Cooking", priority = 1, why = "since meals are running low" }));
+            await s.RunAsync("set_research", V(new { project = "Batteries" }));
+            await s.RunAsync("draft", V(new { pawns = "all", drafted = "yes", why = "since raiders are close" }));
+            var got = fb.ActLog.ToDictionary(p => p.Key, p => p.Value);
+            Assert.Equal("since meals are running low", (string)got["work"]["why"]);
+            Assert.Null(got["research"]["why"]);
+            Assert.Equal("since raiders are close", (string)got["draft"]["why"]);
+        }
+
+        [Fact]
+        public void WhyIsInEveryActingToolAndOptional()
+        {
+            var (s, fb) = Boot();
+            foreach (var t in s.Tools.Where(t => StewardKit.Acting.Contains(t.Name)))
+            {
+                var p = t.Params.First(x => x.Name == "why");
+                Assert.True(!p.Required && p.MaxLen == 80 && p.SameCall, t.Name);
+            }
+        }
+
+        [Fact]
+        public async Task WhyIsCleanedAndCapped()
+        {
+            var (s, fb) = Boot();
+            await s.RunAsync("set_work", V(new { pawn = "Ana", work = "Cooking", priority = 1, why = "since " + new string('x', 70) }));
+            Assert.True(((string)fb.ActLog[0].Value["why"]).Length <= 80);
         }
 
         [Fact]
@@ -73,7 +106,7 @@ namespace RimWorldLLM.Tests.Mind
         {
             var (s, fb) = Boot();
             fb.ActRefuse["time"] = "pausing needs an emergency";
-            var o = await s.RunAsync("set_time", V(new { pause = "yes", speed = "leave", emergency = "no", reason = "rest" }));
+            var o = await s.RunAsync("set_time", V(new { pause = "yes", speed = "leave", emergency = "no", why = "since the colony needs rest" }));
             Assert.False(o.Ok);
             Assert.Equal("pausing needs an emergency", (string)o.Result["refused"]);
             Assert.Empty(fb.ActLog);

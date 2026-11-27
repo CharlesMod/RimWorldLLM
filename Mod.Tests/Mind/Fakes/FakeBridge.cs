@@ -109,6 +109,7 @@ namespace RimWorldLLM.Mind.Fakes
         public bool TextSupported;                  // GET /text/queue and POST /text/fill; off by default (an older mod: 404, so the art idle job keeps running); a test turns it on
         public List<JObject> TextItems = new List<JObject>();       // the queue (already sorted); a filled item leaves it
         public List<JObject> TextFillLog = new List<JObject>();     // POST /text/fill bodies accepted
+        public Action OnTextQueue;                  // test hook: runs after /text/queue built its reply (a race: the mod drops an item meanwhile)
         public int TextPendingExtra;                // added to "pending" beyond the items held
         public List<JObject> TalkQueue = new List<JObject>();
         public Dictionary<string, JObject> SeenOps = new Dictionary<string, JObject>();
@@ -373,7 +374,9 @@ namespace RimWorldLLM.Mind.Fakes
             {
                 string ns = Qstr(req, "n");
                 int n = ns == null ? 4 : int.Parse(ns, CultureInfo.InvariantCulture);
-                return Ok(("pending", TextItems.Count + TextPendingExtra), ("items", new JArray(TextItems.Take(n))));
+                var qr = Ok(("pending", TextItems.Count + TextPendingExtra), ("items", new JArray(TextItems.Take(n))));
+                OnTextQueue?.Invoke();
+                return qr;
             }
             if (path == "/text/fill" && method == "POST" && TextSupported)
             {
