@@ -23,9 +23,23 @@ agent. The wire details of the new routes are also in `docs/BRIDGE-API.md`; the 
   narrator sees next.
 
 ### 2. The chat
-- **Enter** (when no text field has focus and no window wants it) opens a one-line chat bar above the
-  bottom bar; Enter sends, Esc closes. A small scrollback panel shows the conversation: player lines,
-  narrator lines, and short action notes such as "→ set Cook priority 1 for Ana".
+- **The panel** (MOBA style): the chat log is always on screen at the side, translucent, with
+  outlined text that reads over any ground. Left by default: just right of the resources list
+  (x = 148 UI units) and above the inspect pane (bottom edge 208 above the screen's bottom); right:
+  left of the date/alerts column. It never fades out; new lines briefly highlight. Under the mouse it
+  turns nearly opaque and the wheel scrolls history; clicks always pass through to the map. It hides
+  while a main tab window (architect, work, ...) is open, unless you are typing. Settings (Colonists →
+  Narrator plays): show/hide, left/right, small/medium font, background opacity, width, lines. Layout
+  math: `Mod/Source/RimWorld/VivariumChatLayout.cs` (Verse-free, tested).
+- **Enter** (when no text field has focus and no window wants it) opens the one-line chat bar at the
+  panel's bottom edge, same width; Enter sends, Esc closes. Lines: "You: …" (blue), "You → Ana: …"
+  (teal), "Narrator: …" (gold), "Ana: …" (green), notes "→ set Cook priority 1 for Ana" (grey).
+- **Live lines:** "Narrator is thinking…" (animated dots, or "… 74%" and a thin bar when the client
+  reports prefill progress) while the prompt is processed, then the narrator's text streaming in,
+  replaced by the final line. An `@Name` reply can show "Ana is thinking…" the same way. A status with
+  no update for 90 s goes by itself. Routes `POST /chat/status` and `POST /chat/partial`, and the
+  in-process API below; the contract is in BRIDGE-API.md. Today the Python steward posts `thinking`
+  when its model call starts and `idle` when it ends (no token streaming); the C# mind streams.
 - Messages go to the narrator. `@Name text` goes to a colonist through the existing talk path
   (TalkQueue → agent → `POST /say`), and the colonist's answer shows in the scrollback too.
 - Chat history is saved with the game.
@@ -117,7 +131,9 @@ what the colony UI shows). The steward says when it can't do something.
 | `GET /vivarium` | no | `playing`, `settings`, `chat_seq`, `goals_rev`, `actions_seq`, `paused_by_narrator` |
 | `GET /digest` | yes | the colony digest |
 | `GET /chat?since=N` | no | chat entries after seq N, `next_seq` |
-| `POST /chat` | no | the steward posts a `narrator` line or a `note` |
+| `POST /chat` | no | the steward posts a `narrator` line or a `note`; optional `stream_id` ends that live stream |
+| `POST /chat/status` | no | live status: `who`, `to?`, `state` thinking/typing/idle, `stream_id`, `progress?` 0..1 |
+| `POST /chat/partial` | no | the streaming text so far: `stream_id`, `text` (whole, not a delta) |
 | `GET /goals` | no | the goals board with `rev` |
 | `PUT /goals` | no | replace the board (needs the current `rev`; 409 `conflict` when stale) |
 | `GET /actions?since=N` | no | the action log |
@@ -136,6 +152,26 @@ Every `/act/*` write is a normal bridge write (op_id, optional expires_tick). Su
 settings gave. Every success is appended to the action log; the bridge does not post chat notes on its
 own (the steward decides what is worth a line). Acts are allowed whether or not the narrator is playing
 (advisor mode does one task).
+
+### In-process chat streaming (for the C# mind)
+The same live status without HTTP: `VivariumChat.Live` (Verse side), which is the Verse-free
+`RWLBridge.Runtime.Vivarium.Live`, a `RimWorldLLM.Bridge.ChatLive`. Every method is thread-safe, so the
+mind may call it from its worker thread.
+```csharp
+var live = VivariumChat.Live;                       // or runtime.Vivarium.Live
+string id = live.Begin("narrator");                 // thinking; replaces the narrator's old stream
+live.Progress(id, processed / (float)total);        // optional, from prompt_progress; 0..1
+live.Typing(id);                                    // first token (Partial does this too)
+live.Partial(id, textSoFar);                        // whole text so far; cheap, call per token
+live.End(id, finalText);                            // final narrator line -> chat log on the next frame
+// colonist: live.Begin("colonist", pawnId, "Ana"); End(id, text) logs a "colonist" line,
+// or End(id) / Cancel(id) to drop the live line when the reply goes through the speech path.
+```
+`Begin` throws `ArgumentException` for a bad speaker. `Progress`/`Typing`/`Partial`/`End` return false
+when the stream is gone (ended, replaced or timed out after 90 s without an update); keep calling
+`Progress` during a prefill longer than a minute. `End(id, text)` queues the line, and the bridge's
+per-frame update appends it on the game thread (the live line stays until then, so nothing blinks).
+The HTTP routes call `Status(streamId, who, to, name, state, progress)` on the same object.
 
 ### New events (on the existing `/events` ring)
 - `letter` — a letter arrived; `data` {letter, label, choices, quest}. Severity 0.6 for a choice

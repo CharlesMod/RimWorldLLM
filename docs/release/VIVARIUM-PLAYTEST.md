@@ -29,13 +29,30 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
    - Esc closes the bar and does **not** open the main menu.
    - While typing, game hotkeys (Space, 1-4, letters for tabs) must **not** fire. ← most likely to need a fix.
    - Enter in any other text field, or with a dialog open, must not open the bar.
-   - Try at UI scale 1 and 2: the bar and panel sit above the bottom bar, not over it.
-5. **@Name.** `@Ana hi` (a real colonist, or a unique prefix): "You to Ana: hi"; `GET /talk` has it with
+   - The bar opens at the chat panel's bottom edge, the panel's width.
+5. **@Name.** `@Ana hi` (a real colonist, or a unique prefix): "You → Ana: hi"; `GET /talk` has it with
    `from: chat`; once the agent answers, Ana's line shows in green. `@Nobody hi` shows "No colonist named Nobody."
-6. **Scrollback.** Last 8 lines, colours: you blue, narrator gold, notes grey, colonists green. It shows for about
-   10 s after a new line and stays while the bar is open.
-7. **Save/load.** Save, quit to menu, load: the switch state and chat history come back; old lines don't pop the
-   panel. A save from before this version loads with the switch off and an empty chat.
+6. **The chat panel** (always on, MOBA style). Colours: you blue, you → colonist teal, narrator gold, notes grey,
+   colonists green.
+   - **Position, UI scale 1** (Options → Interface → UI scale; 1920x1080 expected numbers): left of screen at x 148,
+     just right of the resources list; its bottom edge (the input bar slot) at y 872, about 208 above the screen's
+     bottom, i.e. just above where the inspect pane opens when you select something. With 10 lines of small text the
+     log box is ~230 tall (y ~612-842). It must not cover the resources list, the inspect pane, the architect menu
+     button row, the bottom bar, the colonist bar, alerts, letters, or the date/time controls.
+   - **UI scale 2** (960x540 UI units on 1080p): same x 148, bottom edge at y 332; it fits 8 small lines (box y
+     ~116-302) and stays below the colonist bar. Check it doesn't cover the colonist bar with many colonists.
+   - Settings → Colonists → Narrator plays: "Chat panel on the right" moves it left of the date/alerts column (at
+     scale 1 it then sits lower, just above the bottom bar); width, lines, background opacity, larger text, and
+     "Show the chat panel" off (then it shows only while typing) all apply at once.
+   - **Readability:** read it over bright ground (sand, snow, a lit floor) and dark ground (night, rock, fog): text
+     keeps a soft dark outline; the background stays faint. Note the opacity you end up liking.
+   - It never fades away; a new line highlights for ~4 s.
+   - **Mouse-over:** the panel goes nearly opaque; the wheel scrolls older lines (and does not zoom the map);
+     moving away snaps back to the newest. **Click-through:** clicking or dragging a selection box over the panel
+     still selects pawns/things under it; right-click orders work under it.
+   - Opening a main tab (Architect, Work, …) hides the panel; Enter still shows it with the bar.
+7. **Save/load.** Save, quit to menu, load: the switch state and chat history come back; old lines don't
+   highlight as new; no "is thinking" line survives a load. A save from before this version loads with the switch off and an empty chat.
 8. **Goals tab** (Voices window → Goals): add a long- and a short-term goal; Done, Drop, Reopen, Remove; edit and
    save the plan; add and remove a standing order ("always keep 20 meals"). `GET /goals` shows the same board.
 9. **Hands by hand** (`POST /act/*`, check the game UI after each; every success appears in `GET /actions` and in
@@ -64,6 +81,13 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
 12. **Advisor mode** (switch off). Chat "what should we research next?": a narrator line answers, nothing changes in
     the game. Chat "put Ana on cooking": one action (Ana's Cooking priority), a "→ …" note, and a line saying so.
     Chat "build a freezer": it says it can't build yet and recommends how.
+12a. **"Narrator is thinking…".** Send a chat line: within a second the panel's last line reads "Narrator is
+    thinking" with animated dots, and it is replaced by the narrator's answer (or vanishes if the cycle ends with
+    no line). Kill the agent mid-cycle: the thinking line disappears by itself within 90 s. By hand:
+    `curl ... -X POST $B/chat/status -d '{"op_id":"t1","who":"narrator","state":"thinking","stream_id":"s1","progress":0.4}'`
+    shows "… 40%" with a thin bar; then `$B/chat/partial -d '{"op_id":"t2","stream_id":"s1","text":"The wind"}'`
+    shows the text streaming; `$B/chat -d '{"op_id":"t3","who":"narrator","text":"The wind is rising.","stream_id":"s1"}'`
+    turns it into a normal line. `"who":"colonist","to":<pawn id>` shows "Ana is thinking…".
 13. **Playing** (switch on, speed 1-2). Within seconds it takes a first look: a few actions or none, maybe a line.
     Then it looks again about every 6 game hours (faster at 3x). Watch for over-acting (changing priorities every
     look) — note it.
