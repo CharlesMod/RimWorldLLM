@@ -173,6 +173,45 @@ namespace RimWorldLLM
             _session.Start();
         }
 
+        // "Pair with this engine": probe the typed endpoint, then adopt the typed key or start the pairing flow.
+        static bool _probing;
+        static EndpointProbe _probeResult;
+        static string _probeMsg;
+
+        static void ProbeEndpoint(RimWorldLLMSettings s)
+        {
+            if (_probing) return;
+            _probing = true;
+            _probeResult = null;
+            _probeMsg = null;
+            string url = s.llmBaseUrl ?? "", key = s.llmApiKey ?? "";
+            Task.Run(async () =>
+            {
+                try { _probeResult = await EndpointPairing.ProbeAsync(new PairingApi(), url, key).ConfigureAwait(false); }
+                catch { _probeResult = new EndpointProbe { Kind = EndpointPairKind.NotAnEngine }; }
+                finally { _probing = false; }
+            });
+        }
+
+        static void ApplyProbe(RimWorldLLMSettings s)
+        {
+            var p = _probeResult;
+            if (p == null) return;
+            _probeResult = null;
+            if (p.Kind == EndpointPairKind.NotAnEngine) { _probeMsg = UiUtil.T("RWL_Pair_EndpointNotEngine"); return; }
+            if (p.Kind == EndpointPairKind.Adopt)
+            {
+                var f = Fields(s);
+                var store = Store(s);
+                EndpointPairing.Adopt(f, p, store);
+                EngineAuthStatus.Set(p.NeedsNoToken ? EngineAuth.Open : EngineAuth.Paired);
+                Save(s, f, store, false);
+                Log.Message("[RimWorldLLM] Paired with " + p.Hello.Name + " at " + EngineAddress.Display(p.Root));
+                return;
+            }
+            Connect(s, new FoundEngine { EngineId = p.Hello.EngineId, Name = p.Hello.Name ?? "", Root = p.Root, Answered = true });
+        }
+
         static void Cancel()
         {
             var se = _session;
@@ -195,9 +234,19 @@ namespace RimWorldLLM
 
             l.Label(UiUtil.T("RWL_Pair_Title"));
             StatusRow(l, s);
+            ApplyProbe(s);
 
             var se = _session;
             if (se != null && se.Phase != PairPhase.Idle && se.Phase != PairPhase.Paired && se.Phase != PairPhase.Open) { SessionPanel(l, se); return; }
+
+            if (EndpointPairing.ShouldOffer(s.llmBaseUrl, s.llmEngineId, Store(s)))
+            {
+                var prow = l.GetRect(30f);
+                TooltipHandler.TipRegion(prow, UiUtil.T("RWL_Pair_EndpointTip"));
+                if (Widgets.ButtonText(new Rect(prow.x, prow.y, 260f, 28f), UiUtil.T(_probing ? "RWL_Pair_EndpointLooking" : "RWL_Pair_EndpointButton"), true, true, !_probing))
+                    ProbeEndpoint(s);
+                if (!string.IsNullOrEmpty(_probeMsg)) { GUI.color = Red; Widgets.Label(new Rect(prow.x + 270f, prow.y + 4f, prow.width - 270f, 26f), _probeMsg); GUI.color = Color.white; }
+            }
 
             var row = l.GetRect(30f);
             TooltipHandler.TipRegion(row, UiUtil.T("RWL_Pair_FindTip"));

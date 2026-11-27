@@ -72,6 +72,17 @@ For an easyEngine on another computer (the PC with the card): no URL or key to t
    **Pair again** with a button (and a message once, in a running game). Typing another URL by hand lets go of the
    paired engine (its token stays stored for later).
 
+5. **Pair with this engine** (shown under the status line when `llmBaseUrl` is set and is not already a paired engine,
+   i.e. no `llmEngineId` or no stored token for it): for an endpoint already typed in, such as `http://sprinter:47480/v1`
+   over a tailnet where mDNS does not reach. The engine root is the URL without a trailing `/v1` and slashes (no port
+   means 47480); hello is called there. Not an easyEngine (hello fails or `engine` is not `easy-engine`): the line
+   "This endpoint isn't an easyEngine; keep the key typed by hand" shows and nothing changes. An easyEngine whose hello
+   accepts the current `llmApiKey` as a Bearer (`paired:true`, or no token needed) keeps that key: it is stored in
+   `pairedEngines` under the engine_id and `llmEngineId` is set, with no pairing round. A master token may come back
+   `paired:false` on hello, so an authenticated `GET /engine/v1/status` answering 200 counts as proof the key works.
+   Otherwise the normal Connect flow runs (big code, Allow on the engine). The status line then reads "Paired with
+   <name> at host:port". The key is never logged or shown.
+
 The typed path is unchanged: any OpenAI-compatible server with a URL, model and key works as before; pairing only fills
 those fields.
 

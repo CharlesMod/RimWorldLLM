@@ -135,6 +135,10 @@
   <RWL_Pair_NoneFound>No engine answered on this network. Is easyEngine running there and open to the network? You can also type its address below.</RWL_Pair_NoneFound>
   <RWL_Pair_Typed>Or its address:</RWL_Pair_Typed>
   <RWL_Pair_TypedTip>The engine computer's name or IP address, with :port if it is not 47480 (for example 192.168.1.20 or den-pc:47480).</RWL_Pair_TypedTip>
+  <RWL_Pair_EndpointButton>Pair with this engine</RWL_Pair_EndpointButton>
+  <RWL_Pair_EndpointLooking>Asking the endpoint...</RWL_Pair_EndpointLooking>
+  <RWL_Pair_EndpointTip>Asks the URL below whether it is an easyEngine. If the key below already works, it is kept and stored for this engine; otherwise you pair with a code.</RWL_Pair_EndpointTip>
+  <RWL_Pair_EndpointNotEngine>This endpoint isn't an easyEngine; keep the key typed by hand.</RWL_Pair_EndpointNotEngine>
   <RWL_Pair_Look>Look</RWL_Pair_Look>
   <RWL_Pair_Looking>Asking that address...</RWL_Pair_Looking>
   <RWL_Pair_NoEngineAt>No easyEngine answered at {0}.</RWL_Pair_NoEngineAt>

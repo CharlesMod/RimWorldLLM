@@ -307,6 +307,12 @@ namespace RimWorldLLM.Bridge
             return (r.Ok ? EngineHello.Parse(r.Body) : null, r);
         }
 
+        /// <summary>GET /engine/v1/status with a Bearer: a 200 proves the key works (it needs a token on a non-loopback engine).</summary>
+        public Task<PairReply> StatusAsync(string root, string token, CancellationToken ct = default(CancellationToken))
+        {
+            return SendAsync("GET", root + "/engine/v1/status", token, null, ShortTimeoutMs, ct);
+        }
+
         public Task<PairReply> AskAsync(string root, string clientName, CancellationToken ct)
         {
             return SendAsync("POST", root + "/engine/v1/pair", null, new JObject { ["name"] = clientName ?? "" }.ToString(Formatting.None), ShortTimeoutMs, ct);
