@@ -531,15 +531,16 @@ class FakeBridge:
         """The settings checks of /act/time and a short success note. (refusal, note)."""
         st = self.viv_settings
         self._walk = {}
-        if verb == "trade" and str(b.get("with", ""))[:1] in ("P", "S"):          # a trader at the comms console: the negotiator walks there, the deal runs later
+        if verb == "trade" and str(b.get("with", ""))[:1] in ("P", "S"):          # a walking trade: the negotiator walks there, the deal runs later
             if self.trade_pending:
                 return f"a trade is already under way: {self.trade_pending['negotiator']} is walking to {self.trade_pending['to']}", ""
             t = (self.digest or {}).get("trade") or {}
             who = next((x.get("name") for x in t.get("traders") or [] if x.get("id") == b["with"]), b["with"])
             neg = (t.get("negotiator") or {}).get("name") or "A colonist"
-            self.trade_pending = {"negotiator": neg, "to": "the comms console", "with": who}
-            self._walk = {"status": "walking", "negotiator": neg, "to": "the comms console"}
-            return "", f"{neg} is walking to the comms console to trade with {who}"
+            to = "the comms console" if b["with"][:1] == "S" else who            # as the mod: orbital at the console, a visitor in person
+            self.trade_pending = {"negotiator": neg, "to": to, "with": b["with"]}
+            self._walk = {"status": "walking", "negotiator": neg, "to": to}
+            return "", f"{neg} is walking to {to} to trade" + (f" with {who}" if to != who else "")
         if verb == "squad" and b.get("op") == "undraft" and isinstance(self.combat, dict) and self.combat.get("active") \
                 and any(not t.get("dormant") and t.get("dist", 99) <= 30 for t in self.combat.get("threats") or []):
             return "enemies are still within 30 cells of home; the squad stays drafted", ""    # as the mod

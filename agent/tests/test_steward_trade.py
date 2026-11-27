@@ -169,18 +169,18 @@ def test_act_extra_fields_reach_the_model(fb):
     s = live(fb, TRADER)
     fb.act_extra["trade"] = {"spent": 300, "got": 200, "net": -100}
     r = do(s, "trade", **{"with": "P5521"}, buy="steel x10")
-    assert r.result["spent"] == 300 and r.result["status"] == "walking" and "is walking to the comms console" in r.result["done"]
+    assert r.result["spent"] == 300 and r.result["status"] == "walking" and "Ana is walking to Bulk goods trader Tomas to trade" == r.result["done"]
 
 
 def test_a_trade_with_a_trader_walks_and_a_second_is_refused_until_it_ends(fb):
     s = live(fb, TRADER)
     r = do(s, "trade", **{"with": "P5521"}, buy="steel x10")
-    assert r.ok and r.result["status"] == "walking" and r.result["negotiator"] == "Ana" and r.result["to"] == "the comms console"
-    assert r.note == "Ana is walking to the comms console to trade with Bulk goods trader Tomas"
+    assert r.ok and r.result["status"] == "walking" and r.result["negotiator"] == "Ana" and r.result["to"] == "Bulk goods trader Tomas"
+    assert r.note == "Ana is walking to Bulk goods trader Tomas to trade"
     again = do(s, "trade", **{"with": "P5521"}, sell="cloth x10")
     assert not again.ok and "a trade is already under way" in again.result["refused"]
     assert len(fb.act_log) == 1
-    assert fb.trade_pending == {"negotiator": "Ana", "to": "the comms console", "with": "Bulk goods trader Tomas"}
+    assert fb.trade_pending == {"negotiator": "Ana", "to": "Bulk goods trader Tomas", "with": "P5521"}
     fb.trade_pending = None
     assert do(s, "trade", **{"with": "P5521"}, sell="cloth x10").ok
 
