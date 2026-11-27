@@ -1,8 +1,8 @@
 """Item 9: bystander reactions (core/bystanders.py)."""
 from conftest import run
-from hermesvoice_agent.core import bystanders as B
-from hermesvoice_agent.core.minds import Mind, Relation
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import bystanders as B
+from rimworldllm_agent.core.minds import Mind, Relation
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 AD = RimWorldAdapter()
 

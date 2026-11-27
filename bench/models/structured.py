@@ -3,10 +3,10 @@ from __future__ import annotations
 import json, re, time
 import jsonschema
 from common import *
-from hermesvoice_agent.core.passes import parse_intent
-from hermesvoice_agent.core.prompt import grammar_for, intent_messages, line_messages
-from hermesvoice_agent.core.reflection import REFLECT_SCHEMA, parse_result, run_reflection, reflection_messages
-from hermesvoice_agent.core.minds import Relation
+from rimworldllm_agent.core.passes import parse_intent
+from rimworldllm_agent.core.prompt import grammar_for, intent_messages, line_messages
+from rimworldllm_agent.core.reflection import REFLECT_SCHEMA, parse_result, run_reflection, reflection_messages
+from rimworldllm_agent.core.minds import Relation
 
 LABELS = ADAPTER.intent_labels
 

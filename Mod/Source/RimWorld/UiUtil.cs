@@ -3,9 +3,9 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
-    /// <summary>Small helpers shared by the HermesVoice windows and tabs. Game thread only.</summary>
+    /// <summary>Small helpers shared by the RimWorldLLM windows and tabs. Game thread only.</summary>
     public static class UiUtil
     {
         /// <summary>A keyed string, or the key itself marked when the translation is missing.</summary>
@@ -48,7 +48,7 @@ namespace HermesVoice
             var p = Routes.FindPawn(pawnId);
             if (p == null || p.Dead && p.Corpse == null)
             {
-                Messages.Message(T("HV_LogPawnGone", name), MessageTypeDefOf.RejectInput, false);
+                Messages.Message(T("RWL_LogPawnGone", name), MessageTypeDefOf.RejectInput, false);
                 return;
             }
             CameraJumper.TryJumpAndSelect(p);

@@ -11,9 +11,9 @@ import argparse, asyncio, json, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "agent"))
-from hermesvoice_agent.core.config import LLMConfig  # noqa: E402
-from hermesvoice_agent.core.llm import HttpLLM  # noqa: E402
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
+from rimworldllm_agent.core.config import LLMConfig  # noqa: E402
+from rimworldllm_agent.core.llm import HttpLLM  # noqa: E402
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
 
 A = RimWorldAdapter()
 MAXT = {"recap": 90, "lore": 24, "thought": 32, "diary": 160}   # the agent's caps for these kinds

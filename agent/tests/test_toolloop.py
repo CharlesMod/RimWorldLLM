@@ -6,9 +6,9 @@ import random
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.toolloop import (Action, BackendError, CHANGE, IMPORTANCE, Param, Reply, Scale, ToolHarness, ToolSpec,
+from rimworldllm_agent.core.toolloop import (Action, BackendError, CHANGE, IMPORTANCE, Param, Reply, Scale, ToolHarness, ToolSpec,
                                               build_grammar, choose_protocol, parse_text, probe, run_loop, Capabilities)
-from hermesvoice_agent.core.toolloop import harness as harness_mod
+from rimworldllm_agent.core.toolloop import harness as harness_mod
 
 
 def tools():

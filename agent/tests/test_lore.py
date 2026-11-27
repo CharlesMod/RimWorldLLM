@@ -1,7 +1,7 @@
 """Aliveness item 4: colony lore coined after a major entry, stored as chronicle kind "lore", reused in prompts."""
 from conftest import World, run
-from hermesvoice_agent.core import lore, recap
-from hermesvoice_agent.core.lore import LoreBook, parse_entry
+from rimworldllm_agent.core import lore, recap
+from rimworldllm_agent.core.lore import LoreBook, parse_entry
 
 DEATH = "Bram died of his wounds in the evening, and the others buried him without speeches."
 
@@ -130,7 +130,7 @@ def test_recap_ignores_lore_entries(world):
 
 
 def test_lore_and_recap_prompts_ask_for_nicknames_and_big_events():
-    from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+    from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter
     a = RimWorldAdapter()
     assert "never a label" in a.lore_request
     assert "biggest events" in a.recap_request and "never small" in a.recap_request

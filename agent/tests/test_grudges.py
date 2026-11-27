@@ -1,8 +1,8 @@
 """Grudge and make-up loop (core/grudges.py): phases on game time, deterministic decision, outcome closes the loop."""
 from conftest import run
-from hermesvoice_agent.core import concerns as cn
-from hermesvoice_agent.core import grudges as gr
-from hermesvoice_agent.core.minds import Relation
+from rimworldllm_agent.core import concerns as cn
+from rimworldllm_agent.core import grudges as gr
+from rimworldllm_agent.core.minds import Relation
 
 DAY = 60000
 
@@ -69,7 +69,7 @@ def test_an_applied_insult_line_starts_one_but_a_refused_or_other_intent_does_no
     async def go():
         w = await world.go()
         d = w.d
-        from hermesvoice_agent.core.passes import Spoken
+        from rimworldllm_agent.core.passes import Spoken
         await d._say(1, Spoken("You useless fool.", "insult"), listener=2, expires=None)
         await d._say(3, Spoken("Hello there.", "kind"), listener=1, expires=None)
         await step(w)
@@ -245,18 +245,18 @@ def test_switch_off_is_todays_behaviour(tmp_path):
 def test_minors_are_safe_the_topics_are_fixed_words_and_nothing_romantic():
     for approach in (gr.APOLOGISE, gr.MAKE_UP, gr.CONFRONT):
         assert approach in ("apologise", "make up", "confront")
-    from hermesvoice_agent.core import agegate
-    from hermesvoice_agent.core.config import Config
+    from rimworldllm_agent.core import agegate
+    from rimworldllm_agent.core.config import Config
     assert not agegate.violation(gr.GUILT_TEXT.format(who="Bram"), involves_minor=True)
     # a romantic interaction is not an offence
-    from hermesvoice_agent.games.rimworld.concern_rules import social_offence
+    from rimworldllm_agent.games.rimworld.concern_rules import social_offence
     e = {"type": "social", "actors": [{"id": 1, "role": "initiator"}, {"id": 2, "role": "recipient"}],
          "data": {"interaction": "RomanceAttempt"}}
     assert social_offence(e) is None
 
 
 def test_social_fight_naming_its_target_is_an_offence():
-    from hermesvoice_agent.games.rimworld.concern_rules import social_offence
+    from rimworldllm_agent.games.rimworld.concern_rules import social_offence
     e = {"type": "mental_break", "actors": [{"id": 1, "role": "subject"}], "data": {"state": "SocialFighting", "target": 2}}
     assert social_offence(e) == (1, 2, "picked a fight with")
     e["data"].pop("target")

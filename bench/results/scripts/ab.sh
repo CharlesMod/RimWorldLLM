@@ -9,7 +9,7 @@ for r in $(seq $REPS); do
     prof=$G/profiles/base.json; [ $arm = old ] && prof=$G/profiles/oldrp.json
     $G/engine.sh start $prof
     out=$G/results/ab/$arm/r$r; mkdir -p $out
-    curl -s -X POST -H 'X-Hermes-Engine: 1' -d '{"model":"'$M'"}' http://127.0.0.1:47480/engine/v1/install >/dev/null
+    curl -s -X POST -H 'X-Easy-Engine: 1' -d '{"model":"'$M'"}' http://127.0.0.1:47480/engine/v1/install >/dev/null
     (cd $W && BENCH_OUT=$out PYTHONUNBUFFERED=1 $PY run_model.py $M lines conv voice) 2>&1 | tail -5
     curl -s http://127.0.0.1:47480/engine/v1/status | python3 -c 'import json,sys;s=json.load(sys.stdin);print("SAMPLER",json.dumps(s.get("sampler",{}).get("profiles",{}).get("rp")))'
     $G/engine.sh stop

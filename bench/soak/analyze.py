@@ -25,7 +25,7 @@ from pathlib import Path
 
 try:  # names only: the agent's ordinary-word list (a ~950 word floor, not a 5000 word frequency list)
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "agent"))
-    from hermesvoice_agent.core.common_words import COMMON_SENTENCE_START as _AGENT_COMMON  # type: ignore
+    from rimworldllm_agent.core.common_words import COMMON_SENTENCE_START as _AGENT_COMMON  # type: ignore
     COMMON_SOURCE = "agent core/common_words.py (function-word + everyday floor list, not a 5000-word frequency list)"
 except Exception:  # pragma: no cover
     _AGENT_COMMON = frozenset(

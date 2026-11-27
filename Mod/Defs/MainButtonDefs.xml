@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <MainButtonDef>
-    <defName>HV_Log</defName>
+    <defName>RWL_Log</defName>
     <label>Voices</label>
-    <description>Every line the colonists have spoken through HermesVoice, with what it did.</description>
+    <description>Every line the colonists have spoken through RimWorldLLM, with what it did.</description>
     <workerClass>MainButtonWorker_ToggleTab</workerClass>
-    <tabWindowClass>HermesVoice.MainTabWindow_HermesLog</tabWindowClass>
+    <tabWindowClass>RimWorldLLM.MainTabWindow_RWLLog</tabWindowClass>
     <order>95</order>
     <validWithoutMap>false</validWithoutMap>
   </MainButtonDef>

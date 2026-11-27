@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>OS and CPU as the engine names them: linux|windows|darwin and amd64|arm64.</summary>
     public sealed class EnginePlatform
@@ -14,7 +14,9 @@ namespace HermesVoice.Bridge
         public string Os;
         public string Arch;
         public string Dir { get { return Os + "-" + Arch; } }
-        public string BinaryName { get { return Os == "windows" ? "hermes-engine.exe" : "hermes-engine"; } }
+        public string BinaryName { get { return Os == "windows" ? "easy-engine.exe" : "easy-engine"; } }
+        /// <summary>The engine's name before it became easy-engine; used only when an old build is all there is.</summary>
+        public string LegacyBinaryName { get { return Os == "windows" ? "hermes-engine.exe" : "hermes-engine"; } }
         public bool IsUnix { get { return Os != "windows"; } }
 
         public EnginePlatform(string os, string arch) { Os = os; Arch = arch; }
@@ -146,7 +148,10 @@ namespace HermesVoice.Bridge
 
         public static string BinaryPath(string modRoot, EnginePlatform p)
         {
-            return Path.Combine(modRoot, "Engine", p.Dir, p.BinaryName);
+            string bin = Path.Combine(modRoot, "Engine", p.Dir, p.BinaryName);
+            if (File.Exists(bin)) return bin;
+            string old = Path.Combine(modRoot, "Engine", p.Dir, p.LegacyBinaryName);
+            return File.Exists(old) ? old : bin;
         }
 
         /// <summary>The agent wheel under Engine/agent/*.whl (highest name when several), or null.</summary>
@@ -164,7 +169,7 @@ namespace HermesVoice.Bridge
             catch { return null; }
         }
 
-        /// <summary>The game profile for HermesVoice (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
+        /// <summary>The game profile for RimWorldLLM (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
         public const int HostReserveEstimateMib = 1500;
 
         /// <summary>How far the agent's own files may still grow on the engine's disk (docs/ENGINE.md §7c host_files_mib):
@@ -189,11 +194,13 @@ namespace HermesVoice.Bridge
             {
                 o["agent"] = new JObject
                 {
-                    ["id"] = "hermesvoice-agent",
+                    ["id"] = "rimworldllm-agent",
                     ["wheel"] = wheelPath,
                     ["python"] = "3.12",
                     ["args"] = new JArray("run"),
-                    ["env"] = new JObject { ["HERMESVOICE_BRIDGE_JSON"] = bridgeJsonPath }
+                    // the engine hands the agent its URL in this variable (+ _MODE/_MODEL in external mode), the agent's own override slot
+                    ["llm_url_env"] = "RIMWORLDLLM_LLM_URL",
+                    ["env"] = new JObject { ["RIMWORLDLLM_BRIDGE_JSON"] = bridgeJsonPath }
                 };
             }
             return o;
@@ -228,8 +235,7 @@ namespace HermesVoice.Bridge
         public static Task<EngineClient> DefaultDiscoverAsync(EnginePlatform p)
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string data = EngineClient.DataDir(p.Os, n => Environment.GetEnvironmentVariable(n), home);
-            return EngineClient.DiscoverAsync(EngineClient.ReadLockPort(Path.Combine(data, "engine.lock")));
+            return EngineClient.DiscoverAsync(EngineClient.LockPort(p.Os, n => Environment.GetEnvironmentVariable(n), home));
         }
 
         /// <summary>POST /engine/v1/host; an older engine (404) or any failure is ignored.</summary>
@@ -270,7 +276,7 @@ namespace HermesVoice.Bridge
                 if (plat.IsUnix) MakeExecutable(bin);
 
                 r.ProfilePath = WriteProfile(o.BridgeJsonPath, FindWheel(o.ModRoot), o.Pid, o.HostAdapter);
-                var env = new Dictionary<string, string> { ["HERMESVOICE_BRIDGE_JSON"] = o.BridgeJsonPath };
+                var env = new Dictionary<string, string> { ["RIMWORLDLLM_BRIDGE_JSON"] = o.BridgeJsonPath };
                 try { o.Starter.Start(bin, ServeArgs(r.ProfilePath, o.Pid), env); }
                 catch (Exception e)
                 {

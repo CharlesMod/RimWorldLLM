@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// Turns a stream of "is this pawn asleep in a bed right now" samples into one "fell asleep" signal per pawn,

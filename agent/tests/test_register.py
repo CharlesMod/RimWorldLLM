@@ -4,12 +4,12 @@ import copy
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core import speech
-from hermesvoice_agent.core.minds import Mind, Memory
-from hermesvoice_agent.core.prompt import Scene, block_b, block_e, block_g, build_prefix
-from hermesvoice_agent.games.rimworld import RimWorldAdapter, register as R
-from hermesvoice_agent.games.rimworld.builders import build_fixed_bio, build_voice_card, facts_hash
-from hermesvoice_agent.games.rimworld.fakes import default_pawn, rich_pawn
+from rimworldllm_agent.core import speech
+from rimworldllm_agent.core.minds import Mind, Memory
+from rimworldllm_agent.core.prompt import Scene, block_b, block_e, block_g, build_prefix
+from rimworldllm_agent.games.rimworld import RimWorldAdapter, register as R
+from rimworldllm_agent.games.rimworld.builders import build_fixed_bio, build_voice_card, facts_hash
+from rimworldllm_agent.games.rimworld.fakes import default_pawn, rich_pawn
 
 AD = RimWorldAdapter()
 DAY = 60000
@@ -250,7 +250,7 @@ def test_thought_prompt_has_the_register_line(world):
 
 
 def test_bystander_prompt_has_the_register_line():
-    from hermesvoice_agent.core import bystanders as B
+    from rimworldllm_agent.core import bystanders as B
     m = Mind(actor_id=3, name="Cy")
     msgs = B.messages(AD, m, {1: "Ana", 2: "Bram", 3: "Cy"}, [1, 2], "x.", False, words="plain everyday speech")
     assert "Write it the way Cy would: plain everyday speech." in "\n".join(t for _, t in msgs)
@@ -263,8 +263,8 @@ def test_register_line_helper():
 
 
 def test_temporary_conditions_stay_out_of_frozen_bio():
-    from hermesvoice_agent.games.rimworld.builders import build_fixed_bio
-    from hermesvoice_agent.games.rimworld.fakes import default_pawn
+    from rimworldllm_agent.games.rimworld.builders import build_fixed_bio
+    from rimworldllm_agent.games.rimworld.fakes import default_pawn
     p = default_pawn(1, "Ana")
     p["health"]["conditions"] = [{"def": "AlcoholHigh", "label": "drunk", "severity": 0.7},
                                  {"def": "Scar", "label": "old scar", "part": "Left leg"}]
@@ -273,7 +273,7 @@ def test_temporary_conditions_stay_out_of_frozen_bio():
 
 
 def test_inline_register_names_the_temporary_state():
-    from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter
+    from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter
     p = pawn()
     sober = RimWorldAdapter().speech_register(p)
     assert "drunk" not in sober

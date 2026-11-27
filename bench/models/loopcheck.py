@@ -3,7 +3,7 @@
     cd bench/models && python loopcheck.py [--threshold 0.6] [--show]
 
 Every saved conversation (results/*/conv.json here and in ~/.local/share/rimworld-hermes-engine/bench/results)
-is replayed turn by turn through hermesvoice_agent.core.loopguard.find_repeat. LABELS holds, by hand, the turns
+is replayed turn by turn through rimworldllm_agent.core.loopguard.find_repeat. LABELS holds, by hand, the turns
 that really are a loop (a new turn that repeats or rephrases an earlier one). Reported: loops caught, loops
 missed, false alarms (a flagged turn not in LABELS), and per-model conversations with a loop before and
 after (with the guard a flagged turn is retried or the conversation ends, so no repeat is ever shown).
@@ -13,7 +13,7 @@ import argparse, glob, json, os, sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "agent"))
-from hermesvoice_agent.core import loopguard as G  # noqa: E402
+from rimworldllm_agent.core import loopguard as G  # noqa: E402
 
 ROOTS = [os.path.join(os.path.dirname(__file__), "results"),
          os.path.expanduser("~/.local/share/rimworld-hermes-engine/bench/results")]

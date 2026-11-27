@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Applies spoken-line effects as thoughts, under the strength setting, per-pair daily cap and stack limits.</summary>
     public static class SayEffects
@@ -41,7 +41,7 @@ namespace HermesVoice
             return 1f;
         }
 
-        static int Cap() { return HermesVoiceMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars; }
+        static int Cap() { return RimWorldLLMMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars; }
 
         static bool Give(Pawn target, ThoughtDef def, Pawn other, bool social, float amount, float strength, string line, string speakerName, Outcome o)
         {
@@ -49,8 +49,8 @@ namespace HermesVoice
             if (mem == null || def == null) return false;
             var t = ThoughtMaker.MakeThought(def) as Thought_Memory;
             if (t == null) return false;
-            var hv = t as Thought_HVMemory;
-            var hs = t as Thought_HVSocial;
+            var hv = t as Thought_RWLMemory;
+            var hs = t as Thought_RWLSocial;
             if (hv != null) QuotedThought.AddTo(hv, new QuoteEntry(Quotes.Trim(line, Cap()), speakerName, Find.TickManager.TicksGame));
             if (hs != null) QuotedThought.AddTo(hs, new QuoteEntry(Quotes.Trim(line, Cap()), speakerName, Find.TickManager.TicksGame));
             t.pawn = target;            // set before the stack merge so a merged memory shares its quote
@@ -66,7 +66,7 @@ namespace HermesVoice
         public static Outcome Apply(string intent, Pawn speaker, Pawn listener, Pawn about, List<Pawn> witnesses, string line)
         {
             var o = new Outcome();
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             float strength = EffectTable.Strength(s?.effects ?? "normal");
             if (intent == "none" || string.IsNullOrEmpty(intent)) { o.Refused = "no_intent"; return o; }
             if (strength <= 0f) { o.Refused = "effects_off"; return o; }

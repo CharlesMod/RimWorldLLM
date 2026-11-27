@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Reads and copies fields the game keeps private or protected. A failure throws, and the caller leaves the vanilla object as it was.</summary>
     internal static class Reflect
@@ -28,7 +28,7 @@ namespace HermesVoice
     /// <summary>Shared behaviour of the two quoted thought classes.</summary>
     public static class QuotedThought
     {
-        public static bool Shown { get { var s = HermesVoiceMod.Settings; return s == null || s.showQuotes; } }
+        public static bool Shown { get { var s = RimWorldLLMMod.Settings; return s == null || s.showQuotes; } }
 
         /// <summary>Quotes of this thought and of its same-def, same-person siblings (a stacked group shows as one row),
         /// newest first, at most three.</summary>
@@ -42,7 +42,7 @@ namespace HermesVoice
                 foreach (var m in mems)
                 {
                     if (m == self || m.def != self.def || m.otherPawn != self.otherPawn) continue;
-                    var q = m is Thought_HVMemory a ? a.quotes : (m is Thought_HVSocial b ? b.quotes : null);
+                    var q = m is Thought_RWLMemory a ? a.quotes : (m is Thought_RWLSocial b ? b.quotes : null);
                     if (q != null) foreach (var e in q) Quotes.Push(all, e);
                 }
             all.Sort((x, y) => y.Tick.CompareTo(x.Tick));
@@ -50,8 +50,8 @@ namespace HermesVoice
             if (all.Count == 0) return "";
             string label = self.LabelCap;
             return Quotes.Tooltip(all, q => string.IsNullOrEmpty(q.Speaker)
-                ? UiUtil.T("HV_QuoteNoSpeaker", label, q.Text)
-                : UiUtil.T("HV_QuoteThought", label, q.Speaker, q.Text));
+                ? UiUtil.T("RWL_QuoteNoSpeaker", label, q.Text)
+                : UiUtil.T("RWL_QuoteThought", label, q.Speaker, q.Text));
         }
 
         /// <summary>When a new quoted memory stacks onto an existing one, the older memory also keeps the new quote.</summary>
@@ -62,7 +62,7 @@ namespace HermesVoice
             foreach (var m in mems)
             {
                 if (m == self || m.def != self.def || m.otherPawn != self.otherPawn) continue;
-                var q = m is Thought_HVMemory a ? a.quotes : (m is Thought_HVSocial b ? b.quotes : null);
+                var q = m is Thought_RWLMemory a ? a.quotes : (m is Thought_RWLSocial b ? b.quotes : null);
                 if (q != null) foreach (var e in own) Quotes.Push(q, e);
             }
         }
@@ -99,11 +99,11 @@ namespace HermesVoice
             Thought_Memory n;
             if (v is Thought_MemorySocial vs)
             {
-                var hs = new Thought_HVSocial();
+                var hs = new Thought_RWLSocial();
                 hs.opinionOffset = vs.opinionOffset;
                 n = hs;
             }
-            else n = new Thought_HVMemory();
+            else n = new Thought_RWLMemory();
             n.def = v.def;
             n.pawn = v.pawn;
             n.sourcePrecept = v.sourcePrecept;
@@ -119,14 +119,14 @@ namespace HermesVoice
 
         public static void AddTo(Thought_Memory t, QuoteEntry q)
         {
-            var list = t is Thought_HVMemory a ? a.quotes : (t is Thought_HVSocial b ? b.quotes : null);
+            var list = t is Thought_RWLMemory a ? a.quotes : (t is Thought_RWLSocial b ? b.quotes : null);
             if (list != null) Quotes.Push(list, q);
         }
     }
 
     /// <summary>Mood thought that carries the lines that caused it. Description reads: label by speaker, "line".
     /// Without this mod a save holding one logs a load error for the thought and drops it; nothing else breaks.</summary>
-    public class Thought_HVMemory : Thought_Memory
+    public class Thought_RWLMemory : Thought_Memory
     {
         public List<QuoteEntry> quotes = new List<QuoteEntry>();
         string legacy;
@@ -149,7 +149,7 @@ namespace HermesVoice
     }
 
     /// <summary>Opinion thought that carries the lines that caused it.</summary>
-    public class Thought_HVSocial : Thought_MemorySocial
+    public class Thought_RWLSocial : Thought_MemorySocial
     {
         public List<QuoteEntry> quotes = new List<QuoteEntry>();
         string legacy;
@@ -175,13 +175,13 @@ namespace HermesVoice
     /// A vanilla interaction's log entry once the line for it has arrived: same def, pair, id and time as the original, the
     /// vanilla sentence as the lead-in and the quote after it. Replaces the original in the play log.
     /// </summary>
-    public class PlayLogEntry_HermesInteraction : PlayLogEntry_Interaction
+    public class PlayLogEntry_RWLInteraction : PlayLogEntry_Interaction
     {
         string quote = "";
 
-        public PlayLogEntry_HermesInteraction() { }
+        public PlayLogEntry_RWLInteraction() { }
 
-        public PlayLogEntry_HermesInteraction(PlayLogEntry_Interaction orig, string quote)
+        public PlayLogEntry_RWLInteraction(PlayLogEntry_Interaction orig, string quote)
             : base(Reflect.Get<InteractionDef>(orig, "intDef"), Reflect.Get<Pawn>(orig, "initiator"), Reflect.Get<Pawn>(orig, "recipient"),
                    Reflect.Get<List<RulePackDef>>(orig, "extraSentencePacks") ?? new List<RulePackDef>())
         {
@@ -198,7 +198,7 @@ namespace HermesVoice
         {
             string v = base.ToGameStringFromPOV_Worker(pov, forceLog);
             if (quote.Length == 0 || !QuotedThought.Shown) return v;
-            return Quotes.LeadIn(v, quote, (lead, q) => UiUtil.T("HV_LogLeadIn", lead, q));
+            return Quotes.LeadIn(v, quote, (lead, q) => UiUtil.T("RWL_LogLeadIn", lead, q));
         }
 
         public override void ExposeData()
@@ -228,14 +228,14 @@ namespace HermesVoice
         {
             get
             {
-                int m = HermesVoiceMod.Settings?.attachWindowMinutes ?? 10;
+                int m = RimWorldLLMMod.Settings?.attachWindowMinutes ?? 10;
                 return Math.Max(1, (int)(m * (60000f / 1440f)));
             }
         }
 
         /// <summary>The real-time floor in seconds: a line attaches within the game window OR this long, whichever is longer.</summary>
         public static double RealFloorSec
-        { get { return Math.Max(0, HermesVoiceMod.Settings?.attachRealFloorSec ?? 5); } }
+        { get { return Math.Max(0, RimWorldLLMMod.Settings?.attachRealFloorSec ?? 5); } }
 
         public static double RealNow { get { return UnityEngine.Time.realtimeSinceStartup; } }
 
@@ -248,14 +248,14 @@ namespace HermesVoice
             VanillaPending p;
             var r = Pending.TryAttach(vref, speaker.thingIDNumber, listener != null ? listener.thingIDNumber : -1, now, WindowTicks, out p, RealNow, RealFloorSec);
             if (r != PendingTable<VanillaPending>.Result.Attached) return r;
-            string quote = Quotes.Trim(line, HermesVoiceMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars);
+            string quote = Quotes.Trim(line, RimWorldLLMMod.Settings?.quoteMaxChars ?? Quotes.DefaultMaxChars);
             if (quote.Length == 0) return PendingTable<VanillaPending>.Result.Unknown;
             var q = new QuoteEntry(quote, speaker.LabelShort, now);
             try
             {
                 var entries = Find.PlayLog.AllEntries;
                 for (int i = 0; i < entries.Count && i < 40; i++)
-                    if (ReferenceEquals(entries[i], p.Entry)) { entries[i] = new PlayLogEntry_HermesInteraction(p.Entry, quote); break; }
+                    if (ReferenceEquals(entries[i], p.Entry)) { entries[i] = new PlayLogEntry_RWLInteraction(p.Entry, quote); break; }
                 foreach (var t in p.Thoughts)
                 {
                     var mems = t.pawn?.needs?.mood?.thoughts?.memories?.Memories;
@@ -267,7 +267,7 @@ namespace HermesVoice
                     mems[idx] = w;
                 }
             }
-            catch (Exception e) { Log.Warning("[HermesVoice] quote attach failed: " + e.Message); }
+            catch (Exception e) { Log.Warning("[RimWorldLLM] quote attach failed: " + e.Message); }
             return r;
         }
     }

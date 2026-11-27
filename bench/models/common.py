@@ -10,13 +10,13 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 sys.path.insert(0, str(REPO / "agent"))   # import the real agent package, not a copy
 
-from hermesvoice_agent.core.config import LLMConfig                       # noqa: E402
-from hermesvoice_agent.core.llm import HttpLLM                            # noqa: E402
-from hermesvoice_agent.core.minds import CRel, FixedBio, Memory, Mind, VoiceCard  # noqa: E402
-from hermesvoice_agent.core.passes import SanitizeCtx                     # noqa: E402
-from hermesvoice_agent.core.prompt import Scene, build_prefix              # noqa: E402
-from hermesvoice_agent.core.sanitize import name_tokens, prompt_cap_words  # noqa: E402
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter      # noqa: E402
+from rimworldllm_agent.core.config import LLMConfig                       # noqa: E402
+from rimworldllm_agent.core.llm import HttpLLM                            # noqa: E402
+from rimworldllm_agent.core.minds import CRel, FixedBio, Memory, Mind, VoiceCard  # noqa: E402
+from rimworldllm_agent.core.passes import SanitizeCtx                     # noqa: E402
+from rimworldllm_agent.core.prompt import Scene, build_prefix              # noqa: E402
+from rimworldllm_agent.core.sanitize import name_tokens, prompt_cap_words  # noqa: E402
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter      # noqa: E402
 
 FX = REPO / "bench/m0/fixtures"
 OUT = Path(os.environ.get("BENCH_OUT", Path.home() / ".local/share/rimworld-hermes-engine/bench/results"))
@@ -38,7 +38,7 @@ ALL_TOKENS = set().union(*NAME_TOKENS.values())
 
 # ---------------- engine control ----------------
 def eng(method, path, **kw):
-    h = {"X-Hermes-Engine": "1"} if method != "GET" else {}
+    h = {"X-Easy-Engine": "1"} if method != "GET" else {}
     r = httpx.request(method, f"{ENGINE}/engine/v1/{path}", headers=h, timeout=kw.pop("timeout", 30), **kw)
     return r.json() if r.content else {}
 

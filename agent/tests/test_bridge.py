@@ -2,9 +2,9 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.bridge import BridgeClient, BridgeError, EventPoller
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge
+from rimworldllm_agent.core.bridge import BridgeClient, BridgeError, EventPoller
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge
 
 
 def mk(fb=None, token="tok"):
@@ -18,7 +18,7 @@ def test_envelope_and_auth():
         fb.tick, fb.speed, fb.paused = 777, 3, True
         await b.config()
         assert (b.env.game, b.env.speed, b.env.paused, b.env.epoch) == (777, 3, True, 1)
-        assert (await b.health())["mod"] == "HermesVoice"
+        assert (await b.health())["mod"] == "RimWorldLLM"
         _, bad = mk(fb, "wrong")
         with pytest.raises(BridgeError) as e:
             await bad.config()
@@ -105,7 +105,7 @@ def test_unreachable():
 
 def test_from_config_reads_bridge_json(tmp_path):
     import json
-    from hermesvoice_agent.core.config import Config
+    from rimworldllm_agent.core.config import Config
     p = tmp_path / "bridge.json"
     p.write_text(json.dumps({"port": 9766, "bind": "127.0.0.1", "token": "abc", "pid": 1, "version": "2.0.0", "save_epoch": 1}))
     b = BridgeClient.from_config(Config(bridge_json=p))

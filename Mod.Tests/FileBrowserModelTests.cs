@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class FileBrowserModelTests : IDisposable
     {
@@ -12,7 +12,7 @@ namespace HermesVoice.Tests
 
         public FileBrowserModelTests()
         {
-            _root = Directory.CreateTempSubdirectory("hv-fb-").FullName;
+            _root = Directory.CreateTempSubdirectory("rwl-fb-").FullName;
         }
 
         // Removes only the unique directory this test instance created.

@@ -1,6 +1,6 @@
 using System;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Game-number rules that need no game: witness test, severities, effect caps.</summary>
     public static class Rules

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     // Pure layout maths for the comic speech balloons. No Verse / UnityEngine references: this file is compiled
     // straight into Mod.Tests and into the offline preview tool, so the preview and the game share these numbers.

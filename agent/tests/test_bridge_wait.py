@@ -3,9 +3,9 @@ import asyncio
 import json
 import logging
 
-from hermesvoice_agent.core.cli import _run, main, wait_for_bridge_json
-from hermesvoice_agent.core.config import Config
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.cli import _run, main, wait_for_bridge_json
+from rimworldllm_agent.core.config import Config
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 
 class Clock:
@@ -29,7 +29,7 @@ def test_waits_polling_every_2s_and_logs_once(tmp_path, caplog):
         await c.sleep(s)
         if len(c.sleeps) == 4:
             p.write_text(json.dumps({"port": 1}))
-    with caplog.at_level(logging.INFO, logger="hermesvoice.cli"):
+    with caplog.at_level(logging.INFO, logger="rimworldllm.cli"):
         ok = asyncio.run(wait_for_bridge_json(p, 0, sleep=sleeper, clock=c.now))
     assert ok and c.sleeps == [2.0] * 4
     assert sum("waiting for" in r.message for r in caplog.records) == 1
@@ -56,7 +56,7 @@ def test_run_exits_nonzero_on_bridge_timeout(tmp_path, monkeypatch):
     async def fake_wait(path, timeout, **kw):
         assert timeout == 3.0
         return False
-    monkeypatch.setattr("hermesvoice_agent.core.cli.wait_for_bridge_json", fake_wait)
+    monkeypatch.setattr("rimworldllm_agent.core.cli.wait_for_bridge_json", fake_wait)
     cfg = Config(data_dir=tmp_path / "d", bridge_json=tmp_path / "bridge.json")
     assert asyncio.run(_run(cfg, RimWorldAdapter(), 3.0)) == 1
 
@@ -67,6 +67,6 @@ def test_main_run_passes_default_timeout_zero(tmp_path, monkeypatch):
     async def fake_run(cfg, adapter, timeout=0.0):
         seen["t"] = timeout
         return 0
-    monkeypatch.setattr("hermesvoice_agent.core.cli._run", fake_run)
+    monkeypatch.setattr("rimworldllm_agent.core.cli._run", fake_run)
     assert main(RimWorldAdapter(), ["run"]) == 0 and seen["t"] == 0.0
     assert main(RimWorldAdapter(), ["run", "--bridge-timeout", "5"]) == 0 and seen["t"] == 5.0

@@ -1,4 +1,4 @@
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     public static class SettingsMigration
     {

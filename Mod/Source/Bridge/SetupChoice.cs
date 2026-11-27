@@ -1,4 +1,4 @@
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// The one-click first run: "Set up" in the first-run prompt installs the engine's recommended model at once,

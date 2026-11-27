@@ -1,6 +1,6 @@
 using System;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>Stable per-id colours: the same id always gets the same hue, and nearby ids land far apart.</summary>
     public static class PawnHue

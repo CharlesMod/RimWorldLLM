@@ -50,12 +50,12 @@ real seconds (what the machine and the player's eyes can do).
 
 ## Simulation
 
-`agent/hermesvoice_agent/games/rimworld/speedsim.py` runs the real `Director` against a modelled game on a virtual
+`agent/rimworldllm_agent/games/rimworld/speedsim.py` runs the real `Director` against a modelled game on a virtual
 asyncio clock (a 25 minute run takes a second). The model has four pawns, three slots with the measured latencies, a
 bridge with frame-bound latency, a ring that trims at 2000 and a model of the mod's attach table and cloud pacing. A
 synthetic colony day: 40 thoughts, 6 level-ups, 22 of the game's own interactions (every fourth a high-tier one), 8
 conversations, 8 injuries with tends, a mental break and a 40-event raid inside 1,080 ticks.
-`PYTHONPATH=agent python -m hermesvoice_agent.games.rimworld.speedsim 5` prints the table.
+`PYTHONPATH=agent python -m rimworldllm_agent.games.rimworld.speedsim 5` prints the table.
 `agent/tests/test_speed_sim.py` holds the bounds as tests: per speed (nothing lost, bounded queue, late share, memory,
 effects), speed 3 voiced about like speed 1, the raid at 3x, a schedule of pauses and speed changes, the attach share,
 a social-fight chain, the cloud gaps.

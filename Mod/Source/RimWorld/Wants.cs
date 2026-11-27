@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>POST /social_action: one small social move the agent chose (seek_out or avoid). Never romantic, never forced.</summary>
     public static partial class Routes
@@ -29,7 +29,7 @@ namespace HermesVoice
             if (target == null) return ApiResult.Fail("not_found", "no pawn " + req.Target + " (target)");
 
             bool seek = req.Action == "seek_out";
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             var facts = WantsProbe.Collect(pawn, target, seek, s != null && s.wantsEnabled);
             string reason = WantsGate.Refusal(facts);
             if (reason != null) return ApiResult.Fail("refused", reason, new JObject { ["reason"] = reason });
@@ -41,15 +41,15 @@ namespace HermesVoice
 
             if (!seek)
             {
-                var comp = HermesVoiceGameComponent.Instance;
+                var comp = RimWorldLLMGameComponent.Instance;
                 if (comp == null) return ApiResult.Fail("no_game", "no game component");
                 int now = Find.TickManager.TicksGame;
                 comp.Avoids.Add(pawn.thingIDNumber, target.thingIDNumber, now, AvoidTable.HoursToTicks(s.wantsAvoidHours));
                 return ApiResult.Success(res);
             }
 
-            var def = DefDatabase<JobDef>.GetNamedSilentFail("HV_SeekOut");
-            if (def == null) return ApiResult.Fail("internal", "HV_SeekOut job def is missing");
+            var def = DefDatabase<JobDef>.GetNamedSilentFail("RWL_SeekOut");
+            if (def == null) return ApiResult.Fail("internal", "RWL_SeekOut job def is missing");
             var job = JobMaker.MakeJob(def, target);
             job.playerForced = false;
             job.expiryInterval = JobDriver_SeekOut.MaxTicks;
@@ -179,7 +179,7 @@ namespace HermesVoice
             try
             {
                 if (WantsHooks.Bypass || recipient == null) return true;
-                var comp = HermesVoiceGameComponent.Instance;
+                var comp = RimWorldLLMGameComponent.Instance;
                 if (comp == null || comp.Avoids.Count == 0) return true;
                 if (_pawn == null) _pawn = AccessTools.FieldRefAccess<Pawn_InteractionsTracker, Pawn>("pawn");
                 var p = _pawn(__instance);
@@ -187,7 +187,7 @@ namespace HermesVoice
                 __result = false;
                 return false;
             }
-            catch (Exception e) { Log.Warning("[HermesVoice] avoid prefix: " + e.Message); return true; }
+            catch (Exception e) { Log.Warning("[RimWorldLLM] avoid prefix: " + e.Message); return true; }
         }
     }
 }

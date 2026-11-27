@@ -1,6 +1,6 @@
 # Tool harness
 
-`agent/hermesvoice_agent/core/toolloop/` is a game-agnostic loop that lets a model act through tools without being able to go silent, call a tool that does not exist, or pass an out-of-range argument. It exists because of the measured failures in docs/MODEL-BENCH.md (F4, F5, F7) and the empty reply after a tool result (docs/TOOL-ROUND2.md). Core purity holds: no game terms in the package.
+`agent/rimworldllm_agent/core/toolloop/` is a game-agnostic loop that lets a model act through tools without being able to go silent, call a tool that does not exist, or pass an out-of-range argument. It exists because of the measured failures in docs/MODEL-BENCH.md (F4, F5, F7) and the empty reply after a tool result (docs/TOOL-ROUND2.md). Core purity holds: no game terms in the package.
 
 ## Pieces
 

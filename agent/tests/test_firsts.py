@@ -1,8 +1,8 @@
 """Item 8: first-time reactions (core/firsts.py, the adapter's first_of table, Director.ingest/react)."""
 from conftest import run
-from hermesvoice_agent.core import firsts as F
-from hermesvoice_agent.core.minds import Mind
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import firsts as F
+from rimworldllm_agent.core.minds import Mind
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 AD = RimWorldAdapter()
 DAY = 60000

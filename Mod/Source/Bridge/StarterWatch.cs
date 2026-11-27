@@ -1,4 +1,4 @@
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// Follows the engine's fast first run (no game references): a small starter model answers while the chosen model

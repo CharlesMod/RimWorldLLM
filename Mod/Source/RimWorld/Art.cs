@@ -1,11 +1,11 @@
 using System;
 using HarmonyLib;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Art descriptions: the event when a colonist finishes a piece, the lookup behind POST /art, and the info-card text.</summary>
     public static class ArtSupport
@@ -86,7 +86,7 @@ namespace HermesVoice
             var thing = ArtSupport.Find(id);
             if (thing == null || thing.Destroyed) return ApiResult.Fail("conflict", "no artwork " + id + " (destroyed, or not on a map)");
             if (ArtSupport.ArtOf(thing) == null) return ApiResult.Fail("bad_request", "thing " + id + " is not an artwork");
-            int count = HermesBridge.Art.Set(id, text, Verse.Find.TickManager.TicksGame);
+            int count = RWLBridge.Art.Set(id, text, Verse.Find.TickManager.TicksGame);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
         }
     }
@@ -142,9 +142,9 @@ namespace HermesVoice
         {
             try
             {
-                var s = HermesVoiceMod.Settings;
+                var s = RimWorldLLMMod.Settings;
                 if (s == null || !s.enabled || !s.artDescriptions || __instance.parent == null) return;
-                string text = HermesBridge.Art.Get(__instance.parent.thingIDNumber);
+                string text = RWLBridge.Art.Get(__instance.parent.thingIDNumber);
                 if (!string.IsNullOrEmpty(text)) __result = text;
             }
             catch (Exception) { }

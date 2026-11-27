@@ -4,10 +4,10 @@ import httpx
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.calllog import CallLog
-from hermesvoice_agent.core.config import LLMConfig
-from hermesvoice_agent.core import endpoint_test as ept
-from hermesvoice_agent.core.llm import HttpLLM, gemma_prompt, normalise_base
+from rimworldllm_agent.core.calllog import CallLog
+from rimworldllm_agent.core.config import LLMConfig
+from rimworldllm_agent.core import endpoint_test as ept
+from rimworldllm_agent.core.llm import HttpLLM, gemma_prompt, normalise_base
 
 
 def client(handler):

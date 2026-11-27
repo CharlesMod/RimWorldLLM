@@ -1,4 +1,4 @@
-# HermesVoice
+# RimWorldLLM
 
 Local AI colonist dialogue for [RimWorld](https://rimworld.com/) 1.7. One click, no API key.
 
@@ -17,15 +17,17 @@ are included but not yet tested. Reports are very welcome (see [Reporting a prob
 
 1. Install [Harmony](https://steamcommunity.com/workshop/file/filedetails/?id=2009463077)
    (Steam Workshop, or [GitHub](https://github.com/pardeike/HarmonyRimWorld/releases/latest)).
-2. Install HermesVoice: from Nexus Mods, or download `HermesVoice-<version>.zip` from the
+2. Install RimWorldLLM: from Nexus Mods, or download `RimWorldLLM-<version>.zip` from the
    [GitHub releases](https://github.com/CharlesMod/RimWorldLLM/releases) and unzip it into
-   RimWorld's `Mods` folder, so you get `Mods/HermesVoice/About/About.xml`.
-3. Enable Harmony, then HermesVoice (below Harmony) in the mod list, and restart.
+   RimWorld's `Mods` folder, so you get `Mods/RimWorldLLM/About/About.xml`.
+   Upgrading from a build called HermesVoice: delete the old `Mods/HermesVoice` folder first. Your settings and the
+   helper's memory carry over by themselves.
+3. Enable Harmony, then RimWorldLLM (below Harmony) in the mod list, and restart.
 
 ## First run
 
 1. Start or load a game. A letter offers to set up a local model: click **Set up**.
-   (If you closed it: Options, Mod settings, HermesVoice, Model, **Change model...**)
+   (If you closed it: Options, Mod settings, RimWorldLLM, Model, **Change model...**)
 2. The setup window shows your graphics card, memory and disk, and recommends a model.
    Click **Install**.
 3. Your colonists start talking within a few minutes on a small **starter model** while the
@@ -63,18 +65,18 @@ there), or about 6 GB for E4B RP.
 
 ### Already have a GGUF model file?
 
-Options, Mod settings, HermesVoice, Model, **Use my own GGUF file...**: pick the file with
+Options, Mod settings, RimWorldLLM, Model, **Use my own GGUF file...**: pick the file with
 **Browse...**, click **Check** to see whether it fits your card, then **Use this file**. The file
 stays where it is (it is never copied or deleted); only the model server (llama.cpp) is downloaded.
 
 ### Already run a model server?
 
-Options, Mod settings, HermesVoice, Model: choose **My own endpoint** and enter the URL of
+Options, Mod settings, RimWorldLLM, Model: choose **My own endpoint** and enter the URL of
 any OpenAI-compatible server (llama.cpp, LM Studio, Ollama, vLLM, ...). Nothing is downloaded.
 
 ## Settings
 
-Options, Mod settings, HermesVoice. Every option has a tooltip; nothing needs changing to get started.
+Options, Mod settings, RimWorldLLM. Every option has a tooltip; nothing needs changing to get started.
 
 - **Model:** what is running and how fast, **Change model...** (each model with its size, memory need and
   whether it fits your machine; switching keeps the current model talking until the new one is ready, then
@@ -103,7 +105,7 @@ The full list, with defaults, is in [docs/SETTINGS.md](docs/SETTINGS.md).
 ## Sharing a moment
 
 Log lines, conversations, diary pages and chronicle entries have a **Share** button: copy the
-text or save a picture card to `SaveData/HermesVoice/Shares` in RimWorld's save-data folder.
+text or save a picture card to `SaveData/RimWorldLLM/Shares` in RimWorld's save-data folder.
 
 ## Privacy
 
@@ -115,22 +117,22 @@ text or save a picture card to `SaveData/HermesVoice/Shares` in RimWorld's save-
 
 ## Uninstall
 
-One button removes everything HermesVoice stored except the mod itself and its settings: Options, Mod settings,
-HermesVoice, Storage, **Remove downloaded files...**. It stops the engine and the helper, deletes the models,
+One button removes everything RimWorldLLM stored except the mod itself and its settings: Options, Mod settings,
+RimWorldLLM, Storage, **Remove downloaded files...**. It stops the engine and the helper, deletes the models,
 llama.cpp and Python, and (the box is ticked by default) the helper's memory of your colonists and its logs. The
 engine keeps only its small log and state files. Your own GGUF file is never touched. Then unsubscribe from the mod,
-or delete `Mods/HermesVoice`.
+or delete `Mods/RimWorldLLM`.
 
 To do it by hand instead: quit RimWorld (the engine stops with it) and delete
 
 - the engine folder:
-  - Windows: `%LOCALAPPDATA%\HermesEngine`
-  - Linux: `~/.local/share/hermes-engine`
-  - macOS: `~/Library/Application Support/HermesEngine`
+  - Windows: `%LOCALAPPDATA%\EasyEngine`
+  - Linux: `~/.local/share/easy-engine`
+  - macOS: `~/Library/Application Support/EasyEngine`
 - the helper's folder (its memory and logs):
-  - Windows: `%LOCALAPPDATA%\hermesvoice-agent`
-  - Linux and macOS: `~/.local/share/hermesvoice-agent` (or `$XDG_DATA_HOME/hermesvoice-agent` if you set it)
-- optionally `HermesVoice` in RimWorld's `Config` folder (settings) and in `SaveData` (shared pictures).
+  - Windows: `%LOCALAPPDATA%\rimworldllm-agent`
+  - Linux and macOS: `~/.local/share/rimworldllm-agent` (or `$XDG_DATA_HOME/rimworldllm-agent` if you set it)
+- optionally `RimWorldLLM` in RimWorld's `Config` folder (settings) and in `SaveData` (shared pictures).
 
 To free some space, delete single models you no longer use in Settings, Storage.
 
@@ -138,13 +140,13 @@ To free some space, delete single models you no longer use in Settings, Storage.
 
 | Problem | Try |
 |---|---|
-| No setup letter | Options, Mod settings, HermesVoice, Model, **Change model...** |
+| No setup letter | Options, Mod settings, RimWorldLLM, Model, **Change model...** |
 | The download stopped | Open the setup window and click **Retry**; it resumes where it left off. |
 | "Not enough space" | The starter keeps working; free disk space and the full model download resumes by itself. |
 | Colonists are quiet | Check the status line in Settings, Model. At 3x and 4x speed many moments pass before a line can be written; that is by design. |
 | Speech is simple or repeats | You are on the starter (wait for the download) or on E2B (see Hardware). |
 | The game stutters or runs out of video memory | The engine shrinks when the game needs memory. If it persists, choose a smaller model. |
-| Antivirus warns about `hermes-engine` | It is the engine program shipped with the mod, built from the public [easyEngine](https://github.com/CharlesMod/easyEngine) source. See the checksums in the zip's `SHA256SUMS`. |
+| Antivirus warns about `easy-engine` | It is the engine program shipped with the mod, built from the public [easyEngine](https://github.com/CharlesMod/easyEngine) source. See the checksums in the zip's `SHA256SUMS`. |
 | It says the engine does not answer | The setup window shows the engine's log. Logs are in the engine folder's `logs` subfolder. |
 
 ### Reporting a problem
@@ -152,7 +154,7 @@ To free some space, delete single models you no longer use in Settings, Storage.
 Please include: your OS, graphics card and its memory, the model shown in the settings, what you
 expected and what happened, and these logs:
 
-- RimWorld's `Player.log` (lines with `[HermesVoice]`):
+- RimWorld's `Player.log` (lines with `[RimWorldLLM]`):
   Windows `%USERPROFILE%\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Player.log`,
   Linux `~/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log`,
   macOS `~/Library/Logs/Ludeon Studios/RimWorld by Ludeon Studios/Player.log`.

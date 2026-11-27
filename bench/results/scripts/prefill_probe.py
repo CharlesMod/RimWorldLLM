@@ -7,7 +7,7 @@ from pathlib import Path
 W = Path("/var/home/cmod/rimworld-hermes/.claude/worktrees/gpubench/bench/models")
 sys.path.insert(0, str(W)); sys.path.insert(0, str(W.parent.parent / "agent"))
 import httpx
-from hermesvoice_agent.core.llm import gemma_prompt
+from rimworldllm_agent.core.llm import gemma_prompt
 E = os.environ.get("ENGINE_URL", "http://127.0.0.1:47480")
 N = int(os.environ.get("N", "20"))
 SYS = ("You are Rook, the colony cook: gruff, few words, starts lines with 'Hm.'. Speak one short line in "
@@ -19,7 +19,7 @@ LEAK = re.compile(r"thought|<\|channel|<channel\|>|Thinking Process|\*\*|^\s*\d+
 async def main(model):
     res = {}
     async with httpx.AsyncClient(timeout=60) as c:
-        h = {"X-Hermes-Sampler": "rp"}
+        h = {"X-Easy-Sampler": "rp"}
         tpl = (await c.post(E + "/apply-template", headers=h, json={"messages": [{"role": "system", "content": SYS}, {"role": "user", "content": SCENES[0]}], "chat_template_kwargs": {"enable_thinking": False}})).json()
         res["template_tail"] = tpl.get("prompt", "")[-60:]
         for arm in ("chat", "native_empty_thought", "bare_turn"):

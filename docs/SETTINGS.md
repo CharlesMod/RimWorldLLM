@@ -1,11 +1,11 @@
-# HermesVoice settings audit
+# RimWorldLLM settings audit
 
 Every setting the mod saves or shows, where it lives in the settings window, who it is for and what it does.
 Audited 2026-11-26 on main cf0fd7f; the window was reorganised in the same round.
 
-- Code: `Mod/Source/RimWorld/HermesVoiceSettings.cs` (fields and `ExposeData`; each Scribe key is the field name),
+- Code: `Mod/Source/RimWorld/RimWorldLLMSettings.cs` (fields and `ExposeData`; each Scribe key is the field name),
   `Mod/Source/RimWorld/SettingsWindow.cs` (the window), `Window_EngineSetup.cs` (model picker),
-  `Window_CustomGguf.cs` + `Window_FileBrowser.cs` (own GGUF file), text in `Mod/Languages/English/Keyed/HermesVoice.xml`.
+  `Window_CustomGguf.cs` + `Window_FileBrowser.cs` (own GGUF file), text in `Mod/Languages/English/Keyed/RimWorldLLM.xml`.
 - Who: **P** player, **PU** power user, **D** developer.
 - Every control has a one-line tooltip.
 

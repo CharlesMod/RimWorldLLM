@@ -1,8 +1,8 @@
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class PawnTextTests
     {

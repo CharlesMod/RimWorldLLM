@@ -5,15 +5,15 @@ import json
 import httpx
 
 from conftest import run
-from hermesvoice_agent.core import art, grounding, inner, lore, recap as rc
-from hermesvoice_agent.core import group as G
-from hermesvoice_agent.core import prompt
-from hermesvoice_agent.core.config import Config, LLMConfig
-from hermesvoice_agent.core.llm import HttpLLM
-from hermesvoice_agent.core.minds import Memory, Relation
-from hermesvoice_agent.core.passes import Dropped, SanitizeCtx, speak
-from hermesvoice_agent.core.sampler_route import NamedSamplerLLM, route
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import art, grounding, inner, lore, recap as rc
+from rimworldllm_agent.core import group as G
+from rimworldllm_agent.core import prompt
+from rimworldllm_agent.core.config import Config, LLMConfig
+from rimworldllm_agent.core.llm import HttpLLM
+from rimworldllm_agent.core.minds import Memory, Relation
+from rimworldllm_agent.core.passes import Dropped, SanitizeCtx, speak
+from rimworldllm_agent.core.sampler_route import NamedSamplerLLM, route
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 TEXT = "Ana carved this from granite after the fight at the east wall, and it shows a sleeping dog at rest."
 
@@ -78,7 +78,7 @@ def test_art_flag_off_prompt_unchanged_and_no_new_data(world):
 
 def test_art_flag_on_carries_tale_material_maker_and_stays_wrapped(world):
     w = run(world.go())
-    from hermesvoice_agent.core.chronicle import Entry
+    from rimworldllm_agent.core.chronicle import Entry
     w.d.chronicle.state.recent.append(Entry(day=0, game=10, text="Wolves hit the east wall; Ana held it."))
     w.d.chronicle.state.recent.append(Entry(day=0, game=11, text="Cy cleaned the kitchen floor."))
     w.d.chronicle.state.recent.append(Entry(day=0, game=12, text="The stockpile was sorted."))
@@ -264,8 +264,8 @@ def test_aim_sampler_header_replaces_structured_for_the_routed_client():
     assert isinstance(routed, NamedSamplerLLM) and routed.http is base.http and routed.cfg is base.cfg
     run(routed.complete([("user", "x")], slot=1, kind="intent", grammar="root ::= a\na ::= \"x\""))
     run(base.complete([("user", "x")], slot=1, kind="intent", grammar="root ::= a\na ::= \"x\""))
-    assert seen[0][0]["x-hermes-sampler"] == "rp"
-    assert seen[1][0]["x-hermes-sampler"] == "structured"
+    assert seen[0][0]["x-easy-sampler"] == "rp"
+    assert seen[1][0]["x-easy-sampler"] == "structured"
     assert route(base, "") is None and route(object(), "rp") is None      # pass through
 
 

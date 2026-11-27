@@ -2,8 +2,8 @@
 import json
 
 from conftest import run
-from hermesvoice_agent.core.toolloop import Reply
-from hermesvoice_agent.core.wants import run_wants
+from rimworldllm_agent.core.toolloop import Reply
+from rimworldllm_agent.core.wants import run_wants
 
 
 class Fake:

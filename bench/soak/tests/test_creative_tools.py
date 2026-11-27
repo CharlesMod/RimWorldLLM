@@ -9,7 +9,7 @@ import creative_probe as cp  # noqa: E402
 import fixture_rich as fx  # noqa: E402
 import judge_probe as jp  # noqa: E402
 import soak  # noqa: E402
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge  # noqa: E402
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge  # noqa: E402
 
 
 def colony():

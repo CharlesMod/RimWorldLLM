@@ -20,7 +20,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve()
 for p in HERE.parents:                      # find <repo>/agent whatever the worktree
-    if (p / "agent" / "hermesvoice_agent").is_dir():
+    if (p / "agent" / "rimworldllm_agent").is_dir():
         sys.path.insert(0, str(p / "agent"))
         break
 
@@ -29,16 +29,16 @@ import httpx  # noqa: E402
 sys.path.insert(0, str(HERE.parent))
 import fixture_rich  # noqa: E402
 
-from hermesvoice_agent.core.bridge import BridgeClient  # noqa: E402
-from hermesvoice_agent.core.calllog import CallLog  # noqa: E402
-from hermesvoice_agent.core.cli import make_tool_backend  # noqa: E402
-from hermesvoice_agent.core.config import Config, LLMConfig  # noqa: E402
-from hermesvoice_agent.core.director import Director  # noqa: E402
-from hermesvoice_agent.core.fakes import FakeLLM  # noqa: E402
-from hermesvoice_agent.core.llm import HttpLLM  # noqa: E402
-from hermesvoice_agent.core.toolloop import Reply  # noqa: E402
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge, rich_pawn  # noqa: E402
+from rimworldllm_agent.core.bridge import BridgeClient  # noqa: E402
+from rimworldllm_agent.core.calllog import CallLog  # noqa: E402
+from rimworldllm_agent.core.cli import make_tool_backend  # noqa: E402
+from rimworldllm_agent.core.config import Config, LLMConfig  # noqa: E402
+from rimworldllm_agent.core.director import Director  # noqa: E402
+from rimworldllm_agent.core.fakes import FakeLLM  # noqa: E402
+from rimworldllm_agent.core.llm import HttpLLM  # noqa: E402
+from rimworldllm_agent.core.toolloop import Reply  # noqa: E402
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge, rich_pawn  # noqa: E402
 
 DAY = 60000
 TICKS_PER_S = {1: 60, 2: 180, 3: 360, 4: 900}

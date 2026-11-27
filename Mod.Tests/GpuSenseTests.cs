@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class GpuSenseTests
     {
@@ -159,7 +159,7 @@ namespace HermesVoice.Tests
         [Fact]
         public async Task LauncherPostsHostAfterAttachAndTolerates404()
         {
-            string dir = Path.Combine(Path.GetTempPath(), "hv-gpu-" + Guid.NewGuid().ToString("N"));
+            string dir = Path.Combine(Path.GetTempPath(), "rwl-gpu-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             try
             {
@@ -194,20 +194,20 @@ namespace HermesVoice.Tests
         [Fact]
         public void ResolveCombos()
         {
-            var o = AgentDataDir.Resolve("linux", Env("HERMESVOICE_DATA_DIR", "/x/mine", "XDG_DATA_HOME", "/xdg"), "/h");
+            var o = AgentDataDir.Resolve("linux", Env("RIMWORLDLLM_DATA_DIR", "/x/mine", "XDG_DATA_HOME", "/xdg"), "/h");
             Assert.Equal("/x/mine", o.Path); Assert.True(o.Overridden);
             var xdg = AgentDataDir.Resolve("linux", Env("XDG_DATA_HOME", "/xdg"), "/h");
-            Assert.Equal(Path.Combine("/xdg", "hermesvoice-agent"), xdg.Path); Assert.False(xdg.Overridden);
-            Assert.Equal(Path.Combine("/h", ".local", "share", "hermesvoice-agent"), AgentDataDir.Resolve("linux", Env(), "/h").Path);
-            Assert.Equal(Path.Combine("/h", ".local", "share", "hermesvoice-agent"), AgentDataDir.Resolve("darwin", Env("XDG_DATA_HOME", ""), "/h").Path);
-            Assert.Equal(Path.Combine("/la", "hermesvoice-agent"), AgentDataDir.Resolve("windows", Env("LOCALAPPDATA", "/la", "XDG_DATA_HOME", "/xdg"), "/h").Path);
-            Assert.Equal(Path.Combine("/h", "AppData", "Local", "hermesvoice-agent"), AgentDataDir.Resolve("windows", Env(), "/h").Path);
-            Assert.Equal("/o", AgentDataDir.Resolve("windows", Env("HERMESVOICE_DATA_DIR", "/o", "LOCALAPPDATA", "/la"), "/h").Path);
+            Assert.Equal(Path.Combine("/xdg", "rimworldllm-agent"), xdg.Path); Assert.False(xdg.Overridden);
+            Assert.Equal(Path.Combine("/h", ".local", "share", "rimworldllm-agent"), AgentDataDir.Resolve("linux", Env(), "/h").Path);
+            Assert.Equal(Path.Combine("/h", ".local", "share", "rimworldllm-agent"), AgentDataDir.Resolve("darwin", Env("XDG_DATA_HOME", ""), "/h").Path);
+            Assert.Equal(Path.Combine("/la", "rimworldllm-agent"), AgentDataDir.Resolve("windows", Env("LOCALAPPDATA", "/la", "XDG_DATA_HOME", "/xdg"), "/h").Path);
+            Assert.Equal(Path.Combine("/h", "AppData", "Local", "rimworldllm-agent"), AgentDataDir.Resolve("windows", Env(), "/h").Path);
+            Assert.Equal("/o", AgentDataDir.Resolve("windows", Env("RIMWORLDLLM_DATA_DIR", "/o", "LOCALAPPDATA", "/la"), "/h").Path);
         }
 
         sealed class Tmp : IDisposable
         {
-            public readonly string Dir = Path.Combine(Path.GetTempPath(), "hv-agentdir-" + Guid.NewGuid().ToString("N"));
+            public readonly string Dir = Path.Combine(Path.GetTempPath(), "rwl-agentdir-" + Guid.NewGuid().ToString("N"));
             public Tmp() { Directory.CreateDirectory(Dir); }
             public string Sub(params string[] p) { var d = Path.Combine(Dir, Path.Combine(p)); Directory.CreateDirectory(d); return d; }
             public void Dispose() { try { Directory.Delete(Dir, true); } catch { } }
@@ -221,7 +221,7 @@ namespace HermesVoice.Tests
             using (var t = new Tmp())
             {
                 string home = t.Sub("home");
-                string dir = t.Sub("home", ".local", "share", "hermesvoice-agent"); Fill(dir);
+                string dir = t.Sub("home", ".local", "share", "rimworldllm-agent"); Fill(dir);
                 string sibling = t.Sub("home", ".local", "share", "other"); Fill(sibling);
                 var res = AgentDataDir.Resolve("linux", Env("XDG_DATA_HOME", Path.Combine(home, ".local", "share")), home);
                 Assert.Equal(8, AgentDataDir.SizeOf(dir));
@@ -246,7 +246,7 @@ namespace HermesVoice.Tests
                 Assert.Equal(AgentDataDir.DeleteOutcome.Refused, r.Outcome);
                 Assert.True(File.Exists(Path.Combine(wrong, "a.db")));
                 // dir differs from the resolved one
-                string right = t.Sub("home", "hermesvoice-agent"); Fill(right);
+                string right = t.Sub("home", "rimworldllm-agent"); Fill(right);
                 var res = new AgentDataDir.Resolved { Path = right };
                 Assert.Equal(AgentDataDir.DeleteOutcome.Refused, AgentDataDir.Delete(res, wrong, new[] { home }).Outcome);
                 Assert.True(File.Exists(Path.Combine(right, "a.db")));
@@ -290,7 +290,7 @@ namespace HermesVoice.Tests
             using (var t = new Tmp())
             {
                 string home = t.Sub("home");
-                string dir = t.Sub("hermesvoice-agent"); Fill(dir);
+                string dir = t.Sub("rimworldllm-agent"); Fill(dir);
                 var res = new AgentDataDir.Resolved { Path = dir, Overridden = true };
                 Assert.Equal(AgentDataDir.DeleteOutcome.Deleted, AgentDataDir.Delete(res, dir, new[] { home }).Outcome);
                 Assert.True(Directory.Exists(dir));
@@ -305,7 +305,7 @@ namespace HermesVoice.Tests
             {
                 string home = t.Sub("home");
                 string outside = t.Sub("outside"); Fill(outside);
-                string link = Path.Combine(home, "hermesvoice-agent");
+                string link = Path.Combine(home, "rimworldllm-agent");
                 Directory.CreateSymbolicLink(link, outside);
                 var res = new AgentDataDir.Resolved { Path = link };
                 var r = AgentDataDir.Delete(res, link, new[] { home });
@@ -313,7 +313,7 @@ namespace HermesVoice.Tests
                 Assert.True(File.Exists(Path.Combine(outside, "a.db")));
                 Directory.Delete(link);
 
-                string dir = t.Sub("home", "hermesvoice-agent"); Fill(dir);
+                string dir = t.Sub("home", "rimworldllm-agent"); Fill(dir);
                 Directory.CreateSymbolicLink(Path.Combine(dir, "esc"), outside);
                 File.CreateSymbolicLink(Path.Combine(dir, "esc.txt"), Path.Combine(outside, "a.db"));
                 Assert.Equal(AgentDataDir.DeleteOutcome.Deleted, AgentDataDir.Delete(res, dir, new[] { home }).Outcome);

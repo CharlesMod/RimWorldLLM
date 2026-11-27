@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class BubbleLayoutTests
     {
@@ -332,7 +332,7 @@ namespace HermesVoice.Tests
         [Fact]
         public void EveryTextureTheCodeLoadsExists()
         {
-            string dir = Path.Combine(Path.GetDirectoryName(ThisFile()), "..", "Mod", "Textures", "HermesVoice", "Bubbles");
+            string dir = Path.Combine(Path.GetDirectoryName(ThisFile()), "..", "Mod", "Textures", "RimWorldLLM", "Bubbles");
             foreach (var shape in new[] { "balloon", "caption", "burst", "cloud", "dashed", "tail", "dot" })
                 foreach (var layer in new[] { "fill", "ink", "rim" })
                     Assert.True(File.Exists(Path.Combine(dir, shape + "_" + layer + ".png")), shape + "_" + layer);

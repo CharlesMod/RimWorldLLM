@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     // The comic-balloon draw path. Layout maths lives in BubbleLayout (pure, tested); textures in BubbleTex.
     public static partial class SpeechBubbles
@@ -18,7 +18,7 @@ namespace HermesVoice
         static readonly float[] DotX = new float[3], DotY = new float[3], DotD = new float[3];
         static Vector2[] _targets = new Vector2[32];
 
-        static void DrawComic(Map map, HermesVoiceSettings s)
+        static void DrawComic(Map map, RimWorldLLMSettings s)
         {
             int now = Find.TickManager.TicksGame;
             int durationTicks = Mathf.Max(1, s.bubbleDurationSec) * 60;
@@ -98,7 +98,7 @@ namespace HermesVoice
             b.CacheCaps = caps; b.CacheUiScale = uiScale; b.CacheValid = true;
         }
 
-        static void DrawOne(Bubble b, BRect br, Vector2 target, TailInfo tail, float pop, float alpha, HermesVoiceSettings s)
+        static void DrawOne(Bubble b, BRect br, Vector2 target, TailInfo tail, float pop, float alpha, RimWorldLLMSettings s)
         {
             var kind = b.Kind;
             int ki = (int)kind;

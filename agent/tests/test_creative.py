@@ -2,9 +2,9 @@
 from types import SimpleNamespace
 
 from conftest import run
-from hermesvoice_agent.core import creative as cr
-from hermesvoice_agent.core.fakes import FakeLLM
-from hermesvoice_agent.core.llm import LLMError
+from rimworldllm_agent.core import creative as cr
+from rimworldllm_agent.core.fakes import FakeLLM
+from rimworldllm_agent.core.llm import LLMError
 
 FACTS = "Ana carved a granite sculpture of a sleeping dog during the winter raid at Hollow Ridge."
 NAMES = {"Ana", "Hollow Ridge"}
@@ -231,7 +231,7 @@ def test_compose_uses_the_per_kind_best_of_and_plan():
 
 
 def test_config_accepts_lists_for_per_kind_fields(tmp_path):
-    from hermesvoice_agent.core.config import load_config
+    from rimworldllm_agent.core.config import load_config
     p = tmp_path / "c.json"
     p.write_text('{"creative_ground_for": ["art", "lore"], "creative_plan_for": ["recap"], "creative_best_of_for": ["art"]}')
     c = load_config(p)

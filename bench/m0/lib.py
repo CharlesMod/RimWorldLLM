@@ -1,4 +1,4 @@
-"""Shared harness for HermesVoice milestone 0: fixtures, SPEC section 4 prompt builder, streaming client."""
+"""Shared harness for RimWorldLLM milestone 0: fixtures, SPEC section 4 prompt builder, streaming client."""
 import json, os, re, time, requests, statistics as st
 
 HERE = os.path.dirname(os.path.abspath(__file__))

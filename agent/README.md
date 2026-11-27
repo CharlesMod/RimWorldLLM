@@ -1,4 +1,4 @@
-# hermesvoice-agent
+# rimworldllm-agent
 
 A game-agnostic engine that gives characters minds and short spoken lines, plus a RimWorld adapter.
 It talks to the game over a bridge (HTTP, `docs/BRIDGE-API.md`) and to a llama.cpp server
@@ -8,21 +8,21 @@ It talks to the game over a bridge (HTTP, `docs/BRIDGE-API.md`) and to a llama.c
 
 ```
 python -m venv .venv && .venv/bin/pip install -e '.[dev]'
-hermesvoice-agent test-endpoint --llm-url http://127.0.0.1:8080     # the Test button
-hermesvoice-agent run                                               # needs the game running
-hermesvoice-agent replay events.jsonl                               # offline, fake bridge + fake LLM
+rimworldllm-agent test-endpoint --llm-url http://127.0.0.1:8080     # the Test button
+rimworldllm-agent run                                               # needs the game running
+rimworldllm-agent replay events.jsonl                               # offline, fake bridge + fake LLM
 .venv/bin/python -m pytest                                          # 132 tests; the `gpu` test is skipped
 ```
 
-Config: defaults, then a TOML/JSON file (`--config` or `$HERMESVOICE_CONFIG`), then `HERMESVOICE_*`
-environment variables (`HERMESVOICE_LLM_URL`, `_LLM_KEY`, `_LLM_MODEL`, `_LLM_MODE`, `_BRIDGE_URL`, `_BRIDGE_TOKEN`,
+Config: defaults, then a TOML/JSON file (`--config` or `$RIMWORLDLLM_CONFIG`), then `RIMWORLDLLM_*`
+environment variables (`RIMWORLDLLM_LLM_URL`, `_LLM_KEY`, `_LLM_MODEL`, `_LLM_MODE`, `_BRIDGE_URL`, `_BRIDGE_TOKEN`,
 `_WINDOWS`). If no LLM URL is set there, the `llm` block of `bridge.json` is used. Without `bridge_url` the adapter's `bridge.json` location is read. Every LLM call is logged
 to `<data_dir>/calls.jsonl` (rotated at 20 MB, three old files kept as calls.jsonl.1 to .3) with prompt_n, cache_n, prompt_ms, predicted_ms, raw and effective prefill.
 
 ## Layout: core and adapter
 
 ```
-hermesvoice_agent/
+rimworldllm_agent/
   core/            game-agnostic engine. Imports nothing from games/. No game words.
   games/rimworld/  the RimWorld adapter (RimWorldAdapter, bio/voice templates, block A text, fake bridge, replay)
   cli.py           entry point: core CLI shell + RimWorldAdapter

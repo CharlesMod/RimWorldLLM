@@ -5,8 +5,8 @@
 
   <!-- ================= mood thoughts ================= -->
   <ThoughtDef>
-    <defName>HV_Kind_Mood</defName>
-    <thoughtClass>HermesVoice.Thought_HVMemory</thoughtClass>
+    <defName>RWL_Kind_Mood</defName>
+    <thoughtClass>RimWorldLLM.Thought_RWLMemory</thoughtClass>
     <durationDays>0.75</durationDays>
     <stackLimit>3</stackLimit>
     <stackedEffectMultiplier>1</stackedEffectMultiplier>
@@ -19,8 +19,8 @@
     </stages>
   </ThoughtDef>
   <ThoughtDef>
-    <defName>HV_Comforted_Mood</defName>
-    <thoughtClass>HermesVoice.Thought_HVMemory</thoughtClass>
+    <defName>RWL_Comforted_Mood</defName>
+    <thoughtClass>RimWorldLLM.Thought_RWLMemory</thoughtClass>
     <durationDays>0.75</durationDays>
     <stackLimit>3</stackLimit>
     <stackedEffectMultiplier>1</stackedEffectMultiplier>
@@ -33,8 +33,8 @@
     </stages>
   </ThoughtDef>
   <ThoughtDef>
-    <defName>HV_Insulted_Mood</defName>
-    <thoughtClass>HermesVoice.Thought_HVMemory</thoughtClass>
+    <defName>RWL_Insulted_Mood</defName>
+    <thoughtClass>RimWorldLLM.Thought_RWLMemory</thoughtClass>
     <durationDays>0.75</durationDays>
     <stackLimit>3</stackLimit>
     <stackedEffectMultiplier>1</stackedEffectMultiplier>
@@ -48,51 +48,51 @@
   </ThoughtDef>
 
   <!-- ================= opinion thoughts ================= -->
-  <ThoughtDef Name="HV_OpinionBase" Abstract="True">
-    <thoughtClass>HermesVoice.Thought_HVSocial</thoughtClass>
+  <ThoughtDef Name="RWL_OpinionBase" Abstract="True">
+    <thoughtClass>RimWorldLLM.Thought_RWLSocial</thoughtClass>
     <durationDays>10</durationDays>
     <stackLimit>3</stackLimit>
     <stackLimitForSameOtherPawn>3</stackLimitForSameOtherPawn>
     <stackedEffectMultiplier>1</stackedEffectMultiplier>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Kind_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Kind_Opinion</defName>
     <stages><li><label>kind words</label><baseOpinionOffset>5</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Comforted_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Comforted_Opinion</defName>
     <stages><li><label>comforted me</label><baseOpinionOffset>5</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Slight_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Slight_Opinion</defName>
     <stages><li><label>slighted me</label><baseOpinionOffset>-5</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Insulted_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Insulted_Opinion</defName>
     <stages><li><label>insulted me</label><baseOpinionOffset>-5</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_InsultWitnessed_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_InsultWitnessed_Opinion</defName>
     <stages><li><label>insulted someone</label><baseOpinionOffset>-2</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Confided_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Confided_Opinion</defName>
     <stages><li><label>confided in me</label><baseOpinionOffset>5</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Confiding_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Confiding_Opinion</defName>
     <stages><li><label>I confided in them</label><baseOpinionOffset>3</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Gossip_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Gossip_Opinion</defName>
     <stages><li><label>gossip about them</label><baseOpinionOffset>-3</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Boast_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Boast_Opinion</defName>
     <stages><li><label>boasted to me</label><baseOpinionOffset>-2</baseOpinionOffset></li></stages>
   </ThoughtDef>
-  <ThoughtDef ParentName="HV_OpinionBase">
-    <defName>HV_Complain_Opinion</defName>
+  <ThoughtDef ParentName="RWL_OpinionBase">
+    <defName>RWL_Complain_Opinion</defName>
     <stages><li><label>complained to me</label><baseOpinionOffset>-2</baseOpinionOffset></li></stages>
   </ThoughtDef>
 </Defs>

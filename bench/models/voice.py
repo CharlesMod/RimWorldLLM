@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 import numpy as np
 from common import *
-from hermesvoice_agent.core.passes import line_pass
+from rimworldllm_agent.core.passes import line_pass
 
 NS = fx("scenes_neutral.json")
 IDS = list(PAWNS)

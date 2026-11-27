@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class LlmProbeTests
     {
@@ -216,7 +216,7 @@ namespace HermesVoice.Tests
     }
 }
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class ServerRequestLogTests
     {

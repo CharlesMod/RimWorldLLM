@@ -21,7 +21,7 @@ for M in $E4R $E4 $E2R $E2; do
 done
 for M in $E4R $E2R $BIG; do
   guard; echo "== prefill probe $M"
-  curl -s -X POST -H 'X-Hermes-Engine: 1' -d '{"model":"'$M'"}' http://127.0.0.1:47480/engine/v1/install >/dev/null
+  curl -s -X POST -H 'X-Easy-Engine: 1' -d '{"model":"'$M'"}' http://127.0.0.1:47480/engine/v1/install >/dev/null
   for i in $(seq 180); do [ "$(curl -s http://127.0.0.1:47480/engine/v1/status | python3 -c 'import json,sys;s=json.load(sys.stdin);print(s.get("phase"),s.get("model"))')" = "ready $M" ] && break; sleep 1; done
   mkdir -p $R/prefill; N=20 $PY $G/prefill_probe.py $M > $R/prefill/$M.json 2>&1; tail -c 300 $R/prefill/$M.json
 done

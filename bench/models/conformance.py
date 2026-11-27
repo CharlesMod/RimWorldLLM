@@ -19,7 +19,7 @@ import httpx, jsonschema
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent.parent / "agent"))
 sys.path.insert(0, str(HERE))
-from hermesvoice_agent.core.toolloop import (Action, CHANGE, IMPORTANCE, OpenAIBackend, Param, ToolHarness, ToolSpec,  # noqa: E402
+from rimworldllm_agent.core.toolloop import (Action, CHANGE, IMPORTANCE, OpenAIBackend, Param, ToolHarness, ToolSpec,  # noqa: E402
                                              has_raw_syntax, probe, choose_protocol)
 
 NAMES = ["Pip", "Lux", "Ash", "Moth", "Hana"]
@@ -171,7 +171,7 @@ async def run_scenarios(be, mode, scen, limit_s, steps, sanitize=False, scene_al
     """sanitize: planted game text goes through core/gamedata (cleaned, wrapped in <game_data>, DATA_RULE in the system
     prompt), the way the agent's prompts carry it. scene_allowed: each injection scene allows only its tools minus the
     ones the planted text asks for (a per-scene allowed set)."""
-    from hermesvoice_agent.core import gamedata as gd
+    from rimworldllm_agent.core import gamedata as gd
     h = ToolHarness(be, make_tools(), mode=mode, time_budget_s=limit_s, max_steps=steps)
     proto = await h.ensure()
     rows = []

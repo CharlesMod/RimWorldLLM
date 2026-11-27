@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     public enum RecapVerdict { Accept, Disabled, NotLoaded, StaleEpoch, Duplicate, Expired }
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public enum EffectTarget { Listener, Speaker, Witnesses, About }
 
@@ -26,33 +26,33 @@ namespace HermesVoice
             switch (intent)
             {
                 case "kind":
-                    l.Add(new EffectSpec { Def = "HV_Kind_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
-                    l.Add(new EffectSpec { Def = "HV_Kind_Mood", Target = EffectTarget.Listener, Amount = 1 });
+                    l.Add(new EffectSpec { Def = "RWL_Kind_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
+                    l.Add(new EffectSpec { Def = "RWL_Kind_Mood", Target = EffectTarget.Listener, Amount = 1 });
                     break;
                 case "comfort":
-                    l.Add(new EffectSpec { Def = "HV_Comforted_Mood", Target = EffectTarget.Listener, Amount = 3 });
-                    l.Add(new EffectSpec { Def = "HV_Comforted_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
+                    l.Add(new EffectSpec { Def = "RWL_Comforted_Mood", Target = EffectTarget.Listener, Amount = 3 });
+                    l.Add(new EffectSpec { Def = "RWL_Comforted_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
                     break;
                 case "slight":
-                    l.Add(new EffectSpec { Def = "HV_Slight_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -5 });
+                    l.Add(new EffectSpec { Def = "RWL_Slight_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -5 });
                     break;
                 case "insult":
-                    l.Add(new EffectSpec { Def = "HV_Insulted_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -5 });
-                    l.Add(new EffectSpec { Def = "HV_Insulted_Mood", Target = EffectTarget.Listener, Amount = -2 });
-                    l.Add(new EffectSpec { Def = "HV_InsultWitnessed_Opinion", Target = EffectTarget.Witnesses, Social = true, Amount = -2 });
+                    l.Add(new EffectSpec { Def = "RWL_Insulted_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -5 });
+                    l.Add(new EffectSpec { Def = "RWL_Insulted_Mood", Target = EffectTarget.Listener, Amount = -2 });
+                    l.Add(new EffectSpec { Def = "RWL_InsultWitnessed_Opinion", Target = EffectTarget.Witnesses, Social = true, Amount = -2 });
                     break;
                 case "confide":
-                    l.Add(new EffectSpec { Def = "HV_Confided_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
-                    l.Add(new EffectSpec { Def = "HV_Confiding_Opinion", Target = EffectTarget.Speaker, Social = true, Amount = 3 });
+                    l.Add(new EffectSpec { Def = "RWL_Confided_Opinion", Target = EffectTarget.Listener, Social = true, Amount = 5 });
+                    l.Add(new EffectSpec { Def = "RWL_Confiding_Opinion", Target = EffectTarget.Speaker, Social = true, Amount = 3 });
                     break;
                 case "gossip":
-                    l.Add(new EffectSpec { Def = "HV_Gossip_Opinion", Target = EffectTarget.About, Social = true, Amount = -3 });
+                    l.Add(new EffectSpec { Def = "RWL_Gossip_Opinion", Target = EffectTarget.About, Social = true, Amount = -3 });
                     break;
                 case "boast":
-                    l.Add(new EffectSpec { Def = "HV_Boast_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -2 });
+                    l.Add(new EffectSpec { Def = "RWL_Boast_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -2 });
                     break;
                 case "complain":
-                    l.Add(new EffectSpec { Def = "HV_Complain_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -2 });
+                    l.Add(new EffectSpec { Def = "RWL_Complain_Opinion", Target = EffectTarget.Listener, Social = true, Amount = -2 });
                     break;
             }
             return l;

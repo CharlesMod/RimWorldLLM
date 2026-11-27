@@ -1,6 +1,6 @@
 """Words for the game's own social interactions: the line prompt says what the interaction was, no effect is added."""
 from conftest import run
-from hermesvoice_agent.core.lease import Cls
+from rimworldllm_agent.core.lease import Cls
 
 
 def vanilla(w, interaction="Insult", label="insult", text="Ana insulted Bram's cooking.", tier="high", ref="v1-1"):

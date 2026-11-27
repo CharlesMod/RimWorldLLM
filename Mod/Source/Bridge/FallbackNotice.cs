@@ -1,6 +1,6 @@
 using System;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>
     /// Decides when to tell the player once that the small fallback model is in use. No game references.

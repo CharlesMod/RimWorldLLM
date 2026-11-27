@@ -4,7 +4,7 @@ import random
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core import loopguard as G
+from rimworldllm_agent.core import loopguard as G
 
 
 def test_similarity_short_replies_are_legitimate():

@@ -1,5 +1,5 @@
-from hermesvoice_agent.core.lease import Cls, LeaseManager, Now, QuotaTracker, REQUEST_EXPIRY
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.lease import Cls, LeaseManager, Now, QuotaTracker, REQUEST_EXPIRY
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 class_of = RimWorldAdapter().priority
 
@@ -82,7 +82,7 @@ def test_queue_is_bounded_and_the_most_important_wins():
 
 
 def test_voice_budget_gates_chatter_but_never_urgent():
-    from hermesvoice_agent.core.lease import VoiceBudget
+    from rimworldllm_agent.core.lease import VoiceBudget
     m = LeaseManager([1, 2], 0, QuotaTracker(), priority=class_of, budget=VoiceBudget(per_min=6, burst=2))
     n = Now(1000, 0.0)
     m.budget.spend(n, 2)                                       # the colony has just spoken twice

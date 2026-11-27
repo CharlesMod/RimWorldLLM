@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Endpoint table. Handlers run on the game thread.</summary>
     public static partial class Routes
@@ -25,7 +25,7 @@ namespace HermesVoice
             long since = 0;
             string q = c.Q("since");
             if (!string.IsNullOrEmpty(q) && !long.TryParse(q, out since)) return ApiResult.Fail("bad_request", "since must be an integer");
-            var page = HermesBridge.Events.Since(since);
+            var page = RWLBridge.Events.Since(since);
             return ApiResult.Success(new JObject
             {
                 ["events"] = new JArray(page.Events),

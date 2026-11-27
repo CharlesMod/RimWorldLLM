@@ -1,11 +1,11 @@
 import json
 
 from conftest import run
-from hermesvoice_agent.core import memory
-from hermesvoice_agent.games.rimworld.builders import build_fixed_bio, build_voice_card, facts_hash, talk_weight
-from hermesvoice_agent.games.rimworld.fakes import default_pawn
-from hermesvoice_agent.core.minds import BLOB_LIMIT, Memory, Mind
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import memory
+from rimworldllm_agent.games.rimworld.builders import build_fixed_bio, build_voice_card, facts_hash, talk_weight
+from rimworldllm_agent.games.rimworld.fakes import default_pawn
+from rimworldllm_agent.core.minds import BLOB_LIMIT, Memory, Mind
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 TICKS_PER_DAY = 60000
 AD = RimWorldAdapter()
@@ -138,7 +138,7 @@ def test_builders_deterministic_with_dlc():
 
 
 def test_llm_voice_pass_written_once(world):
-    from hermesvoice_agent.core.builders import ensure_mind_built
+    from rimworldllm_agent.core.builders import ensure_mind_built
     async def go():
         w = world
         w.llm.script["voice_card"] = ["Line one is here.\nLine two is here.\nLine three is here."]

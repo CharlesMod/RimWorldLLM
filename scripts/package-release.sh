@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the HermesVoice release zip: mod DLLs, agent wheel, four hermes-engine binaries,
+# Builds the RimWorldLLM release zip: mod DLLs, agent wheel, four easy-engine binaries,
 # licenses, BUILD and SHA256SUMS, then verifies the result and prints PASS/FAIL per check.
 set -euo pipefail
 
@@ -11,11 +11,11 @@ Usage: scripts/package-release.sh [options]
   --out DIR         output directory (default: <repo>/dist-release)
   --easyengine DIR  easyEngine checkout (default: $EASYENGINE_DIR, <repo>/../easyEngine
                     if a git checkout, else $HOME/easyEngine)
-  --dlls DIR        take prebuilt HermesVoice.dll and Newtonsoft.Json.dll from DIR
+  --dlls DIR        take prebuilt RimWorldLLM.dll and Newtonsoft.Json.dll from DIR
                     instead of running dotnet build
   -h, --help        this help
 
-Output: <out>/HermesVoice-<version>.zip and <zip>.sha256. Refuses a dirty tree in
+Output: <out>/RimWorldLLM-<version>.zip and <zip>.sha256. Refuses a dirty tree in
 either repo. Exits non-zero if any check fails. Builds run under nice -n 19.
 EOF
 }
@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)   # physical path: the build caches absolute paths (a /home -> /var/home link lost Newtonsoft.Json.dll)
 GO=${GO:-$HOME/.local/go/bin/go}
 UV=${UV:-$(command -v uv || echo "$HOME/.local/bin/uv")}
 DOTNET=${DOTNET:-$HOME/.dotnet/dotnet}
@@ -95,7 +95,7 @@ PY
 
 [ -n "$OUT" ] || OUT="$REPO/dist-release"
 mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
-ZIPNAME="HermesVoice-$VERSION.zip"
+ZIPNAME="RimWorldLLM-$VERSION.zip"
 ZIP="$OUT/$ZIPNAME"
 
 # staging: only removed if this run created it
@@ -104,14 +104,14 @@ STAGE="$OUT/.stage-$$"
 mkdir "$STAGE"
 cleanup() { [ -n "${STAGE:-}" ] && [ -d "$STAGE" ] && rm -rf -- "$STAGE"; }
 trap cleanup EXIT
-ROOT="$STAGE/HermesVoice"; mkdir "$ROOT"
+ROOT="$STAGE/RimWorldLLM"; mkdir "$ROOT"
 
-echo "== HermesVoice $VERSION (mod $MODVER) RimWorldLLM ${RW_SHA:0:12} easyEngine ${EE_SHA:0:12}"
+echo "== RimWorldLLM $VERSION (mod $MODVER) RimWorldLLM ${RW_SHA:0:12} easyEngine ${EE_SHA:0:12}"
 
 # --- 1. mod DLLs ---
 ASM="$ROOT/1.7/Assemblies"; mkdir -p "$ASM"
 if [ -n "$DLLS" ]; then
-  for f in HermesVoice.dll Newtonsoft.Json.dll; do
+  for f in RimWorldLLM.dll Newtonsoft.Json.dll; do
     [ -f "$DLLS/$f" ] || die "missing $DLLS/$f"; cp "$DLLS/$f" "$ASM/"
   done
 else
@@ -120,11 +120,11 @@ else
   [ -x "$DOTNET" ] || die "dotnet not found"
   # --no-incremental: an incremental build can skip the copy-local step (obj/*.CopyComplete) after IncrementalClean removed Newtonsoft.Json.dll
   blog="$STAGE/dotnet-build.log"
-  env -u RIMWORLD_DIR -u RimWorldDir $NICE "$DOTNET" build "$MODSRC/HermesVoice.csproj" -c Release --no-incremental \
+  env -u RIMWORLD_DIR -u RimWorldDir $NICE "$DOTNET" build "$MODSRC/RimWorldLLM.csproj" -c Release --no-incremental \
     -p:RimWorldDir= -p:BuildingWithScript=true >"$blog" 2>&1 || { tail -30 "$blog" >&2; die "dotnet build failed"; }
   w=$(grep -E '^\s*[0-9]+ Warning\(s\)' "$blog" | grep -oE '[0-9]+' | head -1 || true)
   [ "${w:-x}" = 0 ] || { grep -i 'warning' "$blog" | head -20 >&2; die "dotnet build warnings: ${w:-unknown} (baseline 0)"; }
-  for f in HermesVoice.dll Newtonsoft.Json.dll; do
+  for f in RimWorldLLM.dll Newtonsoft.Json.dll; do
     [ -f "$MODSRC/1.7/Assemblies/$f" ] || die "build did not produce $f"
     cp "$MODSRC/1.7/Assemblies/$f" "$ASM/"
   done
@@ -132,14 +132,14 @@ fi
 
 # --- 2. mod content (whitelist) ---
 cp -r "$MODSRC/About" "$MODSRC/Defs" "$MODSRC/Languages" "$ROOT/"
-mkdir -p "$ROOT/Textures"; cp -r "$MODSRC/Textures/HermesVoice" "$ROOT/Textures/"
+mkdir -p "$ROOT/Textures"; cp -r "$MODSRC/Textures/RimWorldLLM" "$ROOT/Textures/"
 
 # --- 3. agent wheel ---
 echo "== agent wheel"
 ( cd "$REPO/agent" && UV="$UV" PATH="$(dirname "$UV"):$PATH" $NICE ./build-wheel.sh ) >"$STAGE/wheel.log" 2>&1 \
   || { tail -20 "$STAGE/wheel.log" >&2; die "wheel build failed"; }
 shopt -s nullglob
-wheels=("$REPO"/agent/dist/hermesvoice_agent-*-py3-none-any.whl)
+wheels=("$REPO"/agent/dist/rimworldllm_agent-*-py3-none-any.whl)
 shopt -u nullglob
 [ "${#wheels[@]}" = 1 ] || die "expected exactly one wheel in agent/dist, found ${#wheels[@]}"
 mkdir -p "$ROOT/Engine/agent"; cp "${wheels[0]}" "$ROOT/Engine/agent/"
@@ -151,7 +151,7 @@ TARGETS="linux-amd64 windows-amd64 darwin-arm64 darwin-amd64"
 EE_UNTRACKED_OK=0
 if [ -z "$(git -C "$EE_DIR" status --porcelain | grep -vE '^\?\? \.claude/$' || true)" ]; then EE_UNTRACKED_OK=1; fi
 mod_ok() { grep -q 'vcs.modified=false$' <<<"$1" || { [ "$EE_UNTRACKED_OK" = 1 ] && grep -q 'vcs.modified=true$' <<<"$1"; }; }
-engine_bin() { case "$1" in windows-*) echo hermes-engine.exe;; *) echo hermes-engine;; esac; }
+engine_bin() { case "$1" in windows-*) echo easy-engine.exe;; *) echo easy-engine;; esac; }
 engine_fresh() {
   local t b out
   for t in $TARGETS; do
@@ -174,7 +174,7 @@ for t in $TARGETS; do
   mkdir -p "$ROOT/Engine/$t"
   cp "$EE_DIR/dist/$t/$(engine_bin "$t")" "$ROOT/Engine/$t/"
 done
-chmod 755 "$ROOT/Engine/linux-amd64/hermes-engine" "$ROOT/Engine/darwin-arm64/hermes-engine" "$ROOT/Engine/darwin-amd64/hermes-engine"
+chmod 755 "$ROOT/Engine/linux-amd64/easy-engine" "$ROOT/Engine/darwin-arm64/easy-engine" "$ROOT/Engine/darwin-amd64/easy-engine"
 
 # --- 5. licenses ---
 mkdir -p "$ROOT/Licenses"
@@ -190,7 +190,7 @@ cp "$("$GO" env GOROOT)/LICENSE" "$ROOT/Licenses/go-stdlib-LICENSE.txt"
 
 # --- 6. BUILD ---
 cat >"$ROOT/BUILD" <<EOF
-HermesVoice $VERSION
+RimWorldLLM $VERSION
 mod_version: $MODVER
 release: $VERSION
 rimworldllm_commit: $RW_SHA
@@ -206,13 +206,13 @@ EOF
 
 # --- 8. zip ---
 rm -f -- "$ZIP" "$ZIP.sha256"
-( cd "$STAGE" && zip -X -r -q "$ZIP" HermesVoice )
+( cd "$STAGE" && zip -X -r -q "$ZIP" RimWorldLLM )
 ( cd "$OUT" && sha256sum "$ZIPNAME" >"$ZIPNAME.sha256" )
 
 # --- 9. verify (against the zip itself) ---
 VDIR="$STAGE/verify"; mkdir "$VDIR"
 unzip -q "$ZIP" -d "$VDIR"
-V="$VDIR/HermesVoice"
+V="$VDIR/RimWorldLLM"
 LIST=$(zipinfo -1 "$ZIP")
 
 pass() { echo "PASS  $1"; }
@@ -225,34 +225,41 @@ nomatch() { # name, ERE over zip listing: pass if no entry matches
 
 # expected files
 miss=""
-exp=(About/About.xml 1.7/Assemblies/HermesVoice.dll 1.7/Assemblies/Newtonsoft.Json.dll
-     Languages/English/Keyed/HermesVoice.xml LICENSE BUILD SHA256SUMS
+exp=(About/About.xml 1.7/Assemblies/RimWorldLLM.dll 1.7/Assemblies/Newtonsoft.Json.dll
+     Languages/English/Keyed/RimWorldLLM.xml LICENSE BUILD SHA256SUMS
      Licenses/Newtonsoft.Json-LICENSE.md Licenses/easyEngine-LICENSE.txt
      Licenses/golang-x-sys-LICENSE.txt Licenses/go-stdlib-LICENSE.txt)
 for t in $TARGETS; do exp+=("Engine/$t/$(engine_bin "$t")"); done
 for f in "$MODSRC"/Defs/*.xml; do exp+=("Defs/$(basename "$f")"); done
-for f in "$MODSRC"/Textures/HermesVoice/Bubbles/*.png; do exp+=("Textures/HermesVoice/Bubbles/$(basename "$f")"); done
+for f in "$MODSRC"/Textures/RimWorldLLM/Bubbles/*.png; do exp+=("Textures/RimWorldLLM/Bubbles/$(basename "$f")"); done
 for f in "${exp[@]}"; do [ -s "$V/$f" ] || miss="$miss $f"; done
 [ -z "$miss" ] && pass "expected files present (${#exp[@]})" || fail "missing:$miss"
 
-nbub=$(find "$V/Textures/HermesVoice/Bubbles" -name '*.png' | wc -l)
-nsrc=$(find "$MODSRC/Textures/HermesVoice/Bubbles" -name '*.png' | wc -l)
+nbub=$(find "$V/Textures/RimWorldLLM/Bubbles" -name '*.png' | wc -l)
+nsrc=$(find "$MODSRC/Textures/RimWorldLLM/Bubbles" -name '*.png' | wc -l)
 [ "$nbub" = "$nsrc" ] && [ "$nbub" -gt 0 ] && pass "bubble PNGs: $nbub" || fail "bubble PNGs: $nbub vs source $nsrc"
 nw=$(find "$V/Engine/agent" -name '*.whl' | wc -l)
 [ "$nw" = 1 ] && pass "exactly one wheel ($WHEEL)" || fail "wheel count $nw"
 
+# mod identity (the mod was called HermesVoice before 2.1.0)
+grep -q '<name>RimWorldLLM</name>' "$V/About/About.xml" && grep -q '<packageId>charleszard.rimworldllm</packageId>' "$V/About/About.xml" \
+  && pass "About.xml name RimWorldLLM, packageId charleszard.rimworldllm" || fail "About.xml name/packageId"
+case "$WHEEL" in rimworldllm_agent-*-py3-none-any.whl) pass "wheel is rimworldllm_agent";; *) fail "wheel name $WHEEL";; esac
+old=$(grep -E -i 'hermesvoice|hermes-engine' <<<"$LIST" || true)
+[ -z "$old" ] && pass "no old names in file paths" || fail "old names in paths: $(head -3 <<<"$old" | tr '\n' ' ')"
+
 # top folder + exec bits
-tops=$(grep -vE '^HermesVoice/' <<<"$LIST" || true)
-[ -z "$tops" ] && pass "single top folder HermesVoice/" || fail "entries outside HermesVoice/: $(head -3 <<<"$tops")"
+tops=$(grep -vE '^RimWorldLLM/' <<<"$LIST" || true)
+[ -z "$tops" ] && pass "single top folder RimWorldLLM/" || fail "entries outside RimWorldLLM/: $(head -3 <<<"$tops")"
 for t in linux-amd64 darwin-arm64 darwin-amd64; do
-  p=$(zipinfo "$ZIP" "HermesVoice/Engine/$t/hermes-engine" | awk '{print $1}')
+  p=$(zipinfo "$ZIP" "RimWorldLLM/Engine/$t/easy-engine" | awk '{print $1}')
   [ "$p" = "-rwxr-xr-x" ] && pass "exec bit $t ($p)" || fail "exec bit $t ($p)"
 done
 
 # binary formats
 ft() { file -b "$V/Engine/$1/$(engine_bin "$1")"; }
 grep -q 'ELF 64-bit.*x86-64' <<<"$(ft linux-amd64)" && pass "linux-amd64 is ELF x86-64" || fail "linux-amd64: $(ft linux-amd64)"
-{ grep -q 'PE32' <<<"$(ft windows-amd64)" && [ "$(head -c2 "$V/Engine/windows-amd64/hermes-engine.exe")" = MZ ]; } && pass "windows-amd64 is PE (MZ)" || fail "windows-amd64: $(ft windows-amd64)"
+{ grep -q 'PE32' <<<"$(ft windows-amd64)" && [ "$(head -c2 "$V/Engine/windows-amd64/easy-engine.exe")" = MZ ]; } && pass "windows-amd64 is PE (MZ)" || fail "windows-amd64: $(ft windows-amd64)"
 grep -q 'Mach-O.*arm64' <<<"$(ft darwin-arm64)" && pass "darwin-arm64 is Mach-O arm64" || fail "darwin-arm64: $(ft darwin-arm64)"
 grep -q 'Mach-O.*x86_64' <<<"$(ft darwin-amd64)" && pass "darwin-amd64 is Mach-O x86_64" || fail "darwin-amd64: $(ft darwin-amd64)"
 

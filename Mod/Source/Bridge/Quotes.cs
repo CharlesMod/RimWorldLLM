@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>One spoken line that caused a thought or log entry.</summary>
     public sealed class QuoteEntry
@@ -81,7 +81,7 @@ namespace HermesVoice.Bridge
     /// <summary>Which log text a spoken line gets: one merged entry when an effect was applied, else the plain line.</summary>
     public static class EntryKinds
     {
-        /// <summary>Intents whose applied effect has a "who did what" log wording (key HV_LogEffect_x).</summary>
+        /// <summary>Intents whose applied effect has a "who did what" log wording (key RWL_LogEffect_x).</summary>
         public static readonly string[] Wording = { "kind", "comfort", "slight", "insult", "confide", "gossip", "boast", "complain" };
 
         /// <summary>The one entry for a line: the effect wording when the game applied the effect, else the plain say entry.

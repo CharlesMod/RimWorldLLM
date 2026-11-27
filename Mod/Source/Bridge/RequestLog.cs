@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     public struct RequestRecord
     {

@@ -5,11 +5,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     /// <summary>A fake engine: HttpListener on a free loopback port that records requests and answers canned JSON.</summary>
     sealed class FakeEngine : IDisposable
@@ -59,7 +59,7 @@ namespace HermesVoice.Tests
             lock (Log)
             {
                 Log.Add(c.Request.HttpMethod + " " + pq);
-                Csrf.Add(c.Request.Headers["X-Hermes-Engine"] ?? "");
+                Csrf.Add(c.Request.Headers["X-Easy-Engine"] ?? "");
                 Bodies.Add(body);
             }
             if (DelayMs > 0) Thread.Sleep(DelayMs);
@@ -302,8 +302,8 @@ namespace HermesVoice.Tests
         }
 
         [Theory]
-        [InlineData("linux", "/h/.local/share/hermes-engine")]
-        [InlineData("darwin", "/h/Library/Application Support/HermesEngine")]
+        [InlineData("linux", "/h/.local/share/easy-engine")]
+        [InlineData("darwin", "/h/Library/Application Support/EasyEngine")]
         public void DataDirPerOs(string os, string expected)
         {
             string got = EngineClient.DataDir(os, n => null, "/h");
@@ -311,17 +311,45 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public void LegacyDataDirIsTheOldName()
+        {
+            Assert.Equal(Path.Combine("/h", ".local", "share", "hermes-engine"), EngineClient.LegacyDataDir("linux", n => null, "/h"));
+            Assert.Equal(Path.Combine("C:\\L", "HermesEngine"), EngineClient.LegacyDataDir("windows", n => n == "LOCALAPPDATA" ? "C:\\L" : null, "C:\\u"));
+            Assert.Equal(Path.Combine("/h", "Library", "Application Support", "HermesEngine"), EngineClient.LegacyDataDir("darwin", n => null, "/h"));
+            Assert.Equal("/old", EngineClient.LegacyDataDir("linux", n => n == "HERMES_ENGINE_HOME" ? "/old" : null, "/h"));
+        }
+
+        [Fact]
+        public void LockPortPrefersTheNewDirThenTheOld()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "rwl-lock-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                string share = Path.Combine(root, "share");
+                Func<string, string> env = n => n == "XDG_DATA_HOME" ? share : null;
+                Assert.Equal(0, EngineClient.LockPort("linux", env, root));
+                Directory.CreateDirectory(Path.Combine(share, "hermes-engine"));
+                File.WriteAllText(Path.Combine(share, "hermes-engine", "engine.lock"), "{\"pid\":1,\"port\":47483}");
+                Assert.Equal(47483, EngineClient.LockPort("linux", env, root));
+                Directory.CreateDirectory(Path.Combine(share, "easy-engine"));
+                File.WriteAllText(Path.Combine(share, "easy-engine", "engine.lock"), "{\"pid\":1,\"port\":47481}");
+                Assert.Equal(47481, EngineClient.LockPort("linux", env, root));
+            }
+            finally { try { Directory.Delete(root, true); } catch { } }
+        }
+
+        [Fact]
         public void DataDirHonoursOverridesAndXdg()
         {
-            Assert.Equal("/x", EngineClient.DataDir("linux", n => n == "HERMES_ENGINE_HOME" ? "/x" : null, "/h"));
-            Assert.Equal(Path.Combine("/xdg", "hermes-engine"), EngineClient.DataDir("linux", n => n == "XDG_DATA_HOME" ? "/xdg" : null, "/h"));
-            Assert.Equal(Path.Combine("C:\\L", "HermesEngine"), EngineClient.DataDir("windows", n => n == "LOCALAPPDATA" ? "C:\\L" : null, "C:\\u"));
+            Assert.Equal("/x", EngineClient.DataDir("linux", n => n == "EASY_ENGINE_HOME" ? "/x" : null, "/h"));
+            Assert.Equal(Path.Combine("/xdg", "easy-engine"), EngineClient.DataDir("linux", n => n == "XDG_DATA_HOME" ? "/xdg" : null, "/h"));
+            Assert.Equal(Path.Combine("C:\\L", "EasyEngine"), EngineClient.DataDir("windows", n => n == "LOCALAPPDATA" ? "C:\\L" : null, "C:\\u"));
         }
 
         [Fact]
         public void ReadLockPortHandlesJsonAndText()
         {
-            string dir = Path.Combine(Path.GetTempPath(), "hv-lock-" + Guid.NewGuid().ToString("N"));
+            string dir = Path.Combine(Path.GetTempPath(), "rwl-lock-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             try
             {

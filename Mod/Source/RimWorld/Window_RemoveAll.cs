@@ -1,12 +1,12 @@
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// The "Remove downloaded files" confirmation: Dialog_MessageBox cannot hold a checkbox, so this small window has the
-    /// explanation, "Also delete HermesVoice's memory and logs" (on by default, with its size), and Remove / Cancel.
+    /// explanation, "Also delete RimWorldLLM's memory and logs" (on by default, with its size), and Remove / Cancel.
     /// </summary>
     public class Window_RemoveAll : Window
     {
@@ -19,24 +19,30 @@ namespace HermesVoice
         public Window_RemoveAll(long downloadBytes)
         {
             _downloadBytes = downloadBytes;
-            try { _memoryBytes = AgentDataDir.SizeOf(AgentDataDir.ResolveHere(EnginePlatform.Detect()).Path); } catch { _memoryBytes = 0; }
+            try
+            {
+                var here = AgentDataDir.ResolveHere(EnginePlatform.Detect());
+                var old = AgentDataDir.Legacy(here);
+                _memoryBytes = AgentDataDir.SizeOf(here.Path) + (old != null ? AgentDataDir.SizeOf(old.Path) : 0);
+            }
+            catch { _memoryBytes = 0; }
             forcePause = true;
             doCloseX = true;
             absorbInputAroundWindow = true;
             closeOnClickedOutside = false;
-            optionalTitle = UiUtil.T("HV_Storage_RemoveTitle");
+            optionalTitle = UiUtil.T("RWL_Storage_RemoveTitle");
         }
 
         public override void DoWindowContents(Rect inRect)
         {
             float btnH = 34f;
             var textRect = new Rect(0f, 0f, inRect.width, inRect.height - btnH - 52f);
-            Widgets.Label(textRect, UiUtil.T("HV_Storage_RemoveConfirm", Window_EngineSetup.Bytes(_downloadBytes)));
+            Widgets.Label(textRect, UiUtil.T("RWL_Storage_RemoveConfirm", Window_EngineSetup.Bytes(_downloadBytes)));
             var cb = new Rect(0f, inRect.height - btnH - 44f, inRect.width, 28f);
-            Widgets.CheckboxLabeled(cb, UiUtil.T("HV_Storage_RemoveMemory", Window_EngineSetup.Bytes(_memoryBytes)), ref _alsoMemory);
-            TooltipHandler.TipRegion(cb, UiUtil.T("HV_Tip_RemoveMemory"));
+            Widgets.CheckboxLabeled(cb, UiUtil.T("RWL_Storage_RemoveMemory", Window_EngineSetup.Bytes(_memoryBytes)), ref _alsoMemory);
+            TooltipHandler.TipRegion(cb, UiUtil.T("RWL_Tip_RemoveMemory"));
             float w = (inRect.width - 12f) / 2f;
-            if (Widgets.ButtonText(new Rect(0f, inRect.height - btnH, w, btnH), UiUtil.T("HV_Storage_RemoveGo")))
+            if (Widgets.ButtonText(new Rect(0f, inRect.height - btnH, w, btnH), UiUtil.T("RWL_Storage_RemoveGo")))
             {
                 EngineManager.RemoveEverything(_alsoMemory);
                 Close();

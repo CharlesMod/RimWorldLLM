@@ -1,7 +1,7 @@
-# HermesVoice hook API (for other mods)
+# RimWorldLLM hook API (for other mods)
 
-Reference `HermesVoice.dll` (or reflect on the class) and call the statics of
-`HermesVoice.HermesVoiceAPI`. All calls are safe to make from the game thread at any time,
+Reference `RimWorldLLM.dll` (or reflect on the class) and call the statics of
+`RimWorldLLM.RimWorldLLMAPI`. All calls are safe to make from the game thread at any time,
 including when the bridge is not running.
 
 ## `RegisterPawnContext(string key, Func<Pawn, string> provider)`
@@ -15,7 +15,7 @@ sees it when it writes that pawn's lines.
   is skipped.
 
 ```csharp
-HermesVoiceAPI.RegisterPawnContext("MyMod.Faith", p => p.GetComp<CompFaith>()?.Summary);
+RimWorldLLMAPI.RegisterPawnContext("MyMod.Faith", p => p.GetComp<CompFaith>()?.Summary);
 ```
 
 ## `RequestTalk(Pawn pawn, string text)`
@@ -25,7 +25,7 @@ Queues a request for the agent: "this pawn should say something about `text`". I
 the agent answers with `POST /say` carrying that `talk_id`. The queue holds the last 100.
 
 ```csharp
-HermesVoiceAPI.RequestTalk(pawn, "just received the royal title of Knight");
+RimWorldLLMAPI.RequestTalk(pawn, "just received the royal title of Knight");
 ```
 
 See `docs/BRIDGE-API.md` for the wire protocol.

@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     /// <summary>The engine's fallback flag on plan and status, and the once-per-session notice logic.</summary>
     public class FallbackWarningTests

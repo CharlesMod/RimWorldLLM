@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using Verse;
 using Verse.AI.Group;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// "gathering" / "gathering_end" events: parties, weddings, rituals (funerals included), speeches, bestowing ceremonies

@@ -30,7 +30,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve()
 for _p in HERE.parents:
-    if (_p / "agent" / "hermesvoice_agent").is_dir():
+    if (_p / "agent" / "rimworldllm_agent").is_dir():
         sys.path.insert(0, str(_p / "agent"))
         break
 sys.path.insert(0, str(HERE.parent))
@@ -38,19 +38,19 @@ sys.path.insert(0, str(HERE.parent))
 import httpx  # noqa: E402
 
 import fixture_rich as fx  # noqa: E402
-from hermesvoice_agent.core import group, lore, recap  # noqa: E402
-from hermesvoice_agent.core.art import ArtJob, write_art  # noqa: E402
-from hermesvoice_agent.core.bridge import BridgeClient  # noqa: E402
-from hermesvoice_agent.core.calllog import CallLog  # noqa: E402
-from hermesvoice_agent.core.chronicle import Entry  # noqa: E402
-from hermesvoice_agent.core.config import Config, LLMConfig  # noqa: E402
-from hermesvoice_agent.core.director import Director  # noqa: E402
-from hermesvoice_agent.core.fakes import FakeLLM  # noqa: E402
-from hermesvoice_agent.core.llm import HttpLLM, LLMError  # noqa: E402
-from hermesvoice_agent.core.minds import Memory, Relation  # noqa: E402
-from hermesvoice_agent.core.passes import Dropped, speak  # noqa: E402
-from hermesvoice_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
-from hermesvoice_agent.games.rimworld.fakes import FakeBridge  # noqa: E402
+from rimworldllm_agent.core import group, lore, recap  # noqa: E402
+from rimworldllm_agent.core.art import ArtJob, write_art  # noqa: E402
+from rimworldllm_agent.core.bridge import BridgeClient  # noqa: E402
+from rimworldllm_agent.core.calllog import CallLog  # noqa: E402
+from rimworldllm_agent.core.chronicle import Entry  # noqa: E402
+from rimworldllm_agent.core.config import Config, LLMConfig  # noqa: E402
+from rimworldllm_agent.core.director import Director  # noqa: E402
+from rimworldllm_agent.core.fakes import FakeLLM  # noqa: E402
+from rimworldllm_agent.core.llm import HttpLLM, LLMError  # noqa: E402
+from rimworldllm_agent.core.minds import Memory, Relation  # noqa: E402
+from rimworldllm_agent.core.passes import Dropped, speak  # noqa: E402
+from rimworldllm_agent.games.rimworld.adapter import RimWorldAdapter  # noqa: E402
+from rimworldllm_agent.games.rimworld.fakes import FakeBridge  # noqa: E402
 
 FEATURES = ["art", "lore", "recap", "aim", "eulogy", "vows"]
 DAY = fx.DAY
@@ -291,7 +291,7 @@ def _known(d, aid, about=None, n=4) -> list[str]:
     mind = d.minds.get(aid)
     if mind is None:
         return []
-    from hermesvoice_agent.core import memory as _mem
+    from rimworldllm_agent.core import memory as _mem
     ms = [m.text for m in _mem.weight_sorted(mind, d.bridge.env.game, d.day) if m.visibility != "private"]
     if about:
         ms = [t for t in ms if any(a in t for a in about)] + [t for t in ms if not any(a in t for a in about)]
@@ -300,7 +300,7 @@ def _known(d, aid, about=None, n=4) -> list[str]:
 
 async def _card(d, aid) -> list[str]:
     try:
-        from hermesvoice_agent.core import grounding as _g
+        from rimworldllm_agent.core import grounding as _g
     except ImportError:
         return []
     return _g.card_lines(await _g.actor_card(d, aid))

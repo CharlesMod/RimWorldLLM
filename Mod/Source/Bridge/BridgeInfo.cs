@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>bridge.json: how the agent finds the bridge.</summary>
     public static class BridgeInfo
     {
-        public static string PathIn(string configDir) { return Path.Combine(configDir, "HermesVoice", "bridge.json"); }
+        public static string PathIn(string configDir) { return Path.Combine(configDir, "RimWorldLLM", "bridge.json"); }
 
         public static JObject Build(int port, string bind, string token, int pid, string version, int saveEpoch, JObject llm = null)
         {

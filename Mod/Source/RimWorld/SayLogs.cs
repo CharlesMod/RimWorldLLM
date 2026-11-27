@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// A spoken line in the vanilla play log. Subclasses the vanilla interaction entry so the usual icon, click-to-jump
@@ -15,19 +15,19 @@ namespace HermesVoice
         internal static string Format(Pawn speaker, Pawn listener, string line)
         {
             string s = speaker != null ? speaker.LabelShort : "?";
-            if (listener == null || listener == speaker) return UiUtil.T("HV_LogLine", s, line ?? "");
-            return UiUtil.T("HV_LogLineTo", s, listener.LabelShort, line ?? "");
+            if (listener == null || listener == speaker) return UiUtil.T("RWL_LogLine", s, line ?? "");
+            return UiUtil.T("RWL_LogLineTo", s, listener.LabelShort, line ?? "");
         }
     }
 
-    public class PlayLogEntry_HermesSay : PlayLogEntry_Interaction
+    public class PlayLogEntry_RWLSay : PlayLogEntry_Interaction
     {
         string text = "";
         string effect = "";     // the intent the game applied for this line, "" when none: one merged entry, never a second one
 
-        public PlayLogEntry_HermesSay() { }
+        public PlayLogEntry_RWLSay() { }
 
-        public PlayLogEntry_HermesSay(InteractionDef def, Pawn speaker, Pawn listener, string line, string appliedEffect = null)
+        public PlayLogEntry_RWLSay(InteractionDef def, Pawn speaker, Pawn listener, string line, string appliedEffect = null)
             : base(def, speaker, listener ?? speaker, new List<RulePackDef>())
         {
             text = line ?? "";
@@ -38,9 +38,9 @@ namespace HermesVoice
 
         protected override string ToGameStringFromPOV_Worker(Thing pov, bool forceLog)
         {
-            var s = HermesVoiceMod.Settings;
+            var s = RimWorldLLMMod.Settings;
             if (effect.Length > 0 && (s == null || s.showQuotes) && recipient != null && recipient != initiator)
-                return UiUtil.T("HV_LogEffect_" + effect, initiator.LabelShort, recipient.LabelShort, text);
+                return UiUtil.T("RWL_LogEffect_" + effect, initiator.LabelShort, recipient.LabelShort, text);
             return SayLogFormat.Format(initiator, recipient, text);
         }
 
@@ -53,15 +53,15 @@ namespace HermesVoice
     }
 
     /// <summary>A line said during a fight, for the combat log. Concerns speaker and listener.</summary>
-    public class BattleLogEntry_HermesSay : LogEntry
+    public class BattleLogEntry_RWLSay : LogEntry
     {
         Pawn speaker;
         Pawn listener;
         string text = "";
 
-        public BattleLogEntry_HermesSay() { }
+        public BattleLogEntry_RWLSay() { }
 
-        public BattleLogEntry_HermesSay(Pawn speaker, Pawn listener, string line)
+        public BattleLogEntry_RWLSay(Pawn speaker, Pawn listener, string line)
         {
             this.speaker = speaker;
             this.listener = listener;

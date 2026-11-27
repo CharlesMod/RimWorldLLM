@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class EngineLauncherTests
     {
@@ -27,7 +27,7 @@ namespace HermesVoice.Tests
 
         sealed class Temp : IDisposable
         {
-            public readonly string Dir = Path.Combine(Path.GetTempPath(), "hv-launch-" + Guid.NewGuid().ToString("N"));
+            public readonly string Dir = Path.Combine(Path.GetTempPath(), "rwl-launch-" + Guid.NewGuid().ToString("N"));
             public Temp() { Directory.CreateDirectory(Dir); }
             public string Touch(params string[] rel)
             {
@@ -40,10 +40,10 @@ namespace HermesVoice.Tests
         }
 
         [Theory]
-        [InlineData("linux", "amd64", "linux-amd64", "hermes-engine")]
-        [InlineData("windows", "amd64", "windows-amd64", "hermes-engine.exe")]
-        [InlineData("darwin", "arm64", "darwin-arm64", "hermes-engine")]
-        [InlineData("darwin", "amd64", "darwin-amd64", "hermes-engine")]
+        [InlineData("linux", "amd64", "linux-amd64", "easy-engine")]
+        [InlineData("windows", "amd64", "windows-amd64", "easy-engine.exe")]
+        [InlineData("darwin", "arm64", "darwin-arm64", "easy-engine")]
+        [InlineData("darwin", "amd64", "darwin-amd64", "easy-engine")]
         public void BinaryChoicePerPlatform(string os, string arch, string dir, string name)
         {
             var p = new EnginePlatform(os, arch);
@@ -73,11 +73,12 @@ namespace HermesVoice.Tests
             Assert.Equal(1500, (int)j["game_reserve_mib"]);
             Assert.Equal(84, (int)j["host_files_mib"]);   // calls.jsonl 4 x 20 MB + 4 MiB, counted in the engine's disk need
             var a = j["agent"];
-            Assert.Equal("hermesvoice-agent", (string)a["id"]);
+            Assert.Equal("rimworldllm-agent", (string)a["id"]);
             Assert.Equal("/m/Engine/agent/a.whl", (string)a["wheel"]);
             Assert.Equal("3.12", (string)a["python"]);
             Assert.Equal("run", (string)a["args"][0]);
-            Assert.Equal("/c/bridge.json", (string)a["env"]["HERMESVOICE_BRIDGE_JSON"]);
+            Assert.Equal("/c/bridge.json", (string)a["env"]["RIMWORLDLLM_BRIDGE_JSON"]);
+            Assert.Equal("RIMWORLDLLM_LLM_URL", (string)a["llm_url_env"]);
         }
 
         [Fact]
@@ -92,9 +93,9 @@ namespace HermesVoice.Tests
             using (var t = new Temp())
             {
                 Assert.Null(EngineLauncher.FindWheel(t.Dir));
-                t.Touch("Engine", "agent", "hermesvoice_agent-0.1.0-py3-none-any.whl");
+                t.Touch("Engine", "agent", "rimworldllm_agent-0.1.0-py3-none-any.whl");
                 t.Touch("Engine", "agent", "notes.txt");
-                Assert.EndsWith("hermesvoice_agent-0.1.0-py3-none-any.whl", EngineLauncher.FindWheel(t.Dir));
+                Assert.EndsWith("rimworldllm_agent-0.1.0-py3-none-any.whl", EngineLauncher.FindWheel(t.Dir));
             }
         }
 
@@ -109,7 +110,7 @@ namespace HermesVoice.Tests
             return new LaunchOptions
             {
                 ModRoot = t.Dir,
-                BridgeJsonPath = Path.Combine(t.Dir, "cfg", "HermesVoice", "bridge.json"),
+                BridgeJsonPath = Path.Combine(t.Dir, "cfg", "RimWorldLLM", "bridge.json"),
                 Pid = 4321,
                 Platform = new EnginePlatform("linux", "amd64"),
                 Starter = s,
@@ -120,12 +121,26 @@ namespace HermesVoice.Tests
         }
 
         [Fact]
+        public void BinaryPathFallsBackToAnOldHermesEngineBuildOnly()
+        {
+            using (var t = new Temp())
+            {
+                var p = new EnginePlatform("linux", "amd64");
+                string old = t.Touch("Engine", "linux-amd64", "hermes-engine");
+                Assert.Equal(old, EngineLauncher.BinaryPath(t.Dir, p));
+                string nu = t.Touch("Engine", "linux-amd64", "easy-engine");
+                Assert.Equal(nu, EngineLauncher.BinaryPath(t.Dir, p));
+                Assert.Equal("hermes-engine.exe", new EnginePlatform("windows", "amd64").LegacyBinaryName);
+            }
+        }
+
+        [Fact]
         public async Task RunningEngineGetsAttachNotSpawn()
         {
             using (var t = new Temp())
             using (var f = new FakeEngine((m, p) => m == "GET" ? (200, "{\"phase\":\"ready\"}") : (200, "{}")))
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter();
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult(f.Client)));
                 Assert.Equal(LaunchOutcome.Attached, r.Outcome);
@@ -143,7 +158,7 @@ namespace HermesVoice.Tests
             using (var t = new Temp())
             using (var f = new FakeEngine((m, p) => (200, "{\"phase\":\"not_installed\"}")))
             {
-                string bin = t.Touch("Engine", "linux-amd64", "hermes-engine");
+                string bin = t.Touch("Engine", "linux-amd64", "easy-engine");
                 t.Touch("Engine", "agent", "a-0.1-py3-none-any.whl");
                 var s = new FakeStarter();
                 int polls = 0;
@@ -155,10 +170,10 @@ namespace HermesVoice.Tests
                 Assert.Equal("--parent-pid", s.Args[3]);
                 Assert.Equal("4321", s.Args[4]);
                 Assert.True(File.Exists(s.Args[2]));
-                Assert.Equal(Path.Combine(t.Dir, "cfg", "HermesVoice", "engine-profile.json"), s.Args[2]);
+                Assert.Equal(Path.Combine(t.Dir, "cfg", "RimWorldLLM", "engine-profile.json"), s.Args[2]);
                 var prof = JObject.Parse(File.ReadAllText(s.Args[2]));
                 Assert.EndsWith("a-0.1-py3-none-any.whl", (string)prof["agent"]["wheel"]);
-                Assert.Equal(Path.Combine(t.Dir, "cfg", "HermesVoice", "bridge.json"), s.Env["HERMESVOICE_BRIDGE_JSON"]);
+                Assert.Equal(Path.Combine(t.Dir, "cfg", "RimWorldLLM", "bridge.json"), s.Env["RIMWORLDLLM_BRIDGE_JSON"]);
                 Assert.NotNull(r.Client);
             }
         }
@@ -181,7 +196,7 @@ namespace HermesVoice.Tests
         {
             using (var t = new Temp())
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter { Throw = new InvalidOperationException("boom") };
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult<EngineClient>(null)));
                 Assert.Equal(LaunchOutcome.SpawnFailed, r.Outcome);
@@ -194,7 +209,7 @@ namespace HermesVoice.Tests
         {
             using (var t = new Temp())
             {
-                t.Touch("Engine", "linux-amd64", "hermes-engine");
+                t.Touch("Engine", "linux-amd64", "easy-engine");
                 var s = new FakeStarter();
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult<EngineClient>(null)));
                 Assert.Equal(LaunchOutcome.Spawned, r.Outcome);
@@ -227,8 +242,8 @@ namespace HermesVoice.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\Users\Boss\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Config\HermesVoice\engine-profile.json")]
-        [InlineData(@"C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\HermesVoice\")]
+        [InlineData(@"C:\Users\Boss\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Config\RimWorldLLM\engine-profile.json")]
+        [InlineData(@"C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\RimWorldLLM\")]
         [InlineData("say \"hi\" there")]
         [InlineData(@"a\\""b c")]
         [InlineData("/home/some one/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Config")]

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     public enum OsKind { Windows, Linux, Mac }
 

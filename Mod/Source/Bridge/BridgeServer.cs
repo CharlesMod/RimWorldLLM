@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>One inbound HTTP request, routed on the game thread, answered on the HTTP thread.</summary>
     public sealed class InboundRequest : IDisposable
@@ -48,7 +48,7 @@ namespace HermesVoice.Bridge
         public int LastPort = Const.LastPort;
         public string Token = "";
         public Func<JObject> LlmInfo;       // the "llm" block for bridge.json ({base_url, model, api_key}); null = none
-        public string ConfigDir;            // bridge.json goes to <ConfigDir>/HermesVoice/bridge.json; null = not written
+        public string ConfigDir;            // bridge.json goes to <ConfigDir>/RimWorldLLM/bridge.json; null = not written
         public string Version = Const.Version;
         public TimeSpan GameThreadTimeout = TimeSpan.FromSeconds(20);
         /// <summary>If the game thread has not pumped for this long, answer `busy` at once instead of waiting
@@ -115,7 +115,7 @@ namespace HermesVoice.Bridge
             if (_token.Length == 0)
             {
                 LastError = "no token: the bridge refuses to start without one";
-                LogError("[HermesVoice] " + LastError);
+                LogError("[RimWorldLLM] " + LastError);
                 return false;
             }
             string bind = _opt.BindAddress;
@@ -139,14 +139,14 @@ namespace HermesVoice.Bridge
                 _listener = l;
                 Port = port;
                 var gate = new SemaphoreSlim(Const.MaxInFlight, Const.MaxInFlight);
-                var thread = new Thread(() => ListenLoop(l, gate)) { IsBackground = true, Name = "HermesVoice-Bridge" };
+                var thread = new Thread(() => ListenLoop(l, gate)) { IsBackground = true, Name = "RimWorldLLM-Bridge" };
                 thread.Start();
                 TryWriteInfo();
-                LogInfo("[HermesVoice] Bridge listening on port " + port);
+                LogInfo("[RimWorldLLM] Bridge listening on port " + port);
                 return true;
             }
             LastError = "no free port in " + _opt.FirstPort + "-" + _opt.LastPort + (last != null ? " (" + last.Message + ")" : "");
-            LogError("[HermesVoice] Bridge failed to start: " + LastError);
+            LogError("[RimWorldLLM] Bridge failed to start: " + LastError);
             return false;
         }
 
@@ -161,7 +161,7 @@ namespace HermesVoice.Bridge
                 int pid = Process.GetCurrentProcess().Id;
                 BridgeInfo.Write(_opt.ConfigDir, BridgeInfo.Build(Port, string.IsNullOrWhiteSpace(_opt.BindAddress) ? "0.0.0.0" : _opt.BindAddress, _token, pid, _opt.Version, _state.SaveEpoch, _opt.LlmInfo != null ? _opt.LlmInfo() : null));
             }
-            catch (Exception e) { LogError("[HermesVoice] Could not write bridge.json: " + e.Message); }
+            catch (Exception e) { LogError("[RimWorldLLM] Could not write bridge.json: " + e.Message); }
         }
 
         public void Stop()
@@ -246,7 +246,7 @@ namespace HermesVoice.Bridge
         JObject HealthBody()
         {
             var s = _state;
-            return new JObject { ["mod"] = "HermesVoice", ["version"] = _opt.Version, ["game_loaded"] = s.GameLoaded };
+            return new JObject { ["mod"] = "RimWorldLLM", ["version"] = _opt.Version, ["game_loaded"] = s.GameLoaded };
         }
 
         void HandleContext(HttpListenerContext ctx, SemaphoreSlim gate)

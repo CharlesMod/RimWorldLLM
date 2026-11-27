@@ -1,7 +1,7 @@
 """calls.jsonl rotates by size: calls.jsonl -> .1 -> .2 -> .3, the oldest dropped."""
 import json
 
-from hermesvoice_agent.core.calllog import CallLog, CallStats
+from rimworldllm_agent.core.calllog import CallLog, CallStats
 
 
 def rows(p):

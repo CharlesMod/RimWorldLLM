@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using HermesVoice;
+using RimWorldLLM;
 
 // Offline preview helper: reads a scene request (sample lines, pawn head positions, character advance tables
 // measured by the preview script), runs the REAL BubbleLayout code and writes where every balloon, tail and

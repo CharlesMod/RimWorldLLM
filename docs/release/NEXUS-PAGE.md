@@ -1,10 +1,10 @@
-# Nexus Mods page: HermesVoice 2.1.0 beta
+# Nexus Mods page: RimWorldLLM 2.1.0 beta
 
 Everything below the first rule is ready to paste. The page body is Nexus BBCode.
 
 ## Mod name
 
-HermesVoice: Local AI Colonist Dialogue (one click, no API key)
+RimWorldLLM: Local AI Colonist Dialogue (one click, no API key)
 
 ## Summary (Nexus "brief overview", 255 characters max; this one is 219)
 
@@ -17,16 +17,16 @@ Colonists talk in their own voices: bubbles, conversations, diaries, inner thoug
 - Requirements tab: Harmony (link the Steam Workshop page and https://github.com/pardeike/HarmonyRimWorld/releases/latest).
 - Adult content flag: **keeper decision** (see RELEASE-CHECKLIST.md). The mod's adult setting is off by default, but the
   downloaded models are general roleplay builds whose own cards are tagged not-for-all-audiences.
-- Version: 2.1.0 beta. Game version: 1.7. File: `HermesVoice-2.1.0-beta.zip` (main file), with its `.sha256` in the description of the file.
+- Version: 2.1.0 beta. Game version: 1.7. File: `RimWorldLLM-2.1.0-beta.zip` (main file), with its `.sha256` in the description of the file.
 
 ---
 
-[size=5][b]HermesVoice[/b][/size]
+[size=5][b]RimWorldLLM[/b][/size]
 [size=3]Local AI colonist dialogue for RimWorld 1.7. One click, no API key.[/size]
 
 [b][color=#e8a33d]Beta 2.1.0: tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are included but have not been tested yet. If you try one, please tell us how it went.[/color][/b]
 
-Your colonists talk, in their own voices. HermesVoice gives every pawn a mind and a way of speaking:
+Your colonists talk, in their own voices. RimWorldLLM gives every pawn a mind and a way of speaking:
 
 [list]
 [*][b]Speech bubbles[/b] over their heads, in comic-style balloons.
@@ -67,15 +67,15 @@ Measured: the 26B writes about 105 tokens per second per conversation on an RTX 
 Every download is checked against a fixed SHA-256 and resumes if interrupted. With an NVIDIA card expect about 12 GB on disk for the 26B (about 16 GB at the peak, while the starter is still there), or about 6 GB for E4B RP.
 
 [size=4][b]About the executable in this mod[/b][/size]
-The zip contains a small program, [b]hermes-engine[/b] ([font=Courier New]Engine/<os>-<arch>/hermes-engine[/font], [font=Courier New]hermes-engine.exe[/font] on Windows), plus the helper as a Python wheel ([font=Courier New]Engine/agent/hermesvoice_agent-*.whl[/font]). hermes-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases and uv from uv's, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
+The zip contains a small program, [b]easy-engine[/b] ([font=Courier New]Engine/<os>-<arch>/easy-engine[/font], [font=Courier New]easy-engine.exe[/font] on Windows), plus the helper as a Python wheel ([font=Courier New]Engine/agent/rimworldllm_agent-*.whl[/font]). easy-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases and uv from uv's, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
 
 [size=4][b]Where it lives and how to remove it[/b][/size]
 [list]
-[*]Windows: [font=Courier New]%LOCALAPPDATA%\HermesEngine[/font]
-[*]Linux: [font=Courier New]~/.local/share/hermes-engine[/font]
-[*]macOS: [font=Courier New]~/Library/Application Support/HermesEngine[/font]
+[*]Windows: [font=Courier New]%LOCALAPPDATA%\EasyEngine[/font]
+[*]Linux: [font=Courier New]~/.local/share/easy-engine[/font]
+[*]macOS: [font=Courier New]~/Library/Application Support/EasyEngine[/font]
 [/list]
-The helper keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\hermesvoice-agent[/font] on Windows and [font=Courier New]~/.local/share/hermesvoice-agent[/font] elsewhere. To remove everything: Mod settings, HermesVoice, Storage, [b]Remove downloaded files[/b] (tick the box to delete the helper's memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those two folders by hand.
+The helper keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\rimworldllm-agent[/font] on Windows and [font=Courier New]~/.local/share/rimworldllm-agent[/font] elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, [b]Remove downloaded files[/b] (tick the box to delete the helper's memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those two folders by hand.
 
 [size=4][b]Already run your own model server?[/b][/size]
 Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatible URL. Nothing is downloaded.
@@ -98,8 +98,9 @@ Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatibl
 [size=4][b]Install[/b][/size]
 [list=1]
 [*]Install Harmony.
-[*]Unzip [font=Courier New]HermesVoice-2.1.0-beta.zip[/font] into RimWorld's [font=Courier New]Mods[/font] folder, so you get [font=Courier New]Mods/HermesVoice/About/About.xml[/font].
-[*]Enable Harmony, then HermesVoice below it, and restart.
+[*]Had a test build called HermesVoice? Delete the old [font=Courier New]Mods/HermesVoice[/font] folder first; your settings and the helper's memory carry over.
+[*]Unzip [font=Courier New]RimWorldLLM-2.1.0-beta.zip[/font] into RimWorld's [font=Courier New]Mods[/font] folder, so you get [font=Courier New]Mods/RimWorldLLM/About/About.xml[/font].
+[*]Enable Harmony, then RimWorldLLM below it, and restart.
 [*]Load a game and click [b]Set up[/b] on the letter.
 [/list]
 
@@ -113,7 +114,7 @@ Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatibl
 [/list]
 
 [size=4][b]Reporting a problem[/b][/size]
-Please post your OS, graphics card and memory, the model shown in the settings, what happened, and the logs: RimWorld's Player.log (the lines mentioning HermesVoice) and engine.log, llama-server.log and agent.log from the engine folder's logs subfolder. The [url=https://github.com/CharlesMod/RimWorldLLM#troubleshooting]README[/url] lists where they are. Bugs here or on [url=https://github.com/CharlesMod/RimWorldLLM/issues]GitHub issues[/url].
+Please post your OS, graphics card and memory, the model shown in the settings, what happened, and the logs: RimWorld's Player.log (the lines mentioning RimWorldLLM) and engine.log, llama-server.log and agent.log from the engine folder's logs subfolder. The [url=https://github.com/CharlesMod/RimWorldLLM#troubleshooting]README[/url] lists where they are. Bugs here or on [url=https://github.com/CharlesMod/RimWorldLLM/issues]GitHub issues[/url].
 
 [size=4][b]Source and license[/b][/size]
 [list]

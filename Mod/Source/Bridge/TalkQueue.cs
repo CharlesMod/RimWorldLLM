@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace HermesVoice.Bridge
+namespace RimWorldLLM.Bridge
 {
     /// <summary>Talk requests waiting for the agent (GET /talk). Game thread; removed when answered by POST /say with talk_id.</summary>
     public sealed class TalkQueue

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>Builds ShareDocs from what the player already sees and opens the share window. Game thread only.</summary>
     public static class ShareService
@@ -15,7 +15,7 @@ namespace HermesVoice
         public const int ExchangeGapTicks = 2500;     // about one in-game hour between lines of one exchange
         public const int ThoughtSlackTicks = 600;     // inner thoughts this close to the exchange are included
 
-        public static bool FooterOn { get { var s = HermesVoiceMod.Settings; return s == null || s.shareFooter; } }
+        public static bool FooterOn { get { var s = RimWorldLLMMod.Settings; return s == null || s.shareFooter; } }
 
         public static string ColonyName()
         {
@@ -60,7 +60,7 @@ namespace HermesVoice
             MindRecord rec;
             foreach (int id in ids)
             {
-                if (!HermesBridge.Minds.Records.TryGetValue(id, out rec)) continue;
+                if (!RWLBridge.Minds.Records.TryGetValue(id, out rec)) continue;
                 string nm; names.TryGetValue(id, out nm);
                 foreach (var th in rec.Thoughts)
                     if (th.Key >= t0 && th.Key <= t1)
@@ -74,29 +74,29 @@ namespace HermesVoice
 
         public static void ShareDiary(Pawn pawn, KeyValuePair<int, string> page)
         {
-            var d = new ShareDoc { Colony = ColonyName(), Date = UiUtil.DateOf(page.Key), Title = UiUtil.T("HV_Share_DiaryOf", pawn.LabelShortCap) };
+            var d = new ShareDoc { Colony = ColonyName(), Date = UiUtil.DateOf(page.Key), Title = UiUtil.T("RWL_Share_DiaryOf", pawn.LabelShortCap) };
             d.Lines.Add(new ShareLine { PawnId = pawn.thingIDNumber, Speaker = pawn.LabelShortCap, Text = page.Value });
             Open(d);
         }
 
         public static void ShareChronicle(ChronicleEntry e)
         {
-            var d = new ShareDoc { Colony = ColonyName(), Date = UiUtil.DateOfDay(e.Day), Title = UiUtil.T("HV_Share_Chronicle") };
+            var d = new ShareDoc { Colony = ColonyName(), Date = UiUtil.DateOfDay(e.Day), Title = UiUtil.T("RWL_Share_Chronicle") };
             d.Lines.Add(new ShareLine { Text = e.Text });
             Open(d);
         }
 
-        static void Open(ShareDoc d) { Find.WindowStack.Add(new Window_HermesShare(d, FooterOn)); }
+        static void Open(ShareDoc d) { Find.WindowStack.Add(new Window_RWLShare(d, FooterOn)); }
 
         public static string SharesFolder()
         {
-            return Path.Combine(GenFilePaths.SaveDataFolderPath, "HermesVoice", "Shares");
+            return Path.Combine(GenFilePaths.SaveDataFolderPath, "RimWorldLLM", "Shares");
         }
 
         public static void OpenFolder(string dir)
         {
             try { Application.OpenURL(new Uri(Path.GetFullPath(dir) + Path.DirectorySeparatorChar).AbsoluteUri); }
-            catch (Exception ex) { Log.Warning("[HermesVoice] could not open " + dir + ": " + ex.Message); }
+            catch (Exception ex) { Log.Warning("[RimWorldLLM] could not open " + dir + ": " + ex.Message); }
         }
     }
 }

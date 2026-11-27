@@ -5,13 +5,13 @@ import json
 import pytest
 
 from conftest import run
-from hermesvoice_agent.core.bridge import BridgeError
-from hermesvoice_agent.core.chronicle import Chronicle, est_tokens, messages_tokens
-from hermesvoice_agent.core.fakes import FakeLLM
-from hermesvoice_agent.core.lease import Cls, Now
-from hermesvoice_agent.core.llm import Completion
-from hermesvoice_agent.core.minds import Memory
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core.bridge import BridgeError
+from rimworldllm_agent.core.chronicle import Chronicle, est_tokens, messages_tokens
+from rimworldllm_agent.core.fakes import FakeLLM
+from rimworldllm_agent.core.lease import Cls, Now
+from rimworldllm_agent.core.llm import Completion
+from rimworldllm_agent.core.minds import Memory
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 DAY = 60000
 AD = RimWorldAdapter()

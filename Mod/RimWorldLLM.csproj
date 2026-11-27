@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <PlatformTarget>x64</PlatformTarget>
+        <RootNamespace>RimWorldLLM</RootNamespace>
+        <AssemblyName>RimWorldLLM</AssemblyName>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <GameVersion>1.7</GameVersion>
+        <RimWorldDir Condition=" '$(RimWorldDir)' == '' ">$(RIMWORLD_DIR)</RimWorldDir>
+        <OutputPath>$(GameVersion)/Assemblies</OutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.5014-unstable" PrivateAssets="all" />
+        <PackageReference Include="Lib.Harmony.Ref" Version="3.0.0-rc.7" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        </ItemGroup>
+
+    <!-- Newtonsoft.Json is not part of RimWorld; it is copied next to RimWorldLLM.dll in $(GameVersion)/Assemblies by the build and deployed with it. -->
+
+    <!-- Deploy to the RimWorld Mods folder when RIMWORLD_DIR / RimWorldDir is set.
+         Layouts: <dir>/Mods (Linux, Windows, and macOS from 1.7 on), <dir>/RimWorldMac.app/Mods (macOS before 1.7), or <dir> itself being a Mods folder. -->
+    <Target Name="DeployToModsFolder" AfterTargets="Build" Condition=" '$(BuildingWithScript)' != 'true' AND '$(RimWorldDir)' != '' ">
+        <PropertyGroup>
+            <EasyEngineDir Condition=" '$(EasyEngineDir)' == '' ">$(ProjectDir)../../easyEngine</EasyEngineDir>
+            <ModsDir Condition=" Exists('$(RimWorldDir)/Mods') ">$(RimWorldDir)/Mods</ModsDir>
+            <ModsDir Condition=" '$(ModsDir)' == '' And Exists('$(RimWorldDir)/RimWorldMac.app/Mods') ">$(RimWorldDir)/RimWorldMac.app/Mods</ModsDir>
+            <ModsDir Condition=" '$(ModsDir)' == '' ">$(RimWorldDir)/Mods</ModsDir>
+            <DeployPath>$(ModsDir)/RimWorldLLM/</DeployPath>
+        </PropertyGroup>
+        <ItemGroup>
+            <DeployAbout Include="$(ProjectDir)About/**/*" />
+            <DeployDefs Include="$(ProjectDir)Defs/**/*" />
+            <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
+            <DeployTextures Include="$(ProjectDir)Textures/**/*" />
+            <!-- Engine binaries (easyEngine build.sh -> $(EasyEngineDir)/dist/<os>-<arch>/; EasyEngineDir defaults to a sibling checkout ../easyEngine) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
+            <DeployEngine Include="$(EasyEngineDir)/dist/**/*" Exclude="$(EasyEngineDir)/dist/SHA256SUMS" />
+            <DeployWheel Include="$(ProjectDir)../agent/dist/*.whl" />
+            <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
+        </ItemGroup>
+        <RemoveDir Directories="$(DeployPath)" />
+        <Copy SourceFiles="@(DeployAbout)" DestinationFiles="@(DeployAbout->'$(DeployPath)About/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(DeployDefs)" DestinationFiles="@(DeployDefs->'$(DeployPath)Defs/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployDefs)' != '' " />
+        <Copy SourceFiles="@(DeployLanguages)" DestinationFiles="@(DeployLanguages->'$(DeployPath)Languages/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployLanguages)' != '' " />
+        <Copy SourceFiles="@(DeployTextures)" DestinationFiles="@(DeployTextures->'$(DeployPath)Textures/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployTextures)' != '' " />
+        <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(DeployEngine)" DestinationFiles="@(DeployEngine->'$(DeployPath)Engine/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployEngine)' != '' " />
+        <Copy SourceFiles="@(DeployWheel)" DestinationFiles="@(DeployWheel->'$(DeployPath)Engine/agent/%(Filename)%(Extension)')" Condition=" '@(DeployWheel)' != '' " />
+        <Message Text="--- RimWorldLLM deployed to $(DeployPath) ---" Importance="high" />
+    </Target>
+
+</Project>

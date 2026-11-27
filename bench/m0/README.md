@@ -1,4 +1,4 @@
-# bench/m0 - HermesVoice milestone 0 harness
+# bench/m0 - RimWorldLLM milestone 0 harness
 
 Everything runs against one llama-server at a time on 127.0.0.1:8099 (override with `M0_URL`).
 Scratch, venv and server logs live in `~/.local/share/rimworld-hermes-m0/` (never /tmp). Raw results: `results/`. Write-up: `docs/M0-RESULTS.md`.

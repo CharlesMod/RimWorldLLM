@@ -6,7 +6,7 @@
 What is real and what is a stand-in:
   * Layout (variant choice, wrapping, balloon size, tail side/angle, collision pushing, thought dots) is computed by the
     REAL C# code: Mod.Tests/PreviewEmit compiles Mod/Source/RimWorld/BubbleLayout.cs and is run through `dotnet`.
-  * Textures are the real PNGs under Mod/Textures/HermesVoice/Bubbles/ and are drawn with the same 9-slice, tiling,
+  * Textures are the real PNGs under Mod/Textures/RimWorldLLM/Bubbles/ and are drawn with the same 9-slice, tiling,
     tail-rotation and dot rules as BubbleTex.cs (BubbleDraw), using bubble_metrics.json plus the numbers the emitter prints.
   * Text uses Liberation Sans as a stand-in for RimWorld's font (Small ~13 px, Tiny ~11 px). Real glyph widths differ a little,
     so real wraps can differ by a word; the layout rules are the same.
@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
-TEX = os.path.join(REPO, "Mod", "Textures", "HermesVoice", "Bubbles")
+TEX = os.path.join(REPO, "Mod", "Textures", "RimWorldLLM", "Bubbles")
 FONT = "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf"
 FONTS = {"small": (13, 20), "tiny": (11, 16)}   # (px, line height) in UI px
 INK, PAPER, CAPTION = (26, 23, 31), (252, 250, 242), (252, 237, 168)

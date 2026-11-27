@@ -1,7 +1,7 @@
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using Xunit;
 
-namespace HermesVoice.Tests
+namespace RimWorldLLM.Tests
 {
     public class ArtBookTests
     {

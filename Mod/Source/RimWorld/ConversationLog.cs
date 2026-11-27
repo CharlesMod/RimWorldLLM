@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     public class ConversationEntry : IExposable
     {

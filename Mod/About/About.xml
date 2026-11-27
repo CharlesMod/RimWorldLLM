@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>HermesVoice</name>
+	<name>RimWorldLLM</name>
 	<author>Charleszard</author>
 	<supportedVersions>
 		<li>1.7</li>
 	</supportedVersions>
-	<description>Your colonists talk, in their own voices. HermesVoice gives every pawn a mind and a way of speaking: speech bubbles over their heads, real back-and-forth conversations, private diaries, a colony chronicle, and inner thoughts that show what they want but don't say. Lines come from what is actually happening: injuries, deaths, raids, mental breaks, weddings, funerals, grudges and gossip. The tone matches RimWorld's own.
+	<description>Your colonists talk, in their own voices. RimWorldLLM gives every pawn a mind and a way of speaking: speech bubbles over their heads, real back-and-forth conversations, private diaries, a colony chronicle, and inner thoughts that show what they want but don't say. Lines come from what is actually happening: injuries, deaths, raids, mental breaks, weddings, funerals, grudges and gossip. The tone matches RimWorld's own.
 
 2.1.0 beta. Tested on Linux with NVIDIA cards. Windows and macOS builds are included but not yet tested; reports are welcome.
 
@@ -23,17 +23,17 @@ What is downloaded
 Disk space with an NVIDIA card: about 12 GB in all on a 16 GB card once setup is done (about 16 GB at the peak, while the starter and the full model are both on disk), about 6 GB with E4B RP.
 
 Where it lives and how to remove it
-- Windows: %LOCALAPPDATA%\HermesEngine
-- Linux: ~/.local/share/hermes-engine
-- macOS: ~/Library/Application Support/HermesEngine
-The helper's memory and log are in %LOCALAPPDATA%\hermesvoice-agent on Windows and ~/.local/share/hermesvoice-agent elsewhere. To remove everything: Mod settings, HermesVoice, Storage, Remove downloaded files (it also offers to delete the helper's memory and logs), then unsubscribe or delete the mod. Or quit RimWorld and delete those two folders by hand.
+- Windows: %LOCALAPPDATA%\EasyEngine
+- Linux: ~/.local/share/easy-engine
+- macOS: ~/Library/Application Support/EasyEngine
+The helper's memory and log are in %LOCALAPPDATA%\rimworldllm-agent on Windows and ~/.local/share/rimworldllm-agent elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, Remove downloaded files (it also offers to delete the helper's memory and logs), then unsubscribe or delete the mod. Or quit RimWorld and delete those two folders by hand.
 
 Hardware
 - 16 GB graphics card: Gemma 4 26B RP, the full experience (uses about 12 GB).
 - 12 GB card: the 26B with part of it in system memory (slower), or E4B RP.
 - 6 to 12 GB card, laptops, Apple Silicon: Gemma 4 E4B RP (uses about 5 GB). Good speech, simpler inner thoughts.
 - Very small cards or no card: stock Gemma 4 E2B. It works, but speech is simpler and repeats more; the mod tells you when it is in use.
-You can change the model any time, or use a GGUF file you already have: Options, Mod settings, HermesVoice, Model.
+You can change the model any time, or use a GGUF file you already have: Options, Mod settings, RimWorldLLM, Model.
 
 Already run your own model server?
 Choose "My own endpoint" in the mod settings and point it at any OpenAI-compatible server. Nothing is downloaded.
@@ -51,7 +51,7 @@ Source code (MIT license)
 - Mod: https://github.com/CharlesMod/RimWorldLLM
 - Engine: https://github.com/CharlesMod/easyEngine
 The downloaded models carry their own terms (Apache 2.0 with the Gemma terms of use); llama.cpp and uv have their own licenses.</description>
-	<packageId>charless.HermesVoice</packageId>
+	<packageId>charleszard.rimworldllm</packageId>
 	<modVersion>2.1.0</modVersion>
 	<url>https://github.com/CharlesMod/RimWorldLLM</url>
 	<modDependencies>

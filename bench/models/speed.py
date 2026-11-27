@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio, json, time
 import httpx
 from common import *
-from hermesvoice_agent.core.prompt import line_messages
+from rimworldllm_agent.core.prompt import line_messages
 
 
 def body_for(msgs, slot, cap=48):

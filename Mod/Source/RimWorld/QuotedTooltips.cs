@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using HermesVoice.Bridge;
+using RimWorldLLM.Bridge;
 using RimWorld;
 using Verse;
 
-namespace HermesVoice
+namespace RimWorldLLM
 {
     /// <summary>
     /// The Social tab's opinion tooltip lists thoughts by label and offset only, so the quotes behind the mod's and the
@@ -31,7 +31,7 @@ namespace HermesVoice
                 string extra = OpinionQuotes(self, other);
                 if (extra.Length > 0) __result = __result + "\n\n" + extra;
             }
-            catch (Exception e) { Log.WarningOnce("[HermesVoice] social tooltip quotes: " + e.Message, 7710031); }
+            catch (Exception e) { Log.WarningOnce("[RimWorldLLM] social tooltip quotes: " + e.Message, 7710031); }
         }
 
         /// <summary>Up to three newest quotes behind self's opinion thoughts about other.</summary>
@@ -42,7 +42,7 @@ namespace HermesVoice
             var found = new List<KeyValuePair<string, QuoteEntry>>();
             foreach (var m in mems)
             {
-                var hs = m as Thought_HVSocial;
+                var hs = m as Thought_RWLSocial;
                 if (hs == null || hs.otherPawn != other) continue;
                 foreach (var q in hs.quotes) found.Add(new KeyValuePair<string, QuoteEntry>(hs.LabelCap, q));
             }
@@ -51,7 +51,7 @@ namespace HermesVoice
             return Quotes.Tooltip(top.Select(k => k.Value).ToList(), q =>
             {
                 string label = top.First(k => k.Value == q).Key;
-                return string.IsNullOrEmpty(q.Speaker) ? UiUtil.T("HV_QuoteNoSpeaker", label, q.Text) : UiUtil.T("HV_QuoteThought", label, q.Speaker, q.Text);
+                return string.IsNullOrEmpty(q.Speaker) ? UiUtil.T("RWL_QuoteNoSpeaker", label, q.Text) : UiUtil.T("RWL_QuoteThought", label, q.Speaker, q.Text);
             });
         }
     }

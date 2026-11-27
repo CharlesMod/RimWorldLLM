@@ -2,11 +2,11 @@
 import json
 
 from conftest import run
-from hermesvoice_agent.core import memory
-from hermesvoice_agent.core.minds import BLOB_LIMIT, BLOB_TARGET, Memory, Mind, Relation
-from hermesvoice_agent.core.prompt import block_d
-from hermesvoice_agent.core.sanitize import leaks_secret, sanitize_line
-from hermesvoice_agent.games.rimworld import RimWorldAdapter
+from rimworldllm_agent.core import memory
+from rimworldllm_agent.core.minds import BLOB_LIMIT, BLOB_TARGET, Memory, Mind, Relation
+from rimworldllm_agent.core.prompt import block_d
+from rimworldllm_agent.core.sanitize import leaks_secret, sanitize_line
+from rimworldllm_agent.games.rimworld import RimWorldAdapter
 
 DAY = 60000
 AD = RimWorldAdapter()
