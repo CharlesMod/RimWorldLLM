@@ -141,6 +141,13 @@ Act when food_days < 3, or < 5 and falling.
 - **Caravans**: 2-3 pawns plus pack animals. Carry food for twice the travel time plus 3 days. Leave fighters, a doctor and a cook at home.
 - **Endings** (ship; Royal Ascent [Royalty]; Archonexus [Ideology]; Void Awakening [Anomaly]; Mechhive [Odyssey]): start only with 15+ food days, a strong killzone, medicine and 6+ fighters.
 
+## Reading the digest's new lines
+- **DEADLINES** come first: a bleed-out, an infection losing the race, rot or an expiring letter in a few hours beats everything planned. Winter in days means harvest and bank food now.
+- **STUCK** work has a reason; fix the reason, do not reorder priorities: make a stockpile that takes the item, unforbid it, get the material, enable Construction, restore power, stock the ingredient.
+- **LOOSE** piles "(no stockpile takes it)" or "(stockpiles full)" need a stockpile zone, not more mining.
+- **People**: never assign work a person can't do (read "can't:" and "cannot"); children do light work only. IDLE people get a job. A break risk with its "why" is fixed at the cause.
+- **FOOD**: eat or cook what rots soon, harvest "cells ready" and hunt "game" before food runs out; a hunter must be enabled.
+
 ## How to act
 - Each turn, name the top 1-3 problems from the digest with their numbers, then call the tools that fix them.
 - Prefer small reversible changes (priorities, bills, zones); big builds when calm, one per turn.
