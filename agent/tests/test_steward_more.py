@@ -228,7 +228,7 @@ def test_build_block_renders_compactly():
     assert "BUILD: home (120,98); missing: freezer, dining table, research bench" in text
     assert "ROOMS (bedrooms 3, barracks 1, hospital no, freezer no): #12 Ana's bedroom 3x3 imp 24 bed door roofed" in text
     assert "BENCH: #4410 campfire: bills cook simple meal x10; recipes simple meal, roasted meat" in text
-    assert "ZONES: #3 grow potatoes 64 cells; #4 stockpile all 36 cells" in text
+    assert "ZONES: #3 grow potatoes 64 cells; #4 stockpile food 36 cells" in text
     assert "CAN BUILD: wall, door, bed" in text and "STUFF: steel 410, wood 280" in text
     assert "PLANTS: potatoes, rice" in text and "ORES: steel 34 cells 18 away" in text
     assert len(text) <= 6000
@@ -306,7 +306,7 @@ def _sample():
 def test_sample_carries_the_new_fields_and_stays_small():
     text = render_digest(SAMPLE)
     assert 800 < len(text) < 4000
-    for bit in ("(no stockpile takes it)", "(only far stockpile)", "STUCK: 12 steel wall blueprints 14 cells NE: waiting on steel: need 60, have 0",
+    for bit in ("(no stockpile takes it)", "(only far stockpile)", "STUCK: 2 solar generator blueprints 14 cells NE: waiting on components: need 8, have 6",
                 "bill: simple meal at fueled stove: no ingredients (raw food)", "IDLE: 1 of 5 idle", "can't: no manipulation",
                 "child", "near a minor break (why: ate without a table, low light)", "minor break risk (why: sleeping", "DEADLINES: Bram bleeds out in 6 h",
                 "winter (crops die) in 12 days", "rots soon: raw potatoes 30 in 19 h", "harvest: rice 12 cells ready, 28 more in 36 h",

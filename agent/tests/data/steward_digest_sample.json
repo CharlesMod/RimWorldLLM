@@ -478,7 +478,7 @@
   "difficulty_threat_scale": 1.0,
   "loose_unstorable": 1,
   "loose_far": 1,
-  "blueprints_stuck": 12,
+  "blueprints_stuck": 2,
   "stuck_no_material": 1,
   "stuck_no_builder": false,
   "bills_stuck": 1,
@@ -597,7 +597,7 @@
     "kind": "stockpile",
     "label": "Stockpile zone 1",
     "cells": 36,
-    "preset": "all",
+    "preset": "food",
     "priority": "normal"
    }
   ],
@@ -657,9 +657,9 @@
  },
  "stuck": [
   {
-   "what": "steel wall blueprints",
-   "count": 12,
-   "reason": "waiting on steel: need 60, have 0",
+   "what": "solar generator blueprints",
+   "count": 2,
+   "reason": "waiting on components: need 8, have 6",
    "dist": 14,
    "dir": "NE"
   },
