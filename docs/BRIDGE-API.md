@@ -415,11 +415,19 @@ The steward polls this every director step (cheap) to see the switch, new chat a
 
 ### `GET /chat?since=<seq>` and `POST /chat`
 GET returns `{"entries": [...], "next_seq": 42}` with the entries after `since` (oldest first; at most
-the 300 kept). Entry: `{"seq": 42, "tick": 123456, "who": "player", "to": 0, "name": "", "text": "..."}`.
-`who`: `player` (typed in the chat bar), `narrator` (the steward's lines), `note` (short action notes,
-"→ set Cooking 1 for Ana"), `colonist` (an answer to an `@Name` line; `to`/`name` = that colonist).
-A player line with `to` > 0 was addressed `@Name` to that colonist and went through `/talk`; the
-steward ignores those.
+the 600 kept). Entry: `{"seq": 42, "tick": 123456, "who": "player", "to": 0, "name": "", "text": "...",
+"listener": "Bram"}` (`listener` only on colonist lines that had one). Kinds (`who`, `Mod/Source/Bridge/ChatKinds.cs`):
+- `player` (typed in the chat bar; `to`/`name` = the `@Name` colonist, else 0/""), `narrator` (the
+  steward's lines), `note` (system or model-written notes);
+- `colonist`: every successful `/say` line (`to`/`name` = the speaker, `listener` = the addressee's
+  label); a reply to an `@Name` line is this same entry, written once;
+- `thought`, `dream`, `diary`: from `/thought` (`to`/`name` = the pawn; diary text shortened to ~160 chars);
+- `chronicle` (`name` = "Day N"), `recap` (the letter's lines joined, ~480 chars), `art`
+  (`Art: "Title" by Ana: description`, ~160 chars, `name` = the artist);
+- `action`: one per successful `/act/*`: the hand's plain-English note plus ", since <why>"
+  (no leading "> ": the panel adds it); `refused`: one per refused `/act/*`: "couldn't <what>: <reason>".
+Only `player` lines with `to` == 0 are for the steward to answer; it ignores every other kind and the
+`@Name` lines (those went through `/talk`).
 
 POST body: `{"op_id": "...", "who": "narrator"|"note", "text": "...", "stream_id": "..."}` (text 1..500
 chars after trim; `stream_id` optional). Reply `{"seq": 43}`. Any other `who` is `bad_request`: only the
@@ -483,8 +491,8 @@ existing ids. A stale `rev` is `409 conflict` with the current board under `boar
 is the new board.
 
 ### `GET /actions?since=<seq>`
-`{"actions": [{"seq": 19, "tick": 123456, "verb": "work", "note": "set Cooking 1 for Ana", "by": "narrator"}], "next_seq": 20}`.
-Every successful `/act/*` call is logged (cap 500, saved with the game). `by` is `narrator`.
+`{"actions": [{"seq": 19, "tick": 123456, "verb": "work", "note": "set Ana's Cooking to 1st", "by": "narrator", "why": "since meals are running low"}], "next_seq": 20}`.
+Every successful `/act/*` call is logged (cap 500, saved with the game). `by` is `narrator`; `why` only when the act carried one.
 
 ### `GET /digest` (game needed)
 A compact colony read for the steward: only what the player could see in the UI. Lists are capped
@@ -536,11 +544,22 @@ A compact colony read for the steward: only what the player could see in the UI.
 ### `POST /act/*` (game needed)
 Normal writes (`op_id`, optional `expires_tick`). Shape errors are `400 bad_request`; anything the game
 or the settings refuse is `409 refused` with `detail` = a short human reason. Success:
-`{"done": "<short note>", ...extra}` and an action-log entry.
+`{"done": "<short note>", ...extra}` and an action-log entry. The note is plain English, past tense, read
+by the player as the greentext line ("set Ana's Cooking to 1st and Hauling to 3rd", "turned off Ana's
+Hauling", "drafted Bram", "released Bram from the draft", "started researching Batteries", "paused the
+game", "set the game speed to 2", "put Ana on sleep from 22:00 to 6:00", "gave Ana the bed Bed (3301)",
+"had Ana wear the Worker outfit", "answered \"Title\" with Accept", "sent Ana to (40, 61)").
+
+Every route takes an optional **`why`** (string; cleaned, cut at a word to 80 chars, trailing
+punctuation dropped; a non-string is `400`). It is stored on the action-log entry and written into the
+chat: success → an `action` entry `<note>, <why>` when `why` starts with since/because/as/so/to/for/after/
+while, else `<note>, since <why>`; refusal (gate or hand) → a `refused` entry `couldn't <what>: <reason>`,
+where `<what>` is the hand's account of what it tried, or a phrase from the arguments when the hand never
+ran. A `400` or `no_game` writes nothing.
 
 | Route | Body | Checks before the game is asked |
 | --- | --- | --- |
-| `/act/time` | `{"pause": true?, "speed": 1..4?, "emergency": false, "reason": "..."}` | at least one of pause/speed. `speed` needs **controls_speed**. `pause: true` needs **controls_speed**, or `emergency: true` with **may_pause_for_emergencies** (then `paused_by_narrator` is set). `pause: false` needs **controls_speed** or `paused_by_narrator`. |
+| `/act/time` | `{"pause": true?, "speed": 1..4?, "emergency": false, "why": "..."}` | at least one of pause/speed. `speed` needs **controls_speed**. `pause: true` needs **controls_speed**, or `emergency: true` with **may_pause_for_emergencies** (then `paused_by_narrator` is set). `pause: false` needs **controls_speed** or `paused_by_narrator`. |
 | `/act/work` | `{"pawn": 101, "priorities": {"Cooking": 1, "Hauling": 0}}` | 1..20 entries, each priority 0..4 |
 | `/act/schedule` | `{"pawn": 101, "from_hour": 22, "to_hour": 6, "assignment": "sleep"}` | hours 0..23 / 0..24, assignment in anything/work/joy/sleep/meditate |
 | `/act/policy` | `{"pawn": 101, "kind": "food", "name": "Fine"}` | kind in outfit/food/drug, name 1..60 chars |

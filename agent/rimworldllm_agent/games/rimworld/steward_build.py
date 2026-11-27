@@ -20,7 +20,7 @@ from ...core.toolloop import Param, ToolSpec
 NONE = "none"
 WHY_MAX = 80
 _WHY = Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); "
-             "it is shown to the player beside what you did", max_len=WHY_MAX, required=False)
+             "it is shown to the player beside what you did", max_len=WHY_MAX, required=False, same_call=True)   # as steward_tools._WHY (a copy: importing it would be circular)
 
 TOOLS = ("build", "zone", "designate", "bill")
 PURPOSES = ["bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec"]   # BuildPure room purposes

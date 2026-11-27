@@ -355,6 +355,8 @@ class IdleRunner:
             text, s = None, Sanitized(None, "minor_safety")     # last guard, as in the dream path
         if text is not None and len(text) > d.cfg.thought_max_chars:
             text = None                                   # a long thought never reaches the map
+        if text is not None and d.adapter.drops_meta(text, [m.text for m in mems]):
+            text, s = None, Sanitized(None, "meta_talk")          # a thought that only remarks on the chatter
         if text is None:
             self._fail("thought", aid)
             d.dropped.append((aid, f"thought:{s.reason if not s.ok else 'too_long'}"))

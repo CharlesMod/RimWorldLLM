@@ -315,11 +315,13 @@ namespace RimWorldLLM
             Check(l, "RWL_Chat_Medium", ref s.chatPanelMedium, "RWL_Chat_MediumTip");
             SliderRow(l, "RWL_Chat_Opacity", Mathf.RoundToInt(s.chatPanelOpacity * 100f), ref s.chatPanelOpacity, 0f, 0.8f, "RWL_Chat_OpacityTip");
             s.chatPanelOpacity = Mathf.Round(s.chatPanelOpacity * 20f) / 20f;
-            SliderRow(l, "RWL_Chat_Width", Mathf.RoundToInt(s.chatPanelWidth), ref s.chatPanelWidth, 260f, 720f, "RWL_Chat_WidthTip");
-            s.chatPanelWidth = Mathf.Round(s.chatPanelWidth / 10f) * 10f;
-            float lines = s.chatPanelLines;
-            SliderRow(l, "RWL_Chat_Lines", s.chatPanelLines, ref lines, 3f, 20f, "RWL_Chat_LinesTip");
-            s.chatPanelLines = Mathf.RoundToInt(lines);
+            Note(l, UiUtil.T("RWL_Chat_MoveHelp"));
+            if (Button(l, "RWL_Chat_ResetPos", "RWL_Chat_ResetPosTip", s.ChatCustom)) s.ChatResetPosition();
+            Check(l, "RWL_Chat_FTalk", ref s.chatShowTalk, "RWL_Chat_FTalkTip");
+            Check(l, "RWL_Chat_FThoughts", ref s.chatShowThoughts, "RWL_Chat_FThoughtsTip");
+            Check(l, "RWL_Chat_FNarrator", ref s.chatShowNarrator, "RWL_Chat_FNarratorTip");
+            Check(l, "RWL_Chat_FActions", ref s.chatShowActions, "RWL_Chat_FActionsTip");
+            Check(l, "RWL_Chat_FStory", ref s.chatShowStory, "RWL_Chat_FStoryTip");
 
             l.GapLine();
             Title(l, "RWL_Events_Title");

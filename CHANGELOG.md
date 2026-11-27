@@ -13,6 +13,12 @@ Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are inclu
 - The narrator keeps a goals board (Voices → Goals) you can read and edit, and logs every action it takes.
 - Settings (Colonists → Narrator plays): it may pause for emergencies (on), it controls the speed (off), and how
   often it looks over the colony (every 6 game hours). Trade and combat micro come later.
+- The chat panel can be dragged anywhere (hover strip) and resized (corner grip); "Reset chat panel position" in
+  settings. Every generated line goes into it: colonist speech, thoughts, dreams, diary, chronicle, recap letters,
+  art. Five filter chips (Talk, Thoughts, Narrator, Actions, Story) on the hover strip and in settings.
+- Each thing the narrator does shows as its own greentext line, `> set Ana's Cooking to 1st, since meals are running
+  low`; refused acts show dim with the reason.
+- Colonists no longer remark on the act of chatting itself after a chitchat ("cut this chitchat").
 
 ### New: Narrator plays, phase 2 (building)
 - The narrator can now build: rooms (it picks a site near the base: walls and a door), single things (a stove in the

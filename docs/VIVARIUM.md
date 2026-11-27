@@ -27,13 +27,38 @@ agent. The wire details of the new routes are also in `docs/BRIDGE-API.md`; the 
   outlined text that reads over any ground. Left by default: just right of the resources list
   (x = 148 UI units) and above the inspect pane (bottom edge 208 above the screen's bottom); right:
   left of the date/alerts column. It never fades out; new lines briefly highlight. Under the mouse it
-  turns nearly opaque and the wheel scrolls history; clicks always pass through to the map. It hides
-  while a main tab window (architect, work, ...) is open, unless you are typing. Settings (Colonists →
-  Narrator plays): show/hide, left/right, small/medium font, background opacity, width, lines. Layout
-  math: `Mod/Source/RimWorld/VivariumChatLayout.cs` (Verse-free, tested).
+  turns nearly opaque and the wheel scrolls history; clicks pass through to the map everywhere except
+  on the hover strip and the grips. It hides while a main tab window (architect, work, ...) is open,
+  unless you are typing. Settings (Colonists → Narrator plays): show/hide, left/right default
+  placement, small/medium font, background opacity, the five filters, "Reset chat panel position".
+  Layout math: `Mod/Source/RimWorld/VivariumChatLayout.cs` (Verse-free, tested).
+- **Move and resize:** under the mouse a thin title strip shows at the top of the box: its grip (or
+  anywhere on the strip outside the chips) drags the panel anywhere on screen; the staircase grip in
+  the bottom-right corner resizes width and height (the visible lines follow the height). The box is
+  saved as fractions of the screen (`chatPanelX/Y/W/H`), so UI scale and resolution changes keep it in
+  place; it is always clamped fully on screen, at least 220 wide and two lines tall. The input bar
+  follows the box (below it, or above it at the bottom edge). Until the panel is first dragged it
+  keeps the default placement; Reset returns to it.
+- **Everything in the log:** besides the player's and the narrator's lines, every generated line goes
+  into the chat log: colonist speech from `/say` ("Ana: …", "Ana → Bram: …" with a listener), thoughts
+  ("Ana thinks: …", dim italic), dreams ("Ana dreams: …"), diary entries ("Ana's diary: …", shortened),
+  chronicle entries ("Chronicle, Day 5: …"), recap letters ("Recap: …"), art descriptions
+  (`Art: "Title" by Ana: …`), and the narrator's actions (greentext, below). Kinds (`who`): player,
+  narrator, note, colonist, thought, dream, diary, chronicle, recap, art, action, refused
+  (`Mod/Source/Bridge/ChatKinds.cs`). A reply to the player's `@Name` line is the same `/say` line: one copy.
+- **Filters:** five groups, each a chip on the hover strip and a checkbox in settings (all on by
+  default, saved): Talk (player, colonist), Thoughts (thought, dream, diary), Narrator (narrator, note),
+  Actions (action, refused), Story (chronicle, recap, art). Filters hide lines on the panel only; the
+  log keeps them.
+- **Greentext actions:** every act the narrator takes is its own line in greentext green:
+  `> set Ana's Cooking to 1st, since meals are running low`. The "what" is the mod's own plain-English
+  account of what the hand did (never the model's claim); the ", since …" part is the `why` the model
+  passed with the tool call (≤ 80 chars). A refused act shows dim: `> couldn't change the game speed:
+  <reason>`.
 - **Enter** (when no text field has focus and no window wants it) opens the one-line chat bar at the
   panel's bottom edge, same width; Enter sends, Esc closes. Lines: "You: …" (blue), "You → Ana: …"
-  (teal), "Narrator: …" (gold), "Ana: …" (green), notes "→ set Cook priority 1 for Ana" (grey).
+  (teal), "Narrator: …" (gold), "Ana: …" (green), notes (grey), actions "> …" (green #8FB43A),
+  refused actions "> couldn't …" (grey).
 - **Live lines:** "Narrator is thinking…" (animated dots, or "… 74%" and a thin bar when the client
   reports prefill progress) while the prompt is processed, then the narrator's text streaming in,
   replaced by the final line. An `@Name` reply can show "Ana is thinking…" the same way. A status with
@@ -42,7 +67,7 @@ agent. The wire details of the new routes are also in `docs/BRIDGE-API.md`; the 
   when its model call starts and `idle` when it ends (no token streaming); the C# mind streams.
 - Messages go to the narrator. `@Name text` goes to a colonist through the existing talk path
   (TalkQueue → agent → `POST /say`), and the colonist's answer shows in the scrollback too.
-- Chat history is saved with the game.
+- Chat history is saved with the game (the last 600 lines).
 - **Narrator off (advisor mode):** the chat still works. The narrator answers as an advisor and,
   when the player's message asks for something concrete ("build a freezer", "draft everyone"), it
   **does just that one task** and says so. It does not take any other action, and it never wakes on
@@ -69,14 +94,17 @@ The steward loop runs on the agent side:
   from the player ("always keep 20 meals"), and a short log of what it did and why. The player reads
   and edits it in the Voices tab ("Goals" page).
 - **Acts** through tools in a tool loop with a larger budget than the wants loop (8 steps, 120 s).
-  One cycle = observe → decide → a few actions → a one-line chat note when worth saying (not every
-  action). The cycle's final text is that line; "nothing to say" posts nothing.
+  One cycle = observe → decide → a few actions (each with a short `why`, shown as its greentext line)
+  → a one-line chat note when worth saying, not a list of the actions. The cycle's final text is that
+  line; "nothing to say" posts nothing.
 - **Strategy knowledge** is a prompt section loaded from a file (see "Steward prompt" below), so a
   RimWorld playbook can be dropped in without code changes.
 
 ### 4. The hands (C#, game thread, through the pump)
 Player verbs, done through the same code paths the UI uses (designators, Command gizmos, managers),
-never dev-mode cheats. Each returns ok with a short note, or the reason the game gave.
+never dev-mode cheats. Each returns ok with a plain-English note the player reads as the greentext line
+("set Ana's Cooking to 1st", "drafted Bram", "started researching Batteries"), or the reason the game
+gave with what was attempted ("couldn't set Ana's Cooking: Ana is incapable of Cooking").
 - **time:** pause/unpause, set speed. The player's speed is respected by default. The steward may
   pause (and later unpause its own pause) only for emergencies when "Narrator may pause for
   emergencies" is on (default on), and may change speed only when "Narrator controls speed" is on
@@ -99,7 +127,8 @@ health, rescue downed), with the steward setting stances and targets every few s
 clicks per tick.
 
 ### 7. Honesty and safety
-Every action is logged: the full action log (`GET /actions`, saved with the game) plus chat notes. No
+Every action is logged: the full action log (`GET /actions`, saved with the game, with each act's
+`why`) plus one greentext chat line per act, refusals included. No
 cheats, no dev mode, no reading hidden information the player couldn't see (the digest lists only
 what the colony UI shows). The steward says when it can't do something.
 
@@ -149,8 +178,9 @@ what the colony UI shows). The steward says when it can't do something.
 
 Every `/act/*` write is a normal bridge write (op_id, optional expires_tick). Success:
 `{"done": "<short note>", ...}`; a refusal is `409 refused` with `detail` = the reason the game or the
-settings gave. Every success is appended to the action log; the bridge does not post chat notes on its
-own (the steward decides what is worth a line). Acts are allowed whether or not the narrator is playing
+settings gave. Every `/act/*` takes an optional `why` (string, cleaned and cut to 80 chars; a non-string
+is a 400). Every success is appended to the action log (with its `why`) and writes one `action` chat line
+(`note` + ", since why"); a refusal writes one `refused` chat line; a 400 or no game writes nothing. Acts are allowed whether or not the narrator is playing
 (advisor mode does one task).
 
 ### In-process chat streaming (for the C# mind)

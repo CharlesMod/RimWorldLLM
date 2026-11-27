@@ -135,6 +135,7 @@ namespace RimWorldLLM.Bridge
                 throw new ArgError(a.Kind + " needs a box (x, z, w, h), a centre with radius, or a target thing id");
             return new Plan
             {
+                What = () => a.Kind == "cancel" ? "cancel orders there" : "mark things to " + a.Kind,
                 GateAt = (v, tick) =>
                 {
                     if (a.PlayerAsked && !PlayerAskedRecently(v, tick))
@@ -175,6 +176,7 @@ namespace RimWorldLLM.Bridge
             if (a.At.X != null && a.At.Room != 0) throw new ArgError("give a cell (x, z) or a room, not both");
             return new Plan
             {
+                What = () => "plan a " + a.Thing,
                 GateAt = (v, tick) => NeedLeft(null, "blueprints", Peek(v, tick).Blueprints),
                 RunLeft = (h, left) => h.Build(a, left)
             };
@@ -196,6 +198,7 @@ namespace RimWorldLLM.Bridge
             int walls = 2 * (a.W + a.H) - 4;
             return new Plan
             {
+                What = () => "build a " + a.Size + " " + a.Purpose,
                 GateAt = (v, tick) =>
                 {
                     int left = Peek(v, tick).Blueprints;
@@ -225,6 +228,7 @@ namespace RimWorldLLM.Bridge
             int area = a.W * a.H;
             return new Plan
             {
+                What = () => a.Kind == "grow" ? "make a " + a.Plant + " field" : a.Kind == "dump" ? "make a dump" : "make a " + a.Preset + " stockpile",
                 GateAt = (v, tick) =>
                 {
                     int left = Peek(v, tick).Cells;
@@ -258,6 +262,7 @@ namespace RimWorldLLM.Bridge
             int area = a.Box.Area;
             return new Plan
             {
+                What = () => (a.Op == "add" ? "add to the " : "take from the ") + (a.Kind == "home" ? "home" : a.Name) + " area",
                 GateAt = (v, tick) =>
                 {
                     int left = Peek(v, tick).Cells;
@@ -283,6 +288,7 @@ namespace RimWorldLLM.Bridge
             if (a.Op != "add" && (a.Count != 0 || a.Until != 0 || a.Radius != 0)) throw new ArgError("count, until and radius are only for add");
             return new Plan
             {
+                What = () => a.Op + " a bill" + (a.Recipe != null ? " for " + a.Recipe : ""),
                 GateAt = (v, tick) => a.Op == "add" ? NeedLeft(null, "bills", Peek(v, tick).Bills) : null,
                 RunLeft = (h, left) => h.Bill(a, left)
             };

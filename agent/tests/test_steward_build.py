@@ -244,4 +244,4 @@ def test_prompt_and_size():
     strat = kit.default_strategy()
     assert "## Build order" in strat and len(strat.encode()) <= 12288
     s = session()
-    assert len(tl.render_tools(s.tools)) < 7000
+    assert len(tl.render_tools(s.tools)) < 8500   # 7.7k with main's why on every acting tool (13 x ~250 chars)

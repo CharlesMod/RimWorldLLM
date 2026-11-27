@@ -33,7 +33,7 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
 5. **@Name.** `@Ana hi` (a real colonist, or a unique prefix): "You → Ana: hi"; `GET /talk` has it with
    `from: chat`; once the agent answers, Ana's line shows in green. `@Nobody hi` shows "No colonist named Nobody."
 6. **The chat panel** (always on, MOBA style). Colours: you blue, you → colonist teal, narrator gold, notes grey,
-   colonists green.
+   colonists green, acts greentext green, refused acts grey.
    - **Position, UI scale 1** (Options → Interface → UI scale; 1920x1080 expected numbers): left of screen at x 148,
      just right of the resources list; its bottom edge (the input bar slot) at y 872, about 208 above the screen's
      bottom, i.e. just above where the inspect pane opens when you select something. With 10 lines of small text the
@@ -42,8 +42,8 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
    - **UI scale 2** (960x540 UI units on 1080p): same x 148, bottom edge at y 332; it fits 8 small lines (box y
      ~116-302) and stays below the colonist bar. Check it doesn't cover the colonist bar with many colonists.
    - Settings → Colonists → Narrator plays: "Chat panel on the right" moves it left of the date/alerts column (at
-     scale 1 it then sits lower, just above the bottom bar); width, lines, background opacity, larger text, and
-     "Show the chat panel" off (then it shows only while typing) all apply at once.
+     scale 1 it then sits lower, just above the bottom bar) while the panel has not been dragged; background
+     opacity, larger text, and "Show the chat panel" off (then it shows only while typing) all apply at once.
    - **Readability:** read it over bright ground (sand, snow, a lit floor) and dark ground (night, rock, fog): text
      keeps a soft dark outline; the background stays faint. Note the opacity you end up liking.
    - It never fades away; a new line highlights for ~4 s.
@@ -51,6 +51,30 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
      moving away snaps back to the newest. **Click-through:** clicking or dragging a selection box over the panel
      still selects pawns/things under it; right-click orders work under it.
    - Opening a main tab (Architect, Work, …) hides the panel; Enter still shows it with the bar.
+6a. **Move, resize, filters** (round 2).
+   - Hover the panel: a thin dark strip with a three-bar grip and five chips (Talk, Thoughts, Narrator, Actions,
+     Story) shows over its top, and a small staircase grip in the bottom-right corner. Away from the panel neither shows.
+   - Drag the strip (grip or empty strip): the panel follows the mouse anywhere and can't leave the screen. Drag the
+     corner: width and height change; more height shows more lines; it stops at ~220 wide / two lines. Releasing the
+     mouse outside the panel ends the drag. Clicks and drags anywhere else on the panel still reach the map.
+   - Press Enter: the input bar sits right under the moved panel (above it when the panel is at the bottom edge) and
+     follows if you drag while it's open.
+   - Change UI scale or resolution: the panel keeps its relative place and size. Save/quit/load: same place.
+   - Settings → Colonists → Narrator plays → "Reset chat panel position": back to the default spot.
+   - Click each chip: its lines vanish from the panel (the chip dims) and come back on a second click; the five
+     checkboxes in settings match the chips. A chip click must not select or order anything on the map.
+6b. **Everything in the log** (agent running). Within a few minutes the panel shows colonist speech ("Ana: …",
+   "Ana → Bram: …"), thoughts ("Ana thinks: …" dim green, italic — if you see literal `<i>` tags, note it), dreams,
+   diary lines ("Ana's diary: …"), and later chronicle ("Chronicle, Day N: …"), a recap letter ("Recap: …") and art
+   (`Art: "Title" by Ana: …`). An `@Ana hi` answer shows once, not twice. A refused `/say` (a sleeping or dead
+   speaker) adds nothing.
+6c. **Greentext.** With the narrator playing (or one advisor task), each act it takes adds its own green line
+   `> set Ana's Cooking to 1st, since meals are running low` (no "→" notes any more); the narrator's own line after
+   it doesn't list the acts again. Try a refused act, e.g. `curl ... -X POST $B/act/time -d '{"op_id":"g1","speed":3,"why":"since nothing is happening"}'`
+   with "controls the game speed" off: a grey `> couldn't change the game speed: …` line. Note any wording that
+   reads oddly (pawn names, priorities, bed and policy names).
+6d. **No meta chitchat.** Over a long run, no thought or line that only remarks on the talking itself ("cut this
+   chitchat", "enough small talk").
 7. **Save/load.** Save, quit to menu, load: the switch state and chat history come back; old lines don't
    highlight as new; no "is thinking" line survives a load. A save from before this version loads with the switch off and an empty chat.
 8. **Goals tab** (Voices window → Goals): add a long- and a short-term goal; Done, Drop, Reopen, Remove; edit and
@@ -79,7 +103,7 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
 ## B. With the agent and the 26B
 
 12. **Advisor mode** (switch off). Chat "what should we research next?": a narrator line answers, nothing changes in
-    the game. Chat "put Ana on cooking": one action (Ana's Cooking priority), a "→ …" note, and a line saying so.
+    the game. Chat "put Ana on cooking": one action (Ana's Cooking priority), its green "> …" line, and a narrator line.
     Chat "build a freezer": it says it can't build yet and recommends how.
 12a. **"Narrator is thinking…".** Send a chat line: within a second the panel's last line reads "Narrator is
     thinking" with animated dots, and it is replaced by the narrator's answer (or vanishes if the cycle ends with

@@ -10,15 +10,16 @@ namespace RimWorldLLM.Bridge
     public sealed class HandResult
     {
         public bool Ok;
-        public string Note;    // ok: "set Cooking 1 for Ana"
+        public string Note;    // ok: plain English past tense, the player reads it: "set Ana's Cooking to 1st"
         public string Reason;  // not ok: "Ana is incapable of Cooking"
+        public string What;    // not ok: plain English of what was attempted ("set Ana's Cooking"), for "couldn't {What}: {Reason}"; may be null
         public JObject Extra;  // optional fields merged into the reply
         /// <summary>Phase 2: what the hand put into the world (blueprints, designations, zones, bills), for the
         /// per-cycle caps and the player's undo. Null or empty for hands that place nothing.</summary>
         public List<NarratorMark> Marks;
 
         public static HandResult Done(string note, JObject extra = null) { return new HandResult { Ok = true, Note = note, Extra = extra }; }
-        public static HandResult No(string reason) { return new HandResult { Ok = false, Reason = reason }; }
+        public static HandResult No(string reason, string what = null) { return new HandResult { Ok = false, Reason = reason, What = what }; }
         public static HandResult Placed(string note, List<NarratorMark> marks, JObject extra = null) { return new HandResult { Ok = true, Note = note, Extra = extra, Marks = marks }; }
     }
 

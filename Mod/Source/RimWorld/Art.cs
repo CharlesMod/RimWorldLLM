@@ -85,8 +85,13 @@ namespace RimWorldLLM
             int id = b.Value<int>("thing");
             var thing = ArtSupport.Find(id);
             if (thing == null || thing.Destroyed) return ApiResult.Fail("conflict", "no artwork " + id + " (destroyed, or not on a map)");
-            if (ArtSupport.ArtOf(thing) == null) return ApiResult.Fail("bad_request", "thing " + id + " is not an artwork");
+            var artComp = ArtSupport.ArtOf(thing);
+            if (artComp == null) return ApiResult.Fail("bad_request", "thing " + id + " is not an artwork");
             int count = RWLBridge.Art.Set(id, text, Verse.Find.TickManager.TicksGame);
+            string artTitle = "", artist = "";
+            try { artTitle = System.Text.RegularExpressions.Regex.Replace(artComp.Title.ToString(), "<[^>]*>", "").Trim(); } catch (Exception) { }
+            try { artist = System.Text.RegularExpressions.Regex.Replace(artComp.AuthorName.ToString(), "<[^>]*>", "").Trim(); } catch (Exception) { }
+            ChatFeed.Art(VivariumGame.State.Chat, VivariumGame.NowTick, artist, artTitle, text);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
         }
     }
