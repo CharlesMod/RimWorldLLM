@@ -645,3 +645,28 @@ and caps: docs/VIVARIUM.md "Phase 2".
 becomes active (polled every 250 ticks; critical alerts and a short list: fire, starvation, low food,
 colonist needs rescue, colonist needs tending, life-threatening illness). Both have empty `pawns`; the
 director does not voice them.
+
+### `GET /dialogs` and `POST /act/choose` (unattended play; game needed for the act)
+`GET /dialogs` (no game needed) lists the choice windows and choice letters open now, as the mod's scanner last saw
+them (a few times a second, also while a modal window has the game paused):
+`{"dialogs": [{"id": "L4021", "kind": "joiner", "title": "Refugee", "text": "...(<=300)", "options": [{"index": 0,
+"label": "Accept the refugee", "disabled": false, "risk": "costs silver"}], "fields": [{"name": "faction", "label":
+"Faction name", "max_len": 40}], "default": "Accept the refugee", "timeout_s": 90, "open_s": 12, "pauses_game": false}],
+"timeout_s": 90}`. `id` is `L<letter id>` for letters and `W<n>` for windows. `kind` is one of joiner, creep_joiner,
+visitors, betray_visitors, ransom, choose_pawn, baby_to_child, growth_moment, quest, letter, node_tree, message_box,
+naming. `disabled_reason` appears on a disabled option, `risk` (a few words) on a costly or destructive one. Naming
+dialogs have `fields` and no options. `default` is what the safe default would pick. `open_s` is real seconds open.
+The same list is the digest's `dialogs` array (omitted when none are open).
+
+`POST /act/choose` `{"dialog": "L4021", "option": 0 | "Accept the refugee" | "#0", "why": "since we have room"}` or, for
+naming, `{"dialog": "W3", "text": "Ferngrove"}` / `{"dialog": "W3", "text": {"faction": "The Lanterns", "settlement":
+"Ashford"}}`. Checks: `dialog` 1..64 chars; `option` an integer or a string, or `text` a string or an object of strings (each
+1..60 chars; cut to the field's max_len); at least one of them (`400`). Then the usual `/act/*` path: `409 refused` with a
+reason when the dialog is gone, the option is disabled or unknown, a choice dialog got `text` or a naming dialog got only
+an `option`, or the game refused. A success is an action (`choose`) and a greentext line. A name the dialog
+rejects (too long, already taken) is refused with the reason.
+
+### Event `dialog`
+`{"type": "dialog", "severity": 0.6, "data": {"dialog": "L4021", "kind": "joiner", "title": "Refugee", "options":
+["Accept the refugee", "Reject"], "default": "Accept the refugee", "timeout_s": 90}}`, published once when a dialog is first
+seen. `pawns` is empty; the director does not voice it. The steward wakes on it even while the game is paused.

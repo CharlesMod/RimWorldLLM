@@ -389,3 +389,63 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## Unattended play: dialogs
+
+Goal: with "Narrator plays" on, no popup stops a run. Every window that wants a player's choice is seen, shown to the
+steward, and answered: by the model when it can, by a safe default when it does not.
+
+**Pieces.** `Mod/Source/Bridge/VivariumDialogs.cs` (Verse-free: the `DialogRecord`, the `DialogBook` of what is open, the
+`DialogPolicy` defaults, the chat-note text), `VivariumRoutesDialogs.cs` (`POST /act/choose` through the normal Act
+pipeline, so each answer is a greentext line and an action-log entry; `DialogSweep`, the timeout sweep),
+`Mod/Source/RimWorld/VivariumDialogHost.cs` (the game side: a scanner run from `GameComponentUpdate`, so it also runs while a
+modal window has the game paused, at most every 0.35 real seconds; it turns windows and letters into records with stable
+ids, publishes the `dialog` event once per new dialog, answers through `IVivariumHands.Choose`, and runs the sweep).
+Routes and shapes: docs/BRIDGE-API.md. The agent reads the list from the digest's `dialogs` array and answers with the
+`choose` tool; a `dialog` event wakes the steward at once, also while the game is paused (every other event only wakes
+it while the game runs).
+
+**Timeout.** Real seconds, since modal windows force-pause the game: setting `narratorDialogTimeoutS`, default 90 (10..300).
+Past it, and only while Narrator plays is on and "Answer popups when the narrator plays" (`narratorAnswerDialogs`, default on)
+is on, the sweep applies the safe default, adds the chat note `No answer in 90 s: chose "..." on "..." (default)` and the
+action line (action `choose`, by `default`). A default that fails (window gone, option disabled, the game refused) is retried
+twice more (every scan, about 3 times a second), then gives up with one chat note and the dialog stays open. A dialog with no
+enabled option (and no naming field) is never auto-answered.
+
+### Inventory
+
+| What | Game type | Kind | Options the narrator sees | Safe default | Answered by |
+|---|---|---|---|---|---|
+| Refugee, wanderer, pod-crash survivor joins | `ChoiceLetter_AcceptJoiner` | `joiner` | the letter's choices (vanilla: accept, reject) | accept | the choice's `action()`, as the letter dialog does |
+| Anomaly joiner | `ChoiceLetter_AcceptCreepJoiner` | `creep_joiner` | accept / capture / reject (by position) | decline (the third option, else the first safe) | the choice's `action()` |
+| Visitors ask to stay | `ChoiceLetter_AcceptVisitors` | `visitors` | accept / reject | accept | the choice's `action()` |
+| Betray visitors (obsolete in 1.7) | `ChoiceLetter_BetrayVisitors` | `betray_visitors` | accept / decline | decline | the choice's `action()` |
+| Ransom demand | `ChoiceLetter_RansomDemand` | `ransom` | pay (risk "costs silver") / refuse | refuse | the choice's `action()` |
+| Choose a pawn | `ChoiceLetter_ChoosePawn` | `choose_pawn` | one option per pawn | the first enabled | the choice's `action()` |
+| Baby to child (colonist or slave) | `ChoiceLetter_BabyToChild` | `baby_to_child` | colonist / slave | the first (colonist) | the choice's `action()` |
+| Other `ChoiceLetter` subclasses with choices | any | `letter` | the letter's choices | the first option with no risk | the choice's `action()` |
+| Quest offer | plain `ChoiceLetter` with `quest` not yet accepted | `quest` | "Accept the quest" (risk "risk unknown") / "Decline the quest" | decline | accept: `Quest.Accept(a free colonist)`, then the letter is removed; decline: the letter's reject option |
+| Growth moment (Biotech) | `ChoiceLetter_GrowthMoment`, window `Dialog_GrowthMomentChoices` | `growth_moment` | one option: take the first passion choices and the first trait | the same | `MakeChoices(first passions, first trait)`, close the window, remove the letter |
+| Comms, event dialogs | `Dialog_NodeTree` (and `Dialog_NodeTreeWithFactionInfo`) | `node_tree` | the current node's `DiaOption`s (an option that only closes the tree has role close) | the free option that closes the tree, else the first enabled | `DiaOption.Activate()`, as the click does |
+| Confirmations raised by events | `Dialog_MessageBox` | `message_box` | buttons A, B, C (A is risk "destructive" when flagged) | the non-destructive button, preferring the cancel/decline one | the button's action, then the window closes |
+| Confirm | `Dialog_Confirm` | `message_box` | Confirm (risk "confirms an action") / Cancel | Cancel | the `onConfirm` action, or just close |
+| Name the colony, settlement, faction | `Dialog_NamePlayerFaction`, `...Settlement`, `...FactionAndSettlement` (all `Dialog_GiveName`) | `naming` | none: fields `name` (or `faction`, `settlement`) with a max length | a fallback name from a small list, cut to the field | `IsValidName`, `Named(s)` (and `NamedSecond(s)`), close the window |
+
+Not scanned, on purpose: windows the player opens himself (trade, caravan forming, ritual and ideology dialogs, rename of an
+existing pawn, `Dialog_NamePawn`, options, save/load): they are not raised by an event and the narrator has its own hands
+for the matching jobs; babies are named by the game. `ChoiceLetter_BabyBirth`, `_EntityDiscovered` and `_GameEnded`, and plain
+letters with only Close/Jump/Postpone options, are informational and skipped (they do not block play). `Dialog_Negotiation`
+and the like are node trees. Options that have no action and no link (they only open another window, such as "view in quests
+tab") are listed as disabled ("only opens a window").
+
+**The model's answer.** The steward's prompt tells it to answer open dialogs with `choose` (dialog id, option number or label;
+for naming a short fitting name in `text`, `faction | settlement` for two names), to accept people who ask to join when the
+colony can feed them and decline ransoms and quests it cannot judge. Chosen text is clipped to the field's maximum, and a name
+the dialog rejects comes back as a refusal the model reads. `dialog_try` (`python -m rimworldllm_agent.games.rimworld.dialog_try
+--dialogs agent/tests/data/dialogs_refugee.json [--paused] --llm-url ...`) runs one steward cycle against recorded
+`GET /dialogs` bodies (samples for refugee, ransom, quest offer, colony naming are in `agent/tests/data/`).
+
+**Known limits.** The roles of a letter's options are fixed by position (`DialogKinds.RolesFor`), because the labels are
+translated: if vanilla's order differs the default picks the wrong one (check 27 in VIVARIUM-PLAYTEST.md). The growth moment
+takes the first choices only (no model choice yet). The pawn who accepts a quest is the first free colonist. Hand-written
+`Window` subclasses from other mods are not seen.

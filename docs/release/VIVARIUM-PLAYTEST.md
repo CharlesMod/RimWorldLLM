@@ -160,3 +160,31 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
+
+## D. Unattended play: dialogs
+
+Narrator plays on, the agent running with the model, `$B` and `$T` as above. Use dev mode (Debug actions) to fire
+incidents: `Incidents > Refugee chased`, `Wanderer joins`, `Ransom demand`, `Quest`, `Give quest`; change the settings
+first: timeout 15 s in the mod settings (Narrator plays group).
+
+26. **See.** Fire a refugee incident. `curl -s -H "Authorization: Bearer $T" $B/dialogs | jq` lists `L<id>` kind joiner
+    with two options (Accept / Reject, nothing disabled). `GET /events` has a `dialog` event with the same id.
+27. **Answer by the model.** Leave the agent running: within a few seconds a `> chose "Accept ..." on "Refugee", since ...`
+    green line appears and the refugee joins. Check the order of the options in `/dialogs` against the real letter
+    (index 0 must be the accepting one; if vanilla's order differs, the default picks the wrong one: report it).
+28. **Paused window.** Fire the colony naming dialog (new game start, or Debug > "Name colony"/rename faction in the
+    faction tab) while the game is running: the game is paused by the window. The steward still answers (reason `dialog` in
+    its trace) with a fitting name; the window closes and the name shows in the faction tab.
+29. **Default.** Stop the agent (or set the agent's choice off). Fire `Ransom demand`: after 15 s a chat note "No answer in
+    15 s: chose "Refuse..." on ... (default)" and an action line; no silver is paid. Fire a refugee: after 15 s accepted.
+    Fire a quest offer: declined (the letter disappears, the quest does not start).
+30. **Message box and node tree.** Trigger a trader/faction comms dialog (Debug > "Make trader caravan arrive", open the
+    comms console), leave it: after the timeout it closes via its harmless option. Raise a Dialog_MessageBox (for
+    example "Abandon colony" confirm via the caravan tab) with the agent off: after the timeout the Cancel button is
+    pressed, not the destructive one.
+31. **Growth moment** (Biotech): a child turning 3, 7 or 10 gives a letter and a choice window. With the agent off, the
+    default takes the first passion(s) and the first trait; the child's skills and traits show it.
+32. **Toggle.** Turn "Answer popups when the narrator plays" off: nothing is auto-answered; the model's `choose` still
+    works. Turn Narrator plays off: nothing is auto-answered either.
+33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
+    stays open with no default; after three tries (none, when no option is enabled) one chat note says so. Nothing loops.
