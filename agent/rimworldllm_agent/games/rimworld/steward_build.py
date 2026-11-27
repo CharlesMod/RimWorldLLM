@@ -28,6 +28,7 @@ SIZES = ["small", "medium", "large"]
 PRESETS = ["food", "meds", "raw", "all"]
 BILL_OPS = ["add", "remove", "suspend", "resume"]
 MAX_ROOMS, MAX_BENCHES = 12, 8
+LIVING_ROOMS = ("bedroom", "barracks", "hospital", "dining", "rec", "prison")   # never cool these as a freezer
 
 
 def _opt(name: str, desc: str, choices: list[str]) -> Param:
@@ -93,7 +94,7 @@ class BuildKit:
         if self.things:
             params.append(_opt("thing", "thing: what", self.things))
         if self.rooms and self.things:
-            params.append(self._rooms_param("thing: inside this room, else near home"))
+            params.append(self._rooms_param("thing: inside this existing room (a room planned this turn has no id yet), else near home"))
         out.append(ToolSpec(
             "build", "Plan a room or one building; the planner picks the cells.", params + stuff + [_WHY]))
         zk = (["grow"] if self.plants else []) + ["stockpile", "dump"]
@@ -153,8 +154,8 @@ class BuildKit:
             p, s = self._get(v, "purpose"), self._get(v, "size")
             if p is None or s is None:
                 raise ValueError("a room needs purpose (" + ", ".join(PURPOSES) + ") and size (" + ", ".join(SIZES) + ")")
-            if self._get(v, "thing") is not None or self._room_id(v) is not None:
-                raise ValueError("thing and room are for kind thing; a room is placed by the planner")
+            # thing/room are ignored for a room: the grammar writes every parameter and the 26B fills them with what it
+            # means to put inside later ("cooler" for a freezer); refusing cost a step each time in the live check.
             b = {"purpose": p, "size": s}
             self._stuff(v, b)
             return "room", b
@@ -164,6 +165,13 @@ class BuildKit:
         b = {"thing": t}
         self._stuff(v, b)
         r = self._room_id(v)
+        if t == "cooler":
+            # live check: the 26B put the freezer's cooler into an existing bedroom/barracks in the same turn it planned
+            # the freezer. A cooler goes into its freezer once that room is built and listed.
+            role = self.rooms.get(str(r), "").lower() if r is not None else ""
+            if r is None or any(w in role for w in LIVING_ROOMS):
+                raise ValueError("a cooler goes in the wall of a freezer or storeroom listed in ROOMS; if the freezer is "
+                                 "only planned, place the cooler in a later turn once it shows in ROOMS")
         if r is not None:
             b["room"] = r
         return "build", b

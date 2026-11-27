@@ -146,9 +146,10 @@ def test_build_errors_come_back(fb):
     assert "error" in r.result and "size" in r.result["error"]
     r = do(fb, s, "build", kind="thing")
     assert "thing" in r.result["error"]
-    r = do(fb, s, "build", kind="room", purpose="rec", size="large", room="12")
-    assert "error" in r.result
     assert len(fb.act_log) == n
+    # a room ignores thing/room (the grammar writes every param; the model fills them with what goes inside later)
+    do(fb, s, "build", kind="room", purpose="freezer", size="small", thing="cooler", room="12")
+    assert fb.act_log[-1] == ("room", {"purpose": "freezer", "size": "small"})
 
 
 def test_zone_bodies(fb):
@@ -245,3 +246,15 @@ def test_prompt_and_size():
     assert "## Build order" in strat and len(strat.encode()) <= 12288
     s = session()
     assert len(tl.render_tools(s.tools)) < 8500   # 7.7k with main's why on every acting tool (13 x ~250 chars)
+
+
+def test_cooler_only_into_a_non_living_room(fb):
+    s = live(fb)
+    n = len(fb.act_log)
+    r = do(fb, s, "build", kind="thing", thing="cooler")
+    assert "freezer" in r.result["error"]
+    r = do(fb, s, "build", kind="thing", thing="cooler", room="12")          # 12 is a bedroom
+    assert "freezer" in r.result["error"]
+    assert len(fb.act_log) == n
+    do(fb, s, "build", kind="thing", thing="cooler", room="14")              # 14 is the kitchen
+    assert fb.act_log[-1] == ("build", {"thing": "cooler", "room": 14})

@@ -135,7 +135,30 @@ namespace RimWorldLLM
             return null;
         }
 
-        static bool IsImpassableEdifice(Map map, IntVec3 c)
+/// <summary>Coolers and vents go into a wall, not on a room's floor.</summary>
+        static bool WallMounted(ThingDef def)
+        {
+            return typeof(Building_Cooler).IsAssignableFrom(def.thingClass) || typeof(Building_Vent).IsAssignableFrom(def.thingClass);
+        }
+
+        /// <summary>The room's plain wall cells (impassable edifices that are not doors), not corners: each has a room
+        /// cell as a cardinal neighbour.</summary>
+        static List<IntVec3> RoomWallCells(Map map, Room room)
+        {
+            var seen = new HashSet<IntVec3>();
+            foreach (var c in room.Cells)
+                foreach (var d in GenAdj.CardinalDirections)
+                {
+                    var n = c + d;
+                    if (!n.InBounds(map) || seen.Contains(n)) continue;
+                    var e = n.GetEdifice(map);
+                    if (e == null || e is Building_Door || e.def.passability != Traversability.Impassable || !e.def.building.isPlaceOverableWall && e.def != ThingDefOf.Wall) continue;
+                    seen.Add(n);
+                }
+            return seen.ToList();
+        }
+
+                static bool IsImpassableEdifice(Map map, IntVec3 c)
         {
             var e = c.GetEdifice(map);
             return e != null && e.def.passability == Traversability.Impassable;
@@ -186,6 +209,28 @@ namespace RimWorldLLM
                     Room room = null;
                     foreach (var r in map.regionGrid.AllRooms) if (r.ID == a.At.Room) { room = r; break; }
                     if (room == null) return HandResult.No("no room " + a.At.Room + " on the map");
+                    if (WallMounted(def))
+                    {
+                        // a cooler (or vent) sits in the room's wall: cold side (South rotated by its rotation) inside,
+                        // the other side outdoors or in another room; it replaces a plain wall cell, never a door or a corner
+                        foreach (var c in RoomWallCells(map, room).OrderBy(c => BuildHelpers.Dist2(c.x, c.z, home.x, home.z)))
+                        {
+                            foreach (int r in new[] { 0, 1, 2, 3 })
+                            {
+                                var rt = new Rot4(r);
+                                var cold = c + IntVec3.South.RotatedBy(rt);
+                                var hot = c + IntVec3.North.RotatedBy(rt);
+                                if (!cold.InBounds(map) || !hot.InBounds(map) || cold.GetRoom(map) != room || hot.GetRoom(map) == room) continue;
+                                if (IsImpassableEdifice(map, hot)) continue;
+                                var rep = GenConstruct.CanPlaceBlueprintAt(def, c, rt, map, false, null, null, stuff);
+                                if (rep.Accepted) { cell = c; rot = rt; break; }
+                                if (firstReason == null) firstReason = rep.Reason.NullOrEmpty() ? "it does not fit there" : rep.Reason;
+                            }
+                            if (cell.IsValid) break;
+                        }
+                        if (!cell.IsValid) return HandResult.No("no wall cell of that room takes a " + def.label + " (it needs a plain wall with open air or another room behind it)" + (firstReason == null ? "" : ": " + firstReason));
+                        goto place;
+                    }
                     var scored = new List<KeyValuePair<int, IntVec3>>();
                     foreach (var c in room.Cells)
                     {
@@ -216,6 +261,7 @@ namespace RimWorldLLM
                     if (!cell.IsValid) return HandResult.No("no valid spot for a " + def.label + " near the base" + (firstReason == null ? "" : ": " + firstReason));
                 }
 
+            place:
                 var bp = GenConstruct.PlaceBlueprintForBuild(def, cell, map, rot, Faction.OfPlayer, stuff);
                 if (bp == null) return HandResult.No("the game would not place a " + def.label + " at (" + cell.x + "," + cell.z + ")");
                 var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
