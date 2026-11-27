@@ -130,7 +130,7 @@
     "Hauling": 3,
     "Firefighter": 1
    },
-   "health": "fine",
+   "health": "bleeding (left leg)",
    "downed": false,
    "mood": 52,
    "mental": "",
@@ -184,7 +184,15 @@
    "outfit": "Anything",
    "food": "Fine",
    "drug": "Social drugs",
-   "bed": 3303
+   "bed": 3303,
+   "cannot": [
+    "no manipulation: can't build, cook or craft"
+   ],
+   "break_risk": "near",
+   "mood_why": [
+    "ate without a table",
+    "low light"
+   ]
   },
   {
    "id": 104,
@@ -218,20 +226,26 @@
    "downed": false,
    "mood": 38,
    "mental": "",
-   "job": "Mining",
+   "job": "Wait_Wander",
    "drafted": false,
    "schedule_now": "work",
    "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
    "outfit": "Worker",
    "food": "Fine",
    "drug": "Social drugs",
-   "bed": 3304
+   "bed": 3304,
+   "idle": true,
+   "break_risk": "minor",
+   "mood_why": [
+    "sleeping in a barracks",
+    "dirty room"
+   ]
   },
   {
    "id": 105,
    "name": "Eli",
    "role": "colonist",
-   "age": 19,
+   "age": 11,
    "skills": [
     {
      "skill": "Plants",
@@ -269,7 +283,11 @@
    "outfit": "Anything",
    "food": "Fine",
    "drug": "No drugs",
-   "bed": null
+   "bed": null,
+   "child": true,
+   "cannot": [
+    "can't see well"
+   ]
   }
  ],
  "work_types": [
@@ -457,7 +475,26 @@
   "silver": 0,
   "dlc": [],
   "storyteller": "cassandra",
-  "difficulty_threat_scale": 1.0
+  "difficulty_threat_scale": 1.0,
+  "loose_unstorable": 1,
+  "loose_far": 1,
+  "blueprints_stuck": 12,
+  "stuck_no_material": 1,
+  "stuck_no_builder": false,
+  "bills_stuck": 1,
+  "colonists_children": 1,
+  "colonists_idle": 1,
+  "meals": 14,
+  "raw_food": 120,
+  "food_rot_soon": 30,
+  "crops_ready": 12,
+  "huntable": 3,
+  "days_to_winter": 12.0,
+  "bleed_out_hours": 5.5,
+  "infections_losing": 0,
+  "tattered_apparel": 0,
+  "ancient_danger": false,
+  "unreachable_piles": 0
  },
  "build": {
   "home": {
@@ -477,7 +514,10 @@
     "door": true,
     "roofed": true,
     "x": 118,
-    "z": 101
+    "z": 101,
+    "temp_c": 18,
+    "mountain": false,
+    "dirty": false
    },
    {
     "id": 13,
@@ -519,7 +559,10 @@
     "door": true,
     "roofed": true,
     "x": 118,
-    "z": 94
+    "z": 94,
+    "temp_c": 3,
+    "mountain": true,
+    "dirty": true
    }
   ],
   "missing": [
@@ -592,6 +635,85 @@
     "cells": 34,
     "dist": 18
    }
+  ],
+  "loose": [
+   {
+    "label": "steel",
+    "count": 450,
+    "dist": 14,
+    "dir": "NE",
+    "forbidden": false,
+    "store": "none"
+   },
+   {
+    "label": "wood",
+    "count": 120,
+    "dist": 9,
+    "dir": "S",
+    "forbidden": false,
+    "store": "far"
+   }
   ]
- }
+ },
+ "stuck": [
+  {
+   "what": "steel wall blueprints",
+   "count": 12,
+   "reason": "waiting on steel: need 60, have 0",
+   "dist": 14,
+   "dir": "NE"
+  },
+  {
+   "what": "bill: simple meal at fueled stove",
+   "count": 1,
+   "reason": "no ingredients (raw food)"
+  }
+ ],
+ "food": {
+  "meals": 14,
+  "meals_loose": 3,
+  "raw": 120,
+  "raw_loose": 40,
+  "rot_soon": [
+   {
+    "label": "raw potatoes",
+    "count": 30,
+    "days": 0.8
+   }
+  ],
+  "harvest": [
+   {
+    "plant": "rice",
+    "cells": 40,
+    "ready": 12,
+    "days": 1.5
+   }
+  ],
+  "game": [
+   {
+    "label": "deer",
+    "count": 3,
+    "dist": 30,
+    "dir": "W"
+   }
+  ],
+  "hunters": 2
+ },
+ "deadlines": [
+  {
+   "what": "Bram bleeds out",
+   "hours": 5.5,
+   "kind": "bleed"
+  },
+  {
+   "what": "raw potatoes rot",
+   "hours": 19,
+   "kind": "rot"
+  },
+  {
+   "what": "winter (crops die)",
+   "hours": 288,
+   "kind": "winter"
+  }
+ ]
 }
