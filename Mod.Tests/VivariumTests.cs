@@ -114,11 +114,11 @@ namespace RimWorldLLM.Tests
             Assert.Equal(0, V.Chat.LastSeq);
             var e = V.Chat.Add("player", new string('b', 800), 5, 7, "Ana");
             Assert.Equal(500, e.Text.Length); Assert.Equal(7, e.To); Assert.Equal("Ana", e.Name);
-            for (int i = 0; i < 400; i++) V.Chat.Add("note", "n" + i, i);
+            for (int i = 0; i < ChatLog.Max + 100; i++) V.Chat.Add("note", "n" + i, i);
             Assert.Equal(ChatLog.Max, V.Chat.Entries.Count);
-            Assert.Equal(401, V.Chat.LastSeq);
+            Assert.Equal(ChatLog.Max + 101, V.Chat.LastSeq);
             Assert.Equal(102, V.Chat.Entries[0].Seq);
-            Assert.Equal(300, H.Call("GET", "/chat?since=0").Body["entries"].Count());
+            Assert.Equal(ChatLog.Max, H.Call("GET", "/chat?since=0").Body["entries"].Count());
         }
 
         // ------------------------------------------------------------ goals
@@ -240,6 +240,71 @@ namespace RimWorldLLM.Tests
             Assert.Equal("narrator", (string)a["by"]); Assert.Equal(1000, (int)a["tick"]);
             Assert.Single(H.Call("GET", "/actions?since=1").Body["actions"]);
             BadRequest(H.Call("GET", "/actions?since=x"));
+        }
+
+        ChatEntry LastChat() { return V.Chat.Entries.Last(); }
+
+        [Fact]
+        public void WhyFlowsToActionLogAndChat()
+        {
+            Hands.Next = HandResult.Done("started researching Batteries");
+            Assert.True(Post("/act/research", new { project = "Batteries", why = "The power is short." }).Ok);
+            Assert.Equal("The power is short", (string)H.Call("GET", "/actions?since=0").Body["actions"][0]["why"]);
+            Assert.Equal("action", LastChat().Who);
+            Assert.Equal("started researching Batteries, since the power is short", LastChat().Text);
+            // exported and imported back
+            var v2 = new Vivarium(); v2.Actions.Import(V.Actions.Export());
+            Assert.Equal("The power is short", (string)v2.Actions.Export()[0]["why"]);
+        }
+
+        [Fact]
+        public void ActWithoutWhyOmitsIt()
+        {
+            Post("/act/research", new { project = "Batteries" });
+            Assert.Null(H.Call("GET", "/actions?since=0").Body["actions"][0]["why"]);
+            Assert.Equal("did it", LastChat().Text);
+        }
+
+        [Fact]
+        public void WhyTooLongIsTruncatedAndNonStringIs400()
+        {
+            string why = "because " + string.Join(" ", Enumerable.Repeat("something", 30));
+            Assert.True(Post("/act/research", new { project = "Batteries", why }).Ok);
+            Assert.True(((string)H.Call("GET", "/actions?since=0").Body["actions"][0]["why"]).Length <= 80);
+            int chats = V.Chat.Entries.Count, acts = V.Actions.LastSeq;
+            BadRequest(Post("/act/research", new { project = "Batteries", why = 5 }), "why");
+            BadRequest(Post("/act/research", new { project = "Batteries", why = new[] { "x" } }), "why");
+            Assert.Equal(chats, V.Chat.Entries.Count); Assert.Equal(acts, V.Actions.LastSeq);
+        }
+
+        [Fact]
+        public void GateRefusalWritesRefusedLine()
+        {
+            var r = Post("/act/time", new { speed = 2, why = "it drags" });
+            Assert.False(r.Ok); Assert.Equal("refused", r.Error);
+            Assert.Equal("refused", LastChat().Who);
+            Assert.Equal("couldn't change the game speed: the player has not let the narrator change speed", LastChat().Text);
+            Assert.Empty(V.Actions.Export());
+        }
+
+        [Fact]
+        public void HandRefusalWritesRefusedLineWithHandsWhatOrFallback()
+        {
+            Hands.Next = HandResult.No("Ana is incapable of Cooking", "set Ana's Cooking");
+            Assert.False(Post("/act/work", new { pawn = 7, priorities = new { Cooking = 1 } }).Ok);
+            Assert.Equal("couldn't set Ana's Cooking: Ana is incapable of Cooking", LastChat().Text);
+            Hands.Next = HandResult.No("no such bed");
+            Post("/act/bed", new { pawn = 7, bed = 9 });
+            Assert.Equal("couldn't give pawn 7 bed 9: no such bed", LastChat().Text);
+            Assert.Empty(V.Actions.Export());
+        }
+
+        [Fact]
+        public void BadRequestAndNoGameWriteNothing()
+        {
+            BadRequest(Post("/act/bed", new { pawn = 0, bed = 2 }));
+            Assert.Equal("no_game", H.Call("POST", "/act/bed", "{\"op_id\":\"q2\",\"pawn\":1,\"bed\":2}", GameState.Menu).Error);
+            Assert.Empty(V.Chat.Entries);
         }
 
         [Fact]
@@ -400,7 +465,7 @@ namespace RimWorldLLM.Tests
             Assert.Equal("set Cooking 1 for Ana", (string)r.Body["done"]); Assert.Equal("Ana", (string)r.Body["pawn"]);
             var a = V.Actions.Since(0)["actions"][0];
             Assert.Equal("work", (string)a["verb"]); Assert.Equal("set Cooking 1 for Ana", (string)a["note"]); Assert.Equal("narrator", (string)a["by"]);
-            Assert.Equal(0, V.Chat.LastSeq);   // no chat note of its own
+            Assert.Equal(1, V.Chat.LastSeq); Assert.Equal("action", V.Chat.Entries[0].Who);   // exactly one greentext line
         }
 
         [Fact]

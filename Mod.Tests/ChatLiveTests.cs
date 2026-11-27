@@ -219,7 +219,7 @@ namespace RimWorldLLM.Tests
             await System.Threading.Tasks.Task.WhenAll(tasks);
             l.Pump(log, 1);
             Assert.Equal(0, l.Count);
-            Assert.Equal(300, log.Entries.Count);   // 800 finals, log capped at ChatLog.Max
+            Assert.Equal(ChatLog.Max, log.Entries.Count);   // 800 finals, log capped at ChatLog.Max
         }
     }
 

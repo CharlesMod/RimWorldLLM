@@ -89,7 +89,10 @@ namespace RimWorldLLM
             bool fromPlayer = talkId != null && RWLBridge.Talk.Contains(talkId);
             bool fromChat = talkId != null && VivariumGame.TalkFrom(talkId) == "chat";
             if (talkId != null) RWLBridge.Talk.Remove(talkId);
-            if (fromChat) VivariumGame.State.Chat.Add("colonist", text, VivariumGame.NowTick, speaker.thingIDNumber, speaker.LabelShort);
+            // The chat log gets exactly one colonist line per successful /say (a reply to the player's @colonist line
+            // included: that line is written here only, never by the chat bar or ChatLive).
+            ChatFeed.Say(VivariumGame.State.Chat, VivariumGame.NowTick, speaker.thingIDNumber, speaker.LabelShort,
+                listener != null ? listener.LabelShort : "", text);
 
             // A line for a vanilla interaction goes onto that interaction's log entry and thoughts, and adds no effect of its own.
             string attach = null;
@@ -177,6 +180,7 @@ namespace RimWorldLLM
             // skips sleeping pawns); the dreams setting turns the cloud off, the Mind tab still shows it.
             else if (kind == MindBook.KindDream && RimWorldLLMMod.Settings != null && RimWorldLLMMod.Settings.dreamsEnabled)
                 SpeechBubbles.AddThought(p, (string)c.Body["surface"], text);
+            ChatFeed.Thought(VivariumGame.State.Chat, VivariumGame.NowTick, kind, p.thingIDNumber, p.LabelShort, text);
             return ApiResult.Success(new JObject { ["stored"] = true });
         }
 
@@ -196,6 +200,7 @@ namespace RimWorldLLM
                 if (!ChronicleBook.KnownKind(kind)) return ApiResult.Fail("bad_request", "kind must be \"day\", \"major\" or \"lore\"");
             }
             int count = RWLBridge.Chronicle.Add(b.Value<int>("day"), kind, text, Find.TickManager.TicksGame);
+            ChatFeed.Chronicle(VivariumGame.State.Chat, VivariumGame.NowTick, b.Value<int>("day"), text);
             return ApiResult.Success(new JObject { ["stored"] = true, ["count"] = count });
         }
 
@@ -230,6 +235,7 @@ namespace RimWorldLLM
             if (verdict != RecapVerdict.Accept) return ApiResult.Fail(RecapGate.ErrorCode(verdict), verdict.ToString());
             string colony = Faction.OfPlayer != null ? Faction.OfPlayer.Name : "";
             Find.LetterStack.ReceiveLetter(UiUtil.T("RWL_Recap_Title", colony), string.Join("\n\n", lines), LetterDefOf.NeutralEvent);
+            ChatFeed.Recap(VivariumGame.State.Chat, VivariumGame.NowTick, lines);
             return ApiResult.Success(new JObject { ["shown"] = true });
         }
 

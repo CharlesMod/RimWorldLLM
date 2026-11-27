@@ -10,12 +10,13 @@ namespace RimWorldLLM.Bridge
     public sealed class HandResult
     {
         public bool Ok;
-        public string Note;    // ok: "set Cooking 1 for Ana"
+        public string Note;    // ok: plain English past tense, the player reads it: "set Ana's Cooking to 1st"
         public string Reason;  // not ok: "Ana is incapable of Cooking"
+        public string What;    // not ok: plain English of what was attempted ("set Ana's Cooking"), for "couldn't {What}: {Reason}"; may be null
         public JObject Extra;  // optional fields merged into the reply
 
         public static HandResult Done(string note, JObject extra = null) { return new HandResult { Ok = true, Note = note, Extra = extra }; }
-        public static HandResult No(string reason) { return new HandResult { Ok = false, Reason = reason }; }
+        public static HandResult No(string reason, string what = null) { return new HandResult { Ok = false, Reason = reason, What = what }; }
     }
 
     /// <summary>The game bodies of the hands. Game thread. Arguments are already checked for shape
