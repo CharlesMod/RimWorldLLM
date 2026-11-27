@@ -28,6 +28,7 @@ from .config import Config
 from .model_tier import ModelTier, feature_on
 from .conversation import Conversation, template_memory, template_relation
 from .idle import IdleRunner
+from .steward import Steward
 from .ledger import Ledger
 from .agegate import GateStats
 from .wants import WantsStats
@@ -115,6 +116,7 @@ class Director:
         self.concerns = ConcernEngine(self)        # core/concerns.py
         self.grudges = GrudgeEngine(self)          # core/grudges.py
         self.idle = IdleRunner(self)
+        self.steward = Steward(self)               # core/steward.py: the narrator plays the game (vivarium)
         self._upkeep_day = -1
         self._last_cover: Now | None = None
         self._raw_last: float | None = None
@@ -192,7 +194,7 @@ class Director:
         if self.cfg.lore:
             await lore.load(self)
         if recap.late_due(self):
-            self._spawn(recap.run(self, self.bridge.env.epoch))     # connected after the load: the window is still open
+            self._spawn(self._recap_when_free(self.bridge.env.epoch))     # connected after the load: the window is still open
         self._started = True
 
     async def refresh_config(self) -> None:
@@ -258,6 +260,7 @@ class Director:
         self.minds.clear(); self.revs.clear(); self.dirty.clear()
         self._upkeep_day = -1
         self.ledger.clear()
+        self.steward.reset()
         self.leases.leases.clear(); self.leases.queue.clear(); self.leases.last_signature.clear()
         self.events.reset()
         self.bridge.epoch_changed = False
@@ -270,7 +273,13 @@ class Director:
         if self.cfg.lore:
             await lore.load(self)                          # the loaded save's own lore
         if self.cfg.recap_enabled and self.bridge_cfg.get("recap") is not False:
-            self._spawn(recap.run(self, self.bridge.env.epoch))     # once per epoch; a one-off, no voice budget
+            self._spawn(self._recap_when_free(self.bridge.env.epoch))   # once per epoch; a one-off, no voice budget
+
+    async def _recap_when_free(self, epoch: int) -> None:
+        """The recap uses slot 0: it waits for a steward cycle to end instead of running beside it."""
+        while self.leases.narrator_owner is not None:
+            await asyncio.sleep(0.5)
+        await recap.run(self, epoch)
 
     # ---- main loop ------------------------------------------------------
     async def step(self) -> None:
@@ -289,6 +298,7 @@ class Director:
                 log.warning("config refresh failed: %s", e)
         await self.ingest(events)
         await self.take_talk()
+        await self.steward.step()                    # one GET /vivarium when idle; may start a cycle that owns slot 0
         self.idle.preempt_if_wanted()                # idle work yields to actor windows at once
         self.daily_upkeep()
         self.grudges.advance()
@@ -315,7 +325,11 @@ class Director:
 
     # ---- events ---------------------------------------------------------
     async def ingest(self, events: list[dict]) -> None:
+        silent = getattr(self.adapter, "silent_events", ())
         for e in events:
+            self.steward.observe(e)
+            if e.get("type") in silent:
+                continue                                 # for the steward only: no memory, no chronicle, no speech
             self.ledger.apply(e, [int(a["id"]) for a in e.get("actors", [])])
             for aid in e.get("witnesses", []):
                 if aid not in self.minds and not self.adapter.is_controlled(aid):

@@ -33,8 +33,13 @@ def test_wants_wired_on_by_default_at_the_agents_engine(tmp_path, monkeypatch):
 
 
 def test_wants_off_via_config(tmp_path, monkeypatch):
-    d = _run_cli(tmp_path, monkeypatch, wants=False)
+    d = _run_cli(tmp_path, monkeypatch, wants=False, steward=False)
     assert d.tool_backend is None
+
+
+def test_steward_keeps_the_backend_when_wants_are_off(tmp_path, monkeypatch):
+    d = _run_cli(tmp_path, monkeypatch, wants=False)       # the steward needs the tool loop even without wants
+    assert isinstance(d.tool_backend, OpenAIBackend)
 
 
 def test_wants_off_via_bridge_config(world):

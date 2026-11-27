@@ -34,7 +34,7 @@ class Reply:
 class Backend(Protocol):
     async def chat(self, messages: list[dict], *, grammar: str | None = None, tools: list[dict] | None = None,
                    tool_choice: str | None = None, max_tokens: int = 160, temperature: float = 0.2,
-                   timeout: float = 30.0) -> Reply: ...
+                   timeout: float = 30.0, slot: int | None = None) -> Reply: ...
 
 
 class OpenAIBackend:
@@ -62,7 +62,9 @@ class OpenAIBackend:
     async def aclose(self):
         await self.http.aclose()
 
-    async def chat(self, messages, *, grammar=None, tools=None, tool_choice=None, max_tokens=160, temperature=0.2, timeout=30.0) -> Reply:
+    async def chat(self, messages, *, grammar=None, tools=None, tool_choice=None, max_tokens=160, temperature=0.2, timeout=30.0,
+                   slot=None) -> Reply:
+        """``slot``: pin the request to one llama.cpp slot (id_slot); None leaves it to the server."""
         try:
             self.gate.check()                       # backing off after "yielded": no request
         except LLMAway as e:
@@ -81,6 +83,8 @@ class OpenAIBackend:
             headers["X-Easy-Sampler"] = "structured"
         if self.model:
             body["model"] = self.model
+        if slot is not None:
+            body["id_slot"] = slot
         if grammar:
             body["grammar"] = grammar
         if tools:

@@ -13,6 +13,7 @@ from ...core.minds import FixedBio, VoiceCard
 from ...core.prompt import Scene
 from ...core.sanitize import name_tokens
 from . import builders, concern_rules, register
+from .steward_tools import StewardKit
 
 _HERE = Path(__file__).parent
 
@@ -23,6 +24,7 @@ _EVENT_CLASS = {
     "social": Cls.SOCIAL,
     "level_up": Cls.AMBIENT, "thought": Cls.AMBIENT,
     "first_cue": Cls.REACTIVE,
+    "letter": Cls.IDLE, "alert": Cls.IDLE,           # the steward reads these; nobody speaks about them (silent_events)
 }
 # First-time reactions (core/firsts.py): what a pawn may react to once, and the words for "the first time you have ever ...".
 _FIRST_CUES = {
@@ -47,6 +49,7 @@ class RimWorldAdapter:
     protocol = ProtocolNames(actor_path="/pawn", scene_path="/scene", mind_path="/mind", roster_path="/colony",
                              actor_field="pawn", time_field="tick", epoch_field="save_epoch",
                              expiry_field="expires_tick")
+    silent_events = StewardKit.silent_events      # events the director never voices, remembers or chronicles
     units_per_day = 60000                      # ticks
     # game ticks per real second at each game speed: 1 = 60, 2 = 180, 3 = 360, dev speed 4 = 900 (speed 0 is a pause)
     _TICKS_PER_S = {0: 60.0, 1: 60.0, 2: 180.0, 3: 360.0, 4: 900.0}
@@ -194,6 +197,7 @@ class RimWorldAdapter:
 
     def __init__(self) -> None:
         self.block_a = (_HERE / "block_a.txt").read_text()
+        self.steward_kit = StewardKit()                # the vivarium steward's game side (core/steward.py)
 
     async def replay(self, path: str, cfg: Any, llm: Any) -> list[dict]:
         from .replay import replay

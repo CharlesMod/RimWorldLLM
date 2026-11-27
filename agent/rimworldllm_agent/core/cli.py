@@ -56,9 +56,10 @@ async def wait_for_bridge_json(path: Path, timeout: float = 0.0, *, poll: float 
 
 
 def make_tool_backend(cfg: Config) -> OpenAIBackend | None:
-    """The wants tool-loop backend: the same engine endpoint as the line calls, or None when ``wants`` is off.
+    """The tool-loop backend (wants, and the vivarium steward): the same engine endpoint as the line calls, or None when
+    both ``wants`` and ``steward`` are off.
     Sampler fields are forced only where the config forces them (None = the engine decides)."""
-    if not cfg.wants:
+    if not cfg.wants and not cfg.steward:
         return None
     forced = {k: getattr(cfg.llm, k) for k in ("temperature", "top_k", "top_p", "min_p", "repeat_penalty")
               if getattr(cfg.llm, k) is not None}
