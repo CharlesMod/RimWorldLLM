@@ -197,7 +197,30 @@ namespace RimWorldLLM
             string who = pawn != null ? pawn.LabelShort : "a child";
             var d = new DialogRecord { Id = id, Kind = DialogKinds.Growth, IsLetter = isLetter, Title = "Growth moment: " + who, Text = Fld<string>(gl, "text", "") };
             d.Options.Add(Opt(0, "Take the first passion and trait choices for " + who));
+            try { d.Growth = GrowthOf(gl, pawn); } catch (Exception e) { Warn(e); }
             seen.Add(d); handles[id] = gl;
+        }
+
+        static string Trim(string s, int n) { s = (s ?? "").Replace("\n", " ").Trim(); return s.Length > n ? s.Substring(0, n) + "…" : s; }
+
+        static GrowthInfo GrowthOf(ChoiceLetter_GrowthMoment gl, Pawn pawn)
+        {
+            var g = new GrowthInfo();
+            if (pawn != null)
+            {
+                g.Child = pawn.LabelShort;
+                g.Age = pawn.ageTracker != null ? pawn.ageTracker.AgeBiologicalYears.ToString() : "";
+                if (pawn.skills != null)
+                    g.Skills = string.Join(", ", pawn.skills.skills.Where(sk => sk.passion != Passion.None || sk.Level > 0)
+                        .Select(sk => sk.def.skillLabel + " " + sk.Level + (sk.passion == Passion.Major ? "**" : sk.passion == Passion.Minor ? "*" : "")).Take(12));
+                if (pawn.story != null)
+                    g.Traits = string.Join(", ", pawn.story.traits.allTraits.Select(t => t.LabelCap.ToString()).Take(8));
+            }
+            foreach (var sd in Fld<List<SkillDef>>(gl, "passionChoices") ?? new List<SkillDef>()) g.Passions.Add(sd.skillLabel);
+            g.MaxPassions = Math.Max(1, Fld<int>(gl, "passionGainsCount", 1));
+            foreach (var t in Fld<List<Trait>>(gl, "traitChoices") ?? new List<Trait>())
+                g.TraitChoices.Add(new KeyValuePair<string, string>(t.Label, Trim(t.TipString(pawn), 160)));
+            return g;
         }
 
         static string LetterKind(ChoiceLetter cl)
@@ -310,7 +333,21 @@ namespace RimWorldLLM
                     var passions = Fld<List<SkillDef>>(growth, "passionChoices") ?? new List<SkillDef>();
                     int gains = Math.Max(1, Fld<int>(growth, "passionGainsCount", 1));
                     var traits = Fld<List<Trait>>(growth, "traitChoices") ?? new List<Trait>();
-                    growth.MakeChoices(passions.Take(gains).ToList(), traits.FirstOrDefault());
+                    var pickP = passions.Take(gains).ToList();
+                    var pickT = traits.FirstOrDefault();
+                    string pp, pt;
+                    if (texts != null && texts.TryGetValue("passions", out pp))
+                    {
+                        var names = pp.Split('|');
+                        pickP = passions.Where(sd => names.Any(n => string.Equals(n, sd.skillLabel, StringComparison.OrdinalIgnoreCase))).Take(gains).ToList();
+                        if (pickP.Count != names.Length) return HandResult.No("the offered passions changed; read /dialogs again");
+                    }
+                    if (texts != null && texts.TryGetValue("trait", out pt))
+                    {
+                        pickT = traits.FirstOrDefault(t => string.Equals(t.Label, pt, StringComparison.OrdinalIgnoreCase));
+                        if (pickT == null) return HandResult.No("the offered traits changed; read /dialogs again");
+                    }
+                    growth.MakeChoices(pickP, pickT);
                     var open = Find.WindowStack.Windows.FirstOrDefault(x => x is Dialog_GrowthMomentChoices && Fld<ChoiceLetter_GrowthMoment>(x, "letter") == growth);
                     if (open != null) open.Close();
                     if (Find.LetterStack.LettersListForReading.Contains(growth)) Find.LetterStack.RemoveLetter(growth);

@@ -135,6 +135,8 @@ class Config(BaseModel):
     chronicle_enabled: bool = True
     steward: bool = True               # the vivarium steward (core/steward.py); it stays off against a mod without /vivarium
     steward_min_gap_real_s: float = 20.0   # least real seconds between two steward cycles that are not chat (chat ignores it)
+    steward_combat_gap_game_s: float = 5.0   # a fight: least game seconds between two combat turns
+    steward_combat_gap_real_s: float = 4.0   # a fight: least real seconds after the last turn ended
     steward_strategy_path: str = ""    # a strategy playbook file for the steward prompt; env RIMWORLDLLM_STEWARD_STRATEGY wins; "" = the shipped one
     steward_strategy_max_bytes: int = 12288
     art_enabled: bool = True           # LLM art descriptions (core/art.py); also needs the mod's art_descriptions

@@ -29,6 +29,8 @@ namespace RimWorldLLM.Bridge
         public bool MayPauseForEmergencies = true;
         public bool ControlsSpeed = false;
         public float HeartbeatHours = 6f;
+        /// <summary>Phase 3: the narrator may slow the game to normal speed while a fight is on (and put it back after).</summary>
+        public bool SlowForCombat = true;
         /// <summary>Unattended play: answer open dialogs with the safe default after DialogTimeoutS real seconds, while Narrator plays is on.</summary>
         public bool AnswerDialogs = true;
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
@@ -43,6 +45,7 @@ namespace RimWorldLLM.Bridge
                 ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,
+                ["slow_for_combat"] = SlowForCombat,
                 ["heartbeat_hours"] = HeartbeatHours
             };
         }
@@ -491,6 +494,8 @@ namespace RimWorldLLM.Bridge
         public readonly NarratorLedger Ledger = new NarratorLedger();
         /// <summary>Phase 2: per-cycle caps on blueprints, zone/area cells, designations and bills. Never saved.</summary>
         public readonly BuildBudget Budget = new BuildBudget();
+        /// <summary>Phase 3: the fight (refreshed by the game), the squad and the speed memory (saved).</summary>
+        public readonly CombatState Combat = new CombatState();
         /// <summary>Unattended play: the choice windows and letters open right now. Never saved.</summary>
         public readonly DialogBook Dialogs = new DialogBook();
         static readonly System.Diagnostics.Stopwatch RealClock = System.Diagnostics.Stopwatch.StartNew();
@@ -507,6 +512,7 @@ namespace RimWorldLLM.Bridge
                 ["goals_rev"] = Goals.Rev,
                 ["actions_seq"] = Actions.LastSeq,
                 ["undoable"] = Ledger.Count,
+                ["combat"] = Combat.StatusJson(),
                 ["settings"] = Settings.ToJson()
             };
         }
@@ -523,7 +529,8 @@ namespace RimWorldLLM.Bridge
                 ["goals"] = Goals.Export(),
                 ["actions"] = Actions.Export(),
                 ["actions_seq"] = Actions.LastSeq,
-                ["ledger"] = Ledger.Export()
+                ["ledger"] = Ledger.Export(),
+                ["combat"] = Combat.Export()
             };
         }
 
@@ -539,12 +546,13 @@ namespace RimWorldLLM.Bridge
             Actions.Import(saved["actions"] as JArray);
             Actions.RestoreSeq(VivJson.Int(saved["actions_seq"]));
             Ledger.Import(saved["ledger"] as JArray);
+            Combat.Import(saved["combat"] as JObject);
         }
 
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Dialogs.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Combat.Clear(); Dialogs.Clear();
         }
     }
 }

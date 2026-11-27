@@ -158,9 +158,6 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
     never over beds/graves, never tearing anything down. Chat "build a freezer": a freezer room, then a cooler in it.
     Note anything silly (rooms in odd places, fields on rock, rooms overlapping planned rooms).
 
-Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
-(too busy, too quiet, sensible priorities?).
-
 ## D. Unattended play: dialogs
 
 Narrator plays on, the agent running with the model, `$B` and `$T` as above. Use dev mode (Debug actions) to fire
@@ -183,7 +180,10 @@ first: timeout 15 s in the mod settings (Narrator plays group).
     example "Abandon colony" confirm via the caravan tab) with the agent off: after the timeout the Cancel button is
     pressed, not the destructive one.
 31. **Growth moment** (Biotech): a child turning 3, 7 or 10 gives a letter and a choice window. With the agent off, the
-    default takes the first passion(s) and the first trait; the child's skills and traits show it.
+    default takes the first passion(s) and the first trait; the child's skills and traits show it. With the agent on,
+    `GET /dialogs` shows `growth` (passions, how many, traits with descriptions, the child in brief) and
+    `POST /act/choose {dialog, passions:[..], trait, why}` sets exactly those; too many passions or an unknown trait
+    is refused with the reason and the child is unchanged.
 32. **Toggle.** Turn "Answer popups when the narrator plays" off: nothing is auto-answered; the model's `choose` still
     works. Turn Narrator plays off: nothing is auto-answered either.
 33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
@@ -262,3 +262,83 @@ Needs the mod setting `narratorCommentary` (Colonists -> Narrator plays), on by 
 5. **Off.** Switch the setting off, or Narrator plays off: no more comment lines.
 6. **Age gate.** A wedding or a birth involving a minor: no romantic wording, ever.
 Report: how it read (too chatty, too quiet, too grim?), any line with an invented name or a quote.
+
+## H. Phase 3: combat and defense
+
+Use a colony with 4-6 colonists, some guns, walls around part of the base and one or two outside doors. `$B` and
+`$T` as above. Raids on demand: dev mode → "Execute incident" → Raid (the narrator never uses dev mode; you do).
+Save first so each step can be retried.
+
+43. **Fight view.** Start a pirate raid and wait until they appear. `curl -s -H "Authorization: Bearer $T" $B/combat | jq`:
+    `active` true; one threat group with the right faction, count, kind (ranged), `where` matching where they really
+    are (compass from your base), `heading` "toward home" once they walk in; your fighters with weapon, range, health,
+    cover that matches what you see (a pawn behind a wall says "behind a wall", one in the field "in the open");
+    children/pacifists under `others`; `defenses` a sane sentence about your walls, turrets and doors. `GET /vivarium`
+    shows `combat.active` true within ~4 game seconds of the raid's arrival. `jq .combat` on `/digest` has the same.
+44. **Squad orders.** `-X POST $B/act/squad -d '{"op_id":"s1","op":"draft"}'` → every capable colonist drafted (not
+    children, pacifists, the sick in bed), greentext names them. `{"op":"move","at":"cover"}` → each walks to its own
+    cell next to a wall or sandbag on the enemy's side, none in the open, none two to a cell. Try `at` chokepoint,
+    door, wall_n (etc.), inside: the spots should match the words (behind the gap, just inside the door, behind that
+    wall, under a roof away from the enemy). A position that does not exist → refused with a reason, nobody moves.
+45. **Focus and hold.** `{"op":"focus","target":<group id from /combat>}` → the squad shoots that group; as one dies
+    they switch to the next of the same group without new orders. A melee-only colonist against mechs stays back
+    (the note says so). `{"op":"hold"}` → they stop and shoot from where they stand; no chasing.
+46. **The controller.** Set `{"op":"retreat","below":0.5}` then `{"op":"move","at":"cover"}`; let a colonist get hurt
+    below half: they walk back to the retreat point by themselves with a greentext "Ana fell back, badly hurt", once.
+    When a colonist goes down near a healthy squad member, that member carries them to a bed ("is carrying ... to
+    safety"). Nothing should twitch every few seconds (orders re-issued while pawns are shooting).
+47. **Rescue, fires, flee, undraft.** `rescue` with a downed colonist → someone carries them to a (medical) bed.
+    Start a fire in the home area: `extinguish` → up to 4 firefighters go to it. `flee` → children and pacifists go
+    indoors, away from the enemy, and stay a while. `undraft` while enemies are within 30 cells → refused; after the
+    raid → everyone undrafted, squad cleared.
+48. **Defenses.** `-X POST $B/act/defend -d '{"op_id":"d1","kind":"sandbags","side":"n"}'` → a line of 7 sandbag
+    blueprints across the north side, a few cells inside your north wall (never outside it, never behind your base's
+    middle). `{"kind":"turret"}` without the research → refused naming it; with research but no power → refused with
+    the watts; with a conduit nearby → a turret blueprint that sees the way in. `{"kind":"traps","side":"e"}` → spike
+    traps on the path into the base from the east, outdoors. `{"kind":"killbox"}` → funnel walls outside your door
+    toward the enemy, traps in the funnel, a sandbag line inside. `/undo` removes each of these.
+49. **The speed rule.** Play at 3x, Narrator plays on, "The narrator slows the game for fights" on (Colonists →
+    Narrator plays). Start a raid: the game drops to 1x with a greentext line; when the last raider is gone or flees,
+    it goes back to 3x. Repeat, but change the speed yourself mid-fight: it must not be changed back. Turn the
+    setting off: no slow-down.
+50. **Steward in a fight.** Narrator plays on, the 26B running. Start a tribal melee raid, a pirate raid and (with
+    Royalty/Biotech mechs) a mech raid, one per save. Watch the chat: a "combat started" look drafts and places the
+    squad, then short combat turns every few game seconds (orders only, no chatter), then a "combat over" look that
+    undrafts, rescues and gets back to work. Check: wounded pulled back, nobody meleeing a centipede, non-fighters
+    indoors, no orders repeated over and over, and roughly how long each combat turn takes (the agent log's
+    `elapsed_s`; the live check measured 4-6 s).
+
+Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
+twitchy, sensible?).
+
+## I. The narrator's view: reasons, food, clocks
+
+Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field, then let the narrator look once
+(switch on, or chat as advisor) and see that it acts on the reason.
+
+51. **Loose with nowhere to go.** Make your only stockpile food-only, then mine or deconstruct until steel lies
+    loose. `curl -s -H "Authorization: Bearer $T" $B/digest | jq .build.loose`: the steel pile shows `"store":"none"`
+    (fill the stockpile instead and it reads `"full"`; a far-away stockpile reads `"far"`). The narrator should make
+    or widen a stockpile for it, not mine more steel.
+52. **Stuck building.** Place a few wall blueprints and turn Construction off for everyone. `jq .stuck`: a row
+    "N wall blueprints ...: no one can build (construction off or incapable)"; facts `stuck_no_builder` true. Turn it
+    back on, but place steel walls with no steel: "waiting on steel: need N, have M". Forbid the steel: "steel is
+    forbidden: unforbid it". The narrator should fix that reason (enable Construction, unforbid, haul or mine), not
+    shuffle priorities.
+53. **Stuck bill.** A stove bill with no raw food on the map: a `stuck` row "bill: ... no ingredients (...)". An
+    electric bench unpowered: "bench has no power".
+54. **People.** A colonist incapable of a work type: ask the narrator in chat to make them do it; the refusal names
+    why ("Cooking: X can't (backstory or trait)"). A pawn with a missing or broken hand/arm shows `cannot` "no
+    manipulation" or "weak hands"; a child shows `child`. A colonist wandering shows `idle` and the IDLE line counts it.
+55. **Food.** `jq .food`: meals and raw counts match the stock (loose shown apart); food left outside in summer shows
+    in `rot_soon` with days; a field near harvest shows ready cells and days for the rest (days include the night
+    rest: compare with the plant's own "grows in" tooltip); wild deer/boar near home appear in `game`.
+56. **Clocks.** A bleeding colonist: `jq .deadlines` shows "X bleeds out" with hours close to the health tab's
+    estimate. A colonist with flu or an infection: "winning/losing the race" with hours. Late summer in a temperate
+    biome: "winter (crops die)" with days; in winter: "growing season starts". A quest letter: "... expires".
+57. **Size.** With all of the above at once, the agent's log shows the rendered digest under 6000 chars, and the
+    narrator's turn still fits its time.
+
+Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
+(too busy, too quiet, sensible priorities?).
+

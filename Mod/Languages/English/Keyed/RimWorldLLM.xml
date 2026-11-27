@@ -525,6 +525,8 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayPause>The narrator may pause for emergencies</RWL_Viv_MayPause>
   <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
   <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
+  <RWL_Viv_SlowForCombat>The narrator slows the game for fights</RWL_Viv_SlowForCombat>
+  <RWL_Viv_SlowForCombatTip>On: when a fight starts the narrator sets normal speed, and puts your speed back when it ends (unless you changed it meanwhile). Works even when the narrator does not control the speed.</RWL_Viv_SlowForCombatTip>
   <RWL_Viv_Commentary>Narrator commentary</RWL_Viv_Commentary>
   <RWL_Viv_CommentaryTip>While Narrator plays is on, the narrator adds a short documentary line at big moments (raids, deaths, births, weddings, masterworks, ship parts) and one recap line a game day, when its slot is free. The lines are under the Story filter.</RWL_Viv_CommentaryTip>
   <RWL_Viv_AnswerDialogs>Answer popups when the narrator plays</RWL_Viv_AnswerDialogs>
