@@ -23,6 +23,8 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
    click again: "off". Not shown on the world map.
 3. **The key.** Options → Controls → RimWorldLLM: bind "toggle Narrator plays"; the key toggles the same way.
 4. **The chat bar.** Map in focus, no window open: press Enter. A one-line bar opens above the bottom bar with a hint.
+   The bar's input is a small window that stops camera motion: while typing, WASD and the arrow keys must not pan
+   the camera, and the speed keys, space (pause) and main-tab hotkeys must not fire. Esc closes only the bar.
    - Type text, Enter: the bar closes and "You: …" shows; the line is in `GET /chat`.
    - Esc closes the bar and does **not** open the main menu.
    - While typing, game hotkeys (Space, 1-4, letters for tabs) must **not** fire. ← most likely to need a fix.

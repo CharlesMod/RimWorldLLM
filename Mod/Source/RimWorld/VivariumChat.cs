@@ -18,23 +18,24 @@ namespace RimWorldLLM
         const double FadeSec = 10.0;
         const float BarH = 28f, Pad = 6f;
 
-        static bool _open, _focusPending;
+        static bool _focusPending;
         static string _text = "";
         static int _seen;
         static double _visibleUntil;
 
         static double Now { get { return Time.realtimeSinceStartupAsDouble; } }
 
-        public static bool IsOpen { get { return _open; } }
+        public static bool IsOpen { get { return Find.WindowStack != null && Find.WindowStack.IsOpen<Window_RWLChat>(); } }
 
-        public static void Reset() { _open = false; _text = ""; _seen = 0; _visibleUntil = 0; }
+        public static void Reset() { Close(); _text = ""; _seen = 0; _visibleUntil = 0; }
 
         /// <summary>The game started or loaded: older lines do not pop the panel.</summary>
         public static void OnGameStart() { Reset(); _seen = VivariumGame.State.Chat.LastSeq; }
 
         public static void Close()
         {
-            _open = false;
+            var ws = Find.WindowStack;
+            if (ws != null) ws.TryRemove(typeof(Window_RWLChat), false);
             if (GUI.GetNameOfFocusedControl() == Control) GUI.FocusControl(null);
         }
 
@@ -54,12 +55,15 @@ namespace RimWorldLLM
         {
             var e = Event.current;
             if (e == null || Current.Game == null || Find.TickManager == null) return;
-            if (WorldRendererUtility.WorldRendered) { if (_open) Close(); return; }
+            if (WorldRendererUtility.WorldRendered) { if (IsOpen) Close(); return; }
             var chat = VivariumGame.State.Chat;
 
-            if (e.type == EventType.KeyDown && !_open && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter) && CanOpen())
+            bool open = IsOpen;
+            if (e.type == EventType.KeyDown && !open && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter) && CanOpen())
             {
-                _open = true; _focusPending = true; _text = "";
+                _text = "";
+                Find.WindowStack.Add(new Window_RWLChat());
+                open = true;
                 e.Use();
             }
 
@@ -68,17 +72,55 @@ namespace RimWorldLLM
                 if (chat.LastSeq > _seen) _visibleUntil = Now + FadeSec;
                 _seen = chat.LastSeq;
             }
-            bool panel = _open || Now < _visibleUntil;
+            bool panel = open || Now < _visibleUntil;
             if (!panel) return;
 
+            var r = BarRect();
+            if (e.type == EventType.Repaint)
+                DrawScrollback(r.x, r.y - 4f, r.width);
+        }
+
+        static Rect BarRect()
+        {
             float w = Mathf.Min(560f, UI.screenWidth - 460f - 20f);
             if (w < 240f) w = Mathf.Min(UI.screenWidth - 20f, 400f);
             float x = UI.screenWidth - 20f - w > 440f ? 440f : 10f;
             float barY = UI.screenHeight - 35f - 8f - BarH;
+            return new Rect(x, barY, w, BarH);
+        }
 
-            if (_open) DrawBar(new Rect(x, barY, w, BarH));
-            if (e.type == EventType.Repaint)
-                DrawScrollback(x, barY - 4f, w);
+        /// <summary>The input line. A real window, so the camera, the vanilla hotkeys and Esc leave it alone while it is open.</summary>
+        public class Window_RWLChat : Window
+        {
+            public override Vector2 InitialSize { get { var r = BarRect(); return new Vector2(r.width, r.height); } }
+            protected override float Margin { get { return 0f; } }
+
+            public Window_RWLChat()
+            {
+                _focusPending = true;
+                layer = WindowLayer.GameUI;
+                preventCameraMotion = true;
+                absorbInputAroundWindow = false;
+                forcePause = false;
+                doCloseX = false;
+                doCloseButton = false;
+                doWindowBackground = false;
+                closeOnClickedOutside = true;
+                closeOnCancel = true;
+                closeOnAccept = false;
+                focusWhenOpened = true;
+                drawShadow = false;
+                draggable = false;
+            }
+
+            protected override void SetInitialSizeAndPosition() { windowRect = BarRect(); }
+
+            public override void DoWindowContents(Rect inRect) { DrawBar(inRect); }
+
+            public override void PostClose()
+            {
+                if (GUI.GetNameOfFocusedControl() == Control) GUI.FocusControl(null);
+            }
         }
 
         static void DrawBar(Rect r)
