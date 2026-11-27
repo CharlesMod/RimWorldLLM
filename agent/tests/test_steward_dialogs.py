@@ -103,6 +103,9 @@ def test_digest_text_lists_dialogs():
     d = {"dialogs": sample("dialogs_ransom.json") + sample("dialogs_naming.json")}
     text = render_digest(d)
     assert "OPEN DIALOGS" in text and "L4107" in text and "costs silver" in text and "type a name" in text and "max 40 chars" in text
+    naming = [l for l in text.splitlines() if "(naming)" in l][0]
+    assert "default:" not in naming and "invent your own" in naming   # a shown fallback name got copied in the live check
+    assert "default:" in [l for l in text.splitlines() if "L4107" in l][0]
 
 
 def test_dialog_try_runs_one_cycle_on_samples(tmp_path, monkeypatch, capsys):

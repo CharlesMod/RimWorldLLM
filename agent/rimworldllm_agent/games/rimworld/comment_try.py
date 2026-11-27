@@ -56,9 +56,9 @@ async def try_events(events: list[dict], llm) -> list[dict]:
                 if len(d.commentary.pending) == before:
                     out.append({"event": e.get("summary", e.get("type")), "kind": e.get("type"), "mode": "moment", "line": None})
                     continue
-                said, _ = await step(last)
+                said, drop = await step(last)
                 out.append({"event": e.get("summary", e.get("type")), "kind": e.get("type"), "mode": "moment",
-                            "line": said[0]["text"] if said else None})
+                            "line": said[0]["text"] if said else None, "drop": drop[0] if drop else None})
             said, _ = await step((last // d.day + 1) * d.day + 1)      # the next morning: the recap of the day
             out.append({"event": "(the day ends)", "kind": "recap", "mode": "recap", "line": said[0]["text"] if said else None})
         finally:
@@ -84,7 +84,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         rows = asyncio.run(try_events(events, FakeLLM()))
     for r in rows:
-        print(f"[{r['kind']}] {r['event']}\n    -> {r['line'] if r['line'] else '(no comment)'}")
+        why = f" (dropped: {r['drop']})" if r.get("drop") else ""
+        print(f"[{r['kind']}] {r['event']}\n    -> {r['line'] if r['line'] else '(no comment)' + why}")
     return 0
 
 

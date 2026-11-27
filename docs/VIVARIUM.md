@@ -448,7 +448,18 @@ the dialog rejects comes back as a refusal the model reads. `dialog_try` (`pytho
 **Known limits.** The roles of a letter's options are fixed by position (`DialogKinds.RolesFor`), because the labels are
 translated: if vanilla's order differs the default picks the wrong one (check 27 in VIVARIUM-PLAYTEST.md). The growth moment
 takes the first choices only (no model choice yet). The pawn who accepts a quest is the first free colonist. Hand-written
-`Window` subclasses from other mods are not seen.
+`Window` subclasses from other mods are not seen. The mod's own "colony lost" choice window is left to the player (ask
+means ask); auto mode handles it by itself.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
+32k, q4_0 KV, grammar protocol, `dialog_try --paused` on the four samples).** Each cycle answered its dialog with `choose`
+as its first act, then went on with the colony: the refugee accepted ("since we need more hands"), the ransom refused
+(option 1, "since we can't afford it"), the hosting quest declined ("since we have a food emergency"), and the naming
+dialog got both names. Fixed from it: with the fallback name shown, the model copied it ("Ashford"); a naming dialog's
+default is no longer shown to the model and the line says to invent its own names (it then named "Ferngrove"). Seen, not
+fixed here: the grammar fills `option`/`text` on every call (harmless: a label or index is used, stray text is ignored),
+and on these samples the model spent steps on a cooler for a not-yet-built freezer (phase 2's guard refuses it), so some
+cycles ended without a final chat line.
 
 ## Unattended play: camera director
 
@@ -581,3 +592,11 @@ moment table in `games/rimworld/moments.py`, tests `tests/test_commentary.py`.
 - **Try it.** `python -m rimworldllm_agent.games.rimworld.comment_try --events agent/tests/data/comment_events_sample.json
   [--llm-url http://host:port/v1]` prints the line per recorded moment and the day recap (FakeLLM without --llm-url).
 - Config: `commentary` (true), `commentary_min_gap_real_s` (180), `commentary_min_gap_game` (15000), `commentary_recap` (true).
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL`, `comment_try` on the sample, three runs).**
+One documentary sentence per moment, in register: "From the eastern scrub, a marauding band of pirates emerges to test the
+resilience of the small, stranded colony."; "The arrival of little Wren marks a sudden, fragile new beginning for Ana and
+her weary band of survivors."; recap "Amidst the violence of a pirate raid and the loss of Bram, Ana welcomes baby Wren and
+marries Cy, who celebrates their union with a masterwork longsword." The tend event is ignored as designed. One wedding
+line of 21 was dropped by the sanitizer (now printed as `(dropped: reason)` by `comment_try`). Lines run 20-30 words; a
+shorter cap is a tuning choice for the keeper.

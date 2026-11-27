@@ -180,8 +180,10 @@ def dialog_lines(d: dict, lv: dict | None = None) -> list[str]:
                          for o in x.get("options") or [] if not o.get("disabled"))
         flds = ", ".join(gd.clean(f.get("label") or f.get("name", ""), "label") + f" (max {f.get('max_len', 40)} chars)" for f in x.get("fields") or [])
         out.append(f"- {x['id']} ({x.get('kind', '')}): {gd.clean(x.get('title', ''), 'label')}"
-                   + (f" [options: {opts}]" if opts else "") + (f" [type a name: {flds}]" if flds else "")
-                   + (f" [default: {gd.clean(x['default'], 'label')}]" if x.get("default") else ""))
+                   + (f" [options: {opts}]" if opts else "")
+                   + (f" [type a name: {flds}; invent your own fitting names]" if flds else "")
+                   # a naming dialog's fallback stays hidden: shown, the model copied it instead of naming the colony
+                   + (f" [default: {gd.clean(x['default'], 'label')}]" if x.get("default") and not flds else ""))
         if x.get("text") and cap:
             out.append("    " + gd.clean(x["text"], max_len=cap))
     return out
