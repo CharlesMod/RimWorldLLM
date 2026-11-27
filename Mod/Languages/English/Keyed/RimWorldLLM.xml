@@ -496,10 +496,33 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Chat_MediumTip>Uses the medium font for the chat panel instead of the small one.</RWL_Chat_MediumTip>
   <RWL_Chat_Opacity>Chat background: {0}%</RWL_Chat_Opacity>
   <RWL_Chat_OpacityTip>How dark the panel's background is while the mouse is elsewhere. Under the mouse it is nearly opaque.</RWL_Chat_OpacityTip>
-  <RWL_Chat_Width>Chat panel width: {0}</RWL_Chat_Width>
-  <RWL_Chat_WidthTip>Width in UI units; a narrow screen shrinks it to fit.</RWL_Chat_WidthTip>
-  <RWL_Chat_Lines>Chat lines shown: {0}</RWL_Chat_Lines>
-  <RWL_Chat_LinesTip>How many lines of text the panel shows; scroll with the mouse wheel over it to read older ones.</RWL_Chat_LinesTip>
+  <RWL_Chat_MoveHelp>Drag the chat panel by its top strip (shown under the mouse) and resize it from the bottom-right corner. "On the right" is only where it starts until you move it.</RWL_Chat_MoveHelp>
+  <RWL_Chat_ResetPos>Reset chat panel position</RWL_Chat_ResetPos>
+  <RWL_Chat_ResetPosTip>Forget where you dragged the panel; it goes back to the side chosen above, at its default size.</RWL_Chat_ResetPosTip>
+  <RWL_Chat_FTalk>Chat shows: talk</RWL_Chat_FTalk>
+  <RWL_Chat_FTalkTip>Your lines and what the colonists say.</RWL_Chat_FTalkTip>
+  <RWL_Chat_FThoughts>Chat shows: thoughts</RWL_Chat_FThoughts>
+  <RWL_Chat_FThoughtsTip>Colonists' thoughts, dreams and diary entries.</RWL_Chat_FThoughtsTip>
+  <RWL_Chat_FNarrator>Chat shows: narrator</RWL_Chat_FNarrator>
+  <RWL_Chat_FNarratorTip>The narrator's lines and system notes.</RWL_Chat_FNarratorTip>
+  <RWL_Chat_FActions>Chat shows: actions</RWL_Chat_FActions>
+  <RWL_Chat_FActionsTip>What the narrator did, and what it was not allowed to do.</RWL_Chat_FActionsTip>
+  <RWL_Chat_FStory>Chat shows: story</RWL_Chat_FStory>
+  <RWL_Chat_FStoryTip>Chronicle entries, recaps and artwork descriptions.</RWL_Chat_FStoryTip>
+  <RWL_Chat_ChipTalk>Talk</RWL_Chat_ChipTalk>
+  <RWL_Chat_ChipThoughts>Thoughts</RWL_Chat_ChipThoughts>
+  <RWL_Chat_ChipNarrator>Narrator</RWL_Chat_ChipNarrator>
+  <RWL_Chat_ChipActions>Actions</RWL_Chat_ChipActions>
+  <RWL_Chat_ChipStory>Story</RWL_Chat_ChipStory>
+  <RWL_Chat_ChipTip>Click to show or hide these lines.</RWL_Chat_ChipTip>
+  <RWL_Viv_LineColonist>{0}: {1}</RWL_Viv_LineColonist>
+  <RWL_Viv_LineColonistTo>{0} → {1}: {2}</RWL_Viv_LineColonistTo>
+  <RWL_Viv_LineThought>{0} thinks: {1}</RWL_Viv_LineThought>
+  <RWL_Viv_LineDream>{0} dreams: {1}</RWL_Viv_LineDream>
+  <RWL_Viv_LineDiary>{0}'s diary: {1}</RWL_Viv_LineDiary>
+  <RWL_Viv_LineChronicle>Chronicle: {0}</RWL_Viv_LineChronicle>
+  <RWL_Viv_LineChronicleDay>Chronicle, {0}: {1}</RWL_Viv_LineChronicleDay>
+  <RWL_Viv_LineRecap>Recap: {0}</RWL_Viv_LineRecap>
   <RWL_TabGoals>Goals</RWL_TabGoals>
   <RWL_Viv_GoalsTitle>The narrator's goals</RWL_Viv_GoalsTitle>
   <RWL_Viv_PagePlaying>Narrator plays</RWL_Viv_PagePlaying>
