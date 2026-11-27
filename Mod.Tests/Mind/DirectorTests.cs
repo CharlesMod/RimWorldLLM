@@ -12,6 +12,7 @@ using MindT = RimWorldLLM.Mind.Mind;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class DirectorTests
     {
         static KeyValuePair<int, string>[] Who(params (int, string)[] a) { return a.Select(x => new KeyValuePair<int, string>(x.Item1, x.Item2)).ToArray(); }

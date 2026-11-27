@@ -13,6 +13,7 @@ using MindM = RimWorldLLM.Mind.Mind;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class InnerWorldTests
     {
         static readonly RimWorldAdapter AD = new RimWorldAdapter();

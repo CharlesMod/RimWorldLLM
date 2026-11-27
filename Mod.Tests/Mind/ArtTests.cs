@@ -140,6 +140,7 @@ namespace RimWorldLLM.Tests.Mind
         }
     }
 
+    [Collection("AdultState")]
     public class ArtTests
     {
         private const int Day = 60000;

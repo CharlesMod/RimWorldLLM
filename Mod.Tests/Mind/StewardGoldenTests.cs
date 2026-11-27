@@ -12,7 +12,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
-    [Collection("StewardEnv")]
+    [Collection("AdultState")]
     public class StewardGoldenTests
     {
         private static readonly JObject G = JObject.Parse(StewardTestData.Resource("RimWorldLLM.Tests.jobs-steward-golden.json"));

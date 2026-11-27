@@ -10,6 +10,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class ReplayMultidayTests
     {
         static string Data { get { return Path.Combine(System.AppContext.BaseDirectory, "Mind", "Data", "multiday.jsonl"); } }

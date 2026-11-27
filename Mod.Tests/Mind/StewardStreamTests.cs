@@ -55,7 +55,7 @@ namespace RimWorldLLM.Tests.Mind
         }
     }
 
-    [Collection("StewardEnv")]
+    [Collection("AdultState")]
     public class StewardStreamTests
     {
         private static async Task<(JobsWorld w, StreamFake b, FakeLive live)> Boot(string reply, bool live = true)

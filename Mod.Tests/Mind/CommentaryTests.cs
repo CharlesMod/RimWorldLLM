@@ -13,6 +13,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class CommentaryTests
     {
         private const int D = 60000;

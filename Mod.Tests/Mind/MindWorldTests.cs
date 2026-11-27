@@ -16,6 +16,7 @@ using MindT = RimWorldLLM.Mind.Mind;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class MindWorldTests
     {
         const long DAY = 60000;

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
-    [Collection("StewardEnv")]
+    [Collection("AdultState")]
     public class StewardChatStatusTests
     {
         private static readonly string Done = Rig.Done;

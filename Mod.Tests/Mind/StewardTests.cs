@@ -83,7 +83,7 @@ namespace RimWorldLLM.Tests.Mind
         public static void NoEnv() => Environment.SetEnvironmentVariable(Steward.EnvStrategy, null);
     }
 
-    [Collection("StewardEnv")]
+    [Collection("AdultState")]
     public class StewardTests
     {
         private static readonly string Done = Rig.Done;

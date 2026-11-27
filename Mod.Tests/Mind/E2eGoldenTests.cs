@@ -19,6 +19,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class E2eGoldenTests
     {
         static JObject Golden(string name)

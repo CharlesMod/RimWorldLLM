@@ -12,7 +12,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests.Mind
 {
-    [Collection("StewardEnv")]
+    [Collection("AdultState")]
     public class StewardDialogsTests
     {
         private static List<JObject> Sample(string name)

@@ -13,6 +13,7 @@ using MindT = RimWorldLLM.Mind.Mind;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class CreativeWorldTests
     {
         private const string Text = "Ana carved this from granite after the fight at the east wall, and it shows a sleeping dog at rest.";
