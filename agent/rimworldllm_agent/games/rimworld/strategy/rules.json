@@ -1,5 +1,6 @@
 {
- "version": "2026-11-27",
+ "version": "2026-11-27b (1.7 check)",
+ "version_basis": "RimWorld 1.7 (keeper build 1.7.5021 rev1365). 1.7 is an engine port with identical gameplay [S-1.7]; balance follows 1.6.4850. Rules whose basis was rechecked against 1.6.4518-1.6.4850 patch notes carry verified_1_7=true.",
  "game": "RimWorld 1.6/1.7, base + Biotech; other DLCs optional (rules tagged with 'dlc' need that DLC)",
  "condition_syntax": "Python-like boolean expressions over digest_fields: comparisons (< <= > >= == !=), and/or/not, list membership ('x' in field, 'x' not in field), field in [list]. 'true' means always-on guidance. Missing/null numeric field => rule is skipped.",
  "priority_scale": "1 = act this tick/now (life or colony at risk), 2 = act today, 3 = this week, 4 = background guidance",
@@ -51,7 +52,7 @@
   "battery_capacity_wd": "float",
   "unroofed_electrics": "int, powered buildings not under roof",
   "research_current": "string or null",
-  "research_done": "list of research defNames (vanilla names assumed: Electricity, Batteries, Stonecutting, MicroelectronicsBasics, GunTurrets, Mortars, PenoxycylineProduction; mod side should verify against DefDatabase)",
+  "research_done": "list of ResearchProjectDef defNames. Used here: Electricity, Batteries, Stonecutting, MicroelectronicsBasics, GunTurrets, Mortars, PenoxycylineProduction. No 1.6/1.7 patch note renames research; MicroelectronicsBasics is confirmed by a game-data mirror, the rest are vanilla names from memory: the mod side must check them against DefDatabase<ResearchProjectDef> at load and warn on misses",
   "base_under_mountain_tiles": "int, colony-adjacent tiles under overhead mountain warmer than -17C",
   "days_since_infestation": "int",
   "hospital_beds": "int, medical beds in a hospital room",
@@ -114,6 +115,9 @@
   "W-ice": "https://rimworldwiki.com/wiki/Ice_Sheet_Guide",
   "W-pollution": "https://rimworldwiki.com/wiki/Pollution",
   "W-1.6.4518": "https://rimworldwiki.com/wiki/Version/1.6.4518",
+  "W-1.6.4566": "https://rimworldwiki.com/wiki/Version/1.6.4566",
+  "W-1.6.4850": "https://rimworldwiki.com/wiki/Version/1.6.4850",
+  "S-1.7": "Steam news app 294100, 'Announcing the Waylith Engine and Update 1.7', 2026-10-12 (https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=294100)",
   "C-hub-research": "https://rimworldhub.com/post/research_roadmap_outsmart_rimworlds_tech_tree_like_this"
  },
  "rules": [
@@ -342,7 +346,8 @@
     "W-med",
     "W-rooms",
     "W-1.6.4518"
-   ]
+   ],
+   "verified_1_7": true
   },
   {
    "id": "health.backup_doctor",
@@ -493,13 +498,15 @@
    "id": "combat.siege",
    "category": "combat",
    "condition": "raid_type == 'siege'",
-   "action": "Siege: do not wait in wooden buildings. Either counter-mortar or sortie with all fighters early, before their mortars and sandbags are finished (assault comes in 1.5-3 days anyway). Keep non-combatants under roofs.",
+   "action": "Siege: do not wait in wooden buildings. Either counter-mortar or sortie with all fighters early, before their mortars and sandbags are finished (assault comes in 1.5-3 days anyway). Keep non-combatants under roofs. Siegers respect your blueprints, so they will not build on planned structures.",
    "priority": 1,
    "sources": [
     "W-raider",
     "W-tactics",
-    "W-mortar"
-   ]
+    "W-mortar",
+    "W-1.6.4850"
+   ],
+   "verified_1_7": true
   },
   {
    "id": "combat.drop_pods",
@@ -560,11 +567,13 @@
    "id": "combat.mech_cluster",
    "category": "combat",
    "condition": "raid_type == 'mech_cluster'",
-   "action": "Mech cluster: do not approach (proximity wakes it). Build cover first, then strike from max range: EMP then HE mortars/snipers. Do not melee explosive parts.",
+   "action": "Mech cluster or ancient danger: do not approach (proximity wakes it; ancient dangers no longer wake while still fogged). Build cover first, then strike from max range: EMP then HE mortars/snipers. Do not melee explosive parts.",
    "priority": 1,
    "sources": [
-    "W-cluster"
+    "W-cluster",
+    "W-1.6.4850"
    ],
+   "verified_1_7": true,
    "dlc": "royalty"
   },
   {
@@ -626,12 +635,14 @@
    "id": "defense.turrets",
    "category": "defense",
    "condition": "'GunTurrets' in research_done and turrets < 2 and threat > 500",
-   "action": "Place 2+ mini-turrets 3-4 tiles apart behind sandbags at the killzone, on a switchable separate grid.",
+   "action": "Place 2+ mini-turrets 3-4 tiles apart behind sandbags at the killzone, on a switchable separate grid. Treat traps as filler only: smart raiders avoid some.",
    "priority": 3,
    "sources": [
     "W-miniturret",
-    "W-killbox"
-   ]
+    "W-killbox",
+    "W-1.6.4518"
+   ],
+   "verified_1_7": true
   },
   {
    "id": "defense.siege_ready",
@@ -642,7 +653,8 @@
    "sources": [
     "W-1.6.4518",
     "W-mortar"
-   ]
+   ],
+   "verified_1_7": true
   },
   {
    "id": "defense.infestation_risk",
@@ -760,7 +772,8 @@
    "sources": [
     "W-1.6.4518",
     "W-research"
-   ]
+   ],
+   "verified_1_7": true
   },
   {
    "id": "growth.recruit",
@@ -817,12 +830,14 @@
    "id": "work.baseline",
    "category": "work",
    "condition": "true",
-   "action": "Manual priorities: everyone Firefight, Patient, Bed rest, Basic at 1; each specialist job at 1 for its best pawn; passion jobs 2; hauling/cleaning 3-4; keep 2 doctors and 2 cooks able.",
+   "action": "Manual priorities: everyone Firefight, Patient, Bed rest, Basic at 1; each specialist job at 1 for its best pawn; passion jobs 2; hauling/cleaning 3-4; keep 2 doctors and 2 cooks able. [Odyssey] Fishing is a separate work type: assign it when water is near and food is short.",
    "priority": 2,
    "sources": [
     "W-quick",
-    "W-work"
-   ]
+    "W-work",
+    "W-1.6.4566"
+   ],
+   "verified_1_7": true
   }
  ]
 }
