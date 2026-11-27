@@ -116,12 +116,16 @@ namespace RimWorldLLM
 
         static JToken Resources(Map map)
         {
-            var list = new List<KeyValuePair<ThingDef, int>>();
+            // Stored (the resource counter) plus what lies loose or forbidden on the ground; a def only on the ground still shows.
+            var scan = VivariumLoose.Get(map);
+            var rows = new Dictionary<ThingDef, int[]>();   // stored, loose, forbidden
             foreach (var kv in map.resourceCounter.AllCountedAmounts)
-                if (kv.Value > 0) list.Add(kv);
+                if (kv.Value > 0) rows[kv.Key] = new[] { kv.Value, 0, 0 };
+            foreach (var kv in scan.Loose) { int[] r; if (!rows.TryGetValue(kv.Key, out r)) rows[kv.Key] = r = new int[3]; r[1] = kv.Value; }
+            foreach (var kv in scan.Forbidden) { int[] r; if (!rows.TryGetValue(kv.Key, out r)) rows[kv.Key] = r = new int[3]; r[2] = kv.Value; }
             var arr = new JArray();
-            foreach (var kv in list.OrderByDescending(k => k.Value).ThenBy(k => k.Key.defName).Take(MaxResources))
-                arr.Add(new JObject { ["category"] = ResCategory(kv.Key), ["label"] = kv.Key.label ?? kv.Key.defName, ["count"] = kv.Value });
+            foreach (var kv in rows.OrderByDescending(k => k.Value[0] + k.Value[1]).ThenBy(k => k.Key.defName).Take(MaxResources))
+                arr.Add(new JObject { ["category"] = ResCategory(kv.Key), ["label"] = kv.Key.label ?? kv.Key.defName, ["count"] = kv.Value[0], ["loose"] = kv.Value[1], ["forbidden"] = kv.Value[2] });
             return arr;
         }
 

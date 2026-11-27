@@ -70,11 +70,11 @@ namespace RimWorldLLM
 
         static string StuffLabel(ThingDef s) { return s == null ? "" : (s.label ?? s.defName); }
 
-        /// <summary>Stuff in stock, as allowed for the def, counts from the colony's resource counter.</summary>
+        /// <summary>Stuff in stock, as allowed for the def, counts: stored plus loose.</summary>
         static List<KeyValuePair<string, int>> AllowedCounts(Map map, ThingDef def)
         {
             var l = new List<KeyValuePair<string, int>>();
-            foreach (var s in GenStuff.AllowedStuffsFor(def)) l.Add(new KeyValuePair<string, int>(s.defName, map.resourceCounter.GetCount(s)));
+            foreach (var s in GenStuff.AllowedStuffsFor(def)) l.Add(new KeyValuePair<string, int>(s.defName, VivariumLoose.Usable(map, s)));
             return l;
         }
 
@@ -376,7 +376,7 @@ namespace RimWorldLLM
                         if (cost > left.Blueprints) return HandResult.No("that room needs " + cost + " blueprints but only " + left.Blueprints + " are left this cycle");
                         if (wallStuff != null)
                         {
-                            int have = map.resourceCounter.GetCount(wallStuff);
+                            int have = VivariumLoose.Usable(map, wallStuff);
                             if (have < toPlace.Count * BuildHelpers.WallStuffCost)
                                 return HandResult.No("not enough " + StuffLabel(wallStuff) + " in stock: " + toPlace.Count + " walls need " + toPlace.Count * BuildHelpers.WallStuffCost + ", there is " + have);
                         }

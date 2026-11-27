@@ -38,7 +38,8 @@ ARGUMENT_INTERACTIONS = frozenset({"Insult", "Slight"})
 # A chitchat names no topic of its own: describe the situation (a passing exchange), never the word. The marker phrase
 # is how drops_meta later recognises a thought or line whose scene was only that.
 _PASSING = "passing exchange"
-_PASSING_KIND = "a passing exchange about whatever is around (the work, the food, the weather, the latest event)"
+_PASSING_KIND = ("a passing exchange about something really going on around them right now (take it from the scene: "
+                 "what they are doing, where they are, a recent event); never assume food or a meal unless someone is eating")
 _CHITCHAT_SUMMARY = re.compile(r"^(?P<a>.+?) -> (?P<b>.+?): Chitchat\.?$", re.I)
 _META_TALK = re.compile(
     r"chit[\s-]?chat|small[\s-]?talk|\bidle (talk|chatter|chat)\b|\b(all|this|that|enough|more|so much|too much|such)\s+(the\s+)?"
@@ -275,7 +276,7 @@ class RimWorldAdapter:
         summary = event.get("summary", "").strip()
         m = _CHITCHAT_SUMMARY.match(summary) if event.get("type") == "social" else None
         if m:                                              # the game's label names the interaction, not what was said
-            summary = f"{m['a']} and {m['b']} had a {_PASSING} about whatever was around: the work, the food, the weather."
+            summary = f"{m['a']} and {m['b']} had a {_PASSING} while going about their day; what was said wasn't noted."
         roles = {int(a["id"]): a.get("role", "") for a in event.get("actors", [])}
         if roles.get(actor_id) in _SUBJECT_ROLES:
             return f"It happened to me: {summary}"

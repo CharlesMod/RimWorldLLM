@@ -55,10 +55,10 @@ namespace RimWorldLLM
             var rc = map.resourceCounter;
             F(o, "medicine_total", () => rc.GetCount(ThingDefOf.MedicineHerbal) + rc.GetCount(ThingDefOf.MedicineIndustrial) + rc.GetCount(ThingDefOf.MedicineUltratech));
             F(o, "medicine_industrial", () => rc.GetCount(ThingDefOf.MedicineIndustrial) + rc.GetCount(ThingDefOf.MedicineUltratech));
-            F(o, "steel", () => rc.GetCount(ThingDefOf.Steel));
-            F(o, "wood", () => rc.GetCount(ThingDefOf.WoodLog));
-            F(o, "components", () => rc.GetCount(ThingDefOf.ComponentIndustrial) + rc.GetCount(ThingDefOf.ComponentSpacer));
-            F(o, "silver", () => rc.GetCount(ThingDefOf.Silver));
+            F(o, "steel", () => VivariumLoose.Usable(map, ThingDefOf.Steel));
+            F(o, "wood", () => VivariumLoose.Usable(map, ThingDefOf.WoodLog));
+            F(o, "components", () => VivariumLoose.Usable(map, ThingDefOf.ComponentIndustrial) + VivariumLoose.Usable(map, ThingDefOf.ComponentSpacer));
+            F(o, "silver", () => VivariumLoose.Usable(map, ThingDefOf.Silver));
 
             F(o, "research_current", () => { var p = Find.ResearchManager.GetProject(); return p == null ? JValue.CreateNull() : (JToken)p.defName; });
             F(o, "research_done", () => new JArray(DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(d => d.IsFinished).Select(d => d.defName)));
