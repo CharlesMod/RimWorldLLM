@@ -31,7 +31,7 @@ Ported test for test (xunit, PascalCase), all green:
 
 Deferred (need the Director, world fixture or minds, owned by other parts; port them when those land):
 
-- test_model_tier, the eight `world` fixture tests (`test_clouds_*` x4, `test_art_*` x4): they build a whole `World` (Director, creative round, art) and only read `tier.small` and `cfg` feature flags. The tier logic they depend on is covered by `ModelTier.FeatureOn` tests in `SamplerTests`/`EndpointLlmTests`; only the glue in the Director remains.
+- (ported) test_model_tier, the eight `world` fixture tests (`test_clouds_*` x4, `test_art_*` x4): StewardWorldTests.cs over the real Director.
 - test_gpu: live GPU against a real llama-server; out of scope (no GPU, no server).
 
 Additional C# only tests: `BackendTests.RequestBytesMatchPython`, reply shape and error cases (checked against Python), `FakeLlmGoldenTests`, `PyJsonTests`, `WireGoldenTests` (exact request bytes for native and OpenAI modes in 7 configurations).
