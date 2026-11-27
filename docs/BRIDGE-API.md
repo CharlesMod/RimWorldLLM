@@ -326,12 +326,14 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "adult_content": false, "dreams": true, "art_descriptions": true, "text_fill": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "adult_content": false, "dreams": true, "art_descriptions": true, "text_fill": true, "pause_ambient_at_speed": 4, "vision_allowed": true, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `adult_content` (bool, default `false`) is the mod's "Adult content" setting. Off: the agent adds a fade-to-black
 rule to its system prompt and drops explicit sexual lines (reason `adult_off`). On: explicit content between adults
 is allowed. The agent's age gate is never relaxed by it. The agent reads it on every config refresh; a missing key
 means off.
+`vision_allowed` (bool, default `true`) is the mod's "Narrator may look at the screen" setting (`narratorMayLook`); the mind may fetch
+pictures only when it is not `false` and the model supports images. See `GET /vision`.
 `text_fill` (bool) is the mod's "Write flavour text for single things" switch (and the mod switch itself): false means
 the agent's text filler stays idle. Missing (an older mod) means the agent decides from `GET /text/queue` alone.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
@@ -761,6 +763,29 @@ negotiator, target_kind console|trader, target, trader, start_tick, deadline_tic
 becomes active (polled every 250 ticks; critical alerts and a short list: fire, starvation, low food,
 colonist needs rescue, colonist needs tending, life-threatening illness). Both have empty `pawns`; the
 director does not voice them.
+
+### `GET /vision?kind=<close|base|wide|view>&target=<..>&max=<px>` (game needed)
+A picture of the map from above, north up, without any interface (the main camera is rendered into its own texture; the
+UI is never in it). `kind`: `close` (needs `target`), `base` (home area bounding box + 3 cells), `wide` (about 3x the base
+span, at least 80 cells wide, clamped to the map), `view` (whatever the camera shows now, no camera move). `max` is the
+long side in px, 256 up to the kind's size (close 768, base 768, wide 1024, view 768); default the kind's size. The
+picture has the screen's aspect. `target` (close only): `room:<id>` (room id as in the digest `build.rooms[].id`; frame =
+its bounds + 2 cells, at least 10 wide), `thing:<id>`, `pawn:<id>`, `cell:<x>,<z>` (about 14x10 cells around it), or
+`dir:<north|south|east|west|northeast|northwest|southeast|southwest>:<cells 1..120>` from the home centre.
+
+A capture takes a few frames, so the client asks again with the same query until it is ready:
+- `{"status":"pending","retry_ms":250}`
+- `{"status":"ready","kind","target","mime":"image/jpeg","width","height","bytes","image_b64","legend":{"north":"up","x0","z0","x1","z1","cells_w","cells_h","px_per_cell","target_name","ui":"hidden","note"},"captured_tick","age_s"}`.
+  `x`/`z` are RimWorld cell coordinates, `z` grows north, the top of the image is `z1`. The legend is read from the real
+  camera after the move, so a zoom the game clamped is told truthfully (a close frame may show more cells than asked).
+- Errors: `refused` with detail `vision_off` (the setting is off) or `player_typing` (a text field has keyboard focus);
+  `no_target` (404; the room, thing, pawn or cell is not on the current map); `capture_failed` (500; including an image still
+  over 400 KiB at JPEG quality 60, a map change mid-capture, or a capture stuck for 20 s); `bad_request` for a bad
+  kind, target or max; `busy` (503) when a capture of a different query is in flight; `no_game`.
+- A finished picture is cached for 2 s of real time per (kind, target, max) so the retry gets it; at most 2 pictures
+  are kept. JPEG quality 80, re-encoded at 60 when over 400 KiB. Encoding runs on a worker thread.
+- close/base/wide move the camera for about one frame (the game only draws the map sections in view) and put it back; the
+  camera director and watch mode stand still meanwhile. `view` does not move the camera. Pictures are never saved.
 
 ### `GET /dialogs` and `POST /act/choose` (unattended play; game needed for the act)
 `GET /dialogs` (no game needed) lists the choice windows and choice letters open now, as the mod's scanner last saw
