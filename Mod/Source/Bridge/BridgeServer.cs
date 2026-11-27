@@ -227,7 +227,9 @@ namespace RimWorldLLM.Bridge
                 return Reply(413, ApiResult.Fail("too_large", "body over 64 KiB"));
             if (GameThreadStalled)
                 return Reply(503, ApiResult.Fail("busy", "the game is not running frames (window in the background, loading or frozen); retry shortly"));
-            using (var req = new InboundRequest { Method = method, Path = path, Query = query, Body = body })
+            // Not disposed here: a request the game thread claimed but did not finish in time still gets Complete()
+            // later, and a disposed Done would throw on the game thread. The GC reclaims it.
+            var req = new InboundRequest { Method = method, Path = path, Query = query, Body = body };
             {
                 req.Async = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _pending.Enqueue(req);
