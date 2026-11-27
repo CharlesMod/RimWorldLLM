@@ -405,19 +405,24 @@ namespace RimWorldLLM.Bridge
     public sealed class ActionLog
     {
         public const int Max = 500;
-        sealed class Item { public int Seq, Tick; public string Verb, Note, By; }
+        sealed class Item { public int Seq, Tick; public string Verb, Note, By, Why; }
         readonly List<Item> _items = new List<Item>();
         int _seq;
 
         public int LastSeq { get { return _seq; } }
 
-        public void Add(string verb, string note, int tick, string by)
+        public void Add(string verb, string note, int tick, string by, string why = null)
         {
-            _items.Add(new Item { Seq = ++_seq, Tick = tick, Verb = verb ?? "", Note = VivJson.Clean(note, 500), By = by ?? "narrator" });
+            _items.Add(new Item { Seq = ++_seq, Tick = tick, Verb = verb ?? "", Note = VivJson.Clean(note, 500), By = by ?? "narrator", Why = ChatFeed.CleanWhy(why) });
             while (_items.Count > Max) _items.RemoveAt(0);
         }
 
-        static JObject J(Item i) { return new JObject { ["seq"] = i.Seq, ["tick"] = i.Tick, ["verb"] = i.Verb, ["note"] = i.Note, ["by"] = i.By }; }
+        static JObject J(Item i)
+        {
+            var o = new JObject { ["seq"] = i.Seq, ["tick"] = i.Tick, ["verb"] = i.Verb, ["note"] = i.Note, ["by"] = i.By };
+            if (!string.IsNullOrEmpty(i.Why)) o["why"] = i.Why;
+            return o;
+        }
 
         public JObject Since(int seq)
         {
@@ -452,7 +457,7 @@ namespace RimWorldLLM.Bridge
                 if (verb.Length == 0 && note.Length == 0) continue;
                 int seq = VivJson.Int(o["seq"]);
                 if (seq <= _seq) seq = _seq + 1;
-                _items.Add(new Item { Seq = seq, Tick = VivJson.Int(o["tick"]), Verb = verb, Note = note, By = VivJson.Str(o["by"], "narrator") });
+                _items.Add(new Item { Seq = seq, Tick = VivJson.Int(o["tick"]), Verb = verb, Note = note, By = VivJson.Str(o["by"], "narrator"), Why = ChatFeed.CleanWhy(VivJson.Str(o["why"])) });
                 _seq = seq;
             }
             while (_items.Count > Max) _items.RemoveAt(0);

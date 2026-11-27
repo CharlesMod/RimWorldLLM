@@ -205,6 +205,7 @@ namespace RimWorldLLM.Bridge
             public Func<Vivarium, HandResult> Gate;                     // null = nothing to refuse; else a refusal or null
             public Func<IVivariumHands, HandResult> Run;
             public Action<Vivarium> OnOk;
+            public Func<string> What;                                   // plain English of what is attempted, from the parsed args ("pause the game")
         }
         delegate Plan Parser(JObject body);
 
@@ -213,20 +214,37 @@ namespace RimWorldLLM.Bridge
             Plan plan;
             try { plan = parse(c.Body); }
             catch (ArgError e) { return Bad(e.Message); }
+            string why = "";
+            JToken wt = c.Body["why"];
+            if (wt != null && wt.Type != JTokenType.Null)
+            {
+                if (wt.Type != JTokenType.String) return Bad("why must be a string");
+                why = ChatFeed.CleanWhy((string)wt);
+            }
             var h = hands();
             if (h == null) return NoGame();
             var v = vivarium();
             if (plan.Gate != null)
             {
                 var refusal = plan.Gate(v);
-                if (refusal != null) return ApiResult.Fail("refused", refusal.Reason);
+                if (refusal != null)
+                {
+                    ChatFeed.Refused(v.Chat, c.State.Tick, plan.What != null ? plan.What() : verb, refusal.Reason);
+                    return ApiResult.Fail("refused", refusal.Reason);
+                }
             }
             var r = plan.Run(h);
             if (r == null) return ApiResult.Fail("refused", "the game gave no answer");
-            if (!r.Ok) return ApiResult.Fail("refused", string.IsNullOrEmpty(r.Reason) ? "refused" : r.Reason);
+            if (!r.Ok)
+            {
+                string reason = string.IsNullOrEmpty(r.Reason) ? "refused" : r.Reason;
+                ChatFeed.Refused(v.Chat, c.State.Tick, !string.IsNullOrEmpty(r.What) ? r.What : plan.What != null ? plan.What() : verb, reason);
+                return ApiResult.Fail("refused", reason);
+            }
             if (plan.OnOk != null) plan.OnOk(v);
             string note = r.Note ?? "";
-            v.Actions.Add(verb, note, c.State.Tick, "narrator");
+            v.Actions.Add(verb, note, c.State.Tick, "narrator", why);
+            ChatFeed.Action(v.Chat, c.State.Tick, note, why);
             var body = new JObject { ["done"] = note };
             if (r.Extra != null)
                 foreach (var p in r.Extra.Properties())
@@ -255,6 +273,7 @@ namespace RimWorldLLM.Bridge
                         return HandResult.No("the narrator did not pause the game, and the player has not let it change speed");
                     return null;
                 },
+                What = () => VivariumHandsPure.TimeWhat(pause, speed),
                 Run = h => h.SetTime(pause, speed),
                 OnOk = v =>
                 {
@@ -279,7 +298,7 @@ namespace RimWorldLLM.Bridge
                     throw new ArgError("priority for " + name + " must be an integer 0..4");
                 d[name] = p.Value.Value<int>();
             }
-            return new Plan { Run = h => h.SetWork(pawn, d) };
+            return new Plan { What = () => "change pawn " + pawn + "'s work priorities", Run = h => h.SetWork(pawn, d) };
         }
 
         static Plan Schedule(JObject b)
@@ -288,7 +307,7 @@ namespace RimWorldLLM.Bridge
             int from = Int(b, "from_hour", 0, 23), to = Int(b, "to_hour", 0, 24);
             if (from == to) throw new ArgError("from_hour and to_hour must differ (use 0 and 24 for the whole day)");
             string a = OneOf(b, "assignment", Assignments);
-            return new Plan { Run = h => h.SetSchedule(pawn, from, to, a) };
+            return new Plan { What = () => "change pawn " + pawn + "'s schedule", Run = h => h.SetSchedule(pawn, from, to, a) };
         }
 
         static Plan Policy(JObject b)
@@ -296,26 +315,26 @@ namespace RimWorldLLM.Bridge
             int pawn = Pawn(b, "pawn");
             string kind = OneOf(b, "kind", Kinds);
             string name = Str(b, "name", 1, 60);
-            return new Plan { Run = h => h.SetPolicy(pawn, kind, name) };
+            return new Plan { What = () => VivariumHandsPure.PolicyWhat("pawn " + pawn, kind, name), Run = h => h.SetPolicy(pawn, kind, name) };
         }
 
         static Plan Bed(JObject b)
         {
             int pawn = Pawn(b, "pawn"), bed = Pawn(b, "bed");
-            return new Plan { Run = h => h.AssignBed(pawn, bed) };
+            return new Plan { What = () => "give pawn " + pawn + " bed " + bed, Run = h => h.AssignBed(pawn, bed) };
         }
 
         static Plan Research(JObject b)
         {
             string p = Str(b, "project", 1, 80);
-            return new Plan { Run = h => h.SetResearch(p) };
+            return new Plan { What = () => "start researching " + p, Run = h => h.SetResearch(p) };
         }
 
         static Plan Letter(JObject b)
         {
             int letter = Pawn(b, "letter");
             string choice = Str(b, "choice", 1, 80);
-            return new Plan { Run = h => h.AnswerLetter(letter, choice) };
+            return new Plan { What = () => "answer the letter with " + choice, Run = h => h.AnswerLetter(letter, choice) };
         }
 
         static Plan Draft(JObject b)
@@ -330,7 +349,7 @@ namespace RimWorldLLM.Bridge
                 ids.Add(t.Value<int>());
             }
             bool drafted = Bool(b, "drafted");
-            return new Plan { Run = h => h.Draft(ids, drafted) };
+            return new Plan { What = () => VivariumHandsPure.DraftWhat(ids.ConvertAll(i => "pawn " + i), drafted), Run = h => h.Draft(ids, drafted) };
         }
 
         static Plan Order(JObject b)
@@ -341,7 +360,7 @@ namespace RimWorldLLM.Bridge
             if (order == "move") { x = Int(b, "x", 0, int.MaxValue); z = Int(b, "z", 0, int.MaxValue); }
             else if (order == "attack") target = Int(b, "target", 1, int.MaxValue);
             else hold = Bool(b, "hold");
-            return new Plan { Run = h => h.Order(pawn, order, x, z, target, hold) };
+            return new Plan { What = () => VivariumHandsPure.OrderWhat("pawn " + pawn, order, x, z, "target " + target, hold), Run = h => h.Order(pawn, order, x, z, target, hold) };
         }
     }
 }
