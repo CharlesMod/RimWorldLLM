@@ -550,3 +550,34 @@ the chronicle gets a "story continues" entry. A new world uses the vanilla quick
 Not run in a game yet: detection, dialog, save naming, quick-start world, handoff and the long-event autosave are
 compile-checked only (see PLAYTEST section D).
 
+
+## Unattended play: documentary voice
+While the narrator plays, it also keeps a nature-documentary voice: one dry, warm sentence at a big moment, and one
+recap sentence per finished game day. They arrive as chat lines `who: "comment"` (POST /chat; the mod shows them in the
+Story filter group). Agent module `core/commentary.py` (small, with a clear contract for a C# port), the RimWorld
+moment table in `games/rimworld/moments.py`, tests `tests/test_commentary.py`.
+- **Moments and weights** (0..1; under 0.4 nothing is said): colony_lost 1.0, death 0.95, raid_start 0.9, ship_part 0.8,
+  birth 0.75, wedding (gathering kind wedding) 0.7, legendary masterwork 0.7, mental_break 0.6, social fight (state
+  SocialFighting) 0.5, masterwork 0.5, funeral 0.5, quest accepted / joiner (a `letter` or `dialog` whose text says so)
+  0.5, party 0.4. Anything else (tend, social, other letters, other gatherings) is ignored. Urgent: colony_lost, death,
+  raid_start, birth.
+- **Dedupe and limits.** The same key (kind plus who) inside 2500 game units (about an hour) is dropped; raid_start is one
+  key. A normal moment needs `commentary_min_gap_real_s` (180 s of play clock) and `commentary_min_gap_game` (15000 =
+  6 game hours) since the last line; an urgent moment needs only a 30 s floor. At most 8 moments wait; a normal one older
+  than half a day is dropped. The heaviest waiting moment speaks first.
+- **Recap.** When the game day turns and the finished day had at least one moment, one sentence sums it up (the day's
+  heaviest six moments, in order). One per day, the latest finished day only; it needs the 30 s floor only. The chronicle
+  is not used (it is written per entry, not per day). `commentary_recap` turns it off.
+- **When it runs.** Only when the vivarium answers, the narrator plays (`playing`), `settings.commentary` (the mod's
+  `narratorCommentary`, default on) and the agent's `commentary` are on, and the narrator slot is free
+  (`narrator_may_do_idle_work()`, no idle job running). A starting steward cycle cancels a running commentary call at
+  once (`narrator_owner`): nothing is posted. It does not use the actor windows' queue.
+- **The call.** `kind="narrator"`, slot 0, 48 tokens, stop at newline; system `adapter.commentary_prompt` plus the game
+  data rule; the moment text goes through `gd.clean` inside a `<game_data>` block. The answer goes through
+  `sanitize_line` (refusals, invented names, the age gate: a romantic or sexual line, or one naming a minor in it, is
+  dropped); a dropped line is spent, not retried. A mod that refuses `who: "comment"` (400/404) is not asked again.
+- **narrator_cover** (the old "all windows busy" one-liner) is untouched: it still fills `narrator_lines`, which nothing
+  reads. Commentary does not use it.
+- **Try it.** `python -m rimworldllm_agent.games.rimworld.comment_try --events agent/tests/data/comment_events_sample.json
+  [--llm-url http://host:port/v1]` prints the line per recorded moment and the day recap (FakeLLM without --llm-url).
+- Config: `commentary` (true), `commentary_min_gap_real_s` (180), `commentary_min_gap_game` (15000), `commentary_recap` (true).
