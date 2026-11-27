@@ -22,5 +22,6 @@
         <Compile Include="../Mod/Source/RimWorld/ThoughtPacing.cs" />
         <Compile Include="../Mod/Source/RimWorld/VivariumHandsPure.cs" />
         <Compile Include="../Mod/Source/RimWorld/VivariumChatParse.cs" />
+        <Compile Include="../Mod/Source/RimWorld/VivariumFactsPure.cs" />
     </ItemGroup>
 </Project>
