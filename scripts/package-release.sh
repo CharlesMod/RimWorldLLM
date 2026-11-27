@@ -182,10 +182,21 @@ cp "$REPO/LICENSE" "$ROOT/LICENSE"
 for f in CHANGELOG.md README.md; do [ -f "$REPO/$f" ] && cp "$REPO/$f" "$ROOT/$f"; done
 cp "$HOME/.nuget/packages/newtonsoft.json/13.0.3/LICENSE.md" "$ROOT/Licenses/Newtonsoft.Json-LICENSE.md"
 cp "$EE_DIR/LICENSE" "$ROOT/Licenses/easyEngine-LICENSE.txt"
-SYSVER=$(sed -nE 's/^require golang.org\/x\/sys (v[^ ]+).*/\1/p' "$EE_DIR/go.mod" | head -1)
+# A module's version in go.mod, in either the one-line form or a require ( ... ) block.
+modver() { sed -nE "s#^(require[[:space:]]+)?[[:space:]]*$1[[:space:]]+(v[^ ]+).*#\\2#p" "$EE_DIR/go.mod" | head -1; }
+SYSVER=$(modver 'golang\.org/x/sys')
 [ -n "$SYSVER" ] || die "golang.org/x/sys not found in easyEngine go.mod"
 MODCACHE=$("$GO" env GOMODCACHE)
 cp "$MODCACHE/golang.org/x/sys@$SYSVER/LICENSE" "$ROOT/Licenses/golang-x-sys-LICENSE.txt"
+# Other third-party Go modules the engine links (added to easyEngine after this script was written).
+for m in "github.com/ebitengine/purego:purego" "github.com/godbus/dbus/v5:godbus-dbus"; do
+  path=${m%%:*}; name=${m##*:}
+  ver=$(modver "$(printf '%s' "$path" | sed 's/[.]/\\./g')")
+  [ -n "$ver" ] || continue
+  lic=$(ls "$MODCACHE/$path@$ver"/LICENSE* 2>/dev/null | head -1)
+  [ -n "$lic" ] || die "$path $ver: no LICENSE in the module cache (run go mod download in easyEngine)"
+  cp "$lic" "$ROOT/Licenses/$name-LICENSE.txt"
+done
 cp "$("$GO" env GOROOT)/LICENSE" "$ROOT/Licenses/go-stdlib-LICENSE.txt"
 
 # --- 6. BUILD ---
