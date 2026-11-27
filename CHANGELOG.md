@@ -4,6 +4,12 @@
 
 Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are included but untested.
 
+### New: find and pair an easyEngine on another computer
+- In My own endpoint, **Find engines on my network** lists easyEngines on the local network (or type its address).
+  Connect, compare the six-digit code with the one on the engine's screen and press Allow there: the URL, model and
+  key fill themselves. Nothing to type between computers. The game finds a paired engine again if its address
+  changes, and says **Pair again** if the engine revokes the key. A typed endpoint works as before.
+
 ### New: Narrator plays (vivarium, phase 1)
 - An eye toggle in the bottom-right play-settings row lets the narrator run the colony: work priorities, schedules,
   outfit/food/drug policies, beds, research, letters and quest choices, drafting and simple orders. You can still do
