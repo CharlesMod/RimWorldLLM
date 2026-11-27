@@ -12,7 +12,16 @@ Tested on Linux with NVIDIA cards. Windows, macOS and AMD/Intel builds are inclu
   colonist. With the switch off the narrator answers as an advisor and does one task when you ask for it.
 - The narrator keeps a goals board (Voices → Goals) you can read and edit, and logs every action it takes.
 - Settings (Colonists → Narrator plays): it may pause for emergencies (on), it controls the speed (off), and how
-  often it looks over the colony (every 6 game hours). Building, zones, bills, trade and combat micro come later.
+  often it looks over the colony (every 6 game hours). Trade and combat micro come later.
+
+### New: Narrator plays, phase 2 (building)
+- The narrator can now build: rooms (it picks a site near the base: walls and a door), single things (a stove in the
+  kitchen, beds, tables, coolers...), growing zones, stockpiles and dumps, bills at workbenches, and mining, chopping,
+  harvesting and hauling orders. It states intent; the mod picks the cells, and never builds over beds or graves or
+  tears down what you built.
+- Everything it places is tagged: type `/undo` (or `/undo 3`) in the chat, or use the settings button, to take back
+  its last actions (blueprints cancelled, zones and bills removed; finished buildings stay).
+- Caps per look: 50 blueprints, 200 zone cells, 150 designations, 4 bills.
 
 ### New name: RimWorldLLM
 - The mod was called HermesVoice in test builds; it is now **RimWorldLLM** (packageId `charleszard.rimworldllm`,

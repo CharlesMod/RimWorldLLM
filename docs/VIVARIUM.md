@@ -192,7 +192,7 @@ The system prompt is built from files shipped in `games/rimworld/`:
 The user turn carries why it woke (chat text, events), the goals board, and the rendered digest.
 
 ### Phase 1 limits
-No designations, building, zones, bills, trade or caravans yet; draft orders are single commands
+(Phase 2 below adds designations, building, zones and bills.) No trade or caravans yet; draft orders are single commands
 (no tactical controller). The digest is capped (about 6 KB rendered) and lists the top items only.
 
 ## Phase 1 status (what is built)

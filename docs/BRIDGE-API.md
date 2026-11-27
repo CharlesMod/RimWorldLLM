@@ -566,6 +566,27 @@ Details of the phase 1 implementation (Mod/Source/Bridge/VivariumRoutes.cs):
 - `/act/letter` runs the chosen option's action, as the letter dialog would; an option with no action (one that
   only opens a window) is refused; `dismiss` works only on letters vanilla lets you right-click away.
 
+### Phase 2: the builder's hands (game needed except `GET /vivarium/undo`)
+Same rules as the other `/act/*` (op_id, `400` shape, `503 no_game`, `409 refused` with a reason, `{"done": ...}`).
+A hand that placed something also returns `undo_seq` (its entry in the narrator's undo ledger) and `left` (what
+this cycle's caps still allow: `{"blueprints", "cells", "designations", "bills", "max": {...}}`). Full table, marks
+and caps: docs/VIVARIUM.md "Phase 2".
+
+| Route | Example body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/designate` | `{"kind": "mine", "ore": "steel", "max": 30}` / `{"kind": "chop", "x": 40, "z": 61, "w": 6, "h": 4}` / `{"kind": "haul", "x": 40, "z": 61, "radius": 8}` / `{"kind": "deconstruct", "target": 5512, "player_asked": true}` | kind known; x,z both or neither (0..1000); w,h need a corner; radius 1..40 needs a centre; `ore` only for mine; deconstruct/cancel need a box, radius or target; max 1..200; `player_asked` needs a player chat line to the narrator in the last 2500 ticks; designations left (cancel is never capped) |
+| `/act/build` | `{"thing": "stove", "stuff": "steel", "room": 12}` / `{"thing": "Wall", "x": 40, "z": 61, "rot": "north"}` | thing 1..60 chars; rot 0..3 or north/east/south/west; a cell or a room, not both; blueprints left |
+| `/act/room` | `{"purpose": "bedroom", "size": "medium", "stuff": "granite", "door": "auto"}` | purpose and size known; w,h 3..11 both or neither; door n/e/s/w/auto; no room id; blueprints left ≥ the room's wall count |
+| `/act/zone` | `{"kind": "grow", "plant": "rice", "size": "large"}` / `{"kind": "stockpile", "preset": "food", "room": 12, "priority": "important"}` | kind known; grow needs plant (and only grow takes one); preset, priority, size known; w,h 1..20; a corner or a room, not both; cells left ≥ w·h (a room's floor is capped by the hand) |
+| `/act/area` | `{"kind": "allowed", "name": "Inside", "op": "add", "x": 30, "z": 30, "w": 20, "h": 15, "assign": [101]}` | kind home/allowed; op add/remove; a full box; allowed needs a name; assign only for allowed, ≤ 30 ids; cells left ≥ the box |
+| `/act/bill` | `{"op": "add", "bench": 4410, "recipe": "simple meal", "until": 20}` / `{"op": "suspend", "bench": 4410, "index": 1}` | op known; bench id; add needs recipe; others need index (1..30) or recipe; count 1..999 or until 1..9999, not both, only for add; radius 3..999; bills left (add) |
+| `GET /benches` | | `{"benches": [{"id", "label", "room", "bills": [{"index", "recipe", "mode", "suspended"}], "recipes": [...]}]}` |
+| `GET /vivarium/undo` | | `{"count": 3, "newest_first": [{"seq", "tick", "verb", "note", "marks"}]}` (10 newest) |
+| `POST /vivarium/undo` | `{"n": 1}` | n 1..20; refused when the ledger is empty. Reply `{"done": "undid 1 narrator action: cancelled 15 blueprints", "undone": [notes], "undoable": 2}`; logged as action `undo` by `player`. |
+
+`GET /vivarium` also carries `undoable` (the ledger's size). The ledger is saved with the vivarium state
+(`ledger` in the save JSON); the caps are not saved. The digest gains a `build` block (docs/VIVARIUM.md).
+
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`
 (severity 0.3 when the letter has no choice). `alert`: `{"type": "alert", "severity": 0.8,
