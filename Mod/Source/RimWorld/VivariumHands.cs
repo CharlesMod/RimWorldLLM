@@ -125,7 +125,7 @@ namespace RimWorldLLM
                     if (w == null) { refused.Add(kv.Key + ": no such work type"); continue; }
                     string lbl = w.labelShort.NullOrEmpty() ? w.defName : w.labelShort;
                     if (kv.Value < 0 || kv.Value > 4) { refused.Add(lbl + ": priority must be 0 to 4"); continue; }
-                    if (pawn.WorkTypeIsDisabled(w)) { refused.Add(lbl + ": incapable"); continue; }
+                    if (pawn.WorkTypeIsDisabled(w)) { refused.Add(VivariumStuck.Refusal(pawn, w, lbl)); continue; }
                     done.Add(lbl + "\t" + kv.Value);
                     if (!pawn.workSettings.Initialized) pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized();
                     // work priorities must be on for numbers to matter; turned on once below

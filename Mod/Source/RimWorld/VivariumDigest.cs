@@ -72,6 +72,7 @@ namespace RimWorldLLM
             Sec(o, "threats", () => Threats(map));
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "build", () => VivariumBuildView.Build(map));
+            Sec(o, "stuck", () => Stuck(map));
             Sec(o, "power", () => Power(map));
             Sec(o, "facts", () => VivariumFacts.Build(map));
             return o;
@@ -143,6 +144,16 @@ namespace RimWorldLLM
             return "anything";
         }
 
+        static JToken Stuck(Map map)
+        {
+            return new JArray(VivariumStuck.Stuck(map).Rows.Select(r =>
+            {
+                var j = new JObject { ["what"] = r.What, ["count"] = r.Count, ["reason"] = r.Reason, ["dist"] = r.Dist };
+                if (!string.IsNullOrEmpty(r.Dir)) j["dir"] = r.Dir;
+                return j;
+            }));
+        }
+
         static JToken Pawns(Map map, List<WorkTypeDef> types)
         {
             var arr = new JArray();
@@ -194,8 +205,12 @@ namespace RimWorldLLM
             o["mental"] = p.MentalState != null ? (p.MentalState.def.label ?? p.MentalState.def.defName) : "";
             string job = "";
             try { job = p.jobs?.curDriver?.GetReport() ?? ""; } catch (Exception) { }
-            o["job"] = job;
+            o["job"] = NarratorWork.CutJob(job);
             o["drafted"] = p.Drafted;
+            if (VivariumStuck.IsChild(p)) o["child"] = true;
+            var cannot = VivariumStuck.Cannot(p);
+            if (cannot.Count > 0) o["cannot"] = new JArray(cannot);
+            if (VivariumStuck.IsIdle(p)) o["idle"] = true;
 
             if (p.timetable != null)
             {

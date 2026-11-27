@@ -56,7 +56,7 @@ namespace RimWorldLLM
             public HashSet<Pawn> Sleepers = new HashSet<Pawn>();
         }
 
-        static int[] Home(Map map)
+        internal static int[] Home(Map map)
         {
             var pts = new List<int[]>();
             foreach (var b in map.listerBuildings.allBuildingsColonist)
@@ -259,9 +259,11 @@ namespace RimWorldLLM
 
         static JToken Loose(Map map, int[] home)
         {
-            return new JArray(BuildView.GroupLoose(VivariumLoose.Get(map).Items, home[0], home[1]).Select(p => new JObject
+            return new JArray(VivariumStuck.LoosePiles(map, home).Take(BuildView.MaxPiles).Select(p =>
             {
-                ["label"] = p.Label, ["count"] = p.Count, ["dist"] = p.Dist, ["dir"] = p.Dir, ["forbidden"] = p.Forbidden
+                var o = new JObject { ["label"] = p.Label, ["count"] = p.Count, ["dist"] = p.Dist, ["dir"] = p.Dir, ["forbidden"] = p.Forbidden };
+                if (p.Store != null) o["store"] = p.Store;
+                return o;
             }));
         }
 
