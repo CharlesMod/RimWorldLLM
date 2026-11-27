@@ -35,6 +35,13 @@ namespace RimWorldLLM.Tests
         public JObject Benches() { Calls.Add("benches"); return BenchesJson; }
         public HandResult UndoNext = HandResult.Done("cancelled it");
         public HandResult Undo(IList<NarratorMark> marks) { Calls.Add("undo " + marks.Count); LastUndo = marks; return UndoNext; }
+        // phase 3
+        public JObject CombatJson = new JObject { ["active"] = true, ["threats"] = new JArray() };
+        public CombatState LastState;
+        public JObject Combat(CombatState s) { Calls.Add("combat"); LastState = s; return CombatJson == null ? null : (JObject)CombatJson.DeepClone(); }
+        public HandResult Squad(SquadArgs a, CombatState s) { Calls.Add("squad " + a.Op); LastArgs = a; LastState = s; return Next; }
+        public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { LastState = s; return Took("defend " + a.Kind, a, left); }
+        public HandResult CombatSpeed(int speed, bool restore) { Calls.Add("combat_speed " + speed + " " + restore); return Next; }
     }
 
     public class VivariumTests
@@ -518,6 +525,10 @@ namespace RimWorldLLM.Tests
             public HandResult Bill(BillArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
             public JObject Benches() { throw new InvalidOperationException("boom"); }
             public HandResult Undo(IList<NarratorMark> m) { throw new InvalidOperationException("boom"); }
+            public JObject Combat(CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult Squad(SquadArgs a, CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult Defend(DefendArgs a, BuildBudget l, CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult CombatSpeed(int speed, bool restore) { throw new InvalidOperationException("boom"); }
         }
 
         // ------------------------------------------------------------ time gate

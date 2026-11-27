@@ -758,3 +758,10 @@ def test_the_over_cycle_keeps_squad_for_undraft_and_rescue_without_a_combat_view
     after = StewardKit().session(copy.deepcopy(SAMPLE), None, False, after_fight=True)
     assert {"squad", "defend"} <= {t.name for t in after.tools}
     assert choices(after, "squad", "at")[1:] == ["cover", "chokepoint", "door", "wall_n", "wall_e", "wall_s", "wall_w", "home", "inside"]
+
+
+def test_killbox_ignores_a_chokepoint_position():
+    from rimworldllm_agent.games.rimworld.steward_combat import CombatKit
+    kit = CombatKit({"active": True, "threats": [], "positions": ["cover"]}, {}, after_fight=False)
+    verb, body = kit.body("defend", {"kind": "killbox", "at": "chokepoint", "side": "n"})
+    assert verb == "defend" and "at" not in body and body["side"] == "n"

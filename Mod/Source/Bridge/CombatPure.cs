@@ -401,6 +401,11 @@ namespace RimWorldLLM.Bridge
         public int FocusGroup; public int FocusPawn;
         public int RetreatX = -1, RetreatZ = -1; public float RetreatBelow = 0.45f; public bool AutoRescue = true;
         public int SinceTick;
+        /// <summary>Members the controller already sent back wounded (so a retreat happens once); the game passes them as Fleeing.</summary>
+        public List<int> Fell = new List<int>();
+        /// <summary>The focused group's member ids when it was chosen, so the focus survives the group's id changing (its
+        /// smallest-id member dying).</summary>
+        public List<int> FocusIds = new List<int>();
         public bool Active { get { return Members.Count > 0; } }
 
         public JObject ToJson()
@@ -409,7 +414,7 @@ namespace RimWorldLLM.Bridge
             {
                 ["members"] = new JArray(Members), ["stance"] = Stance, ["focus_group"] = FocusGroup, ["focus_pawn"] = FocusPawn,
                 ["retreat_x"] = RetreatX, ["retreat_z"] = RetreatZ, ["retreat_below"] = RetreatBelow, ["auto_rescue"] = AutoRescue,
-                ["since_tick"] = SinceTick
+                ["since_tick"] = SinceTick, ["fell"] = new JArray(Fell), ["focus_ids"] = new JArray(FocusIds)
             };
         }
 
@@ -426,6 +431,10 @@ namespace RimWorldLLM.Bridge
             if (o["retreat_below"] != null && (o["retreat_below"].Type == JTokenType.Float || o["retreat_below"].Type == JTokenType.Integer)) s.RetreatBelow = (float)o["retreat_below"];
             if (o["auto_rescue"] != null && o["auto_rescue"].Type == JTokenType.Boolean) s.AutoRescue = (bool)o["auto_rescue"];
             s.SinceTick = I(o["since_tick"], 0);
+            var fl = o["fell"] as JArray;
+            if (fl != null) foreach (var x in fl) if (x.Type == JTokenType.Integer) s.Fell.Add((int)x);
+            var fi = o["focus_ids"] as JArray;
+            if (fi != null) foreach (var x in fi) if (x.Type == JTokenType.Integer) s.FocusIds.Add((int)x);
             return s;
         }
 
@@ -436,6 +445,19 @@ namespace RimWorldLLM.Bridge
 
     public static class SquadTactics
     {
+        /// <summary>The squad's focused group: by id, else the group holding most of the remembered FocusIds (the id moves when
+        /// its smallest-id member dies). Updates s.FocusGroup when it moved; null when the group is gone.</summary>
+        public static ThreatGroup FocusedGroup(SquadState s, IList<ThreatGroup> groups)
+        {
+            if (groups == null || s.FocusGroup == 0) return null;
+            var g = groups.FirstOrDefault(x => x.Id == s.FocusGroup);
+            if (g == null && s.FocusIds.Count > 0)
+                g = groups.Select(x => new { x, n = x.Ids.Count(i => s.FocusIds.Contains(i)) }).Where(t => t.n > 0)
+                    .OrderByDescending(t => t.n).ThenBy(t => t.x.Id).Select(t => t.x).FirstOrDefault();
+            if (g != null) s.FocusGroup = g.Id;
+            return g;
+        }
+
         /// <summary>Orders for one ~250 tick pass, at most one per member, ordered by pawn id.
         /// Retreat (once) beats rescue beats attack. Rescue: one rescuer per downed colonist, the nearest healthy (&gt;= .7), not busy member
         /// within 15 cells, skipped when some member already targets the downed pawn. Attack: FocusPawn if alive, else the nearest live member
@@ -477,7 +499,7 @@ namespace RimWorldLLM.Bridge
 
             // 3. attack
             var focus = s.FocusPawn != 0 ? hostiles.FirstOrDefault(h => h.Id == s.FocusPawn && !h.Downed) : null;
-            var grp = (focus == null && s.FocusGroup != 0 && groups != null) ? groups.FirstOrDefault(g => g.Id == s.FocusGroup) : null;
+            var grp = (focus == null && s.FocusGroup != 0 && groups != null) ? FocusedGroup(s, groups) : null;
             foreach (var m in live)
             {
                 if (skip.Contains(m.Id) || m.Busy) continue;

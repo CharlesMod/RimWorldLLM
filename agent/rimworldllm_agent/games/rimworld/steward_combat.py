@@ -197,6 +197,8 @@ class CombatKit:
         k = v["kind"]
         b: dict = {"kind": k}
         at, side = self._get(v, "at"), self._get(v, "side")
+        if k == "killbox" and at == "chokepoint":
+            at = None                                    # a killbox always goes at the main entrance; the side picks which door
         if at is not None:
             b["at"] = at
         elif side is not None:

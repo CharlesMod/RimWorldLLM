@@ -101,6 +101,7 @@ namespace RimWorldLLM
         // Vivarium (the narrator plays).
         public bool narratorMayPauseForEmergencies = true;
         public bool narratorControlsSpeed = false;
+        public bool narratorSlowsForCombat = true;
         public float stewardHeartbeatHours = 6f;
 
         // The chat panel (always on, MOBA style).
@@ -195,6 +196,7 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
+            Scribe_Values.Look(ref narratorSlowsForCombat, "narratorSlowsForCombat", true);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
             Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
             Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
