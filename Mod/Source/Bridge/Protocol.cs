@@ -64,6 +64,8 @@ namespace RimWorldLLM.Bridge
                 case "conflict": return 409;
                 case "refused": return 409;
                 case "duplicate": return 409;
+                case "unknown_id": return 409;
+                case "bad_text": return 400;
                 case "expired": return 410;
                 case "no_game": return 503;
                 case "busy": return 503;

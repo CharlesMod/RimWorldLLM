@@ -60,10 +60,20 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `dreamsEnabled` | true | P | Dreams (also needs the Sleep event) | Talk -> Colonists |
 | `recapOnLoad` | true | P | "Previously on..." recap when a save loads | Talk -> Colonists |
 | `artDescriptions` | true | P | Art descriptions (also needs the Art event) | Talk -> Colonists |
+| `textGen` | true | P | "Written flavour text" group: write text for single things (artworks, graves, books, log lines); also `GET /config` `text_fill` | new (texthook) |
+| `textArt`, `textGraves`, `textBooks`, `textSocial` | true | P | Per kind: art titles and descriptions, grave epitaphs, book titles and blurbs, social log lines | new (texthook) |
+| `textCombat` | false | P | Combat log lines (shots, misses, dodges, deflections; hits keep the game's text). Off by default: fights make many lines | new (texthook) |
 | `evInjury` ... `evGatherings` (17) | true | P | Which event kinds get lines; each now has a tooltip | Events -> Colonists |
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
+| `chatPanelShow` | true | U | "Narrator plays" group: the chat panel is always on screen | new (chat panel) |
+| `chatPanelRight` | false | U | Default placement on the right (left of the date/alerts column) instead of the left; used until the panel is dragged | new (chat panel) |
+| `chatPanelMedium` | false | U | Medium font instead of small | new (chat panel) |
+| `chatPanelOpacity` | 0.3 | U | Background opacity when the mouse is away (0-0.8) | new (chat panel) |
+| `chatPanelX`, `chatPanelY`, `chatPanelW`, `chatPanelH` | -1 | U | The panel's box as fractions of the screen, set by dragging its strip/grip and its corner; negative = default placement. "Reset chat panel position" sets them back to -1 | new (chat panel round 2) |
+| `chatShowTalk`, `chatShowThoughts`, `chatShowNarrator`, `chatShowActions`, `chatShowStory` | true | U | The panel's five filters (also the chips on its hover strip): Talk = player + colonist lines; Thoughts = thoughts, dreams, diary; Narrator = narrator + notes; Actions = greentext acts + refusals; Story = chronicle, recap, art. They hide lines on the panel only | new (chat panel round 2) |
+| `chatPanelWidth`, `chatPanelLines` | 420, 10 | - | Old width/lines sliders; still loaded from old saves, no longer shown or read (dragging replaced them) | removed from UI (round 2) |
 
 The "Narrator plays" switch itself is not a mod setting: it is saved per game (GameComponent, `rwlVivarium`) and
 sits in the bottom-right play-settings row, with a key `RWL_ToggleNarratorPlays` (unbound by default) under
@@ -89,6 +99,7 @@ The age gate is not a setting: a plain line on the tab says it is always on (age
 
 ### Storage (new tab, no saved settings)
 
+With a game loaded, the first line counts the written texts in this game per kind, stored and (+ waiting in the queue).
 Engine data folder, size per part (models, engine backends, runtime, downloads, logs), free space, Open folder, the model
 files with size and a Delete button (not for the one in use), and Remove downloaded files...: stops the engine, deletes the
 models, backends, runtime and downloads after a confirmation naming them and the space freed. The confirmation window also has a box, ticked by default, to delete the helper's memory and logs (its own folder, with the
@@ -121,7 +132,7 @@ the player's own GGUF file stay; the next Set up starts from scratch.
 
 The agent polls the mod's `GET /config` every 10 s. Fields and their readers: `effects` (idle.py, grudges.py),
 `events` (director.py, dreams.py, group.py, art.py), `talk_frequency` (idle.py, director.py, group.py),
-`wants_enabled`, `recap` / `recap_open` (recap.py, director.py), `adult_content` (adult.py; enforced in prompt.py and
+`wants_enabled`, `recap` / `recap_open` (recap.py, director.py), `text_fill` (idle.py: the text filler), `adult_content` (adult.py; enforced in prompt.py and
 sanitize.py), `dreams`, `art_descriptions`, `pause_ambient_at_speed` (director.py, lease.py).
 The vivarium keys (`vivarium_*`) are sent for tools and logs; the steward reads the same values from
 `GET /vivarium`. Sent but unread: `dlc` and the `llm` block (the agent takes its endpoint from bridge.json). Both kept: harmless,

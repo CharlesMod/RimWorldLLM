@@ -41,7 +41,7 @@ from . import dreams, inner, sampler_route
 from . import speech as speechmod
 from .dreams import DreamBook
 from .prompt import build_prefix
-from .sanitize import prompt_cap_words
+from .sanitize import Sanitized, prompt_cap_words
 
 log = logging.getLogger("rimworldllm")
 
@@ -111,6 +111,8 @@ class Director:
         self.lore = lore.LoreBook(cfg.lore_max)     # shared lore cache (core/lore.py); the mod holds the save's copy
         self.reputations: dict[int, str] = {}       # what the group says about each actor (core/gossip.py)
         self.art = ArtQueue()                    # core/art.py
+        self.text_queue_live = False             # the game's text queue answered: it writes the art texts, so the art idle job stands down
+        self.text_fill_wait_s = 0.0              # set by the adapter's idle_fill: real seconds before the next call (backoff after 404 / empty)
         self.tier = ModelTier(cfg, clock)        # core/model_tier.py
         self.dream_book = DreamBook()
         self.concerns = ConcernEngine(self)        # core/concerns.py
@@ -631,6 +633,8 @@ class Director:
                                        max_tokens=self.cfg.llm.line_max_tokens,
                                        request=self.adapter.vanilla_request(vanilla, self.names[aid], lname or "them"),
                                        speech=lease.data.get("speech"))
+                if s.ok and self.adapter.drops_meta(s.text, [vanilla["kind"], vanilla["sentence"]]):
+                    s = Sanitized(None, "meta_talk")      # a line that only remarks on the chatter itself is never shown
                 res = Spoken(s.text, self.adapter.intent_labels[0]) if s.ok else Dropped(s.reason)
             else:
                 res = await speak(self.llm, slot=lease.slot, mind=mind, name=self.names[aid], prefix=lease.data["prefix"],

@@ -80,6 +80,9 @@ namespace RimWorldLLM
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
         public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
+        public bool textGen = true;                    // per-instance written texts (docs/TEXT-POOLS.md); also GET /config text_fill
+        public bool textArt = true, textGraves = true, textBooks = true, textSocial = true;
+        public bool textCombat = false;                // combat lines come fast; off unless the player wants them
         public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
@@ -107,6 +110,12 @@ namespace RimWorldLLM
         public float chatPanelOpacity = 0.3f;    // background alpha while the mouse is elsewhere
         public float chatPanelWidth = 420f;
         public int chatPanelLines = 10;
+        // Where the player dragged/resized the log box, as fractions of the screen; negative = not customised (the side + width/lines above).
+        public float chatPanelX = -1f, chatPanelY = -1f, chatPanelW = -1f, chatPanelH = -1f;
+        // Per-group line filters (chips in the panel's title strip).
+        public bool chatShowTalk = true, chatShowThoughts = true, chatShowNarrator = true, chatShowActions = true, chatShowStory = true;
+        public bool ChatCustom { get { return chatPanelX >= 0f && chatPanelY >= 0f && chatPanelW > 0f && chatPanelH > 0f; } }
+        public void ChatResetPosition() { chatPanelX = chatPanelY = chatPanelW = chatPanelH = -1f; }
 
         public override void ExposeData()
         {
@@ -164,6 +173,12 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref evFirsts, "evFirsts", true);
             Scribe_Values.Look(ref evGatherings, "evGatherings", true);
             Scribe_Values.Look(ref artDescriptions, "artDescriptions", true);
+            Scribe_Values.Look(ref textGen, "textGen", true);
+            Scribe_Values.Look(ref textArt, "textArt", true);
+            Scribe_Values.Look(ref textGraves, "textGraves", true);
+            Scribe_Values.Look(ref textBooks, "textBooks", true);
+            Scribe_Values.Look(ref textSocial, "textSocial", true);
+            Scribe_Values.Look(ref textCombat, "textCombat", false);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);
@@ -187,6 +202,15 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref chatPanelOpacity, "chatPanelOpacity", 0.3f);
             Scribe_Values.Look(ref chatPanelWidth, "chatPanelWidth", 420f);
             Scribe_Values.Look(ref chatPanelLines, "chatPanelLines", 10);
+            Scribe_Values.Look(ref chatPanelX, "chatPanelX", -1f);
+            Scribe_Values.Look(ref chatPanelY, "chatPanelY", -1f);
+            Scribe_Values.Look(ref chatPanelW, "chatPanelW", -1f);
+            Scribe_Values.Look(ref chatPanelH, "chatPanelH", -1f);
+            Scribe_Values.Look(ref chatShowTalk, "chatShowTalk", true);
+            Scribe_Values.Look(ref chatShowThoughts, "chatShowThoughts", true);
+            Scribe_Values.Look(ref chatShowNarrator, "chatShowNarrator", true);
+            Scribe_Values.Look(ref chatShowActions, "chatShowActions", true);
+            Scribe_Values.Look(ref chatShowStory, "chatShowStory", true);
         }
     }
 }

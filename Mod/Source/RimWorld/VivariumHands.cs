@@ -25,6 +25,19 @@ namespace RimWorldLLM
 
         static string Name(Pawn p) { return p.LabelShort; }
 
+        static string PawnName(int id)
+        {
+            try { var p = Routes.FindPawn(id); return p != null ? p.LabelShort : "pawn " + id; } catch (Exception) { return "pawn " + id; }
+        }
+
+        /// <summary>Fills in what was attempted on a refusal, so the chat can say "couldn't {what}: {reason}".</summary>
+        static HandResult Described(HandResult r, Func<string> what)
+        {
+            if (r != null && !r.Ok && string.IsNullOrEmpty(r.What))
+                try { r.What = what(); } catch (Exception) { }
+            return r;
+        }
+
         /// <summary>A colonist or slave of the player standing on a map, or the reason not.</summary>
         static Pawn Mine(int id, out HandResult no)
         {
@@ -45,6 +58,11 @@ namespace RimWorldLLM
         // ---- time ----
         public HandResult SetTime(bool? pause, int? speed)
         {
+            return Described(SetTimeDo(pause, speed), () => VivariumHandsPure.TimeWhat(pause, speed));
+        }
+
+        HandResult SetTimeDo(bool? pause, int? speed)
+        {
             try
             {
                 var tm = Find.TickManager;
@@ -62,15 +80,15 @@ namespace RimWorldLLM
                         default: return HandResult.No("speed must be 1 to 4");
                     }
                     tm.CurTimeSpeed = s;   // like the speed buttons; also unpauses
-                    notes.Add("set speed " + speed.Value);
+                    notes.Add("s");
                 }
                 if (pause.HasValue)
                 {
-                    if (pause.Value) { if (!tm.Paused) tm.Pause(); notes.Add("paused"); }
-                    else { if (tm.Paused) tm.TogglePaused(); notes.Add("unpaused"); }
+                    if (pause.Value) { if (!tm.Paused) tm.Pause(); notes.Add("p"); }
+                    else { if (tm.Paused) tm.TogglePaused(); notes.Add("p"); }
                 }
                 if (notes.Count == 0) return HandResult.No("nothing to change");
-                return HandResult.Done(string.Join(", ", notes));
+                return HandResult.Done(VivariumHandsPure.TimeNote(pause, speed));
             }
             catch (Exception e) { return Failed(e); }
         }
@@ -86,6 +104,11 @@ namespace RimWorldLLM
         }
 
         public HandResult SetWork(int pawnId, IDictionary<string, int> priorities)
+        {
+            return Described(SetWorkDo(pawnId, priorities), () => "change " + VivariumHandsPure.Possessive(PawnName(pawnId)) + " work priorities");
+        }
+
+        HandResult SetWorkDo(int pawnId, IDictionary<string, int> priorities)
         {
             try
             {
@@ -103,7 +126,7 @@ namespace RimWorldLLM
                     string lbl = w.labelShort.NullOrEmpty() ? w.defName : w.labelShort;
                     if (kv.Value < 0 || kv.Value > 4) { refused.Add(lbl + ": priority must be 0 to 4"); continue; }
                     if (pawn.WorkTypeIsDisabled(w)) { refused.Add(lbl + ": incapable"); continue; }
-                    done.Add(lbl + " " + kv.Value);
+                    done.Add(lbl + "\t" + kv.Value);
                     if (!pawn.workSettings.Initialized) pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized();
                     // work priorities must be on for numbers to matter; turned on once below
                     if (Current.Game != null && !Current.Game.playSettings.useWorkPriorities)
@@ -120,9 +143,10 @@ namespace RimWorldLLM
                 // Entries in done that are real settings all succeeded.
                 var set = done.Where(s => !s.StartsWith("(")).ToList();
                 var extra = done.Where(s => s.StartsWith("(")).ToList();
-                string note = "set " + string.Join(", ", set) + " for " + Name(pawn);
-                if (extra.Count > 0) note += " " + string.Join(" ", extra);
-                if (refused.Count > 0) note += "; refused " + string.Join(", ", refused);
+                var pairs = set.Select(x => { var q = x.Split('\t'); return new KeyValuePair<string, int>(q[0], int.Parse(q[1])); }).ToList();
+                string note = VivariumHandsPure.WorkNote(Name(pawn), pairs);
+                if (extra.Count > 0) note += " (turned work priorities on)";
+                if (refused.Count > 0) note += " (couldn't: " + string.Join(", ", refused) + ")";
                 return HandResult.Done(note);
             }
             catch (Exception e) { return Failed(e); }
@@ -130,6 +154,11 @@ namespace RimWorldLLM
 
         // ---- schedule ----
         public HandResult SetSchedule(int pawnId, int fromHour, int toHour, string assignment)
+        {
+            return Described(SetScheduleDo(pawnId, fromHour, toHour, assignment), () => "change " + VivariumHandsPure.Possessive(PawnName(pawnId)) + " schedule");
+        }
+
+        HandResult SetScheduleDo(int pawnId, int fromHour, int toHour, string assignment)
         {
             try
             {
@@ -153,8 +182,7 @@ namespace RimWorldLLM
                 var hours = VivariumHandsPure.HourRange(fromHour, toHour);
                 if (hours.Count == 0) return HandResult.No("hours " + fromHour + " to " + toHour + " are not a valid range");
                 foreach (int h in hours) pawn.timetable.SetAssignment(h, def);
-                string span = hours.Count == 24 ? "all day" : "hours " + fromHour + " to " + toHour;
-                return HandResult.Done(Name(pawn) + ": " + (assignment ?? "").Trim().ToLowerInvariant() + " " + span);
+                return HandResult.Done(VivariumHandsPure.ScheduleNote(Name(pawn), fromHour, toHour, assignment));
             }
             catch (Exception e) { return Failed(e); }
         }
@@ -166,6 +194,11 @@ namespace RimWorldLLM
         }
 
         public HandResult SetPolicy(int pawnId, string kind, string name)
+        {
+            return Described(SetPolicyDo(pawnId, kind, name), () => VivariumHandsPure.PolicyWhat(PawnName(pawnId), kind, name));
+        }
+
+        HandResult SetPolicyDo(int pawnId, string kind, string name)
         {
             try
             {
@@ -183,7 +216,7 @@ namespace RimWorldLLM
                         var hit = all.FirstOrDefault(o => Eq(o.label, name));
                         if (hit == null) return HandResult.No("no outfit '" + name + "'; there are: " + Sample(all.Select(o => o.label)));
                         pawn.outfits.CurrentApparelPolicy = hit;
-                        return HandResult.Done(Name(pawn) + " wears outfit " + hit.label);
+                        return HandResult.Done(VivariumHandsPure.PolicyNote(Name(pawn), "outfit", hit.label));
                     }
                     case "food":
                     {
@@ -192,7 +225,7 @@ namespace RimWorldLLM
                         var hit = all.FirstOrDefault(o => Eq(o.label, name));
                         if (hit == null) return HandResult.No("no food policy '" + name + "'; there are: " + Sample(all.Select(o => o.label)));
                         pawn.foodRestriction.CurrentFoodPolicy = hit;
-                        return HandResult.Done(Name(pawn) + " eats by food policy " + hit.label);
+                        return HandResult.Done(VivariumHandsPure.PolicyNote(Name(pawn), "food", hit.label));
                     }
                     case "drug":
                     {
@@ -201,7 +234,7 @@ namespace RimWorldLLM
                         var hit = all.FirstOrDefault(o => Eq(o.label, name));
                         if (hit == null) return HandResult.No("no drug policy '" + name + "'; there are: " + Sample(all.Select(o => o.label)));
                         pawn.drugs.CurrentPolicy = hit;
-                        return HandResult.Done(Name(pawn) + " follows drug policy " + hit.label);
+                        return HandResult.Done(VivariumHandsPure.PolicyNote(Name(pawn), "drug", hit.label));
                     }
                     default: return HandResult.No("unknown policy kind '" + kind + "'");
                 }
@@ -211,6 +244,11 @@ namespace RimWorldLLM
 
         // ---- bed ----
         public HandResult AssignBed(int pawnId, int bedId)
+        {
+            return Described(AssignBedDo(pawnId, bedId), () => "give " + PawnName(pawnId) + " that bed");
+        }
+
+        HandResult AssignBedDo(int pawnId, int bedId)
         {
             try
             {
@@ -228,7 +266,7 @@ namespace RimWorldLLM
                 if (bed.Medical) return HandResult.No("that is a medical bed; patients are placed there, not assigned");
                 var comp = bed.TryGetComp<CompAssignableToPawn>();
                 if (comp == null) return HandResult.No("that bed cannot be assigned");
-                if (bed.OwnersForReading.Contains(pawn)) return HandResult.Done(Name(pawn) + " already owns that bed");
+                if (bed.OwnersForReading.Contains(pawn)) return HandResult.Done(Name(pawn) + " already had that bed");
                 var ok = comp.CanAssignTo(pawn);
                 if (!ok.Accepted) return HandResult.No(Name(pawn) + " cannot take that bed" + (ok.Reason.NullOrEmpty() ? "" : ": " + ok.Reason));
                 if (!comp.HasFreeSlot)
@@ -239,13 +277,18 @@ namespace RimWorldLLM
                 }
                 comp.TryAssignPawn(pawn);
                 if (!bed.OwnersForReading.Contains(pawn)) return HandResult.No("the game would not assign that bed to " + Name(pawn));
-                return HandResult.Done(Name(pawn) + " now sleeps in " + bed.LabelCap + " (" + bed.thingIDNumber + ")");
+                return HandResult.Done("gave " + Name(pawn) + " the bed " + bed.LabelCap + " (" + bed.thingIDNumber + ")");
             }
             catch (Exception e) { return Failed(e); }
         }
 
         // ---- research ----
         public HandResult SetResearch(string project)
+        {
+            return Described(SetResearchDo(project), () => "start researching " + project);
+        }
+
+        HandResult SetResearchDo(string project)
         {
             try
             {
@@ -266,9 +309,9 @@ namespace RimWorldLLM
                     return HandResult.No(def.LabelCap + " needs " + string.Join(", ", missing) + " first");
                 }
                 if (!def.CanStartNow) return HandResult.No(def.LabelCap + " cannot be started yet (techprints or other requirements missing)");
-                if (rm.IsCurrentProject(def)) return HandResult.Done(def.LabelCap + " is already the current research");
+                if (rm.IsCurrentProject(def)) return HandResult.Done("kept researching " + def.LabelCap + " (already the current project)");
                 rm.SetCurrentProject(def);
-                return HandResult.Done("research " + def.LabelCap);
+                return HandResult.Done("started researching " + def.LabelCap);
             }
             catch (Exception e) { return Failed(e); }
         }
@@ -285,6 +328,11 @@ namespace RimWorldLLM
 
         public HandResult AnswerLetter(int letterId, string choice)
         {
+            return Described(AnswerLetterDo(letterId, choice), () => "answer the letter with " + choice);
+        }
+
+        HandResult AnswerLetterDo(int letterId, string choice)
+        {
             try
             {
                 var stack = Find.LetterStack;
@@ -297,7 +345,7 @@ namespace RimWorldLLM
                 {
                     if (!letter.CanDismissWithRightClick) return HandResult.No("\"" + title + "\" needs an answer, it cannot be dismissed");
                     stack.RemoveLetter(letter);
-                    return HandResult.Done("dismissed \"" + title + "\"");
+                    return HandResult.Done("dismissed the letter \"" + title + "\"");
                 }
                 var cl = letter as ChoiceLetter;
                 if (cl == null) return HandResult.No("\"" + title + "\" has no choices (only \"dismiss\")");
@@ -330,6 +378,11 @@ namespace RimWorldLLM
         // ---- draft ----
         public HandResult Draft(IList<int> pawns, bool drafted)
         {
+            return Described(DraftDo(pawns, drafted), () => VivariumHandsPure.DraftWhat((pawns ?? new int[0]).Select(PawnName).ToList(), drafted));
+        }
+
+        HandResult DraftDo(IList<int> pawns, bool drafted)
+        {
             try
             {
                 if (pawns == null || pawns.Count == 0) return HandResult.No("no pawns given");
@@ -349,8 +402,8 @@ namespace RimWorldLLM
                     changed.Add(Name(p));
                 }
                 if (changed.Count == 0) return HandResult.No(string.Join("; ", skipped));
-                string note = (drafted ? "drafted " : "undrafted ") + string.Join(", ", changed);
-                if (skipped.Count > 0) note += "; " + string.Join("; ", skipped);
+                string note = VivariumHandsPure.DraftNote(changed, drafted);
+                if (skipped.Count > 0) note += " (" + string.Join("; ", skipped) + ")";
                 return HandResult.Done(note);
             }
             catch (Exception e) { return Failed(e); }
@@ -358,6 +411,11 @@ namespace RimWorldLLM
 
         // ---- orders ----
         public HandResult Order(int pawnId, string order, int x, int z, int target, bool hold)
+        {
+            return Described(OrderDo(pawnId, order, x, z, target, hold), () => VivariumHandsPure.OrderWhat(PawnName(pawnId), order, x, z, "target " + target, hold));
+        }
+
+        HandResult OrderDo(int pawnId, string order, int x, int z, int target, bool hold)
         {
             try
             {
@@ -378,7 +436,7 @@ namespace RimWorldLLM
                         var job = JobMaker.MakeJob(JobDefOf.Goto, cell);
                         job.playerForced = true;   // as the right-click "Go here" does
                         if (!pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc)) return HandResult.No(Name(pawn) + " could not take the order");
-                        return HandResult.Done(Name(pawn) + " moves to (" + x + "," + z + ")");
+                        return HandResult.Done(VivariumHandsPure.OrderNote(Name(pawn), "move", x, z, null, false));
                     }
                     case "attack":
                     {
@@ -394,7 +452,7 @@ namespace RimWorldLLM
                         Action act = FloatMenuUtility.GetAttackAction(pawn, t, out fail);
                         if (act == null) return HandResult.No(Name(pawn) + " cannot attack " + t.LabelShort + (fail.NullOrEmpty() ? "" : ": " + fail));
                         act();
-                        return HandResult.Done(Name(pawn) + " attacks " + t.LabelShort);
+                        return HandResult.Done(VivariumHandsPure.OrderNote(Name(pawn), "attack", 0, 0, t.LabelShort, false));
                     }
                     case "hold":
                     {
@@ -405,10 +463,10 @@ namespace RimWorldLLM
                         {
                             pawn.jobs.StopAll();
                             pawn.drafter.FireAtWill = false;
-                            return HandResult.Done(Name(pawn) + " holds position and holds fire");
+                            return HandResult.Done(VivariumHandsPure.OrderNote(Name(pawn), "hold", 0, 0, null, true) + " and held fire");
                         }
                         pawn.drafter.FireAtWill = true;
-                        return HandResult.Done(Name(pawn) + " fires at will again");
+                        return HandResult.Done(VivariumHandsPure.OrderNote(Name(pawn), "hold", 0, 0, null, false));
                     }
                     default: return HandResult.No("unknown order '" + order + "'");
                 }

@@ -290,7 +290,7 @@ def test_advisor_mode_does_one_task_and_says_so(world):
         assert w.fb.act_log == [("work", {"pawn": 101, "priorities": {"Cooking": 1}})]
         assert "one task only" in json.dumps(fake.calls[2]["messages"])
         assert lines(w, "narrator") == ["Ana cooks first now. I stopped there."]
-        assert lines(w, "note") == ["→ set Cooking 1 for pawn 101"]
+        assert lines(w, "note") == []                                # the game writes the greentext line itself
         assert w.fb.goals_board["log"][-1]["text"].startswith("Asked (put Ana on cooking)")
     run(go())
 
@@ -315,7 +315,7 @@ def test_playing_runs_many_actions_with_resolved_ids(world):
         assert got["research"] == {"project": "Batteries"}
         assert got["order"] == {"pawn": 102, "order": "move", "x": 40, "z": 61}
         assert got["policy"] == {"pawn": 103, "kind": "food", "name": "Simple"}
-        assert len(lines(w, "note")) == 3                          # at most three notes a cycle
+        assert lines(w, "note") == []                              # no automatic notes after acts
     run(go())
 
 
@@ -337,7 +337,7 @@ def test_schedule_attack_hold_and_time_bodies(world):
             call("set_schedule", pawn="Dara", from_hour=22, to_hour=6, assignment="sleep"),
             call("order", pawn="Bram", order="attack", x=0, z=0, target_id=5512, hold="no"),
             call("order", pawn="Bram", order="hold", x=0, z=0, target_id=0, hold="yes"),
-            call("set_time", pause="yes", speed="leave", emergency="yes", reason="raid at the gate"),
+            call("set_time", pause="yes", speed="leave", emergency="yes", why="since raiders are at the gate"),
             DONE])
         await cycle(w)
         got = [(v, b) for v, b in w.fb.act_log]
@@ -345,13 +345,14 @@ def test_schedule_attack_hold_and_time_bodies(world):
         assert got[1] == ("order", {"pawn": 102, "order": "attack", "target": 5512})
         assert got[2] == ("order", {"pawn": 102, "order": "hold", "hold": True})
         assert got[3][0] == "time" and got[3][1]["pause"] is True and got[3][1]["emergency"] is True and "speed" not in got[3][1]
+        assert got[3][1]["why"] == "since raiders are at the gate" and "reason" not in got[3][1]
         assert w.fb.paused_by_narrator
     run(go())
 
 
 def test_a_refusal_goes_back_to_the_model_and_is_not_counted_as_done(world):
     async def go():
-        w, st, fake = await boot(world, [call("set_time", pause="yes", speed="leave", emergency="no", reason="rest"),
+        w, st, fake = await boot(world, [call("set_time", pause="yes", speed="leave", emergency="no", why="since the colony needs rest"),
                                          final("The game would not let me pause.")])
         w.fb.act_refuse["time"] = "pausing needs an emergency"
         await cycle(w)
@@ -466,4 +467,58 @@ def test_switching_on_wakes_the_steward_at_once(world):
         w.fb.playing = True                      # the player flips the switch
         await cycle(w)
         assert fake.cycles == 2 and st.stats.by_reason.get("switched on") == 1
+    run(go())
+
+
+# ---------------------------------------------------------------- why on acts, no automatic notes, who is answered
+def test_why_passes_from_tool_to_act_body_and_missing_why_sends_none(world):
+    async def go():
+        w, st, fake = await boot(world, [
+            call("set_work", pawn="Ana", work="Cooking", priority=1, why="since meals are running low"),
+            call("set_research", project="Batteries"),
+            call("draft", pawns="all", drafted="yes", why="since raiders are close"),
+            final("Done.")])
+        await cycle(w)
+        got = {v: b for v, b in w.fb.act_log}
+        assert got["work"]["why"] == "since meals are running low"
+        assert "why" not in got["research"]
+        assert got["draft"]["why"] == "since raiders are close"
+        assert lines(w, "note") == []                       # no "→" lines after acts
+        assert not [t for t in lines(w, "narrator") + lines(w, "note") if t.startswith("→")]
+    run(go())
+
+
+def test_why_is_in_every_acting_tool_and_optional(world):
+    async def go():
+        w, st, fake = await boot(world, [DONE])
+        from rimworldllm_agent.games.rimworld.steward_tools import ACTING
+        sess = st.kit.session(w.fb.digest, w.fb, False)
+        for t in sess.tools:
+            if t.name in ACTING:
+                p = {p.name: p for p in t.params}["why"]
+                assert not p.required and p.max_len == 80, t.name
+    run(go())
+
+
+def test_why_is_cleaned_and_capped(world):
+    async def go():
+        w, st, fake = await boot(world, [call("set_work", pawn="Ana", work="Cooking", priority=1, why="since " + "x" * 70), DONE])
+        await cycle(w)
+        assert len(w.fb.act_log[0][1]["why"]) <= 80
+    run(go())
+
+
+def test_only_plain_player_lines_are_answered(world):
+    async def go():
+        w, st, fake = await boot(world, [final("Heard you.")], playing=False)
+        for who in ("colonist", "thought", "diary", "action", "refused", "narrator", "art"):
+            w.fb.add_chat(who, "I am not the player talking to you")
+        w.fb.add_chat("player", "Ana, how is the stew?", to=101, name="Ana")
+        await cycle(w)
+        assert fake.calls == []                                  # nothing woke the steward
+        w.fb.add_chat("player", "narrator, what is up?")
+        await cycle(w)
+        assert len(fake.calls) >= 1
+        user = fake.calls[0]["messages"][1]["content"]
+        assert "narrator, what is up?" in user and "how is the stew" not in user and "not the player" not in user
     run(go())

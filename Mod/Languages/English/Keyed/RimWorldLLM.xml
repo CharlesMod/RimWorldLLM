@@ -181,6 +181,27 @@
   <RWL_Ev_Gatherings>Gatherings (meals, parties, weddings, rituals, speeches)</RWL_Ev_Gatherings>
   <RWL_Ev_Firsts>First-time sights (snow, eclipse, a corpse...)</RWL_Ev_Firsts>
   <RWL_Art_Enable>Show written art descriptions</RWL_Art_Enable>
+  <RWL_Text_Title>Written flavour text</RWL_Text_Title>
+  <RWL_Text_Help>The engine writes fresh text for single things when they are made: an artwork's title and description, an epitaph on a grave, a book's title and blurb, a line in the social log. It uses what was going on at the time (who made it, their mood, the weather, recent events), so the text fits that one thing. The game's own text shows until ours is written, in the background when the engine is idle; nothing waits for it.</RWL_Text_Help>
+  <RWL_Text_Enable>Write flavour text for single things</RWL_Text_Enable>
+  <RWL_Text_EnableTip>Turn off to keep the game's own text everywhere. Texts already written are kept in the save and show again when you turn it back on.</RWL_Text_EnableTip>
+  <RWL_Text_Art>Artworks: titles and descriptions</RWL_Text_Art>
+  <RWL_Text_ArtTip>New art made by colonists, sarcophagus plates, and any artwork the first time you look at it.</RWL_Text_ArtTip>
+  <RWL_Text_Graves>Graves: epitaphs</RWL_Text_Graves>
+  <RWL_Text_GravesTip>An epitaph for the person buried, from who they were and how they died. Shown in the grave's inspect pane.</RWL_Text_GravesTip>
+  <RWL_Text_Books>Books: titles and blurbs</RWL_Text_Books>
+  <RWL_Text_BooksTip>Books written in the colony, and any book the first time you open its info card. The book's effects are unchanged.</RWL_Text_BooksTip>
+  <RWL_Text_Social>Social log lines</RWL_Text_Social>
+  <RWL_Text_SocialTip>Lines in the social log. Romance lines and lines that report an outcome keep the game's text.</RWL_Text_SocialTip>
+  <RWL_Text_Combat>Combat log lines</RWL_Text_Combat>
+  <RWL_Text_CombatTip>Shots fired, misses, dodges and deflections. Hits keep the game's text, which names the wound. Off by default: fights make many lines.</RWL_Text_CombatTip>
+  <RWL_Text_Vanilla>Only things that get a written text change; everything else keeps the game's text. Names of people, factions and places, quests and letters always stay the game's.</RWL_Text_Vanilla>
+  <RWL_Text_Epitaph>Epitaph: {0}</RWL_Text_Epitaph>
+  <RWL_Text_Kind_art>art</RWL_Text_Kind_art>
+  <RWL_Text_Kind_grave>graves</RWL_Text_Kind_grave>
+  <RWL_Text_Kind_book>books</RWL_Text_Kind_book>
+  <RWL_Text_Kind_social>social</RWL_Text_Kind_social>
+  <RWL_Text_Kind_combat>combat</RWL_Text_Kind_combat>
   <RWL_Art_EnableTip>When a colonist finishes an artwork, the engine writes a short description from the colony's history. It replaces the game's generated text on the info card; the title stays. Turn off to see the game's own text again.</RWL_Art_EnableTip>
   <RWL_Bubbles_Title>Speech bubbles</RWL_Bubbles_Title>
   <RWL_Bubbles_Show>Show overhead speech bubbles</RWL_Bubbles_Show>
@@ -385,6 +406,7 @@ Use it anyway?</RWL_Fallback_ConfirmText>
   <RWL_Content_AgeGate>The age gate is always on: nobody under 18 appears in anything romantic or sexual. It cannot be turned off.</RWL_Content_AgeGate>
   <RWL_Tip_AgeGate>A fixed safety rule built into the mod. No setting changes it.</RWL_Tip_AgeGate>
   <RWL_Storage_Title>Storage</RWL_Storage_Title>
+  <RWL_Storage_Texts>Written texts in this game, stored (+ waiting): {0}</RWL_Storage_Texts>
   <RWL_Storage_Help>Where the engine keeps its models and files, and how much room they take.</RWL_Storage_Help>
   <RWL_Storage_NoEngine>The engine is not running, so its files cannot be listed. Start it from the Model tab.</RWL_Storage_NoEngine>
   <RWL_Storage_Refresh>Refresh</RWL_Storage_Refresh>
@@ -496,10 +518,33 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Chat_MediumTip>Uses the medium font for the chat panel instead of the small one.</RWL_Chat_MediumTip>
   <RWL_Chat_Opacity>Chat background: {0}%</RWL_Chat_Opacity>
   <RWL_Chat_OpacityTip>How dark the panel's background is while the mouse is elsewhere. Under the mouse it is nearly opaque.</RWL_Chat_OpacityTip>
-  <RWL_Chat_Width>Chat panel width: {0}</RWL_Chat_Width>
-  <RWL_Chat_WidthTip>Width in UI units; a narrow screen shrinks it to fit.</RWL_Chat_WidthTip>
-  <RWL_Chat_Lines>Chat lines shown: {0}</RWL_Chat_Lines>
-  <RWL_Chat_LinesTip>How many lines of text the panel shows; scroll with the mouse wheel over it to read older ones.</RWL_Chat_LinesTip>
+  <RWL_Chat_MoveHelp>Drag the chat panel by its top strip (shown under the mouse) and resize it from the bottom-right corner. "On the right" is only where it starts until you move it.</RWL_Chat_MoveHelp>
+  <RWL_Chat_ResetPos>Reset chat panel position</RWL_Chat_ResetPos>
+  <RWL_Chat_ResetPosTip>Forget where you dragged the panel; it goes back to the side chosen above, at its default size.</RWL_Chat_ResetPosTip>
+  <RWL_Chat_FTalk>Chat shows: talk</RWL_Chat_FTalk>
+  <RWL_Chat_FTalkTip>Your lines and what the colonists say.</RWL_Chat_FTalkTip>
+  <RWL_Chat_FThoughts>Chat shows: thoughts</RWL_Chat_FThoughts>
+  <RWL_Chat_FThoughtsTip>Colonists' thoughts, dreams and diary entries.</RWL_Chat_FThoughtsTip>
+  <RWL_Chat_FNarrator>Chat shows: narrator</RWL_Chat_FNarrator>
+  <RWL_Chat_FNarratorTip>The narrator's lines and system notes.</RWL_Chat_FNarratorTip>
+  <RWL_Chat_FActions>Chat shows: actions</RWL_Chat_FActions>
+  <RWL_Chat_FActionsTip>What the narrator did, and what it was not allowed to do.</RWL_Chat_FActionsTip>
+  <RWL_Chat_FStory>Chat shows: story</RWL_Chat_FStory>
+  <RWL_Chat_FStoryTip>Chronicle entries, recaps and artwork descriptions.</RWL_Chat_FStoryTip>
+  <RWL_Chat_ChipTalk>Talk</RWL_Chat_ChipTalk>
+  <RWL_Chat_ChipThoughts>Thoughts</RWL_Chat_ChipThoughts>
+  <RWL_Chat_ChipNarrator>Narrator</RWL_Chat_ChipNarrator>
+  <RWL_Chat_ChipActions>Actions</RWL_Chat_ChipActions>
+  <RWL_Chat_ChipStory>Story</RWL_Chat_ChipStory>
+  <RWL_Chat_ChipTip>Click to show or hide these lines.</RWL_Chat_ChipTip>
+  <RWL_Viv_LineColonist>{0}: {1}</RWL_Viv_LineColonist>
+  <RWL_Viv_LineColonistTo>{0} → {1}: {2}</RWL_Viv_LineColonistTo>
+  <RWL_Viv_LineThought>{0} thinks: {1}</RWL_Viv_LineThought>
+  <RWL_Viv_LineDream>{0} dreams: {1}</RWL_Viv_LineDream>
+  <RWL_Viv_LineDiary>{0}'s diary: {1}</RWL_Viv_LineDiary>
+  <RWL_Viv_LineChronicle>Chronicle: {0}</RWL_Viv_LineChronicle>
+  <RWL_Viv_LineChronicleDay>Chronicle, {0}: {1}</RWL_Viv_LineChronicleDay>
+  <RWL_Viv_LineRecap>Recap: {0}</RWL_Viv_LineRecap>
   <RWL_TabGoals>Goals</RWL_TabGoals>
   <RWL_Viv_GoalsTitle>The narrator's goals</RWL_Viv_GoalsTitle>
   <RWL_Viv_PagePlaying>Narrator plays</RWL_Viv_PagePlaying>

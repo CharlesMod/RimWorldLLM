@@ -101,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
     for e in out["chat"]:
         if e["who"] != "player":
             print(f"CHAT [{e['who']}] {e['text']}")
+    for f in tr.get("failures") or []:
+        print("REJECTED:", f)
     if out["acts"]:
         print("BRIDGE ACTS:", json.dumps(out["acts"]))
     if tr.get("error"):

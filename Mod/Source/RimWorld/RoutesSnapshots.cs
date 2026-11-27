@@ -79,6 +79,7 @@ namespace RimWorldLLM
                     && RimWorldLLMGameComponent.Instance.RecapGate.IsOpen(Environment.TickCount64, s.recapOnLoad),
                 ["dreams"] = s.dreamsEnabled,
                 ["art_descriptions"] = s.artDescriptions,
+                ["text_fill"] = s.enabled && s.textGen,
                 ["pause_ambient_at_speed"] = s.pauseAmbientAtSpeed,
                 ["dlc"] = new JArray(ActiveDlc()),
                 ["vivarium_may_pause"] = s.narratorMayPauseForEmergencies,

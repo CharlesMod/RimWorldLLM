@@ -93,6 +93,7 @@ namespace RimWorldLLM
             RWLBridge.Minds.Clear();
             RWLBridge.Chronicle.Clear();
             RWLBridge.Art.Clear();
+            TextHook.Reset();
             SpeechBubbles.Clear();
             DirectorCamera.Reset();
             VivariumGame.State.Clear();
@@ -124,6 +125,7 @@ namespace RimWorldLLM
             Minds.Clear();
             RWLBridge.Chronicle.Clear();
             RWLBridge.Art.Clear();
+            TextHook.Reset();
             SpeechBubbles.Clear();
             DirectorCamera.OnGameStart();
             VivariumGame.State.Clear();
@@ -138,6 +140,7 @@ namespace RimWorldLLM
             ExposeMinds();
             ExposeChronicle();
             ExposeArt();
+            ExposeTexts();
             ExposeVivarium();
             List<int> avoids = null;
             int nowTick = Find.TickManager != null ? Find.TickManager.TicksGame : 0;
@@ -192,6 +195,21 @@ namespace RimWorldLLM
                 if (!string.IsNullOrEmpty(json))
                     try { VivariumGame.State.Import(Newtonsoft.Json.Linq.JObject.Parse(json)); }
                     catch (Exception e) { Log.Warning("[RimWorldLLM] could not read the saved Vivarium: " + e.Message); }
+            }
+        }
+
+        // Per-instance written texts (TextHook): queue, texts and the ids already asked for, as one JSON string.
+        void ExposeTexts()
+        {
+            string json = null;
+            if (Scribe.mode == LoadSaveMode.Saving) json = TextHook.Desk.Export().ToString(Formatting.None);
+            Scribe_Values.Look(ref json, "rwlTexts");
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                TextHook.Reset();
+                if (!string.IsNullOrEmpty(json))
+                    try { TextHook.Desk.Import(Newtonsoft.Json.Linq.JObject.Parse(json)); }
+                    catch (Exception e) { Log.Warning("[RimWorldLLM] could not read the saved texts: " + e.Message); }
             }
         }
 

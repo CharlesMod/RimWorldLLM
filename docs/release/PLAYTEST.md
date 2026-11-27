@@ -160,6 +160,41 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 53. **Nothing blocks.** Open the settings and click through every tab while the engine is busy (downloading,
     loading) and while it is not running: the game never freezes; buttons grey out while a call runs.
 
+## K. Written flavour text (new, all open)
+
+Settings > Colonists > "Written flavour text": all on except combat. The engine writes in the background when idle;
+give it a minute or two of play. Background: docs/TEXT-POOLS.md.
+
+54. **Art made in the colony.** A colonist finishes a sculpture. Its card shows the game's title and description at
+    first; within a few minutes both change to a written title and description that fit the piece (material, quality,
+    the tale it shows) and the moment (the maker's mood, the weather, what just happened). The text stays the same on
+    every look and after save and reload.
+55. **Art not made here.** Buy or find an artwork, open its card: the game's text first, a written one later, once.
+56. **Graves.** Bury a colonist who died in a memorable way. The grave's inspect pane gets a line "Epitaph: ...",
+    fitting who they were and how they died. A sarcophagus gets a written art plate instead. Dig the body up: the line
+    goes; a new burial gets its own.
+57. **Books.** A colonist writes a novel: the book's title and blurb change once to written ones that keep its type (a
+    novel's blurb is a story); its effects (skill, joy, mental break chance) lines stay the game's. Same after reload.
+58. **Social log.** The social log (a colonist's Social tab and the log) shows written lines for chitchat, insults,
+    kind words, deep talks; names are correct, also after renaming a pawn. Romance attempts, proposals, breakups and
+    lines that report an outcome (a social fight started, a recruit result) keep the game's text. Lines between a
+    parent and a child are all-ages (release blocker if not).
+59. **Combat log (opt in).** Turn on combat lines; in a fight, shots, misses, dodges and deflections get written lines
+    over time; hits and wounds keep the game's text. Check the game does not stutter with combat lines on.
+60. **Switches.** Turn the master switch off: every written text goes back to the game's at once (log lines may need the
+    log reopened). Turn it on: they return. Per-kind switches do the same per kind.
+61. **Storage tab.** With a game loaded, the first line counts written texts per kind, stored and (+ waiting).
+62. **No engine.** With the engine stopped, everything shows the game's text and nothing errors; the queue waits.
+63. **Old saves.** Load a save made before this version: it loads, and its art, graves and books get written text the
+    first time they are shown.
+
+Decisions for the keeper:
+- The engine runs the filler's JSON calls on its structured sampler, so the same context gives the same text. A
+  "creative structured" sampler profile in the engine would add variety (engine change, not done here).
+- Graves get an epitaph line the game never had (additive). Keep, or limit graves to sarcophagus plates?
+- Names (pawns, factions, settlements, animals, xenotypes), quests, letters and growth moments stay the game's (keys,
+  parsed tags, children). Say if any of them should be next.
+
 ## Windows run (separate, short)
 
 Run sections A-C, items 39-41 and 47-52 on Windows, plus:

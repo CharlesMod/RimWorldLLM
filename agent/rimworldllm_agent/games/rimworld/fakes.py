@@ -81,6 +81,10 @@ class FakeBridge:
         self.art_supported = True              # POST /art is in the contract; a test can turn it off (an older mod: 404)
         self.art_log: list[dict] = []          # POST /art bodies accepted
         self.art_things: set[int] = {500}      # artworks that exist (a destroyed one answers conflict)
+        self.text_supported = False            # GET /text/queue and POST /text/fill; off by default (an older mod: 404, so the art idle job keeps running); a test turns it on
+        self.text_items: list[dict] = []       # the queue (already sorted); a filled item leaves it
+        self.text_fill_log: list[dict] = []    # POST /text/fill bodies accepted
+        self.text_pending_extra = 0            # added to "pending" beyond the items held
         self.talk_queue: list[dict] = []
         self.seen_ops: dict[str, dict] = {}
         self.say_conflict_for: set[int] = set()
@@ -242,6 +246,20 @@ class FakeBridge:
             self.recap_log.append(body)
             self.seen_ops[body["op_id"]] = {}
             return self._ok(shown=True)
+        if path == "/text/queue" and req.method == "GET" and self.text_supported:
+            n = int(req.url.params.get("n", 4))
+            return self._ok(pending=len(self.text_items) + self.text_pending_extra, items=list(self.text_items[:n]))
+        if path == "/text/fill" and req.method == "POST" and self.text_supported:
+            item = next((i for i in self.text_items if i["id"] == body.get("id")), None)
+            if item is None:
+                return self._err(409, "unknown_id", f"no item {body.get('id')}")
+            text = str(body.get("text", "")).strip()
+            if not text or ("title" in body and "title" not in item.get("fields", [])):
+                return self._err(400, "bad_text", "text required; title only when fields has it")
+            self.text_items.remove(item)
+            self.text_fill_log.append(body)
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(stored=True)
         if path == "/art" and req.method == "POST" and self.art_supported:
             thing, text = body.get("thing"), str(body.get("text", "")).strip()
             if not isinstance(thing, int) or isinstance(thing, bool) or not text:
