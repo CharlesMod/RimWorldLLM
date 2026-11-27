@@ -616,5 +616,64 @@ namespace RimWorldLLM.Tests.Mind
             using var w = await OneVanilla("Insult", "insult", "high", "i1", "Ana insulted Bram's cooking.");
             Assert.Equal(new List<string> { "i1" }, w.Fb.SayLog.Select(s => (string)s["vanilla_ref"]).ToList());
         }
+
+        // ---------------- test_habits (Director tests) ----------------
+
+        static string HabitReply(string habit = "mutters about the cold")
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(new Dictionary<string, object>
+            {
+                ["bio"] = "The recent days have left a mark on me, and I am changing slowly.", ["wants"] = new[] { "Get warm" },
+                ["relations"] = new object[0], ["merge"] = new object[0], ["habit"] = habit,
+            });
+        }
+
+        [Fact]
+        public async Task EndToEndReflectionChangesATicThenWaits()
+        {
+            using var w = new World(); await w.GoAsync();
+            var m = w.D.Minds[1];
+            var before = m.Voice.Tics.ToList();
+            w.Llm.Script["reflect"] = new List<string> { HabitReply(), HabitReply("sighs before every answer") };
+            m.UnreflectedImportance = 9.0;
+            await Step(w);
+            var first = m.Voice.Tics.ToList();
+            w.Fb.Tick += DAY;
+            m.UnreflectedImportance = 9.0;
+            m.LastReflectTime = 0;
+            w.Fb.Tick += DAY / 2;
+            await Step(w);                                                              // inside the interval: not asked, no change
+            var calls = w.Llm.Calls.Where(c => c.Kind == "reflect").ToList();
+            Assert.True(first.Last() == "mutters about the cold" && !first.SequenceEqual(before));
+            Assert.NotNull(calls[0].JsonSchema["properties"]["habit"]);
+            Assert.Equal(first, w.D.Minds[1].Voice.Tics);
+            if (calls.Count > 1) Assert.Null(calls[1].JsonSchema["properties"]["habit"]);
+        }
+
+        [Fact]
+        public async Task DirectorOffSwitchIsTodaysCallAndNoHabitIsKept()
+        {
+            using var w = new World(c => { c.Habits = false; c.Concerns = false; });     // isolate the habit switch (concerns add their own schema fields)
+            await w.GoAsync();
+            w.Llm.Script["reflect"] = new List<string> { HabitReply("mutters about the cold") };
+            w.D.Minds[1].UnreflectedImportance = 9.0;
+            await Step(w);
+            var c1 = w.Llm.Calls.First(x => x.Kind == "reflect");
+            Assert.True(JToken.DeepEquals(Reflection.ReflectSchema(), c1.JsonSchema));
+            Assert.DoesNotContain("habit", c1.Messages[1].Text.ToLowerInvariant());
+            Assert.True(w.D.Minds[1].Voice.Tics[0] == "Short sentences" || w.D.Minds[1].HabitHistory.Count == 0);
+            Assert.Empty(w.D.Minds[1].HabitHistory);
+        }
+
+        [Fact]
+        public async Task DirectorBadHabitsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.Llm.Script["reflect"] = new List<string> { HabitReply("Zed Quillon taught me to whistle") };       // an invented name: blanked, the bio is still kept
+            w.D.Minds[1].UnreflectedImportance = 9.0;
+            await Step(w);
+            Assert.Empty(w.D.Minds[1].HabitHistory);
+            Assert.StartsWith("The recent days", w.D.Minds[1].EvolvingBio);
+        }
     }
 }
