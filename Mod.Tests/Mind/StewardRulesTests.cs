@@ -3,7 +3,7 @@
 // all 66 shipped rules over random facts, derive_facts, alerts_section and render_digest over mutated digests.
 // Deferred (need the Director / world fixture or core/steward.py): test_user_turn_has_alerts_after_why_you_woke,
 // test_cycle_sends_alerts_to_the_model, and the load_strategy half of test_shipped_strategy_loaded_capped_and_override_order.
-// Not applicable to C#: test_package_data_lists_strategy_files (the files are embedded; see StewardResourcesTests).
+// Not applicable to C#: test_package_data_lists_strategy_files (the files are embedded).
 using System;
 using System.Collections.Generic;
 using System.IO;
