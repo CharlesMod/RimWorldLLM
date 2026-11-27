@@ -114,7 +114,8 @@ namespace RimWorldLLM
                     {
                         float perTick = pl.GrowthRate / (60000f * pl.def.plant.growDays);
                         float need = pl.def.plant.harvestMinGrowth - pl.Growth;
-                        if (perTick > 1e-9f && need > 0f) days = need / perTick / 60000.0;
+                        // plants rest at night (they grow only between 25% and 80% of the day), so the growing hours are 0.55 of a day
+                        if (perTick > 1e-9f && need > 0f) days = need / perTick / 60000.0 / 0.55;
                     }
                     else s.CropsReady++;
                     cells.Add(new CropCell(pl.def.label ?? pl.def.defName, ready, days));
