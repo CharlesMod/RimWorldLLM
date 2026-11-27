@@ -245,6 +245,9 @@ def _bio_lines(b: dict, bl: dict, ages: dict | None = None) -> list[str]:
             t += ", assembler " + c(gb["assembler"])
         pk = _words(gb.get("packs"), bl["packs"])
         out.append("GENEBANK: " + t + ("; packs " + ", ".join(pk) if pk else ""))
+    germs = [c(x.get("name")) for x in L("xenogerms") if isinstance(x, dict)]
+    if germs and not urgent:
+        out.append("XENOGERMS: " + ", ".join(germs[:4]) + ("" if b.get("may_implant") is True else " (implanting is the player's call)"))
     if kids and not urgent:
         out.append("CHILDREN: " + "; ".join(
             f"{c(k.get('name'))} {_num(k.get('age'))} (" + ", ".join(x for x in (

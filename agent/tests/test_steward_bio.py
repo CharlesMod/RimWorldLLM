@@ -86,9 +86,11 @@ def test_zone_waste_preset_only_with_bio():
 def test_implant_hidden_when_settings_say_no():
     d = load("bio_sanguophage")
     ops = lambda s: next(p for t in s.tools if t.name == "genes" for p in t.params if p.name == "op").choices  # noqa: E731
-    assert "implant" in ops(sess(d))                          # not exposed: the mod refuses
-    d["settings"] = {"may_implant_genes": False}
-    assert "implant" not in ops(sess(d))
+    assert "implant" not in ops(sess(d))                      # the player's setting is off by default
+    d["bio"]["may_implant"] = True
+    assert "implant" not in ops(sess(d))                      # and there is no xenogerm yet
+    d["bio"]["xenogerms"] = [{"id": 77, "name": "Quick"}]
+    assert "implant" in ops(sess(d))
 
 
 # ---- bodies
@@ -104,13 +106,15 @@ def test_mech_bodies():
 
 
 def test_gene_bodies():
-    s = sess(load("bio_sanguophage"))
+    d = load("bio_sanguophage")
+    d["bio"].update(may_implant=True, xenogerms=[{"id": 77, "name": "Quick"}])
+    s = sess(d)
     assert body(s, "genes", op="store") == ("genepack", {})
     verb, b = body(s, "genes", op="assemble", genepacks="Robust, fast runner", name="Quick", plan="make Ana quicker without side effects")
     assert verb == "xenogerm" and b["genepacks"] == ["robust", "fast runner"] and b["name"] == "Quick" and b["op"] == "assemble"
     assert "robust" in err(s, "genes", op="assemble", genepacks="telepathy", plan="long enough plan")
     assert "plan" in err(s, "genes", op="assemble", genepacks="robust", plan="short")
-    assert body(s, "genes", op="implant", xenogerm=77, who="Bram", plan="Bram gets the robust genes to heal")[1] == \
+    assert body(s, "genes", op="implant", xenogerm="Quick", who="Bram", plan="Bram gets the robust genes to heal")[1] == \
         {"op": "implant", "xenogerm": 77, "pawn": 102, "plan": "Bram gets the robust genes to heal"}
     assert "xenogerm" in err(s, "genes", op="implant", who="Bram", plan="a plan that is long enough")
     assert body(s, "genes", op="donate", prisoner="Cole") == ("hemogen", {"op": "donate", "prisoner": 108})
@@ -238,3 +242,16 @@ def test_draft_refuses_children():
     # a pawn of 13 can be drafted
     d["pawns"][5]["age"] = 13
     assert 106 in sess(d)._body("draft", call(sess(d), "draft", pawns="Fay", drafted="yes"))[1]["pawns"]
+
+
+def test_donor_from_bio_prisoners():
+    d = load("bio_sanguophage")
+    d["bio"]["hemogen"]["prisoners"] = [{"id": 140, "name": "Vex"}]
+    assert body(sess(d), "genes", op="donate", prisoner="Vex") == ("hemogen", {"op": "donate", "prisoner": 140})
+
+
+def test_xenogerm_line():
+    from rimworldllm_agent.games.rimworld.steward_digest import render_digest
+    d = load("bio_sanguophage")
+    d["bio"]["xenogerms"] = [{"id": 77, "name": "Quick"}]
+    assert "XENOGERMS: Quick (implanting is the player's call)" in render_digest(d)

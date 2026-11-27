@@ -79,11 +79,13 @@ class BioKit:
         self.genes = bool(_list(b, "genes"))
         # prisoners for blood donation: a digest list if the mod gives one, else pawns whose role says prisoner
         pri = _named(digest.get("prisoners"), "id")
+        hb = b.get("hemogen") if isinstance(b.get("hemogen"), dict) else {}
+        pri.update(_named(_list(hb, "prisoners"), "id"))              # the bio block's prisoners who are not donating yet
         pri.update({gd.name(p.get("name")): int(p["id"]) for p in digest.get("pawns") or []
                     if isinstance(p, dict) and str(p.get("role", "")).lower() == "prisoner" and str(p.get("id", "")).lstrip("-").isdigit()})
         self.prisoners = pri
-        st = digest.get("settings") if isinstance(digest.get("settings"), dict) else {}
-        self.implant_ok = st.get("may_implant_genes") is not False        # not exposed -> offer, the mod refuses
+        self.germs = _named(_list(b, "xenogerms"), "id")
+        self.implant_ok = b.get("may_implant") is True and bool(self.germs)   # the player's setting, and a xenogerm to implant
         self.carers = _words(_list(b, "carers"))
         self.mechanitors = bool(_list(b, "mechanitors"))
         self.tools = self._tools() if self.has else []
@@ -111,7 +113,7 @@ class BioKit:
                 ps += [Param("genepacks", "text", "assemble: pack names, comma separated", max_len=160, required=False),
                        Param("name", "text", "assemble: the xenogerm's name", max_len=40, required=False)]
             if "implant" in gops:
-                ps.append(Param("xenogerm", "int", "implant: the xenogerm's id (0 if unused)", lo=0, hi=999999, required=False))
+                ps.append(_opt("xenogerm", "implant: which xenogerm", list(self.germs)))
             if "implant" in gops or "assemble" in gops:
                 ps.append(Param("plan", "text", "assemble/implant: why, 10-200 chars, the player reads it", max_len=200, required=False))
             if "implant" in gops and self.adults:
@@ -185,9 +187,7 @@ class BioKit:
             name = gd.clean(str(v.get("name") or ""), "name", max_len=40).strip()
             return "xenogerm", {"op": "assemble", "genepacks": [low[a.lower()] for a in asked], "name": name or "xenogerm", "plan": self._plan(v)}
         if op == "implant":
-            x = self._get(v, "xenogerm")
-            if x is None:
-                raise ValueError("implant needs the xenogerm's id")
+            x = self._pick(self.germs, v.get("xenogerm"), "xenogerm")
             return "xenogerm", {"op": "implant", "xenogerm": x, "pawn": self._pick(self.adults, v.get("who"), "colonist"), "plan": self._plan(v)}
         return "hemogen", {"op": "donate", "prisoner": self._pick(self.prisoners, v.get("prisoner"), "prisoner")}
 

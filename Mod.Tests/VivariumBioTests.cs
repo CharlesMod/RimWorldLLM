@@ -481,5 +481,22 @@ namespace RimWorldLLM.Tests
             Assert.Equal("steady", BioPure.Trend(10, 10));
             Assert.Equal("steady", BioPure.Trend(10, 4));
         }
+
+        [Fact]
+        public void BioWordsHoursNamesTheRunsAcrossMidnight()
+        {
+            Assert.Equal("sleep 21-6; recreation 17-19", BioWords.Hours(BioPure.ChildHours("school", 6)));
+            Assert.Equal("sleep 21-6; recreation 16-18; work 13-15", BioWords.Hours(BioPure.ChildHours("default", 8)));
+            Assert.Equal("sleep 19-6", BioWords.Hours(BioPure.ChildHours("play", 1)));
+            Assert.Equal("1st", BioWords.Ordinal(1));
+            Assert.Equal("4th", BioWords.Ordinal(4));
+        }
+
+        [Fact]
+        public void MissingCribPerBaby()
+        {
+            Assert.Contains("crib", BioPure.Missing(new BioMissingInput { Babies = 2, Cribs = 1 }));
+            Assert.DoesNotContain("crib", BioPure.Missing(new BioMissingInput { Babies = 2, Cribs = 2 }));
+        }
     }
 }

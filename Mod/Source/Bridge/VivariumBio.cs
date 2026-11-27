@@ -240,4 +240,29 @@ namespace RimWorldLLM.Bridge
         /// <summary>"growing" when the polluted count rose, else "steady".</summary>
         public static string Trend(int prevPolluted, int nowPolluted) { return nowPolluted > prevPolluted ? "growing" : "steady"; }
     }
+
+    /// <summary>Small words for the Biotech notes.</summary>
+    public static class BioWords
+    {
+        public static string Ordinal(int n) { return n == 1 ? "1st" : n == 2 ? "2nd" : n == 3 ? "3rd" : n + "th"; }
+
+        /// <summary>"sleep 21-6, recreation 17-19, work 13-15": the runs of S, J and W in 24 letters.</summary>
+        public static string Hours(string[] h)
+        {
+            var parts = new List<string>();
+            foreach (var kv in new[] { new[] { "S", "sleep" }, new[] { "J", "recreation" }, new[] { "W", "work" } })
+            {
+                var runs = new List<string>();
+                for (int i = 0; i < 24; i++)
+                {
+                    if (h[i] != kv[0] || h[(i + 23) % 24] == kv[0] && i != 0) continue;
+                    if (i == 0 && h[23] == kv[0]) continue;   // the run started before midnight: counted from its real start
+                    int j = i; while (h[(j + 1) % 24] == kv[0] && (j + 1) % 24 != i) j++;
+                    runs.Add(i + "-" + ((j + 1) % 24));
+                }
+                if (runs.Count > 0) parts.Add(kv[1] + " " + string.Join(", ", runs));
+            }
+            return string.Join("; ", parts);
+        }
+    }
 }

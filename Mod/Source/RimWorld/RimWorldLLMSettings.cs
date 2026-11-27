@@ -106,6 +106,8 @@ namespace RimWorldLLM
         // Vivarium (the narrator plays).
         public bool narratorMayPauseForEmergencies = true;
         public bool narratorControlsSpeed = false;
+        /// <summary>Biotech: the narrator may set a colonist to receive a xenogerm (never children). Default off.</summary>
+        public bool narratorMayImplantGenes = false;
         public float stewardHeartbeatHours = 6f;
         public bool narratorAnswerDialogs = true;
         public int narratorDialogTimeoutS = 90;
@@ -211,6 +213,7 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
+            Scribe_Values.Look(ref narratorMayImplantGenes, "narratorMayImplantGenes", false);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
             Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);
             Scribe_Values.Look(ref narratorDialogTimeoutS, "narratorDialogTimeoutS", 90);

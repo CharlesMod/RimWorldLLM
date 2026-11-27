@@ -320,6 +320,7 @@ namespace RimWorldLLM
             Note(l, UiUtil.T("RWL_Viv_Help"));
             Check(l, "RWL_Viv_MayPause", ref s.narratorMayPauseForEmergencies, "RWL_Viv_MayPauseTip");
             Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
+            if (ModsConfig.BiotechActive) Check(l, "RWL_Viv_ImplantGenes", ref s.narratorMayImplantGenes, "RWL_Viv_ImplantGenesTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
             s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
             Check(l, "RWL_Viv_AnswerDialogs", ref s.narratorAnswerDialogs, "RWL_Viv_AnswerDialogsTip");
