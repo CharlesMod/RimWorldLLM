@@ -102,6 +102,7 @@ namespace RimWorldLLM.Mind
                                                       IDictionary<string, string> headers, double timeoutS,
                                                       CancellationToken cancel = default)
         {
+            cancel.ThrowIfCancellationRequested();
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancel);
             if (timeoutS > 0 && !double.IsInfinity(timeoutS)) cts.CancelAfter(TimeSpan.FromSeconds(Math.Min(timeoutS, 86400.0)));
             using var req = new HttpRequestMessage(method, url);

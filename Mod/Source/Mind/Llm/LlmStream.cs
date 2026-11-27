@@ -347,6 +347,7 @@ namespace RimWorldLLM.Mind
         private static async Task<ChatStreamResult> Run(HttpClient http, string url, JObject body, IDictionary<string, string> headers,
                                                         ILlmStreamSink sink, double idleTimeoutS, CancellationToken cancel, Stopwatch sw)
         {
+            cancel.ThrowIfCancellationRequested();
             using var idle = CancellationTokenSource.CreateLinkedTokenSource(cancel);
             void Arm() { if (idleTimeoutS > 0 && !double.IsInfinity(idleTimeoutS)) idle.CancelAfter(TimeSpan.FromSeconds(Math.Min(idleTimeoutS, 86400.0))); }
             using var req = new HttpRequestMessage(HttpMethod.Post, url);
