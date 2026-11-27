@@ -48,6 +48,7 @@ namespace RimWorldLLM
         {
             base.GameComponentOnGUI();
             DirectorCamera.OnGUIKey();
+            WatchCamera.OnGUIKey();
             VivariumSwitch.OnGUIKey();
         }
 

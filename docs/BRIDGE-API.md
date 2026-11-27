@@ -337,7 +337,7 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
 - `severity` is in 0..1, from game numbers (thought mood offset, injury severity, death = 1).
 - Types: `injury, death, mental_break, level_up, tend, social, raid_start, raid_end, quest,
   quest_end, lodger_arrive, lodger_leave, prisoner, funeral, weather_extreme, weather_extreme_end,
-  thought, player_talk, art_created, sleep_start, first_cue, gathering, gathering_end`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
+  thought, player_talk, art_created, sleep_start, first_cue, gathering, gathering_end, birth, masterwork, ship_part`. `quest` has `data.phase` `offered` or `accepted`; `prisoner` has
   `data.phase` `captured`, `released`, `recruited` or `died`; `funeral` has `data.phase`
   `start` or `end`. Ledgers: `raid` (`raid_start`..`raid_end`), `quest` (accepted..`quest_end`),
   `lodger` (`lodger_arrive`..`lodger_leave`), `prisoner`, `funeral`, `weather`
@@ -349,6 +349,9 @@ What this pawn perceives right now: `room {role, impressiveness, clean, temp}`,
   `description` (the game's own tale text, game text, at most 400 characters), `material` (the stuff label, `""` when none) and, when the art depicts a tale, `tale`: `{def, summary (at most 200 characters), day (game day it happened, may be absent), pawns (up to 3 names)}` (all game text; `tale` is left out when there is none or it cannot be read). The maker has role
   `maker` and witnesses it, as does anyone who normally witnesses. Severity is 0.2: the maker and witnesses remember it, but it does not start a spoken reaction. Toggle `events.art`; cooldown
   one game hour per maker.
+- `birth` (Biotech only; hook `PregnancyUtility.ApplyBirthOutcome`) fires when a player-faction pawn gives birth. `data`: `pawn` `{id, name}` (the mother, also actor role `mother`). Severity 0.6.
+- `masterwork` fires when a player pawn finishes a Masterwork or Legendary item (hook `QualityUtility.SendCraftNotification`). `data`: `thing` (thing id), `label`, `quality` (`masterwork` or `legendary`), `maker` `{id, name}` (also actor role `maker`). Severity 0.5.
+- `ship_part` fires when a ship part building (a def with `CompProperties_ShipPart`) is completed from its frame. `data`: `thing` (def name), `label`. Everyone on the map knows. Severity 0.7.
 - `sleep_start` fires when a colonist falls asleep in a bed (not downed, not anesthetized; a colonist first seen already asleep,
   as after a load, does not fire), at most once per pawn per 8 game hours. The sleeper has role `sleeper` and is the only
   witness (the mod lists it explicitly, because sleepers are never witnesses otherwise). Severity 0.1, not chronicle-worthy; the

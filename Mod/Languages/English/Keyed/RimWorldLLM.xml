@@ -338,6 +338,15 @@ Use it anyway?</RWL_Fallback_ConfirmText>
   <RWL_Camera_OnAtStart>Start each game with the director camera on</RWL_Camera_OnAtStart>
   <RWL_Camera_OnAtStartTip>Off by default: a following camera is intrusive. Any camera control you use pauses it for ten seconds.</RWL_Camera_OnAtStartTip>
   <RWL_Camera_PanSpeed>Director camera pan speed: {0}</RWL_Camera_PanSpeed>
+  <RWL_Watch_Tip>Watch mode: the camera cuts between what is happening in the colony by itself (raids, fights, births, weddings, deaths and more) and says what it is showing in the chat. Moving the camera yourself pauses it for a while.</RWL_Watch_Tip>
+  <RWL_Watch_MsgOn>Watch mode on.</RWL_Watch_MsgOn>
+  <RWL_Watch_MsgOff>Watch mode off.</RWL_Watch_MsgOff>
+  <RWL_Watch_Mode>Watch mode (camera director)</RWL_Watch_Mode>
+  <RWL_Watch_ModeTip>The camera cuts between colony events by itself. Also a button beside the Narrator plays eye, and a key under Options, Keyboard, RimWorldLLM. Off by default.</RWL_Watch_ModeTip>
+  <RWL_Watch_Captions>Watch mode: write a "Camera:" line to the chat for each shot</RWL_Watch_Captions>
+  <RWL_Watch_CaptionsTip>One short line per shot of interest, at most one every twelve seconds (four for urgent events). Filler shots get none.</RWL_Watch_CaptionsTip>
+  <RWL_Watch_PauseSec>Watch mode: seconds the camera stays still after you move it</RWL_Watch_PauseSec>
+  <RWL_Watch_PauseSecTip>Moving, zooming or edge-scrolling the camera pauses the director for this long.</RWL_Watch_PauseSecTip>
   <!-- File browser (.gguf picker) -->
   <RWL_FileBrowser_Title>Choose a model file</RWL_FileBrowser_Title>
   <RWL_FileBrowser_Up>Up</RWL_FileBrowser_Up>

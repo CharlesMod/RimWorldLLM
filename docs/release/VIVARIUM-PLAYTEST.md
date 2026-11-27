@@ -188,3 +188,17 @@ first: timeout 15 s in the mod settings (Narrator plays group).
     works. Turn Narrator plays off: nothing is auto-answered either.
 33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
     stays open with no default; after three tries (none, when no option is enabled) one chat note says so. Nothing loops.
+
+## D. Unattended play: camera director (watch mode)
+
+1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
+   (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
+2. With watch mode on and nothing happening, the camera drifts to a colonist about every 25 s (no chat line).
+3. Dev mode: fire a raid; within a second the camera cuts to the raiders, chat gets "Camera: a raid arrives from the <side>".
+4. Start a fight, a mental break and a social fight (dev tools) one after another: shots follow, the chat does not flood
+   (at most one camera line per 12 s). The same colonist is not shown again and again while others have events.
+5. Move or zoom the camera yourself: it stays still for the pause time (default 20 s), then resumes by itself.
+6. A funeral, a wedding or a party each get a shot and a line. Kill a colonist: cut to the body, "Camera: X has died".
+7. Biotech: a birth gives "Camera: X gives birth" and a `birth` event on GET /events. Without Biotech: no errors in the log.
+8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
+9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).

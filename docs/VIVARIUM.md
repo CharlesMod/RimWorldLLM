@@ -449,3 +449,49 @@ the dialog rejects comes back as a refusal the model reads. `dialog_try` (`pytho
 translated: if vanilla's order differs the default picks the wrong one (check 27 in VIVARIUM-PLAYTEST.md). The growth moment
 takes the first choices only (no model choice yet). The pawn who accepts a quest is the first free colonist. Hand-written
 `Window` subclasses from other mods are not seen.
+
+## Unattended play: camera director
+
+Watch mode makes the game watchable like an ant farm: the camera cuts between what is happening and says what it
+is showing. Camera only: it never selects, drafts, opens windows or changes the time speed.
+
+**Controls.** A camera button in the play-settings row beside the "Narrator plays" eye
+(`Patch_NarratorSwitch`, icon `Textures/RimWorldLLM/UI/RWL_WatchMode.png`, made by
+`~/.local/share/rimworld-hermes-engine/unattended/make_watch_icon.py`), a key (`RWL_ToggleWatchMode`, unbound),
+and settings (`watchMode` default off, `watchCaptions` default on, `watchPlayerPauseSec` default 20). Decision:
+`watchMode` is a mod setting (it is a viewing preference of the person at the screen), not saved per game. While
+it is on it replaces the older "follow a talking pawn" director camera. Moving, zooming or edge-scrolling the camera
+pauses the director for `watchPlayerPauseSec`; a jump from a letter or the log counts the same.
+
+**Code.** Pure: `Mod/Source/Bridge/WatchDirector.cs` (`WatchKinds`, `WatchDirector`; tests `WatchDirectorTests.cs`).
+Game side: `Mod/Source/RimWorld/WatchCamera.cs` (feeds, steering through `DirectorCamera.Pan`, captions) and
+`CameraEvents.cs` (the three new events). Clock is real seconds.
+
+**Scoring.** Interest = kind weight x (0.5 + event severity, clamped 0.5..1.5) x 0.5^(age / 20 s), expiring after
+60 s. Variety: the same subject (pawn, or place for place events) shown in the last 90 s counts x0.25, the same kind
+in the last 30 s x0.6. Below 0.8 the director stays put. A shot has a dwell (12 s for raid, death, birth, wedding,
+funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise; 6 s for filler). Urgent kinds (raid,
+death, mental break) may cut in after 3 s when they score 1.3x the current shot. A filler "wander" shot (a colonist,
+rotating) is offered every 25 s when nothing is pending.
+
+| Event | Kind | Weight | Sample caption |
+|---|---|---|---|
+| `raid_start` (via the raid hook) | raid_start | 20 | Camera: a raid arrives from the east |
+| `death` | death | 16 | Camera: Ana has died |
+| `birth` | birth | 14 | Camera: Ana gives birth |
+| `mental_break` | mental_break | 12 | Camera: Bram is having a mental break |
+| `gathering` wedding | wedding | 12 | Camera: a wedding |
+| `funeral`, `gathering` funeral | funeral | 11 | Camera: Bram's funeral |
+| `ship_part` | ship_part | 10 | Camera: a ship part is finished (ship reactor) |
+| `mental_break` with state SocialFighting | social_fight | 9 | Camera: Ana is in an argument |
+| `injury` | combat | 8 | Camera: Cy is fighting |
+| `gathering` party | party | 7 | Camera: a party |
+| `masterwork` | masterwork | 6 | Camera: Ana finishes a legendary sculpture |
+| `art_created` (player maker) | art_created | 4 | Camera: Ana finishes a work of art |
+| (filler) | wander | 1 | none |
+
+**Captions.** Each new shot of interest writes one chat line of kind `camera` (Story filter group): at most one per
+12 s (4 s for urgent kinds), never the same text twice within 90 s, none for filler shots.
+
+**New events** (published through `EventBus`, so the agent sees them): `birth` (Biotech only, guarded by
+`ModsConfig.BiotechActive`), `masterwork`, `ship_part`. Details in BRIDGE-API.md.
