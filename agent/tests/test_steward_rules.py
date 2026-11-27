@@ -277,3 +277,13 @@ def test_strategy_covers_the_new_lines_under_the_cap():
     for word in ("DEADLINES", "STUCK", "LOOSE", "can't:", "IDLE", "FOOD", "do not reorder priorities"):
         assert word in text, word
     assert len(text.encode()) <= 12288
+
+
+def test_loose_rule_checks_space_before_making_zones():
+    # keeper 2026-11-27: one live cycle hauled loose steel with no stockpile taking it; the rule now orders zone first
+    rules = json.loads((Path(sr.__file__).parent / "strategy" / "rules.json").read_text())
+    rule = next(r for r in rules["rules"] if r["id"] == "build.loose_no_stockpile")
+    assert "Make space first" in rule["action"] and "widen an existing stockpile" in rule["action"]
+    assert "there is space: just haul" in rule["action"]      # a new zone only when there's no space, not every haul
+    text = (Path(sr.__file__).parent / "strategy" / "steward_strategy.md").read_text()
+    assert "do we have space for this?" in text and "just haul" in text

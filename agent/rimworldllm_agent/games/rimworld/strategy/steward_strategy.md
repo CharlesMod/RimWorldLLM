@@ -149,7 +149,7 @@ Act when food_days < 3, or < 5 and falling.
 ## Reading the digest's new lines
 - **DEADLINES** come first: a bleed-out, an infection losing the race, rot or an expiring letter in a few hours beats everything planned. Winter in days means harvest and bank food now.
 - **STUCK** work has a reason; fix the reason, do not reorder priorities: make a stockpile that takes the item, unforbid it, get the material, enable Construction, restore power, stock the ingredient.
-- **LOOSE** piles "(no stockpile takes it)" or "(stockpiles full)" need a stockpile zone, not more mining.
+- **LOOSE** piles: first ask "do we have space for this?". The LOOSE line answers it: no note (or "only far stockpile") means there is room, so just haul. Only "(no stockpile takes it)" or "(stockpiles full)" means no space: then widen an existing stockpile (allow the item, or make it bigger) before hauling, and make a new zone only when none can be widened. Never mine more of what lies loose.
 - **People**: never assign work a person can't do (read "can't:" and "cannot"); children do light work only. IDLE people get a job. A break risk with its "why" is fixed at the cause.
 - **FOOD**: eat or cook what rots soon, harvest "cells ready" and hunt "game" before food runs out; a hunter must be enabled.
 

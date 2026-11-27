@@ -883,7 +883,7 @@
    "id": "build.loose_no_stockpile",
    "category": "building",
    "condition": "loose_unstorable > 0",
-   "action": "Loose items that no stockpile accepts or has room for: create or widen a stockpile zone that allows them (LOOSE line says no stockpile takes it or stockpiles full), then haul. Do not mine more of what already lies loose.",
+   "action": "Loose items with no space: no stockpile accepts them or has room (LOOSE line says no stockpile takes it or stockpiles full). Make space first: widen an existing stockpile (allow the item, or enlarge it), and make a new zone only if none can be widened; then haul. Where the LOOSE line has no such note there is space: just haul. Do not mine more of what already lies loose.",
    "priority": 2,
    "sources": [
     "W-work"
