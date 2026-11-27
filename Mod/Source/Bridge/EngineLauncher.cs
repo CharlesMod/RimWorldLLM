@@ -154,30 +154,15 @@ namespace RimWorldLLM.Bridge
             return File.Exists(old) ? old : bin;
         }
 
-        /// <summary>The agent wheel under Engine/agent/*.whl (highest name when several), or null.</summary>
-        public static string FindWheel(string modRoot)
-        {
-            try
-            {
-                string dir = Path.Combine(modRoot, "Engine", "agent");
-                if (!Directory.Exists(dir)) return null;
-                var files = Directory.GetFiles(dir, "*.whl");
-                if (files.Length == 0) return null;
-                Array.Sort(files, StringComparer.Ordinal);
-                return files[files.Length - 1];
-            }
-            catch { return null; }
-        }
-
-        /// <summary>The game profile for RimWorldLLM (RimWorld). <paramref name="wheelPath"/> may be null (no agent installed).</summary>
+        /// <summary>The game profile for RimWorldLLM (RimWorld). No agent block: the mind runs inside the mod, the engine installs no Python and runs no agent.</summary>
         public const int HostReserveEstimateMib = 1500;
 
-        /// <summary>How far the agent's own files may still grow on the engine's disk (docs/ENGINE.md §7c host_files_mib):
-        /// calls.jsonl rotates at 20 MB and keeps 3 old copies (agent core/calllog.py), so 4 x 20 MB, plus 4 MiB for
-        /// the agent's memory and diaries growing within one session.</summary>
+        /// <summary>How far the mind's own files (in the mod, in the agent data dir) may still grow on the engine's disk (docs/ENGINE.md §7c host_files_mib):
+        /// calls.jsonl rotates at 20 MB and keeps 3 old copies (Mind/Llm/CallLog.cs), so 4 x 20 MB, plus 4 MiB for
+        /// the mind's memory and diaries growing within one session.</summary>
         public const int HostFilesMib = 84;
 
-        public static JObject BuildProfile(string bridgeJsonPath, string wheelPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
+        public static JObject BuildProfile(int hostPid = 0, HostAdapterInfo hostAdapter = null)
         {
             var o = new JObject
             {
@@ -190,29 +175,16 @@ namespace RimWorldLLM.Bridge
             };
             if (hostPid > 0) o["host_pid"] = hostPid;
             if (hostAdapter != null && hostAdapter.Known) o["host_adapter"] = hostAdapter.ToJson();
-            if (wheelPath != null)
-            {
-                o["agent"] = new JObject
-                {
-                    ["id"] = "rimworldllm-agent",
-                    ["wheel"] = wheelPath,
-                    ["python"] = "3.12",
-                    ["args"] = new JArray("run"),
-                    // the engine hands the agent its URL in this variable (+ _MODE/_MODEL in external mode), the agent's own override slot
-                    ["llm_url_env"] = "RIMWORLDLLM_LLM_URL",
-                    ["env"] = new JObject { ["RIMWORLDLLM_BRIDGE_JSON"] = bridgeJsonPath }
-                };
-            }
             return o;
         }
 
-        public static string WriteProfile(string bridgeJsonPath, string wheelPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
+        public static string WriteProfile(string bridgeJsonPath, int hostPid = 0, HostAdapterInfo hostAdapter = null)
         {
             string dir = Path.GetDirectoryName(bridgeJsonPath);
             Directory.CreateDirectory(dir);
             string path = Path.Combine(dir, ProfileFileName);
             string tmp = path + ".tmp";
-            File.WriteAllText(tmp, BuildProfile(bridgeJsonPath, wheelPath, hostPid, hostAdapter).ToString(Newtonsoft.Json.Formatting.Indented));
+            File.WriteAllText(tmp, BuildProfile(hostPid, hostAdapter).ToString(Newtonsoft.Json.Formatting.Indented));
             if (File.Exists(path)) File.Delete(path);
             File.Move(tmp, path);
             return path;
@@ -275,8 +247,8 @@ namespace RimWorldLLM.Bridge
                 }
                 if (plat.IsUnix) MakeExecutable(bin);
 
-                r.ProfilePath = WriteProfile(o.BridgeJsonPath, FindWheel(o.ModRoot), o.Pid, o.HostAdapter);
-                var env = new Dictionary<string, string> { ["RIMWORLDLLM_BRIDGE_JSON"] = o.BridgeJsonPath };
+                r.ProfilePath = WriteProfile(o.BridgeJsonPath, o.Pid, o.HostAdapter);
+                var env = new Dictionary<string, string>();   // the engine runs no agent: nothing to hand it
                 try { o.Starter.Start(bin, ServeArgs(r.ProfilePath, o.Pid), env); }
                 catch (Exception e)
                 {

@@ -27,6 +27,8 @@ namespace RimWorldLLM.Mind
         /// <summary>The last failure that ended a run attempt (null when none).</summary>
         public string LastError { get; private set; }
         public int Restarts { get; private set; }
+        /// <summary>NEW: builds the IChatLive the steward streams to (the in-process one inside the mod). Null: the bridge-posting BridgeChatLive.</summary>
+        public Func<IBridge, IChatLive> ChatLiveFactory { get; set; }
 
         public MindRunner(MindConfig cfg, IGameAdapter adapter, IBridgeTransport transport, string token = "", Func<double> clock = null, double backoffS = 5.0)
         {
@@ -94,6 +96,7 @@ namespace RimWorldLLM.Mind
             var llm = new HttpLlm(Cfg.Llm, new CallLog(Path.Combine(Cfg.DataDir, "calls.jsonl")));
             OpenAIBackend tools = MakeToolBackend(Cfg);
             var d = new Director(Cfg, bridge, llm, Adapter, null, _clock, null, true);
+            if (ChatLiveFactory != null) d.ChatLive = ChatLiveFactory(bridge);
             d.ToolBackend = tools; d.ToolMode = "auto";
             Director = d;
             try { await d.RunAsync(ct).ConfigureAwait(false); }

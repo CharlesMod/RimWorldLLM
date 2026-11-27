@@ -43,6 +43,7 @@ namespace RimWorldLLM.Tests
             foreach (ProbeCode c in Enum.GetValues(typeof(ProbeCode))) wanted.Add("RWL_Probe_" + c);
             foreach (var s in new[] { "Model", "Colonists", "Display", "Content", "Storage", "Advanced" }) wanted.Add("RWL_Section_" + s);
             foreach (var s in new[] { "off", "light", "normal" }) wanted.Add("RWL_Effects_" + s);
+            foreach (MindState s in Enum.GetValues(typeof(MindState))) wanted.Add(MindPlan.StateKey(s));
             foreach (var s in new[] { "effects_off", "no_intent", "no_effect", "no_listener", "not_negative", "no_about", "pair_cap", "stack_full", "vanilla_interaction" }) wanted.Add("RWL_Refused_" + s);
             foreach (var s in Bridge.EntryKinds.Wording) wanted.Add("RWL_LogEffect_" + s);
             foreach (var k in new[] { Bridge.GpuLine.KeyHostAndModel, Bridge.GpuLine.KeyModelOnly, Bridge.GpuLine.KeyShared, Bridge.GpuLine.KeyCpu }) wanted.Add(k);
@@ -57,7 +58,7 @@ namespace RimWorldLLM.Tests
             var names = doc.Root.Elements().Select(e => e.Name.LocalName).ToList();
             Assert.Equal(names.Count, names.Distinct().Count());
             string all = string.Join("\n", Sources().Select(File.ReadAllText));
-            var dynamicPrefixes = new[] { "RWL_Probe_", "RWL_Section_", "RWL_Effects_", "RWL_Refused_", "RWL_LogEffect_", "RWL_Gpu_", "RWL_Viv_Horizon_", "RWL_Viv_Status_", "RWL_Viv_By_", "RWL_Viv_RestartMode_" };
+            var dynamicPrefixes = new[] { "RWL_Probe_", "RWL_Section_", "RWL_Effects_", "RWL_Refused_", "RWL_LogEffect_", "RWL_Gpu_", "RWL_Viv_Horizon_", "RWL_Viv_Status_", "RWL_Viv_By_", "RWL_Viv_RestartMode_", "RWL_Mind_" };
             var unused = names.Where(n => !dynamicPrefixes.Any(p => n.StartsWith(p)) && all.IndexOf("\"" + n + "\"", StringComparison.Ordinal) < 0).ToList();
             Assert.Empty(unused);
         }

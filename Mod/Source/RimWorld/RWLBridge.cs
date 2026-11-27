@@ -123,6 +123,7 @@ namespace RimWorldLLM
             Runtime.FrameUpdate();
             AgentDialOut.FlushLogs();
             EngineManager.Tick();
+            MindHost.Tick();
         }
     }
 
