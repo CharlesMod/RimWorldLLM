@@ -392,6 +392,7 @@ namespace RimWorldLLM.Bridge
         }
 
         // Plain words the steward may use for things, stuff and plants. The hands also accept defNames.
+        // Order matters: the first researched def wins, so the no-power version comes first ("electric stove" names the other).
         public static readonly Dictionary<string, string[]> ThingAliases = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             ["wall"] = new[] { "Wall" },
@@ -406,7 +407,7 @@ namespace RimWorldLLM.Bridge
             ["big table"] = new[] { "Table2x4c", "Table3x3c" },
             ["chair"] = new[] { "DiningChair", "Stool" },
             ["stool"] = new[] { "Stool" },
-            ["stove"] = new[] { "ElectricStove", "FueledStove" },
+            ["stove"] = new[] { "FueledStove", "ElectricStove" },
             ["fueled stove"] = new[] { "FueledStove" },
             ["electric stove"] = new[] { "ElectricStove" },
             ["campfire"] = new[] { "Campfire" },
@@ -418,10 +419,10 @@ namespace RimWorldLLM.Bridge
             ["torch"] = new[] { "TorchLamp" },
             ["lamp"] = new[] { "StandingLamp", "TorchLamp" },
             ["shelf"] = new[] { "Shelf" },
-            ["research bench"] = new[] { "HiTechResearchBench", "SimpleResearchBench" },
+            ["research bench"] = new[] { "SimpleResearchBench", "HiTechResearchBench" },
             ["crafting spot"] = new[] { "CraftingSpot" },
-            ["tailoring bench"] = new[] { "ElectricTailoringBench", "HandTailoringBench" },
-            ["smithy"] = new[] { "ElectricSmithy", "FueledSmithy" },
+            ["tailoring bench"] = new[] { "HandTailoringBench", "ElectricTailoringBench" },
+            ["smithy"] = new[] { "FueledSmithy", "ElectricSmithy" },
             ["machining table"] = new[] { "TableMachining" },
             ["stonecutter"] = new[] { "TableStonecutter" },
             ["sculpting table"] = new[] { "TableSculpting" },

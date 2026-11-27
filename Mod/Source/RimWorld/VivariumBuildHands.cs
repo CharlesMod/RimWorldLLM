@@ -921,7 +921,7 @@ namespace RimWorldLLM
                                 bool did = false, finished = false;
                                 foreach (var t in c.GetThingList(map).ToList())
                                 {
-                                    if (t.Faction != Faction.OfPlayer && !(t is Blueprint) && !(t is Frame)) continue;
+                                    if (t.Faction != Faction.OfPlayer) continue;
                                     var bd = BuiltDef(t);
                                     if (bd == null || bd.defName != mk.Def) continue;
                                     if (t is Blueprint || t is Frame) { t.Destroy(DestroyMode.Cancel); did = true; }
