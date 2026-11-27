@@ -260,6 +260,7 @@ namespace RimWorldLLM.Tests.Mind
         }
     }
 
+    [Collection("AdultState")]
     public class PromptTests
     {
         static readonly RimWorldAdapter AD = new RimWorldAdapter();
@@ -307,6 +308,7 @@ namespace RimWorldLLM.Tests.Mind
         }
     }
 
+    [Collection("AdultState")]
     public class CharacterCardTests
     {
         static readonly Dictionary<int, string> NAMES = new Dictionary<int, string> { { 2, "Bram" } };

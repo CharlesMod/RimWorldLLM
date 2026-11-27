@@ -67,6 +67,21 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Null(AD.SnapshotAge(snap)); Assert.True(SceneFor(snap, new HashSet<int>()).MinorSelf);
         }
 
+        // c16670a: a pawn snapshot's job is a string or {def, label}; the C# scene reads the label for both (the Python printed the dict's repr)
+        [Fact]
+        public void DictJobReadsAsItsLabelEverywhere()
+        {
+            var snap = FakeBridge.DefaultPawn(1, "Ana", JObject.Parse(@"{""job"":{""def"":""Cook"",""label"":""cooking stew""}}"));
+            Assert.Equal("cooking stew", AD.SnapshotJob(snap));
+            var sc = SceneFor(snap, new HashSet<int>(), JObject.Parse(@"{""present"":[{""pawn"":2,""job"":{""def"":""Haul"",""label"":""hauling""}},{""pawn"":3,""job"":""Hauling""}]}"));
+            Assert.Equal("cooking stew", sc.Job);
+            Assert.Equal(new[] { "Bram (hauling)", "Cy (Hauling)" }, sc.Present.ToArray());
+            snap["job"] = JValue.CreateNull();
+            Assert.Equal("idle", SceneFor(snap, new HashSet<int>()).Job);
+            snap["job"] = "Cooking";
+            Assert.Equal("Cooking", AD.SnapshotJob(snap));
+        }
+
         // ---- test_adult
         [Fact]
         public void PromptRuleOnlyWhenOff()

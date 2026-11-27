@@ -12,6 +12,7 @@ using MindM = RimWorldLLM.Mind.Mind;
 
 namespace RimWorldLLM.Tests.Mind
 {
+    [Collection("AdultState")]
     public class ContractGoldenTests
     {
         static JObject G { get { return ContractGoldenData.J; } }

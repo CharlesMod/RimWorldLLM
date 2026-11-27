@@ -13,12 +13,13 @@ Modules: AgeGate, Adult, GameData, CommonWords, Think, Sanitize, LoopGuard, Leas
 - Test files in namespace RimWorldLLM.Tests.Mind need `using MindM = RimWorldLLM.Mind.Mind;`.
 - BlobTrimsDiariesBeforePinnedMemories uses a smaller limit (Mind.Size is private).
 
-## Deferred tests (need Director/world fixture, LLM, bridge, RimWorldAdapter, prompt/reflection modules)
-- test_agegate: prompt/labels/conversation/group/intent/vanilla/player-talk/diary-path tests (14+).
-- test_adult: prompt_rule_only_when_off, live_toggle_from_bridge_config_and_stats, missing_key_means_off, settings_refresh.
-- test_gamedata: names_from_the_player, every_prompt_block, prefix_is_deterministic_for_a_lease, director_prompt, idle_prompts, has_raw_syntax assertion.
+## Deferred tests (need Director/world fixture, LLM, bridge or reflection module)
+The contract part (docs/csmind/parity-contract.md) ported everything that needed only the adapter, prompt or builders. Still deferred:
+- test_agegate: the 12 Director tests (`_prepare`, `labels_for`, conversation, group, intent, vanilla, player talk, diary path).
+- test_adult: live_toggle_from_bridge_config_and_stats, missing_key_means_off, settings_refresh (Director + bridge config).
+- test_gamedata: director_prompt_holds_planted_scene_text_as_data, idle_prompts_wrap_game_text_too (reflection module).
 - test_sanitize: VoiceCard/passes halves of the guard tests.
-- test_loopguard: offline_bench_numbers (bench files), 4 Director tests. test_lease uses a local copy of the adapter priority table (re-point when adapter lands).
-- test_memory_minds: importance_from_game_numbers_and_pinning, builders_deterministic_with_dlc, llm_voice_pass_written_once.
-- test_firsts: 7 Director tests, first_of_table (adapter).
-- test_habits: 2 reflection-module tests, 8 Director tests; test_gossip_chain/upkeep_gossip: Director tests, adapter tests; some block_b/c/d assertions dropped (prompt module not ported).
+- test_loopguard: offline_bench_numbers (bench files), 4 Director tests.
+- test_memory_minds: none left.
+- test_firsts: 7 Director tests (first_of_table is ported).
+- test_habits: 2 reflection-module tests, 8 Director tests; test_gossip_chain/upkeep_gossip: Director tests (the block_b/c/d assertions are ported).
