@@ -59,8 +59,9 @@ namespace RimWorldLLM.Mind.RimWorld
         public override ProtocolNames Protocol { get { return WireNames; } }
         // The steward kit (steward_tools.py's StewardKit): one instance; SilentEvents is its silent_events ({"letter","alert"}).
         private readonly RimWorldLLM.Mind.RimWorld.StewardKit _stewardKit = new RimWorldLLM.Mind.RimWorld.StewardKit();
+        private RimWorldStewardKit _stewardKitView;
         public override ISet<string> SilentEvents { get { return new HashSet<string>(_stewardKit.SilentEvents); } }
-        public override object StewardKit { get { return _stewardKit; } }
+        public override object StewardKit { get { return _stewardKitView ?? (_stewardKitView = new RimWorldStewardKit(_stewardKit)); } }
         public override int UnitsPerDay { get { return 60000; } }      // ticks
 
         public override double UnitsPerSecond(int speed)
