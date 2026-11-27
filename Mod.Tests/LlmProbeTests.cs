@@ -125,6 +125,34 @@ namespace HermesVoice.Tests
             Assert.Equal(ProbeLight.Red, r.Light); Assert.Equal(ProbeCode.WrongBase, r.Code); Assert.Equal("http://h:1/v1", r.Arg);
         }
 
+        const string YieldedBody = "{\"error\":{\"code\":\"yielded\",\"type\":\"unavailable_error\",\"message\":\"Paused while RimWorld runs\"}}";
+        const string LoadingBody = "{\"error\":{\"code\":503,\"message\":\"Loading model\"}}";
+
+        [Fact]
+        public void YieldedIs503Paused_PlainIsLoading()
+        {
+            var y = new HttpOutcome { Status = 503, Body = YieldedBody };
+            var l = new HttpOutcome { Status = 503, Body = LoadingBody };
+            Assert.Equal(ProbeCode.Paused, LlmProbe.ClassifyModels(y, "m").Code);
+            Assert.Equal(ProbeLight.Amber, LlmProbe.ClassifyModels(y, "m").Light);
+            Assert.Equal(ProbeCode.Paused, LlmProbe.ClassifyChat(y, "m").Code);
+            Assert.Equal(ProbeCode.Loading, LlmProbe.ClassifyModels(l, "m").Code);
+            Assert.Equal(ProbeCode.Loading, LlmProbe.ClassifyChat(l, "m").Code);
+            Assert.Equal(ProbeCode.Loading, LlmProbe.ClassifyChat(St(503), "m").Code);
+        }
+
+        [Fact]
+        public void RunYieldedOnModelsAndHealthIsPaused()
+        {
+            var f = new Fake();
+            f.Replies["GET http://h:1/v1/models"] = new HttpOutcome { Status = 503, Body = YieldedBody };
+            Assert.Equal(ProbeCode.Paused, LlmProbe.Run("http://h:1/v1", "m", "", f.Do).Code);
+            var g = new Fake();
+            g.Replies["GET http://h:1/health"] = new HttpOutcome { Status = 503, Body = YieldedBody };
+            var r = LlmProbe.Run("http://h:1/v1", "m", "", g.Do);
+            Assert.Equal(ProbeLight.Amber, r.Light); Assert.Equal(ProbeCode.Paused, r.Code);
+        }
+
         [Fact]
         public void RunHealth503IsAmberLoading()
         {

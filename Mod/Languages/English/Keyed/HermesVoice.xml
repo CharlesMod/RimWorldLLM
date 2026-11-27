@@ -134,6 +134,7 @@
   <HV_Probe_Ms>({0} ms)</HV_Probe_Ms>
   <HV_Probe_Ok>Works.</HV_Probe_Ok>
   <HV_Probe_OkFixedBase>Works at {0}. The base URL was updated.</HV_Probe_OkFixedBase>
+  <HV_Probe_Paused>Endpoint paused: a game is running on that machine.</HV_Probe_Paused>
   <HV_Probe_Loading>The server is up but still loading the model. Try again in a moment.</HV_Probe_Loading>
   <HV_Probe_Slow>Works, but the reply took {0} ms. Lines may arrive too late.</HV_Probe_Slow>
   <HV_Probe_ReasoningText>Works, but reasoning text comes back in the output. Turn thinking off on the server.</HV_Probe_ReasoningText>

@@ -16,6 +16,7 @@ namespace HermesVoice.Bridge
         Ok,               // all good
         OkFixedBase,      // worked after adding or removing /v1; Arg = the base that works
         Loading,          // server answered 503: the model is still loading
+        Paused,           // 503 with error.code "yielded": a game is running on that machine
         Slow,             // reply took too long; Arg = ms
         ReasoningText,    // reasoning text came back in the output
         NoUrl,
@@ -133,6 +134,20 @@ namespace HermesVoice.Bridge
 
         static JToken TryJson(string body) { try { return JToken.Parse(body); } catch { return null; } }
 
+        /// <summary>True for the engine's 503 whose body has error.code equal to the string "yielded" (a numeric 503 code means Loading).</summary>
+        public static bool IsYielded(HttpOutcome o)
+        {
+            if (o == null || o.Error != null || o.Status != 503) return false;
+            var t = TryJson(o.Body == null ? "" : o.Body) as JObject;
+            var c = t != null ? t.SelectToken("error.code") : null;
+            return c != null && c.Type == JTokenType.String && (string)c == "yielded";
+        }
+
+        static ProbeResult Unavailable503(HttpOutcome o)
+        {
+            return IsYielded(o) ? ProbeResult.Make(ProbeLight.Amber, ProbeCode.Paused) : ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+        }
+
         /// <summary>
         /// Judges the GET /models reply. Null means the step passed. A 404 is reported as WrongBase so the caller can
         /// retry with /v1 toggled before giving up.
@@ -142,7 +157,7 @@ namespace HermesVoice.Bridge
             if (o.Error != null) return FromTransport(o);
             if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
             if (o.Status == 404) return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase);
-            if (o.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+            if (o.Status == 503) return Unavailable503(o);
             if (o.Status < 200 || o.Status >= 300) return ProbeResult.Make(ProbeLight.Red, ProbeCode.HttpError, o.Status.ToString());
             var j = TryJson(o.Body) as JObject;
             if (j == null) return ProbeResult.Make(ProbeLight.Red, ProbeCode.NotJson);
@@ -175,7 +190,7 @@ namespace HermesVoice.Bridge
                 if (msg.IndexOf("model", StringComparison.OrdinalIgnoreCase) >= 0) return ProbeResult.Make(ProbeLight.Red, ProbeCode.ModelNotFound, model ?? "");
                 return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase);
             }
-            if (o.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+            if (o.Status == 503) return Unavailable503(o);
             if (o.Status < 200 || o.Status >= 300)
             {
                 var e = TryJson(o.Body);
@@ -237,13 +252,13 @@ namespace HermesVoice.Bridge
                 {
                     // 404 both ways. A loading llama.cpp answers /health with 503 before its API is up.
                     var h = send("GET", RootOf(b) + "/health", null, apiKey, 8000);
-                    if (h.Error == null && h.Status == 503) return ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
+                    if (h.Error == null && h.Status == 503) return Unavailable503(h);
                     return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase, b.EndsWith("/v1", StringComparison.OrdinalIgnoreCase) ? RootOf(b) : b + "/v1");
                 }
             }
             if (r != null)
             {
-                if (r.Code == ProbeCode.Loading) { r.EffectiveBase = b; return r; }
+                if (r.Code == ProbeCode.Loading || r.Code == ProbeCode.Paused) { r.EffectiveBase = b; return r; }
                 return r;
             }
 

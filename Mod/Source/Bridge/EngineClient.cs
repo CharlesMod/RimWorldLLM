@@ -377,12 +377,16 @@ namespace HermesVoice.Bridge
             return res;
         }
 
+        /// <summary>The Error of a result whose reply was the engine's 503 "yielded" (a game is running on that machine).</summary>
+        public const string YieldedError = "yielded";
+
         static string ErrorText(string body, int status)
         {
             try
             {
                 var j = JObject.Parse(body);
                 var e = j["error"];
+                if (e is JObject && (string)e["code"] == "yielded") return YieldedError;
                 if (e is JObject) return (string)e["message"] ?? ("HTTP " + status);
                 if (e != null) return e.ToString();
                 if (j["message"] != null) return (string)j["message"];

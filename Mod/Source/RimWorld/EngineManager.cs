@@ -255,7 +255,7 @@ namespace HermesVoice
                 try
                 {
                     var r = await c.TestAsync().ConfigureAwait(false);
-                    _test = r.Ok && r.Value != null ? r.Value : new EngineTestResult { Light = "red", Message = r.Error ?? ("HTTP " + r.HttpStatus) };
+                    _test = r.Ok && r.Value != null ? r.Value : new EngineTestResult { Light = "red", Message = r.Error == EngineClient.YieldedError ? UiUtil.T("HV_Probe_Paused") : (r.Error ?? ("HTTP " + r.HttpStatus)) };
                 }
                 finally { _testRunning = false; }
             });

@@ -8,11 +8,18 @@ from typing import Any, Protocol
 
 import httpx
 
-from ..llm import GEMMA4_OFFICIAL, detect_engine, is_known_gemma4
+from ..llm import GEMMA4_OFFICIAL, AwayGate, LLMAway, detect_engine, is_known_gemma4, parse_yielded
 
 
 class BackendError(Exception):
     """The server was unreachable, slow, or answered with something unusable. Never a model fault."""
+
+
+class BackendAway(BackendError):
+    """The engine answered 503 code "yielded": the model server machine is running a game. Not a model fault."""
+    def __init__(self, message: str, retry_after: float = 5.0):
+        super().__init__(f"model paused on the server: {message}")
+        self.message, self.retry_after = message, retry_after
 
 
 @dataclass
@@ -49,12 +56,17 @@ class OpenAIBackend:
         # per-call ``temperature`` is sent only with honor_temperature=True (benches); otherwise the
         # engine decides. ``sampler`` forces fields. Against a non-engine endpoint the official
         # Gemma 4 values go out only when ``model`` is a known Gemma 4 build, else nothing.
+        self.gate = AwayGate()
         self._engine, self.sampler, self.honor_temperature = engine, dict(sampler or {}), honor_temperature
 
     async def aclose(self):
         await self.http.aclose()
 
     async def chat(self, messages, *, grammar=None, tools=None, tool_choice=None, max_tokens=160, temperature=0.2, timeout=30.0) -> Reply:
+        try:
+            self.gate.check()                       # backing off after "yielded": no request
+        except LLMAway as e:
+            raise BackendAway(e.message, e.retry_after) from None
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         if self._engine is None:
             self._engine = await detect_engine(self.http, self.base, headers)
@@ -80,8 +92,13 @@ class OpenAIBackend:
         except httpx.HTTPError as e:
             raise BackendError(f"unreachable ({type(e).__name__})") from e
         ms = (time.perf_counter() - t0) * 1000
+        y = parse_yielded(r.status_code, r.content, r.headers.get("Retry-After"))
+        if y:
+            self.gate.went_away(*y)
+            raise BackendAway(*y)
         if r.status_code >= 400:
             raise BackendError(f"HTTP {r.status_code}: {r.text[:160]}")
+        self.gate.ok()
         try:
             ch = r.json()["choices"][0]
             m = ch.get("message") or {}
