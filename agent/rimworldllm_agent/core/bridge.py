@@ -236,6 +236,10 @@ class BridgeClient:
         """GET /digest: the compact world digest (needs a loaded game)."""
         return await self._req("GET", "/digest")
 
+    async def combat(self) -> dict:
+        """GET /combat: the combat view (threats, fighters, others, downed, fires, defenses, positions, squad, speed); ``active`` false when quiet."""
+        return await self._req("GET", "/combat")
+
     async def chat_since(self, seq: int) -> dict:
         """GET /chat?since=N -> {"entries": [...], "next_seq": N}."""
         return await self._req("GET", "/chat", params={"since": seq})
