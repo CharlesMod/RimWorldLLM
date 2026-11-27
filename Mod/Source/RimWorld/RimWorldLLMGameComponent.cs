@@ -32,6 +32,7 @@ namespace RimWorldLLM
         {
             base.GameComponentTick();
             if (Find.TickManager != null && Find.TickManager.TicksGame % 250 == 0) EventPayload.Safe("vivarium-alerts", VivariumEvents.PollAlerts);
+            EventPayload.Safe("vivarium-caravans", VivariumCaravanWatch.Tick);
         }
 
         // Runs every frame, even while paused (GameComponentTick does not).

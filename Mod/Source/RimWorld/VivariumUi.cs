@@ -39,6 +39,15 @@ namespace RimWorldLLM
             vs.AnswerDialogs = s.narratorAnswerDialogs;
             vs.DialogTimeoutS = Mathf.Clamp(s.narratorDialogTimeoutS, 10, 600);
             vs.Commentary = s.narratorCommentary;
+            vs.Trade = s.narratorTrade;
+            vs.Caravans = s.narratorCaravans;
+            vs.TradeMaxDeal = Mathf.Clamp(s.narratorTradeMaxDeal, 100, 20000);
+            vs.TradeMaxDay = Mathf.Clamp(s.narratorTradeMaxDay, 100, 50000);
+            vs.TradeDealsPerDay = Mathf.Clamp(s.narratorTradeDealsPerDay, 1, 10);
+            vs.KeepMedicine = Mathf.Clamp(s.narratorKeepMedicine, 0, 50);
+            vs.KeepFoodDays = Mathf.Clamp(s.narratorKeepFoodDays, 0, 30);
+            vs.NeverSell = RimWorldLLM.Bridge.NeverSellList.Parse(s.narratorNeverSell);
+            vs.CaravanMaxPawns = Mathf.Clamp(s.narratorCaravanMaxPawns, 1, 6);
         }
 
         public static void OnGUIKey()
