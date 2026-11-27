@@ -361,8 +361,8 @@ namespace RimWorldLLM.Mind
         [JsonProperty("llm_examples")] public bool LlmExamples { get; set; }
         [JsonProperty("third_person")] public bool? ThirdPerson { get; set; }
 
-        /// <summary>sanitize.is_self_narration. Defaults to a faithful local copy; the Sanitize port may replace it.</summary>
-        public static Func<string, ISet<string>, bool> SelfNarrationCheck = DefaultIsSelfNarration;
+        /// <summary>sanitize.is_self_narration. Defaults to Sanitize.IsSelfNarration.</summary>
+        public static Func<string, ISet<string>, bool> SelfNarrationCheck = Sanitize.IsSelfNarration;
 
         private static readonly Regex _selfNarr = new Regex(@"^([A-Z][a-z]+)\s+([a-z][a-z']*)", RegexOptions.CultureInvariant);
         private static readonly HashSet<string> _notVerb = new HashSet<string> {
