@@ -85,7 +85,7 @@ def test_old_history_and_named_lines_are_not_answered(world):
     async def go():
         w = world
         w.fb.add_chat("player", "an old line from before the agent connected")
-        w.fb.tick += 5000                         # more than an in-game hour ago: history, not caught up
+        w.fb.add_chat("narrator", "the narrator answered it back then")
         w, st, fake = await boot(world, playing=False)
         await cycle(w)
         assert fake.calls == []                   # the cursor started at the current seq
@@ -110,9 +110,9 @@ def test_chat_cursor_resets_on_a_new_world(world):
         w.fb.chat, w.fb.chat_seq = [], 0         # the loaded save has its own chat log
         await w.d.step()
         assert st.cursor is None                 # reset by the epoch change
-        w.fb.add_chat("player", "typed long before the agent looked at the new log")
-        w.fb.tick += 5000
-        await w.d.steward.step()                 # first sight of the new world: an old unanswered line is history
+        w.fb.add_chat("player", "answered in that save")
+        w.fb.add_chat("narrator", "an answer in that save")
+        await w.d.steward.step()                 # first sight of the new world: answered lines are history
         assert fake.cycles == 1
         chat(w, "after the load")
         await cycle(w)

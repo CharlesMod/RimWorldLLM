@@ -35,7 +35,7 @@ log = logging.getLogger("rimworldllm.steward")
 
 MAX_EVENT_LINES = 15
 MAX_CHAT_LINES = 10
-CATCH_UP_DAYS = 1 / 24                    # one in-game hour: older unanswered lines stay history
+CATCH_UP_LINES = 3                         # at most this many unanswered player lines are answered on first sight
 MAX_NOTES = 3
 STEPS, BUDGET_S, STEP_TIMEOUT_S = 8, 120.0, 60.0
 FINAL_MAX = 300
@@ -166,26 +166,21 @@ class Steward:
             self._start(reason, playing)
 
     async def _catch_up(self, seq: int) -> None:
-        """First sight of a chat log: queue the player's lines after the last narrator line when they are
-        recent (typed while the agent was starting or restarting), so they get an answer."""
+        """First sight of a chat log: queue the player's lines after the last narrator line (typed while the agent
+        was starting, restarting or away), so they get an answer. Lines the narrator already answered stay history."""
         if seq <= 0:
             return
         try:
             b = await self.d.bridge.chat_since(max(0, seq - MAX_CHAT_LINES))
         except BridgeError:
             return
-        now = int(getattr(self.d.bridge.env, "game", 0) or 0)
-        proto = getattr(self.d.bridge, "protocol", None)
-        tfield = getattr(proto, "time_field", "") or "game"
-        window = float(getattr(self.d.adapter, "units_per_day", 0) or 0) * CATCH_UP_DAYS
         tail: list[dict] = []
         for e in b.get("entries") or []:
             if e.get("who") == "narrator":
                 tail = []                             # answered up to here
-            elif (e.get("who") == "player" and not int(e.get("to") or 0) and str(e.get("text", "")).strip()
-                  and (window <= 0 or now - int(e.get(tfield) or 0) <= window)):
+            elif e.get("who") == "player" and not int(e.get("to") or 0) and str(e.get("text", "")).strip():
                 tail.append(e)
-        self.pending_chat.extend(tail[-MAX_CHAT_LINES:])
+        self.pending_chat.extend(tail[-CATCH_UP_LINES:])
 
     def _wake(self, playing: bool) -> str | None:
         d, env = self.d, self.d.bridge.env
