@@ -73,7 +73,7 @@ namespace RimWorldLLM.Bridge
         {
             var b = c.Body;
             string who = b["who"] != null && b["who"].Type == JTokenType.String ? b.Value<string>("who") : null;
-            if (who != "narrator" && who != "note") return Bad("who must be \"narrator\" or \"note\"");
+            if (who != "narrator" && who != "note" && who != ChatKinds.Comment) return Bad("who must be \"narrator\", \"note\" or \"comment\"");
             if (b["text"] == null || b["text"].Type != JTokenType.String) return Bad("text is required");
             string text = b.Value<string>("text").Trim();
             if (text.Length == 0) return Bad("text is empty");
