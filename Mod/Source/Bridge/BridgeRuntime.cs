@@ -59,6 +59,7 @@ namespace RimWorldLLM.Bridge
         /// <summary>Once per frame, game thread: publish the state and answer queued requests within the budget.</summary>
         public void FrameUpdate(double budgetMs = Const.FrameBudgetMs)
         {
+            if (Vivarium.Live.HasFinals) Vivarium.Live.Pump(Vivarium.Chat, Game.BuildState().Tick);   // finals ended off the game thread
             var s = Server;
             if (s == null) return;
             s.SetState(Game.BuildState());

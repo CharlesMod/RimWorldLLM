@@ -16,6 +16,8 @@ namespace RimWorldLLM.Bridge
             router.Add("GET", "/vivarium", false, c => ApiResult.Success(vivarium().StatusJson()));
             router.Add("GET", "/chat", false, c => ChatGet(c, vivarium()));
             router.Add("POST", "/chat", false, c => ChatPost(c, vivarium()));
+            router.Add("POST", "/chat/status", false, c => ChatStatus(c, vivarium()));
+            router.Add("POST", "/chat/partial", false, c => ChatPartial(c, vivarium()));
             router.Add("GET", "/goals", false, c => ApiResult.Success(vivarium().Goals.ToJson()));
             router.Add("PUT", "/goals", false, c => GoalsPut(c, vivarium()));
             router.Add("GET", "/actions", false, c => ActionsGet(c, vivarium()));
@@ -75,8 +77,57 @@ namespace RimWorldLLM.Bridge
             string text = b.Value<string>("text").Trim();
             if (text.Length == 0) return Bad("text is empty");
             if (text.Length > ChatLog.MaxText) return Bad("text must be at most " + ChatLog.MaxText + " chars");
+            string sid = null;
+            if (b["stream_id"] != null && b["stream_id"].Type != JTokenType.Null)
+            {
+                sid = b["stream_id"].Type == JTokenType.String ? b.Value<string>("stream_id") : null;
+                if (!ChatLive.ValidId(sid)) return Bad("stream_id must be 1..64 chars of A-Z a-z 0-9 _ . : -");
+            }
             var e = v.Chat.Add(who, text, c.State.Tick);
+            if (sid != null) v.Live.End(sid);   // the line is permanent now; the live line goes
             return ApiResult.Success(new JObject { ["seq"] = e.Seq });
+        }
+
+        static ApiResult ChatStatus(RouteContext c, Vivarium v)
+        {
+            var b = c.Body;
+            string sid = b["stream_id"] != null && b["stream_id"].Type == JTokenType.String ? b.Value<string>("stream_id") : null;
+            string state = b["state"] != null && b["state"].Type == JTokenType.String ? b.Value<string>("state") : null;
+            string who = b["who"] != null && b["who"].Type == JTokenType.String ? b.Value<string>("who") : null;
+            int to = 0;
+            var tt = b["to"];
+            if (tt != null && tt.Type != JTokenType.Null)
+            {
+                if (tt.Type != JTokenType.Integer) return Bad("to must be an integer (the colonist's id)");
+                long l = tt.Value<long>();
+                if (l <= 0 || l > int.MaxValue) return Bad("to must be a positive colonist id");
+                to = (int)l;
+            }
+            float progress = float.NaN;
+            var pt = b["progress"];
+            if (pt != null && pt.Type != JTokenType.Null)
+            {
+                if (pt.Type != JTokenType.Integer && pt.Type != JTokenType.Float) return Bad("progress must be a number 0..1");
+                double p = pt.Value<double>();
+                if (double.IsNaN(p) || p < 0 || p > 1) return Bad("progress must be a number 0..1");
+                progress = (float)p;
+            }
+            string name = b["name"] != null && b["name"].Type == JTokenType.String ? b.Value<string>("name") : null;
+            string err = v.Live.Status(sid, who, to, name, state, progress);
+            if (err != null) return Bad(err);
+            return ApiResult.Success(new JObject { ["stream_id"] = sid, ["state"] = state, ["live"] = v.Live.IsLive(sid) });
+        }
+
+        static ApiResult ChatPartial(RouteContext c, Vivarium v)
+        {
+            var b = c.Body;
+            string sid = b["stream_id"] != null && b["stream_id"].Type == JTokenType.String ? b.Value<string>("stream_id") : null;
+            if (!ChatLive.ValidId(sid)) return Bad("stream_id must be 1..64 chars of A-Z a-z 0-9 _ . : -");
+            if (b["text"] == null || b["text"].Type != JTokenType.String) return Bad("text is required (the whole text so far)");
+            string text = b.Value<string>("text");
+            if (text.Trim().Length > ChatLog.MaxText) return Bad("text must be at most " + ChatLog.MaxText + " chars");
+            bool ok = v.Live.Partial(sid, text);
+            return ApiResult.Success(new JObject { ["stream_id"] = sid, ["accepted"] = ok });
         }
 
         static ApiResult GoalsPut(RouteContext c, Vivarium v)

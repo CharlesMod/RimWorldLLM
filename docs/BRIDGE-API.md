@@ -421,8 +421,50 @@ the 300 kept). Entry: `{"seq": 42, "tick": 123456, "who": "player", "to": 0, "na
 A player line with `to` > 0 was addressed `@Name` to that colonist and went through `/talk`; the
 steward ignores those.
 
-POST body: `{"op_id": "...", "who": "narrator"|"note", "text": "..."}` (text 1..500 chars after trim).
-Reply `{"seq": 43}`. Any other `who` is `bad_request`: only the game's chat bar writes `player` lines.
+POST body: `{"op_id": "...", "who": "narrator"|"note", "text": "...", "stream_id": "..."}` (text 1..500
+chars after trim; `stream_id` optional). Reply `{"seq": 43}`. Any other `who` is `bad_request`: only the
+game's chat bar writes `player` lines. With `stream_id` the line is the final text of that live stream
+(below): the line becomes permanent and the live line goes. An unknown or already-ended `stream_id` is
+fine (the line still posts); a malformed one is `bad_request`.
+
+### `POST /chat/status` and `POST /chat/partial` (live "is thinking / is typing"; no game needed)
+The chat panel shows one live line per speaker under the log: "Narrator is thinking…" while the prompt
+is processed (prefill), then "Narrator is typing…" and the partial text as it streams, replaced by the
+final line. Live state is never saved and a load clears it.
+
+`POST /chat/status`: `{"op_id", "who": "narrator"|"colonist", "to": <colonist id>, "name": "Ana",
+"state": "thinking"|"typing"|"idle", "stream_id": "...", "progress": 0.74}`
+- `stream_id`: 1..64 chars of `A-Z a-z 0-9 _ . : -`, unique per stream (one model request). A new
+  stream for the same speaker replaces the old one (the old id counts as ended).
+- `who`: `narrator` (no `to`), or `colonist` with `to` = the colonist's thing id (> 0); `name` is
+  optional (the panel looks the colonist up by id when it is missing). `who` is not needed for `idle`.
+- `state`: `thinking` starts (or refreshes) the stream; `typing` marks the first token; `idle` ends
+  the stream with no line (an error, a cancelled answer, or a tool-only cycle). `idle` for an unknown
+  id is fine.
+- `progress` (optional, with `thinking`): prefill progress 0..1, e.g. `processed / total` from the
+  model server's `prompt_progress` chunks; the panel shows "… 74%" and a thin bar. Without it the
+  panel shows plain animated dots (a player's own endpoint may not report progress). Ignored once
+  typing. Outside 0..1 or not a number is `bad_request`.
+- Reply `{"stream_id": "...", "state": "...", "live": true}`; `live` false means the id was already
+  ended (a late update is ignored, not an error).
+
+`POST /chat/partial`: `{"op_id", "stream_id", "text": "the whole text so far"}` (not a delta; at most
+500 chars). Idempotent: the same text twice changes nothing. Also counts as `typing`. Reply
+`{"stream_id": "...", "accepted": true}`; `accepted: false` when the stream is unknown or ended (a
+partial after the final is ignored). The mod keeps the latest text but redraws it at most 4 times a
+second, so a client may post every token, though every 100-250 ms is plenty.
+
+A stream with no status or partial for 90 s disappears by itself, so a crashed client never leaves a
+status stuck. A long prefill should repeat `thinking` (with fresh `progress`) at least every 60 s.
+
+**The contract a streaming client follows** (one model request = one stream):
+1. `POST /chat/status` `state: thinking` with a new `stream_id` when the request is sent; then, if the
+   server reports prefill progress, `thinking` again with `progress` (at most a few times a second).
+2. At the first token: `state: typing` (or straight to the first `/chat/partial`).
+3. `POST /chat/partial` with the whole text so far as tokens arrive (throttled to ~4-10 per second).
+4. Done: `POST /chat` with the final text and the same `stream_id` (narrator lines), or, for a colonist
+   reply that goes through `/say`, `state: idle`. On an error or an empty answer: `state: idle`.
+An older mod answers these routes `not_found`; a client treats that as "no live status" and carries on.
 
 ### `GET /goals` and `PUT /goals`
 ```json

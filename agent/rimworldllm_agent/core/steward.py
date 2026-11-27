@@ -88,6 +88,7 @@ class Steward:
         self.disabled = self.kit is None or not d.cfg.steward
         self.task: asyncio.Task | None = None
         self.stats = StewardStats()
+        self._streams = 0                                # per-cycle /chat/status stream counter
         self.vv: dict = {}
         self._strategy_note = None
         self.reset()
@@ -254,6 +255,13 @@ class Steward:
             return None
         return t
 
+    async def _status(self, state: str, stream_id: str) -> None:
+        """Tell the game's chat the narrator is thinking / idle. Best effort: never breaks or stalls a cycle."""
+        try:
+            await asyncio.wait_for(self.d.bridge.post_chat_status("narrator", state, stream_id), 3.0)
+        except Exception as e:                           # older mod (not_found), network, timeout
+            log.debug("steward: chat status %s not posted: %s", state, e)
+
     async def _run(self, reason: str, chat: list[dict], events: list[str], playing: bool, t: dict) -> None:
         d, kit = self.d, self.kit
         advisor = not playing
@@ -327,8 +335,14 @@ class Steward:
             return out.result
 
         harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=STEPS, time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
-        res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
-                                slot=d.cfg.narrator_slot, final_max=FINAL_MAX, max_tokens=220)
+        self._streams += 1
+        stream_id = f"steward-{os.getpid()}-{self._streams}"
+        await self._status("thinking", stream_id)
+        try:
+            res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
+                                    slot=d.cfg.narrator_slot, final_max=FINAL_MAX, max_tokens=220)
+        finally:
+            await self._status("idle", stream_id)
         t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, executed=[(e.tool, e.args, e.result) for e in res.executed],
                  elapsed_s=round(res.elapsed_s, 2))
 
