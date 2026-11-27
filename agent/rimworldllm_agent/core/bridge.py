@@ -95,6 +95,15 @@ class BridgeClient:
         await self.http.aclose()
 
     # ---- plumbing -------------------------------------------------------
+    def _speed(self, raw: object) -> int:
+        """The envelope's game speed; a body field of the same name that is not a number (a view's own "speed" block) keeps the last one."""
+        if isinstance(raw, (int, float, str)) and not isinstance(raw, bool):
+            try:
+                return int(raw)
+            except ValueError:
+                pass
+        return self.env.speed if raw is not None else 1
+
     def _absorb(self, body: dict) -> None:
         p = self.protocol
         if not isinstance(body, dict) or p.time_field not in body:
@@ -102,7 +111,7 @@ class BridgeClient:
         old = self._epoch_seen
         self.env = Envelope(
             game=int(body.get(p.time_field, 0)), epoch=int(body.get(p.epoch_field, 0)),
-            paused=bool(body.get("paused", False)), speed=int(body.get("speed", 1)))
+            paused=bool(body.get("paused", False)), speed=self._speed(body.get("speed")))
         self._epoch_seen = self.env.epoch
         if old is not None and old != self.env.epoch:
             self.epoch_changed = True
@@ -236,6 +245,9 @@ class BridgeClient:
         """GET /digest: the compact world digest (needs a loaded game)."""
         return await self._req("GET", "/digest")
 
+    async def combat(self) -> dict:
+        """GET /combat: the combat view (threats, fighters, others, downed, fires, defenses, positions, squad, speed); ``active`` false when quiet."""
+        return await self._req("GET", "/combat")
     async def dialogs(self) -> dict:
         """GET /dialogs: the choice windows and letters open now ({"dialogs": [...], "timeout_s": N})."""
         return await self._req("GET", "/dialogs")
@@ -277,6 +289,10 @@ class BridgeClient:
     async def act(self, verb: str, body: dict, expires_at: int | None = None, op_id: str | None = None) -> dict:
         """POST /act/<verb>: returns the reply body ({"done": note, ...}); a refusal is BridgeError code "refused" (status 409, detail = the reason)."""
         return await self._req("POST", f"/act/{verb}", json_body=self._write_body(body, expires_at, op_id))
+
+    async def look(self, path: str, params: dict | None = None) -> dict:
+        """A read-only GET of a Vivarium route (for example /trade/offer?with=P5521); the reply body."""
+        return await self._req("GET", path, params=params)
 
     async def put_mind(self, actor_id: int, mind: dict, rev: int, op_id: str | None = None) -> int:
         b = await self._req("PUT", f"{self.protocol.mind_path}/{actor_id}",

@@ -98,7 +98,8 @@ class FakeBridge:
         self.vivarium_supported = True           # False models an older mod: every vivarium route answers 404
         self.playing = False
         self.paused_by_narrator = False
-        self.viv_settings = {"may_pause_for_emergencies": True, "controls_speed": False, "heartbeat_hours": 6.0}
+        self.viv_settings = {"may_pause_for_emergencies": True, "controls_speed": False, "heartbeat_hours": 6.0,
+                             "slow_for_combat": True}
         self.chat: list[dict] = []               # entries, oldest first (cap 300)
         self.chat_seq = 0
         self.chat_status: list[dict] = []        # POST /chat/status bodies (minus op_id), in order
@@ -112,6 +113,11 @@ class FakeBridge:
         self.act_log: list[tuple[str, dict]] = []    # (verb, body) of every accepted /act/<verb>
         self.act_refuse: dict[str, str] = {}     # verb -> reason: that verb is refused 409 "refused" with this detail
         self.act_extra: dict[str, dict] = {}     # verb -> extra fields in the success reply
+        self.looks: list[tuple[str, dict]] = []  # (path, query) of every GET /trade/offer and /caravan/plan
+        self.offers: dict[str, dict] = {}        # trader id -> a canned /trade/offer reply that replaces the one built from the digest
+        self.combat: dict | None = None          # what GET /combat returns (None: {"active": false}); a test sets a recorded view
+        self.combat_since = 0                    # tick the fight began (GET /vivarium combat.since_tick)
+        self.speed_before_combat: int | None = None   # /act/time {combat: true, speed: 1} remembers the speed here
         self.transport = httpx.MockTransport(self._handle)
 
     # ---- test helpers ---------------------------------------------------
@@ -302,12 +308,21 @@ class FakeBridge:
 
     def _vivarium(self, req: httpx.Request, path: str, body: dict) -> httpx.Response | None:
         if path == "/vivarium" and req.method == "GET":
+            cv = self.combat or {}
             return self._ok(playing=self.playing, paused_by_narrator=self.paused_by_narrator, chat_seq=self.chat_seq,
-                            goals_rev=self.goals_board["rev"], actions_seq=len(self.actions), settings=dict(self.viv_settings))
+                            goals_rev=self.goals_board["rev"], actions_seq=len(self.actions), settings=dict(self.viv_settings),
+                            combat={"active": bool(cv.get("active")), "since_tick": self.combat_since if cv.get("active") else 0,
+                                    "hostiles": sum(int(g.get("count", 0)) for g in cv.get("threats") or [])})
+        if path == "/combat" and req.method == "GET":
+            return self._ok(**(self.combat if self.combat is not None else {"active": False}))
         if path == "/digest" and req.method == "GET":
             if self.digest is None:
                 return self._err(409, "no_game", "no game loaded")
             return self._ok(**{**self.digest, **({"dialogs": list(self.dialogs)} if self.dialogs else {})})
+        if path in ("/trade/offer", "/caravan/plan") and req.method == "GET":
+            q = dict(req.url.params)
+            self.looks.append((path, q))
+            return self._trade_offer(q) if path == "/trade/offer" else self._caravan_plan(q)
         if path == "/dialogs" and req.method == "GET":
             return self._ok(dialogs=list(self.dialogs), timeout_s=90)
         if path == "/chat":
@@ -377,7 +392,7 @@ class FakeBridge:
             return self._ok(actions=[a for a in self.actions if a["seq"] > since], next_seq=len(self.actions) + 1)
         if path.startswith("/act/") and req.method == "POST":
             verb = path[5:]
-            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose"):
+            if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan"):
                 return None
             bad = self._act_shape(verb, body)
             if bad:
@@ -393,12 +408,43 @@ class FakeBridge:
             return self._ok(done=note, **self.act_extra.get(verb, {}))
         return None
 
+    def _trade_offer(self, q: dict) -> httpx.Response:
+        """A deterministic offer from the digest's trade block: the trader's sells at 2.0 each, our surplus stock at 1.0."""
+        w = q.get("with", "")
+        if w in self.offers:
+            return self._ok(**self.offers[w])
+        t = (self.digest or {}).get("trade") or {}
+        tr = next((x for x in t.get("traders") or [] if x.get("id") == w), None)
+        if tr is None:
+            return self._err(404, "not_found", f"no trader {w}")
+
+        def line(text: str) -> dict:
+            *item, n = str(text).rsplit(" ", 1)
+            return {"item": " ".join(item) if item and n.isdigit() else str(text), "count": int(n) if item and n.isdigit() else 1, "price": 2.0}
+
+        ours = [{"item": x["item"], "count": x["surplus"], "price": 1.0} for x in t.get("stock") or [] if x.get("surplus")]
+        return self._ok(**{"with": w, "name": tr.get("name", w), "silver": tr.get("silver", 0), "negotiator": (t.get("negotiator") or {}).get("name"),
+                           "buys": [line(x) for x in tr.get("sells") or []], "sells": ours, "left": 3})
+
+    def _caravan_plan(self, q: dict) -> httpx.Response:
+        d = self.digest or {}
+        known = [*((d.get("trade") or {}).get("settlements") or []), *(d.get("quests") or [])]
+        days = next((x.get("days") for x in known if isinstance(x, dict) and x.get("id") == q.get("to")), None) or 2.0
+        n = len([x for x in q.get("pawns", "").split(",") if x])
+        need = round(days * 2 + 3, 1)
+        return self._ok(days=days, food_days=need, food_need=need, mass=f"{20 * n}", capacity=f"{35 * n}",
+                        food=[{"item": "pemmican", "count": int(need * 2)}], ok=n > 0, problems=[] if n else ["no pawns"])
+
     @staticmethod
     def _act_shape(verb: str, b: dict) -> str:
         pos = lambda v: isinstance(v, int) and not isinstance(v, bool) and v > 0
         if verb == "time":
+            if b.get("combat") is True and b.get("restore") is True:
+                return "" if "speed" not in b and "pause" not in b else "restore takes no speed or pause"
             if "pause" not in b and "speed" not in b:
                 return "pause or speed required"
+            if "combat" in b and (b["combat"] is not True or b.get("speed") != 1 or "pause" in b):
+                return "combat: true goes with speed 1 only"
             if "speed" in b and b["speed"] not in (1, 2, 3, 4):
                 return "speed 1..4"
         elif verb == "work":
@@ -426,12 +472,53 @@ class FakeBridge:
         elif verb == "choose":
             if not isinstance(b.get("dialog"), str) or not b["dialog"]:
                 return "dialog required"
-            if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)):
+            if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)) \
+                    and not (isinstance(b.get("passions"), list) or isinstance(b.get("trait"), str)):
                 return "option or text required"
+        elif verb == "trade":
+            lines = (b.get("buy") or []) + (b.get("sell") or [])
+            ok = lambda x: isinstance(x, dict) and isinstance(x.get("item"), str) and x["item"] and pos(x.get("count"))
+            if not isinstance(b.get("with"), str) or not b["with"] or not 1 <= len(lines) <= 12 or not all(ok(x) for x in lines):
+                return "with, and 1..12 buy/sell lines {item, count} required"
+        elif verb == "caravan":
+            op = b.get("op")
+            if op not in ("form", "send", "cancel"):
+                return "op form/send/cancel required"
+            if op == "form" and not (isinstance(b.get("pawns"), list) and 1 <= len(b["pawns"]) <= 6 and all(pos(i) for i in b["pawns"]) and b.get("to")):
+                return "form needs pawns (1..6 ids) and to"
+            if op != "form" and not b.get("caravan"):
+                return "send and cancel need caravan"
         elif verb == "draft":
             ids = b.get("pawns")
             if not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids) or not isinstance(b.get("drafted"), bool):
                 return "pawns [1..30 ids] and drafted required"
+        elif verb == "squad":
+            ops = ("draft", "move", "hold", "fire_at_will", "focus", "retreat", "rescue", "extinguish", "flee", "undraft")
+            ids = b.get("pawns")
+            if b.get("op") not in ops:
+                return "op required: " + ", ".join(ops)
+            if ids is not None and (not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids)):
+                return "pawns: 1..30 ids"
+            if "at" in b and not isinstance(b["at"], str):
+                return "at must be a position word"
+            if b["op"] == "move" and "at" not in b and not ("x" in b and "z" in b):
+                return "move needs at or x, z"
+            if b["op"] == "focus" and not pos(b.get("target")):
+                return "focus needs target"
+            if "below" in b and not (isinstance(b["below"], (int, float)) and not isinstance(b["below"], bool) and 0.1 <= b["below"] <= 0.9):
+                return "below 0.1..0.9"
+        elif verb == "defend":
+            k = b.get("kind")
+            if k not in ("turret", "sandbags", "barricade", "killbox", "traps", "wall"):
+                return "kind required: turret, sandbags, barricade, killbox, traps, wall"
+            if "side" in b and b["side"] not in ("n", "e", "s", "w", "threat"):
+                return "side n/e/s/w/threat"
+            if "at" in b and b["at"] not in ("chokepoint", "entrance"):
+                return "at chokepoint/entrance"
+            if "count" in b and not (isinstance(b["count"], int) and 1 <= b["count"] <= (4 if k == "turret" else 8)):
+                return "count out of range"
+            if "length" in b and not (isinstance(b["length"], int) and 1 <= b["length"] <= 20):
+                return "length 1..20"
         elif verb == "order":
             o = b.get("order")
             if not pos(b.get("pawn")) or o not in ("move", "attack", "hold"):
@@ -445,6 +532,21 @@ class FakeBridge:
     def _act_apply(self, verb: str, b: dict) -> tuple[str, str]:
         """The settings checks of /act/time and a short success note. (refusal, note)."""
         st = self.viv_settings
+        if verb == "squad" and b.get("op") == "undraft" and isinstance(self.combat, dict) and self.combat.get("active") \
+                and any(not t.get("dormant") and t.get("dist", 99) <= 30 for t in self.combat.get("threats") or []):
+            return "enemies are still within 30 cells of home; the squad stays drafted", ""    # as the mod
+        if verb == "time" and b.get("combat"):
+            if b.get("restore"):
+                if self.speed_before_combat is None or self.speed != 1:
+                    return "nothing to put back: the speed was not slowed for a fight, or the player changed it", ""
+                self.speed, self.speed_before_combat = self.speed_before_combat, None
+                return "", f"put the speed back to {self.speed}x"
+            if not st.get("slow_for_combat"):
+                return "the player has not allowed slowing the game for a fight", ""
+            if self.speed_before_combat is None and self.speed > 1:
+                self.speed_before_combat = self.speed
+            self.speed = 1
+            return "", "slowed the game to normal speed for the fight"
         if verb == "time":
             if "speed" in b and not st["controls_speed"]:
                 return "the player has not allowed the narrator to change speed", ""
@@ -474,7 +576,7 @@ class FakeBridge:
                  "letter": lambda: f"letter {b['letter']}: {b['choice']}",
                  "draft": lambda: ("drafted" if b["drafted"] else "undrafted") + f" {len(b['pawns'])} pawn(s)",
                  "order": lambda: f"{b['order']} order for pawn {b['pawn']}"}
-        for vb in ("room", "build", "zone", "designate", "bill"):      # phase 2 hands: accepted as sent; a test sets act_refuse[verb] to refuse
+        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade", "caravan"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
             notes[vb] = lambda vb=vb: vb + ": " + ", ".join(f"{k} {x}" for k, x in b.items() if k != "why")
         return "", notes[verb]()
 

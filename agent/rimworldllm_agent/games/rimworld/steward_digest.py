@@ -7,27 +7,37 @@ and as a last resort the text is cut with a marker.
 from __future__ import annotations
 
 from ...core import gamedata as gd
+from .steward_combat import DIGEST_CAPS, render_combat, view_active
 
 CAP = 6000
 _SCHED_WORD = {"A": "any", "W": "work", "J": "joy", "S": "sleep", "M": "meditate"}
 
-# detail levels, most to least: skills per pawn, resources, research options, beds, letter text chars, thoughts of schedule per pawn
+# detail levels, most to least: skills per pawn, resources, research options, beds, letter text chars, thoughts of schedule per pawn,
+# combat = the character cap of the COMBAT lines (after ALERTS)
 _LEVELS = [
-    dict(skills=4, resources=25, research=15, beds=20, letter=280, alerts=10),
-    dict(skills=3, resources=16, research=8, beds=12, letter=160, alerts=8),
-    dict(skills=2, resources=10, research=5, beds=8, letter=100, alerts=5),
-    dict(skills=1, resources=6, research=3, beds=4, letter=60, alerts=3),
+    dict(skills=4, resources=25, research=15, beds=20, letter=280, alerts=10, stuck=6, deadlines=6, rot=3, harvest=3, game=3, cannot=3, why=2, combat=DIGEST_CAPS[0]),
+    dict(skills=3, resources=16, research=8, beds=12, letter=160, alerts=8, stuck=4, deadlines=6, rot=3, harvest=3, game=2, cannot=3, why=2, combat=DIGEST_CAPS[1]),
+    dict(skills=2, resources=10, research=5, beds=8, letter=100, alerts=5, stuck=2, deadlines=4, rot=2, harvest=2, game=1, cannot=2, why=1, combat=DIGEST_CAPS[2]),
+    dict(skills=1, resources=6, research=3, beds=4, letter=60, alerts=3, stuck=0, deadlines=3, rot=1, harvest=1, game=0, cannot=1, why=0, combat=DIGEST_CAPS[3]),
 ]
 # the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
-# plants, ores. The last step keeps just BUILD/missing and a short ROOMS.
+# plants, ores, loose piles, room flags (temp, mountain, dirty). The last step keeps just BUILD/missing and a short ROOMS.
 _BUILD = [
-    dict(rooms=12, benches=8, bills=5, recipes=8, zones=10, can_build=40, stuff=8, plants=10, ores=6, loose=6),
-    dict(rooms=8, benches=5, bills=3, recipes=4, zones=6, can_build=20, stuff=6, plants=6, ores=4, loose=4),
-    dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2, loose=2),
-    dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0, loose=0),
+    dict(rooms=12, benches=8, bills=5, recipes=8, zones=10, can_build=40, stuff=8, plants=10, ores=6, loose=6, flags=1),
+    dict(rooms=8, benches=5, bills=3, recipes=4, zones=6, can_build=20, stuff=6, plants=6, ores=4, loose=4, flags=1),
+    dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2, loose=2, flags=1),
+    dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0, loose=0, flags=0),
 ]
-# (base level, build level): the build block shrinks all the way before the rest loses detail
-_STEPS = [(0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (3, 3)]
+# the trade blocks' detail (after build, before the base): stock items, needs, never-sell rules, traders, sells and buys per
+# trader, settlements, caravans, quests. The last step keeps the TRADE line and the few traders and quests.
+_TRADE = [
+    dict(stock=10, needs=8, never=8, traders=6, sells=6, buys=4, places=6, caravans=4, quests=6),
+    dict(stock=6, needs=5, never=5, traders=4, sells=4, buys=3, places=4, caravans=3, quests=4),
+    dict(stock=3, needs=3, never=3, traders=3, sells=3, buys=2, places=2, caravans=2, quests=3),
+    dict(stock=0, needs=2, never=0, traders=2, sells=2, buys=0, places=1, caravans=2, quests=2),
+]
+# (base level, build level, trade level): the build block shrinks all the way first, then the trade blocks, then the rest
+_STEPS = [(0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 3, 0), (0, 3, 1), (0, 3, 2), (0, 3, 3), (1, 3, 3), (2, 3, 3), (3, 3, 3)]
 
 
 def pawn_names(digest: dict) -> dict[str, int]:
@@ -77,13 +87,20 @@ def _pawn_line(p: dict, lv: dict, common: str) -> str:
     if p.get("age") is not None:
         bits.append(f"{p['age']}y")
     bits.append(f"mood {p.get('mood', '?')}")
+    if p.get("child") is True:
+        bits.append("child")
     h = gd.clean(p.get("health", ""), "label") or "fine"
     bits.append(("DOWNED, " if p.get("downed") else "") + h)
     if p.get("mental"):
         bits.append("mental break: " + gd.clean(p["mental"], "label"))
     if p.get("drafted"):
         bits.append("DRAFTED")
-    if p.get("job"):
+    risk = _break_risk(p, lv)
+    if risk:
+        bits.append(risk)
+    if p.get("idle") is True:
+        bits.append("IDLE")
+    elif p.get("job"):
         bits.append("doing " + gd.clean(p["job"], "label"))
     skills = [f"{gd.clean(s.get('skill', ''), 'label')} {s.get('level', '?')}" + {"major": "++", "minor": "+"}.get(s.get("passion"), "")
               for s in (p.get("skills") or [])[:lv["skills"]]]
@@ -93,8 +110,11 @@ def _pawn_line(p: dict, lv: dict, common: str) -> str:
         detail.append("skills " + ", ".join(skills))
     work = p.get("work") or {}
     detail.append("work " + (", ".join(f"{gd.clean(k, 'label')} {v}" for k, v in sorted(work.items(), key=lambda kv: (kv[1], kv[0]))) or "none"))
-    if p.get("incapable"):
+    if isinstance(p.get("incapable"), list) and p["incapable"]:
         detail.append("cannot " + ", ".join(gd.clean(x, "label") for x in p["incapable"][:4]))
+    cant = _words(p.get("cannot"), lv["cannot"])
+    if cant:
+        detail.append("can't: " + "; ".join(cant))
     pol = [f"{k} {gd.clean(p[k], 'label')}" for k in ("outfit", "food", "drug") if p.get(k)]
     if pol:
         detail.append(", ".join(pol))
@@ -106,6 +126,88 @@ def _pawn_line(p: dict, lv: dict, common: str) -> str:
     return "\n".join(lines)
 
 
+def _break_risk(p: dict, lv: dict) -> str:
+    r = gd.clean(p["break_risk"], "label") if isinstance(p.get("break_risk"), str) else ""
+    if not r:
+        return ""
+    out = "near a minor break" if r == "near" else f"{r} break risk"
+    why = _words(p.get("mood_why"), lv["why"])
+    return out + (f" (why: {', '.join(why)})" if why else "")
+
+
+def _hours(h: object) -> str:
+    """Hours as a short phrase: '<1 h', '5 h', '2 days' (from 48 h)."""
+    if not isinstance(h, (int, float)) or isinstance(h, bool) or h != h:
+        return ""
+    if h < 1:
+        return "<1 h"
+    return f"{round(h)} h" if h < 48 else f"{round(h / 24)} days"
+
+
+def _where(r: dict) -> str:
+    dist, dr = r.get("dist"), gd.clean(r.get("dir"), "label")
+    return " ".join(x for x in ((f"{_num(dist)} cells" if isinstance(dist, (int, float)) and not isinstance(dist, bool) else ""), dr) if x)
+
+
+def _rows(v: object, n: int) -> list[dict]:
+    return [x for x in (v if isinstance(v, list) else [])[:n] if isinstance(x, dict)]
+
+
+def _stuck_line(d: dict, n: int) -> str:
+    parts = []
+    for s in _rows(d.get("stuck"), n):
+        what, why = gd.clean(s.get("what"), "label"), gd.clean(s.get("reason"), "label")
+        if not what:
+            continue
+        cnt = s.get("count")
+        head = (f"{_num(cnt)} " if isinstance(cnt, (int, float)) and not isinstance(cnt, bool) and cnt != 1 else "") + what
+        w = _where(s)
+        parts.append(head + (f" {w}" if w else "") + (f": {why}" if why else ""))
+    return "STUCK: " + "; ".join(parts) if parts else ""
+
+
+def _deadlines_line(d: dict, n: int) -> str:
+    rows = [(r["hours"], gd.clean(r.get("what"), "label")) for r in _rows(d.get("deadlines"), 50)
+            if isinstance(r.get("hours"), (int, float)) and not isinstance(r["hours"], bool) and gd.clean(r.get("what"), "label")]
+    rows.sort(key=lambda x: x[0])
+    return "DEADLINES: " + "; ".join(f"{w} in {_hours(h)}" for h, w in rows[:n]) if rows and n else ""
+
+
+def _food_details(f: object, lv: dict) -> str:
+    if not isinstance(f, dict):
+        return ""
+    out = []
+    for k, loose, word in (("meals", "meals_loose", "meals"), ("raw", "raw_loose", "raw")):
+        if isinstance(f.get(k), (int, float)) and not isinstance(f.get(k), bool):
+            ls = f.get(loose)
+            out.append(f"{_num(f[k])} {word}" + (f" ({_num(ls)} loose)" if isinstance(ls, (int, float)) and not isinstance(ls, bool) and ls > 0 else ""))
+    rot = [f"{gd.clean(r.get('label'), 'label')} {_num(r.get('count'))} in {_hours(r['days'] * 24)}" for r in _rows(f.get("rot_soon"), lv["rot"])
+           if isinstance(r.get("days"), (int, float)) and not isinstance(r["days"], bool) and gd.clean(r.get("label"), "label")]
+    if rot:
+        out.append("rots soon: " + ", ".join(rot))
+    har = []
+    for r in _rows(f.get("harvest"), lv["harvest"]):
+        plant = gd.clean(r.get("plant"), "label")
+        if not plant:
+            continue
+        nums = {k: r.get(k) for k in ("cells", "ready", "days")}
+        ok = {k: isinstance(v, (int, float)) and not isinstance(v, bool) for k, v in nums.items()}
+        ready = nums["ready"] if ok["ready"] else 0
+        bit = f"{plant} {_num(ready)} cells ready"
+        if ok["cells"] and nums["cells"] > ready and ok["days"]:
+            bit += f", {_num(nums['cells'] - ready)} more in {_hours(nums['days'] * 24)}"
+        har.append(bit)
+    if har:
+        out.append("harvest: " + "; ".join(har))
+    game = [f"{gd.clean(r.get('label'), 'label')} {_num(r.get('count'))} {_where(r)}".strip() for r in _rows(f.get("game"), lv["game"]) if gd.clean(r.get("label"), "label")]
+    if game:
+        out.append("game: " + "; ".join(game))
+    hn = f.get("hunters")
+    if isinstance(hn, (int, float)) and not isinstance(hn, bool):
+        out.append(f"{_num(hn)} hunters" if hn else "no hunters")
+    return "; ".join(out)
+
+
 def _num(v: object) -> str:
     return f"{v:g}" if isinstance(v, (int, float)) and not isinstance(v, bool) else gd.clean(v, "label") or "?"
 
@@ -114,7 +216,7 @@ def _words(items: object, n: int) -> list[str]:
     return [w for w in (gd.clean(x, "label") for x in (items if isinstance(items, list) else [])[:n]) if w]
 
 
-def _room_line(r: dict) -> str:
+def _room_line(r: dict, flags: int = 0) -> str:
     role = gd.clean(r.get("role", ""), "label")
     label = gd.clean(r.get("label", ""), "label") or role
     bits = [f"#{_num(r.get('id'))} {label}" + (f" ({role})" if role and role.lower() not in label.lower() else ""),
@@ -122,6 +224,9 @@ def _room_line(r: dict) -> str:
     if r.get("impressiveness") is not None:
         bits.append(f"imp {_num(r['impressiveness'])}")
     bits += [w for k, w in (("bed", "bed"), ("door", "door"), ("roofed", "roofed")) if r.get(k)]
+    if flags:
+        t = r.get("temp_c")
+        bits += ([f"{_num(t)}C"] if isinstance(t, (int, float)) and not isinstance(t, bool) else []) + (["under mountain"] if r.get("mountain") is True else []) + (["DIRTY"] if r.get("dirty") is True else [])
     return " ".join(bits)
 
 
@@ -135,7 +240,7 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     out.append(head)
     rooms = [r for r in (b.get("rooms") or [])[:bl["rooms"]] if isinstance(r, dict)]
     if rooms:
-        out.append("ROOMS" + (f" ({counts})" if counts else "") + ": " + "; ".join(_room_line(r) for r in rooms))
+        out.append("ROOMS" + (f" ({counts})" if counts else "") + ": " + "; ".join(_room_line(r, bl["flags"]) for r in rooms))
     benches = [x for x in (b.get("benches") or [])[:bl["benches"]] if isinstance(x, dict)]
     for x in benches:
         line = f"BENCH: #{_num(x.get('id'))} {gd.clean(x.get('label', ''), 'label')}"
@@ -171,6 +276,119 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     return out
 
 
+def _dict_list(x: object, n: int) -> list[dict]:
+    return [i for i in (x if isinstance(x, list) else [])[:n] if isinstance(i, dict)]
+
+
+def _trader_line(t: dict, tl: dict) -> str:
+    bits = [f"- {gd.clean(t.get('id', ''), 'label')} {gd.clean(t.get('kind', ''), 'label')} {gd.clean(t.get('name', ''), 'name')}".replace("  ", " ")]
+    if t.get("faction"):
+        bits[0] += f" ({gd.clean(t['faction'], 'label')})"
+    if t.get("leaves_h") is not None:
+        bits.append(f"leaves in {_num(t['leaves_h'])} h")
+    if t.get("silver") is not None:
+        bits.append(f"silver {_num(t['silver'])}")
+    bits.append("can trade" if t.get("can_trade", True) else "CANNOT trade: " + (gd.clean(t.get("why_not", ""), "label") or "no"))
+    sells, buys = _words(t.get("sells"), tl["sells"]), _words(t.get("buys"), tl["buys"])
+    if sells:
+        bits.append("sells " + ", ".join(sells))
+    if buys:
+        bits.append("buys " + ", ".join(buys))
+    return ", ".join(bits)
+
+
+def _place_line(s: dict) -> str:
+    head = f"{gd.clean(s.get('id', ''), 'label')} {gd.clean(s.get('name', ''), 'name')}"
+    d = [gd.clean(s[k], "label") for k in ("faction", "relation") if s.get(k) is not None]
+    if s.get("goodwill") is not None:
+        d.append(f"goodwill {_num(s['goodwill'])}")
+    bits = [head + (" (" + ", ".join(d) + ")" if d else "")]
+    if s.get("days") is not None:
+        bits.append(f"{_num(s['days'])} days")
+    if s.get("trader"):
+        bits.append(gd.clean(s["trader"], "label"))
+    return ", ".join(bits)
+
+
+def _caravan_line(c: dict) -> str:
+    names = ", ".join(_words(c.get("pawns"), 6))
+    bits = [f"- {gd.clean(c.get('id', ''), 'label')} {gd.clean(c.get('name', ''), 'name')}: {names}"
+            + (f" + {_num(c['animals'])} animals" if c.get("animals") else "")]
+    if c.get("at") or c.get("to"):
+        bits.append(f"at {gd.clean(c.get('at', '?'), 'label')} -> {gd.clean(c.get('to', '?'), 'label')}")
+    for k, fmt in (("days_left", "{} days left"), ("food_days", "food {} days"), ("mass", "mass {}")):
+        if c.get(k) is not None:
+            bits.append(fmt.format(_num(c[k])))
+    for k in ("danger", "purpose"):
+        if c.get(k) not in (None, "", "none"):
+            bits.append(f"{k} {gd.clean(c[k], 'label')}")
+    if c.get("can_trade"):
+        bits.append("can trade here: " + gd.clean(c["can_trade"], "label"))
+    return ", ".join(bits) + (" (yours)" if c.get("narrator") else "")
+
+
+def _quest_line(q: dict) -> str:
+    bits = [f"- {gd.clean(q.get('id', ''), 'label')} [{gd.clean(q.get('state', ''), 'label')}] {gd.clean(q.get('kind', ''), 'label')}: "
+            + gd.clean(q.get("what") or q.get("name", ""), "label", max_len=80)]
+    if q.get("reward"):
+        bits.append("reward " + gd.clean(q["reward"], "label", max_len=60))
+    if q.get("expires_h") is not None:
+        bits.append(f"expires in {_num(q['expires_h'])} h")
+    if q.get("days") is not None:
+        bits.append(f"{_num(q['days'])} days away")
+    if q.get("danger") not in (None, "", "none"):
+        bits.append("danger " + gd.clean(q["danger"], "label"))
+    bits.append("can" if q.get("can") else "CANNOT: " + (gd.clean(q.get("why_not", ""), "label", max_len=80) or "no"))
+    return ", ".join(bits)
+
+
+def trade_lines(d: dict, tl: dict) -> list[str]:
+    """TRADE / NEEDS / STOCK / NEVER SELL / TRADERS / SETTLEMENTS from the trade block, CARAVANS and QUESTS from their own."""
+    out: list[str] = []
+    t = d.get("trade")
+    if isinstance(t, dict) and t:
+        head = [f"silver {_num(t.get('silver'))}"]
+        ng = t.get("negotiator")
+        if isinstance(ng, dict) and ng.get("name"):
+            pct = round(float(ng["price_bonus"]) * 100) if isinstance(ng.get("price_bonus"), (int, float)) else 0
+            head.append(f"negotiator {gd.name(ng['name'])} (social {_num(ng.get('social'))}, prices +{pct}%)")
+        else:
+            head.append("no negotiator")
+        head.append("comms " + gd.clean(t.get("comms", "?"), "label"))
+        head.append("beacon " + ("yes" if t.get("beacon") else "no"))
+        td = t.get("today")
+        if isinstance(td, dict):
+            head.append(f"today {_num(td.get('deals', 0))} deals, {_num(td.get('deals_left', '?'))} left, value left {_num(td.get('value_left', '?'))}")
+        out.append("TRADE: " + "; ".join(head))
+        needs = _words(t.get("needs"), tl["needs"])
+        if needs:
+            out.append("NEEDS: " + "; ".join(needs))
+        stock = _dict_list(t.get("stock"), tl["stock"])
+        if stock:
+            out.append("STOCK: " + ", ".join(f"{gd.clean(x.get('item', ''), 'label')} {_num(x.get('count'))}"
+                                             + (f" (surplus {_num(x['surplus'])})" if x.get("surplus") else "") for x in stock))
+        never = _words(t.get("never_sell"), tl["never"])
+        if never:
+            out.append("NEVER SELL: " + "; ".join(never))
+        traders = _dict_list(t.get("traders"), tl["traders"])
+        if traders:
+            out.append("TRADERS (look with trade_offer, then trade; by id):")
+            out.extend(_trader_line(x, tl) for x in traders)
+        places = _dict_list(t.get("settlements"), tl["places"])
+        if places:
+            out.append("SETTLEMENTS: " + "; ".join(_place_line(x) for x in places))
+    cs = _dict_list(d.get("caravans"), tl["caravans"])
+    if cs:
+        out.append("CARAVANS:")
+        out.extend(_caravan_line(c) for c in cs)
+    qs = _dict_list(d.get("quests"), tl["quests"])
+    if qs:
+        out.append("QUESTS (an offer is answered with choose):")
+        out.extend(_quest_line(q) for q in qs)
+    return out
+_STORE = {"none": "no stockpile takes it", "full": "stockpiles full", "far": "only far stockpile"}
+
+
 def dialog_lines(d: dict, lv: dict | None = None) -> list[str]:
     """OPEN DIALOGS: the windows and letters that wait for a player's choice (GET /dialogs), answered with the choose tool."""
     dl = [x for x in (d.get("dialogs") or []) if isinstance(x, dict) and x.get("id")][:8]
@@ -181,9 +399,11 @@ def dialog_lines(d: dict, lv: dict | None = None) -> list[str]:
     for x in dl:
         opts = "; ".join(f"{o.get('index')}: {gd.clean(o.get('label', ''), 'label')}" + (f" [{gd.clean(o['risk'], 'label')}]" if o.get("risk") else "")
                          for o in x.get("options") or [] if not o.get("disabled"))
+        g = x.get("growth") if isinstance(x.get("growth"), dict) else None
         flds = ", ".join(gd.clean(f.get("label") or f.get("name", ""), "label") + f" (max {f.get('max_len', 40)} chars)" for f in x.get("fields") or [])
         out.append(f"- {x['id']} ({x.get('kind', '')}): {gd.clean(x.get('title', ''), 'label')}"
-                   + (f" [options: {opts}]" if opts else "")
+                   + (f" [options: {opts}]" if opts and not g else "")
+                   + (_growth(g) if g else "")
                    + (f" [type a name: {flds}; invent your own fitting names]" if flds else "")
                    # a naming dialog's fallback stays hidden: shown, the model copied it instead of naming the colony
                    + (f" [default: {gd.clean(x['default'], 'label')}]" if x.get("default") and not flds else ""))
@@ -192,9 +412,24 @@ def dialog_lines(d: dict, lv: dict | None = None) -> list[str]:
     return out
 
 
+def _growth(g: dict) -> str:
+    """A growth moment's real choices in words: the child, the passions (and how many), the traits with a short description."""
+    c = lambda v, n="label": gd.clean(str(v or ""), n)  # noqa: E731
+    who = c(g.get("child")) + (f", {c(g.get('age'))}" if g.get("age") else "")
+    cur = "; ".join(p for p in (f"skills: {c(g['skills'])}" if g.get("skills") else "", f"traits: {c(g['traits'])}" if g.get("traits") else "") if p)
+    pas = ", ".join(c(p) for p in g.get("passions") or [])
+    tr = "; ".join(c(t.get("label")) + (f" ({gd.clean(t['description'], 'label')})" if t.get("description") else "")
+                   for t in g.get("trait_choices") or [] if isinstance(t, dict))
+    return (f" [child: {who}" + (f"; {cur}" if cur else "") + "]"
+            + (f" [pick {int(g.get('max_passions') or 1)} passion(s) of: {pas}]" if pas else "")
+            + (f" [pick 1 trait of: {tr}]" if tr else "")
+            + " [answer with passions and trait; option 0 takes the first choices]")
+
+
 def _pile(p: dict) -> str:
     where = f"{_num(p.get('dist'))} cells" + (f" {gd.clean(p['dir'], 'label')}" if p.get("dir") else "")
-    return f"{gd.clean(p.get('label', ''), 'label')} {_num(p.get('count'))} {where}" + (" (forbidden)" if p.get("forbidden") else "")
+    store = _STORE.get(p.get("store"), "") if isinstance(p.get("store"), str) else ""
+    return f"{gd.clean(p.get('label', ''), 'label')} {_num(p.get('count'))} {where}" + (" (forbidden)" if p.get("forbidden") else "") + (f" ({store})" if store else "")
 
 
 def _res_entry(r: dict) -> str:
@@ -206,12 +441,20 @@ def _res_entry(r: dict) -> str:
     return f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}" + (f" ({', '.join(extra)})" if extra else "")
 
 
-def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
+def _render(d: dict, lv: dict, bl: dict | None = None, tl: dict | None = None, combat: bool = True) -> str:
     bl = bl or _BUILD[0]
+    tl = tl or _TRADE[0]
     out = ["DATE: " + _date(d)]
+    dl = _deadlines_line(d, lv["deadlines"])
+    if dl:
+        out.append(dl)
     fd = d.get("food_days")
+    fdet = _food_details(d.get("food"), lv)
     if fd is not None:
-        out.append(f"FOOD: about {fd:g} days of food" if isinstance(fd, (int, float)) else f"FOOD: {fd}")
+        food = f"FOOD: about {fd:g} days of food" if isinstance(fd, (int, float)) else f"FOOD: {gd.clean(fd, 'label')}"
+        out.append(food + ("; " + fdet if fdet else ""))
+    elif fdet:
+        out.append("FOOD: " + fdet)
     res = (d.get("resources") or [])[:lv["resources"]]
     if res:
         cats: dict[str, list[str]] = {}
@@ -223,6 +466,12 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
     common = max(set(scheds), key=scheds.count) if scheds else ""
     out.append(f"PEOPLE ({len(pawns)}):")
     out.extend(_pawn_line(p, lv, common) for p in pawns)
+    idle = sum(1 for p in pawns if p.get("idle") is True)
+    if idle:
+        out.append(f"IDLE: {idle} of {len(pawns)} idle")
+    st = _stuck_line(d, lv["stuck"])
+    if st:
+        out.append(st)
     if common:
         out.append("Schedule of everyone not listed otherwise: " + _runs(common))
     wt = d.get("work_types") or []
@@ -238,6 +487,8 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
                                         (f" ({gd.clean(b['owner'], 'name')})" if b.get("owner") else " (free)") for b in beds))
     al = (d.get("alerts") or [])[:lv["alerts"]]
     out.append("ALERTS: " + ("; ".join(gd.clean(a.get("label", ""), "label") + (" [CRITICAL]" if a.get("critical") else "") for a in al) or "none"))
+    if combat and view_active(d.get("combat")):                    # never shrunk away: the combat block only loses detail (steward_combat.render_combat)
+        out.append(render_combat(d["combat"], lv["combat"]))
     th = d.get("threats") or []
     out.append("THREATS: " + ("; ".join(f"{t.get('count', '?')} {gd.clean(t.get('label', ''), 'label')}" + ("" if t.get("hostile", True) else " (not hostile)") for t in th[:6]) or "none"))
     out.extend(dialog_lines(d, lv))
@@ -265,6 +516,7 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
         out.extend(built)
     elif counts:
         out.append("ROOMS: " + counts)
+    out.extend(trade_lines(d, tl))
     pw = d.get("power")
     if pw:
         out.append(f"POWER: produced {pw.get('produced', 0)}, used {pw.get('used', 0)}, stored {pw.get('stored', 0)}")
@@ -274,8 +526,12 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
 def render_digest(d: dict, cap: int = CAP) -> str:
     """The digest as compact text of at most ``cap`` characters (detail shrinks level by level, then a hard cut)."""
     text = ""
-    for base, bld in _STEPS:
-        text = _render(d, _LEVELS[base], _BUILD[bld])
+    for base, bld, trd in _STEPS:
+        text = _render(d, _LEVELS[base], _BUILD[bld], _TRADE[trd])
         if len(text) <= cap:
             return text
+    if view_active(d.get("combat")):                   # the cut takes the tail of the rest, never the fight
+        fight = render_combat(d["combat"], DIGEST_CAPS[-1])
+        rest = _render(d, _LEVELS[-1], _BUILD[-1], _TRADE[-1], combat=False)
+        return rest[:max(cap - len(fight) - 40, 0)].rsplit("\n", 1)[0] + "\n" + fight + "\n(digest cut: too long)"
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

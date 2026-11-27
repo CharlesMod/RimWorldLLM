@@ -36,6 +36,23 @@ namespace RimWorldLLM.Tests
         public JObject Benches() { Calls.Add("benches"); return BenchesJson; }
         public HandResult UndoNext = HandResult.Done("cancelled it");
         public HandResult Undo(IList<NarratorMark> marks) { Calls.Add("undo " + marks.Count); LastUndo = marks; return UndoNext; }
+        // phase 4: what the hands were given, and what they answer
+        public string LastWith; public TradeArgs LastTrade; public TradeLimits LastLimits; public TradeDay LastDay; public CaravanArgs LastCaravan; public int LastMaxPawns;
+        public JObject OfferJson = new JObject { ["with"] = "P1", ["buys"] = new JArray() };
+        public JObject PlanJson = new JObject { ["ok"] = true };
+        public HandResult TradeNext = HandResult.Done("bought 2 steel", new JObject { ["spent"] = 100, ["got"] = 40, ["net"] = -60 });
+        public HandResult CaravanNext = HandResult.Done("Ana and Bram set off", new JObject { ["caravan"] = "C7" });
+        public JObject TradeOffer(string with, TradeLimits l) { Calls.Add("offer " + with); LastWith = with; LastLimits = l; return OfferJson; }
+        public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { Calls.Add("trade"); LastTrade = a; LastLimits = l; LastDay = d; return TradeNext; }
+        public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { Calls.Add("caravanplan"); LastCaravan = a; LastLimits = l; return PlanJson; }
+        public HandResult Caravan(CaravanArgs a, int max) { Calls.Add("caravan " + a.Op); LastCaravan = a; LastMaxPawns = max; return CaravanNext; }
+        // phase 3
+        public JObject CombatJson = new JObject { ["active"] = true, ["threats"] = new JArray() };
+        public CombatState LastState;
+        public JObject Combat(CombatState s) { Calls.Add("combat"); LastState = s; return CombatJson == null ? null : (JObject)CombatJson.DeepClone(); }
+        public HandResult Squad(SquadArgs a, CombatState s) { Calls.Add("squad " + a.Op); LastArgs = a; LastState = s; return Next; }
+        public HandResult Defend(DefendArgs a, BuildBudget left, CombatState s) { LastState = s; return Took("defend " + a.Kind, a, left); }
+        public HandResult CombatSpeed(int speed, bool restore) { Calls.Add("combat_speed " + speed + " " + restore); return Next; }
     }
 
     public class VivariumTests
@@ -521,6 +538,14 @@ namespace RimWorldLLM.Tests
             public HandResult Bill(BillArgs a, BuildBudget l) { throw new InvalidOperationException("boom"); }
             public JObject Benches() { throw new InvalidOperationException("boom"); }
             public HandResult Undo(IList<NarratorMark> m) { throw new InvalidOperationException("boom"); }
+            public JObject TradeOffer(string w, TradeLimits l) { throw new InvalidOperationException("boom"); }
+            public HandResult Trade(TradeArgs a, TradeLimits l, TradeDay d) { throw new InvalidOperationException("boom"); }
+            public JObject CaravanPlan(CaravanArgs a, TradeLimits l) { throw new InvalidOperationException("boom"); }
+            public HandResult Caravan(CaravanArgs a, int m) { throw new InvalidOperationException("boom"); }
+            public JObject Combat(CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult Squad(SquadArgs a, CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult Defend(DefendArgs a, BuildBudget l, CombatState s) { throw new InvalidOperationException("boom"); }
+            public HandResult CombatSpeed(int speed, bool restore) { throw new InvalidOperationException("boom"); }
         }
 
         // ------------------------------------------------------------ time gate

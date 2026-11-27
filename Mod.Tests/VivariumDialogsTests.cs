@@ -233,5 +233,62 @@ namespace RimWorldLLM.Tests
             Bad(Post("/act/choose", new { dialog = "W1", text = new string('a', 61) }), "60");
             Bad(Post("/act/choose", new { dialog = "L1", option = 0, why = 5 }), "why");
         }
+
+        static DialogRecord GrowthDialog()
+        {
+            var d = Letter("L7", DialogKinds.Growth, "Take the first passion and trait choices for Mia");
+            d.Growth = new GrowthInfo { Child = "Mia", Age = "7", Skills = "Shooting 2*", Traits = "Kind", MaxPassions = 2,
+                Passions = { "Shooting", "Melee", "Artistic" } };
+            d.Growth.TraitChoices.Add(new KeyValuePair<string, string>("Bookworm", "Reads for fun."));
+            d.Growth.TraitChoices.Add(new KeyValuePair<string, string>("Tough", "Takes less damage."));
+            return d;
+        }
+
+        [Fact]
+        public void GrowthListedWithItsChoices()
+        {
+            Open(GrowthDialog());
+            var g = (JObject)H.Call("GET", "/dialogs", "").Body["dialogs"][0]["growth"];
+            Assert.Equal("Mia", (string)g["child"]);
+            Assert.Equal(2, (int)g["max_passions"]);
+            Assert.Equal(3, g["passions"].Count());
+            Assert.Equal("Reads for fun.", (string)g["trait_choices"][0]["description"]);
+        }
+
+        [Fact]
+        public void GrowthValidPick()
+        {
+            Open(GrowthDialog());
+            var r = Post("/act/choose", new { dialog = "L7", passions = new[] { "shooting", "Melee" }, trait = "tough", why = "she likes guns" });
+            Assert.True(r.Ok);
+            Assert.Equal("choose L7 0 passions=Shooting|Melee,trait=Tough", Hands.Calls.Last());
+            var c = new DialogChoice { Texts = { ["passions"] = "Shooting|Melee", ["trait"] = "Tough" } };
+            Assert.Contains("picked passions Shooting, Melee and trait Tough", DialogPolicy.Done(GrowthDialog(), c));
+        }
+
+        [Fact]
+        public void GrowthRefusals()
+        {
+            Open(GrowthDialog());
+            Assert.False(Post("/act/choose", new { dialog = "L7", passions = new[] { "Shooting", "Melee", "Artistic" }, trait = "Tough" }).Ok);   // too many
+            Assert.False(Post("/act/choose", new { dialog = "L7", passions = new[] { "Cooking" }, trait = "Tough" }).Ok);                       // unknown passion
+            Assert.False(Post("/act/choose", new { dialog = "L7", passions = new[] { "Melee", "melee" }, trait = "Tough" }).Ok);                // twice
+            Assert.False(Post("/act/choose", new { dialog = "L7", passions = new[] { "Melee" }, trait = "Brave" }).Ok);                         // unknown trait
+            Assert.False(Post("/act/choose", new { dialog = "L7", passions = new[] { "Melee" } }).Ok);                                          // trait missing
+            Assert.DoesNotContain(Hands.Calls, c => c.StartsWith("choose"));
+            Bad(Post("/act/choose", new { dialog = "L7", passions = "Melee", trait = "Tough" }), "passions");
+            Bad(Post("/act/choose", new { dialog = "L7", option = 0, trait = "Tough" }), "not both");
+            Open(Letter("L1", DialogKinds.Joiner, "Accept"));
+            Assert.False(Post("/act/choose", new { dialog = "L1", passions = new[] { "Melee" }, trait = "Tough" }).Ok);   // not a growth moment
+        }
+
+        [Fact]
+        public void GrowthTimeoutFallbackIsFirstChoices()
+        {
+            Open(GrowthDialog());
+            Assert.Equal(0, DialogPolicy.Default(V.Dialogs.Get("L7")).Option);
+            Assert.True(Post("/act/choose", new { dialog = "L7", option = 0 }).Ok);        // the old way still works
+            Assert.Equal("choose L7 0 -", Hands.Calls.Last());
+        }
     }
 }

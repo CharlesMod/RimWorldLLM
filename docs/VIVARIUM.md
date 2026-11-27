@@ -390,6 +390,144 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
 
+## Phase 3: combat and defense
+
+On the keeper's install (Core + Biotech) the reachable ending is the ship: research, build, survive 15 days of
+raids after the reactor starts, launch. Phase 3 lets the narrator see a fight, command a squad from cover, and plan
+defenses, with the game slowed while it fights. The model names intent ("move the squad to the chokepoint", "focus
+the grenadiers", "sandbags on the north side"); C# finds the cells. A small controller in the game keeps the squad's
+focus fire, pulls the wounded back and sends someone to carry the downed between the narrator's turns.
+
+### Pieces and where they live
+- `Mod/Source/Bridge/CombatPure.cs` (Verse-free, tested in `CombatPureTests.cs`): `CombatGrid` (walkable, sight,
+  cover, roof, indoors, fog, door, buildable per cell), `LineOfFire` (Bresenham; walls block, sandbags do not),
+  `CoverCalc.CoverFrom` (best neighbour within 45° of the shooter, 0 under 2 cells), `CoverFinder` (standing spots:
+  cover toward the threat first, never open ground unless asked, sees the approach, spaced), `Approach` (BFS path,
+  the narrowest gap on it, compass words), `CombatWords` (threat kinds and groups, heading, defense summary, mood
+  risk, health words), `SquadState` + `SquadTactics` (the controller's brain).
+- `Mod/Source/Bridge/CombatLayout.cs` (tested in `CombatLayoutTests.cs`): `DefenseLayout.Killbox` (a funnel of two
+  wall arms outside a door with traps in it, a killzone inside, a sandbag line with shooter spots behind, turret
+  spots at its ends), `LineAcross`, `TrapsOnPath`, `Buildable`, `TurretSpots`.
+- `Mod/Source/Bridge/VivariumCombat.cs`: `SquadArgs`, `DefendArgs`, `CombatState` (the fight as last seen, the squad
+  and the speed memory; squad and speed are saved in the vivarium JSON as `combat`), `CombatText`.
+- `Mod/Source/Bridge/VivariumRoutesCombat.cs`: `GET /combat`, `POST /act/squad`, `POST /act/defend`; the speed rule
+  is in `VivariumRoutes.Time`. Tests: `Mod.Tests/VivariumCombatTests.cs`.
+- `Mod/Source/RimWorld/VivariumCombatHands.cs`: the game bodies (map → grid, the view, positions, orders as vanilla
+  jobs, defenses as blueprints) and `VivariumCombatTicker` (every 250 game ticks from the GameComponent).
+- Agent: `games/rimworld/steward_combat.py` (`squad`, `defend`, the COMBAT text), `steward_combat.txt` (the combat
+  turn's prompt), the combat cadence and speed rule in `core/steward.py`, playbook lines in `steward_strategy.md`.
+
+### Seeing the fight: `GET /combat` and the digest's `combat` block
+```json
+{"active": true, "home": {"x": 120, "z": 98},
+ "threats": [{"id": 9201, "faction": "Pirates of Ix", "kind": "ranged", "count": 6, "where": "north-east, 38 cells from home",
+              "dist": 38, "heading": "toward home", "labels": ["4 pirate gunners", "1 grenadier"], "ids": [9201, 9202]}],
+ "fighters": [{"id": 101, "name": "Ana", "drafted": true, "health": "hurt, bleeding", "weapon": "assault rifle", "range": 31,
+               "cover": "behind a wall", "mood": "minor", "job": "attacking pirate gunner", "where": "north, 12 cells from home"}],
+ "others": [{"id": 105, "name": "Lu", "why": "child", "safe": true}],
+ "downed": {"colonists": [{"id": 103, "name": "Cy", "bleeding": true, "where": "north, 20 cells from home"}], "enemies": 2},
+ "fires": {"count": 3, "home": 2, "where": "south, 6 cells from home"},
+ "defenses": "2 turrets (2 powered); base walled with 2 doors; chokepoint: north-east gap, 2 wide",
+ "positions": ["cover", "chokepoint", "door", "wall_n", "wall_e", "wall_s", "wall_w", "home", "inside"],
+ "squad": {"members": [101, 102], "stance": "fire_at_will", "focus_group": 9201, "retreat_x": 118, "retreat_z": 96, ...},
+ "speed_rule": {"slowed": true, "before": 3}}
+```
+- `active`: awake hostiles on the map, or a fire in the home area (a downed colonist alone does not start a fight).
+  Dormant mechs are listed with `"dormant": true` but do not make the fight active.
+- Threat groups: same faction, members within 12 cells of each other; kind melee, ranged, mech, siege, infestation,
+  manhunter or mixed; `heading` from where the members were one controller pass (250 ticks) ago; nearest first, 8 at
+  most. A group's id is its smallest member id (the controller follows the group if that member dies).
+- `fighters`: colonists who can fight (up, violence-capable, 13 or older, not sick in bed), drafted first; `cover`
+  against the nearest awake hostile. `others`: everyone else who is up, with why and whether they stand under a
+  roof indoors. `downed.colonists` leaves out those already in a bed.
+- `defenses` in words; `chokepoint` only when the enemy has a real walking path to home with a gap of 3 or less.
+- `positions`: the `at` words that make sense now (no chokepoint or door when there is none).
+- `speed_rule` (not `speed`: the envelope carries the game speed under that name).
+- The digest has the same object as `combat` only while the fight is active. `GET /vivarium` carries
+  `combat: {active, hostiles, since_tick}` (refreshed every 250 game ticks) and the setting `slow_for_combat`.
+
+### The squad: `POST /act/squad`
+Body: `op` and, by op, `pawns` (ids; default the squad), `at` (one of the positions) or `x,z`, `room` (with door or
+inside), `target` (focus: a threat group id or a hostile pawn id), `below` (retreat: the auto-retreat health, 0.1..0.6).
+| op | What the game does |
+|---|---|
+| draft | drafts the listed fighters, or every colonist who can fight; they become the squad (a fresh one) |
+| move | drafts them if needed and sends each to its own spot at `at` (CoverFinder) |
+| hold | they stop where they are and shoot from there (fire at will stays on); the controller stops chasing focus targets |
+| fire_at_will | fire at will on; the controller may move them to keep focus fire |
+| focus | each member attacks the focused group's nearest member (or the one pawn); melee-only members are kept back from mechs; the controller keeps the focus as targets die |
+| retreat | moves them to `at` (default inside) and makes that the squad's fall-back point; `below` sets when the controller pulls a wounded member back on its own |
+| rescue | for each downed colonist outside a bed, the nearest colonist who can reach it carries it to a bed |
+| extinguish | up to 4 firefighters nearest the home-area fires beat them out |
+| flee | non-fighters (children, no-violence, the sick, not those in bed) go to roofed indoor cells away from the enemy and cower for an in-game hour |
+| undraft | undrafts the drafted colonists (or the listed ones) and clears the squad; refused while awake enemies are within 30 cells of home |
+Named fighters in any order but undraft join the squad, so pawns drafted with the plain `draft` hand are looked
+after too. Orders place nothing and cost no caps; each success is an action-log entry and a greentext line, e.g.
+`> sent Ana, Bram and Cy to the north-east chokepoint, since they come through the gap`.
+
+**The controller** (`VivariumCombatTicker`, every 250 game ticks while the squad has members and the fight is on):
+a drafted member under the squad's retreat health (or bleeding and close to it) goes to the fall-back point once
+(greentext `> Ana fell back, badly hurt`; it rejoins when patched up); with a focus set, members not busy and not
+mid-burst attack the focused group's nearest member; one healthy member within 15 cells carries each downed colonist
+to a bed (greentext). It never moves a member who is walking, rescuing or firefighting on an order, and does nothing
+in stance hold except retreat and rescue. Its acts are logged with `by` = `controller`.
+
+### Defenses: `POST /act/defend`
+Body: `kind` turret|sandbags|barricade|killbox|traps|wall; where: `side` n|e|s|w|threat (default threat: the
+nearest awake group's side, else the last raid's side, else the map edge nearest home), or `at` chokepoint|entrance,
+or `x,z`; `count` (turret 1..4, default 1; traps 1..8, default 4); `length` (sandbags/barricade/wall 1..20, default 7);
+`stuff`.
+- Lines (sandbags, barricade, wall) go across the side, three cells inside the base's outer wall on that side (the
+  last player wall before the outdoors; never behind home), else 10 cells out from home.
+- Turrets: mini-turret research, power on the net that a spot would connect to (refused with the watts), a spot in
+  reach of a conduit that sees the approach.
+- Traps: spike traps every other cell on the outdoor stretch of the walking path into the base from that side.
+- Killbox: at the outside door nearest the side (or nearest `x,z`): funnel walls, traps in the funnel (when
+  researched), the sandbag line inside (when researched); refused whole if it would go over the cycle's blueprints.
+Everything is blueprints with `blueprint` marks: the phase 2 caps, `undo_seq`, `left`, and `/undo` apply.
+
+### The fight's speed
+`POST /act/time {"speed": 1, "combat": true}` slows to normal speed when the setting "The narrator slows the game
+for fights" (`narratorSlowsForCombat`, default on) or "controls the speed" is on, and remembers the speed before.
+`{"combat": true, "restore": true}` puts it back, only when the narrator slowed it and the game is still at 1x (if
+the player changed it, it stays). An explicit speed from the narrator clears the memory. The memory is saved.
+
+### The steward in a fight (agent)
+- When `GET /vivarium` says `combat.active` (playing, not paused by the player): the speed rule in code (not the
+  model), then one full "combat started" cycle (the digest with its COMBAT lines, 5 steps), then a **combat turn**
+  every 5 game seconds and at least 4 real seconds after the last turn ended (`steward_combat_gap_game_s`,
+  `steward_combat_gap_real_s`). A combat turn reads only `GET /combat` and the plan line, uses `steward_combat.txt`
+  (~1.3 KB), the tools squad, defend, draft, note and do_nothing, 3 steps, 40 s, 160 tokens: about 1.4k tokens in
+  all. Chat still wins at once; heartbeat and other events wait for the fight to end. When `combat.active` turns
+  false: the speed is put back (if we slowed it and it is still 1x) and one full "combat over" cycle runs (undraft,
+  rescue, tend, back to work). Advisor mode has no combat loop and no speed rule.
+- While the digest has a combat view the single `order` tool is gone (squad orders name places; the grammar writes
+  every field, and x=0, z=0 is now an error anyway). `defend` is there whenever the digest has a build block.
+- Playbook lines (prompt and strategy): retreat the wounded first, fight from cover, focus the dangerous (grenadiers
+  and rockets, then whoever is in melee with your shooters), never melee a centipede or mech, close doors and hold
+  inside against manhunters, don't wake a mech cluster that is not coming, non-fighters flee indoors, undraft when
+  clear.
+
+### Phase 3 status
+- Built and tested: the routes, state, speed rule and save (Mod.Tests 778 in all), the pure helpers, the agent's
+  tools, cadence and prompt (agent pytest 1074 + 1 skipped). The game bodies are compile-checked against the 1.7
+  reference assemblies and reviewed; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section H) is their first run.
+- Not yet: mortars and EMP, caravan/ambush fights, armor and weapon management, tactical micro beyond the
+  controller (kiting, grenade avoidance), raids on other maps.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
+2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge on recorded fights).**
+Combat turns: about 1.4k tokens, 3.7 to 5.7 s each.
+- Tribal melee raid from the west (walled base, west and north doors): draft the four fighters, `squad move at
+  chokepoint` ("hold the west door against the melee raiders"), both runs.
+- Pirate gunners and a grenadier from the north-east: draft Eli, move Dara and Eli (in the open) to cover.
+- Mech cluster waking to the south, Cy badly hurt and bleeding, Dara downed: `squad retreat` Cy inside, `squad rescue`
+  for Dara (after the prompt put retreat first; before, it moved Cy to cover).
+Full cycles with a combat digest (about 8k tokens): 17 to 25 s; draft, chokepoint, hold, flee, focus the group by
+number after one wrong number. Fixed from this check: pawns drafted with the plain draft hand never joined the
+controller's squad (named fighters now join); `order move` with x=0, z=0 (no order tool in a fight, 0,0 refused);
+`below` written as 90 by the grammar (clamped to 10..60%); undraft by name mid-fight (refused near enemies); the
+"combat started" cycle capped at 5 steps.
 ## Unattended play: dialogs
 
 Goal: with "Narrator plays" on, no popup stops a run. Every window that wants a player's choice is seen, shown to the
@@ -464,7 +602,8 @@ cycles ended without a final chat line.
 ## Unattended play: camera director
 
 Watch mode makes the game watchable like an ant farm: the camera cuts between what is happening and says what it
-is showing. Camera only: it never selects, drafts, opens windows or changes the time speed.
+is showing. Camera only: it never drafts, opens windows or changes the time speed, and selects the followed pawn
+only with `watchSelectFollowed` on.
 
 **Controls.** A camera button in the play-settings row beside the "Narrator plays" eye
 (`Patch_NarratorSwitch`, icon `Textures/RimWorldLLM/UI/RWL_WatchMode.png`, made by
@@ -481,9 +620,9 @@ Game side: `Mod/Source/RimWorld/WatchCamera.cs` (feeds, steering through `Direct
 **Scoring.** Interest = kind weight x (0.5 + event severity, clamped 0.5..1.5) x 0.5^(age / 20 s), expiring after
 60 s. Variety: the same subject (pawn, or place for place events) shown in the last 90 s counts x0.25, the same kind
 in the last 30 s x0.6. Below 0.8 the director stays put. A shot has a dwell (12 s for raid, death, birth, wedding,
-funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise; 6 s for filler). Urgent kinds (raid,
-death, mental break) may cut in after 3 s when they score 1.3x the current shot. A filler "wander" shot (a colonist,
-rotating) is offered every 25 s when nothing is pending.
+funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise, at normal pace). Urgent kinds (raid,
+death, mental break) may cut in after 3 s when they score 1.3x the current shot; any event may cut into a scene or
+filler shot after 3 s. Quiet stretches cycle everyday scenes, story threads and filler (next section).
 
 | Event | Kind | Weight | Sample caption |
 |---|---|---|---|
@@ -503,6 +642,76 @@ rotating) is offered every 25 s when nothing is pending.
 
 **Captions.** Each new shot of interest writes one chat line of kind `camera` (Story filter group): at most one per
 12 s (4 s for urgent kinds), never the same text twice within 90 s, none for filler shots.
+
+### Screen director: follows, scenes, battles, zoom, threads
+
+Built on the scorer above (same dwell/caption rules for events). Pure code in `Mod/Source/Bridge/`:
+`DirectorScenes.cs` (`SceneFinder`), `DirectorFraming.cs` (`DirectorZoom`, `FollowCam`, `BattleFrame`,
+`BattleDirector`), `DirectorPacing.cs` (`DirectorPacing`, `RepeatGuard`, `StoryThreads`); tests
+`Mod.Tests/ScreenDirectorTests.cs`. Game side stays in `WatchCamera.cs` (snapshots, hostile scan, thread polls) and
+`DirectorCamera.Place`/`Cut` (direct camera moves that the "player moved it" check knows about). No Harmony patch on
+input; the camera is moved with `CameraDriver.SetRootPosAndSize` and `JumpToCurrentMapLoc`, zoom limits come from
+`CameraDriver.config.sizeRange`.
+
+**Follow shots.** One pawn kept centred: a dead zone with hysteresis (starts moving when the pawn is 3 cells off
+centre, settles within 0.5) and a critically damped spring (0.45 s), so small steps never shake the view and motion
+eases in and out; more than 70 cells away is a cut. A new shot keeps the spring's speed (a glide, not a stop-start).
+The shot ends at its hold, when the pawn despawns or leaves the map, or when the player touches the camera. Setting
+`watchSelectFollowed` (default off) selects the followed pawn, without sound, drafting or anything else.
+
+**Everyday scenes.** In quiet stretches (the shot is over), every 3 s at most, the director is offered the current
+scenes from a light snapshot of colonists and prisoners (job, joy kind, work type, job target, room, awake/in bed,
+age, partners), the strongest story-thread pawn, and one colonist as filler. Events always win: the best event that
+clears the minimum score beats any scene, and an event may cut into a scene or filler after 3 s. A pawn shows in one
+scene at a time (strongest kind first). Offers merge by scene key, variety for scenes is by scene key, not place.
+
+| Scene kind | Group setting | Weight | Shot | Zoom | Sample caption |
+|---|---|---|---|---|---|
+| `scene_medical`: a doctor on `TendPatient` | medical | 3.5 | group | close | Camera: Ana tends to Bram |
+| `scene_meal`: 2+ eating in one room (or within 8 cells outdoors) | meals | 3.0 | group | close | Camera: dinner in the barracks: Ana, Bram and Cy |
+| `scene_romance`: partners within 6 cells, same room, both 18+, awake, not in bed or lovin | romance | 2.6 | group | close | Camera: Ana and Bram spend time together |
+| `scene_child`: a child playing or learning (2+ together: one group) | children | 2.6 | follow/group | close | Camera: Tess has a lesson / Tess is playing |
+| `scene_recreation`: 2+ adults on joy jobs together | recreation | 2.5 | group | close | Camera: a board game in the rec room: Ana and Bram |
+| `scene_prisoner`: a warden job on a prisoner | work | 2.4 | group | close | Camera: Ana talks with the prisoner Vik |
+| `scene_taming`: `Tame`/`Train` | work | 2.2 | follow | mid | Camera: Bram tames the muffalo |
+| `scene_night`: awake 23:00-04:59, nobody else awake within 10 cells | night | 2.0 | follow | mid | Camera: Dara can't sleep / Dara works through the night |
+| `scene_work`: 2+ within 10 cells on field, kitchen, construction, workshop or mining work | work | 1.8 | group | mid | Camera: Cy and Dara work the fields |
+| `thread`: a story-thread pawn | | 2.5 | follow | mid | Camera: Bram, after the funeral |
+| `wander`: filler colonist | | 1 | follow | mid | none |
+
+Severity for group scenes is 0.5 + 0.25 per pawn (two pawns = 1.0, clamped 0.5..1.5). Group shots centre on the box of
+the members' current positions and widen the zoom to fit them. Meal words follow the local hour (breakfast 5-10,
+lunch 11-14, dinner 17-22, else "a meal").
+
+**Battle framing.** Once a second, when the map has hostile targets: active hostile pawns
+(`GenHostility.IsActiveThreatToPlayer`) and standing colonists. Engaged = within 28 cells of the other side. The
+frame centres on the front line (midpoint of the two sides' centroids), and the size fits the box of every engaged
+fighter (x1.2 + 3 cells), clamped to 16..55 and the player's limits. While anyone is engaged the fight is held (no
+other shots); the only cut-away is a 4 s close-up of a colonist who goes down (at most one per 8 s, "Camera: Cy is
+down"). After 8 s with nobody engaged a 6 s closing shot: "Camera: the raiders flee" (hostiles left), "... are
+beaten" (none left), "no one is left standing" (no colonist standing); "the animals"/"the mechanoids" when all
+hostiles are. The start says "Camera: the fight begins". Battle captions share the caption limit (urgent gap).
+
+**Zoom.** Close 13, mid 22, wide 36 (root size), widened to fit groups, clamped to the player's own zoom range, eased
+by a spring (0.8 s). Close: meals, medical, romance, children, prisoners, recreation, death, birth, art, masterwork,
+funeral, wedding, breaks, downed. Wide: raid, battle, closing shot, ship part. Mid: the rest. `watchZoom` off leaves
+the zoom alone. The player's zoom is remembered when watch mode turns on (and whenever they zoom themselves) and set
+back when it turns off, by the button, the key or the settings window.
+
+**Story threads.** A thread makes a pawn score higher (x3 at the start, falling linearly to x1) for a few in-game
+hours, on every kind (events, scenes, thread shots), and quiet stretches offer a `thread` shot of them. Starts: a
+death (colonists related to the victim or with opinion 30+: "after losing Ana", 8 h; the funeral ending relabels it
+"after the funeral" and restarts it), a breakup (`social` event with interaction `Breakup`, adults only, 6 h), a new
+colonist (6 h, "newly arrived"), a mental break ending (4 h, "after the break"), a child turning 7, 10 or 13 under
+Biotech (4 h, "growing up"). At most 8 threads.
+
+**Pacing** (`watchPace`). Holds: follow and thread 20/15/10 s (calm/normal/lively), scenes 15/11/8 s, events their
+dwell x1.25/1/0.8, battles as long as they last. No-repeat: the same pawn (pawn shots) or scene (scene key) is not
+shown again within 5/4/2.5 minutes unless the kind is urgent (raid, death, mental break); filler is exempt and keeps
+the soft variety factor. The caption limit (12 s, 4 s urgent, no same text within 90 s) covers every caption.
+
+**Cost.** Per frame only the spring math and one pawn position; scene snapshots only when a shot is over (every 3 s
+at most), the hostile scan once a second (skipped when the map has no hostile targets), thread polls every 2 s.
 
 **New events** (published through `EventBus`, so the agent sees them): `birth` (Biotech only, guarded by
 `ModsConfig.BiotechActive`), `masterwork`, `ship_part`. Details in BRIDGE-API.md.
@@ -600,3 +809,209 @@ her weary band of survivors."; recap "Amidst the violence of a pirate raid and t
 marries Cy, who celebrates their union with a masterwork longsword." The tend event is ignored as designed. One wedding
 line of 21 was dropped by the sanitizer (now printed as `(dropped: reason)` by `comment_try`). Lines run 20-30 words; a
 shorter cap is a tuning choice for the keeper.
+## The narrator's view: reasons, food, clocks (2026-11-27)
+The digest now says *why*, not just *what*: the audit and every field are in docs/NARRATOR-VIEW.md. The design rule
+stays: short words (counts, reasons, deadlines, direction + distance), never coordinates or item lists; the hands
+find the cells.
+- `build.loose[].store`: none / full / far / ok, so loose steel with nowhere to go reads "(no stockpile takes it)",
+  and the narrator makes a stockpile instead of mining more.
+- `stuck[]` (at most 6): blueprints, frames and bills that can't go on, one reason per group: forbidden,
+  unreachable, no one can build, material forbidden, waiting on material (need N, have M), bench has no power,
+  no one does the work type, no ingredients.
+- Pawn rows: `child`, `cannot` (capacity reasons such as no manipulation), `idle`, `break_risk` + `mood_why`. The
+  work hand's refusal says why ("Cooking: Ana can't (Pyromaniac)").
+- `food`: meals and raw food with the loose part, food about to rot, crops ready (and days for the rest), game
+  nearby, hunters.
+- `deadlines[]` (at most 6, soonest first): bleeding out, infections (winning or losing the race), rot, winter /
+  growing season, expiring letters, rendered as "in 5 h" / "in 2 days".
+- Rooms gain `temp_c`, `mountain`, `dirty`; facts gain the counts the rules read (`loose_unstorable`,
+  `stuck_no_material`, `stuck_no_builder`, `bills_stuck`, `colonists_idle`, `colonists_children`, `meals`,
+  `raw_food`, `food_rot_soon`, `crops_ready`, `huntable`, `days_to_winter`, `days_to_growing`, `bleed_out_hours`,
+  `infections_losing`, `tattered_apparel`, `ancient_danger`, `unreachable_piles`).
+- Nine new playbook rules and a strategy section ("Reading the digest's new lines"): stockpile when nothing takes a
+  pile; fix the stuck reason rather than reorder; respect incapables and children; harvest and hunt before
+  starving; act on deadlines.
+- All of it is compile-checked against the 1.7 reference assemblies and unit-tested in the pure helpers; the
+  playtest (docs/release/VIVARIUM-PLAYTEST.md, section I) is its first run in game.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
+`custom/use`, 2 slots x 32k, q4_0 KV, `steward_try` against a fake bridge).** The digest had three problems in it:
+loose steel that no stockpile takes, 12 wall blueprints with no builder (Construction off), and Cy with no
+manipulation. Dara was idle.
+- Playing, two cycles: both times Construction went to Dara at priority 1 ("walls are waiting to be built"), never
+  to Cy. Both times the narrator hauled the loose piles, and in one cycle it also made a stockpile ("loose steel
+  needs a place to go"). It never mined. It added a table and a research bench from `missing`.
+- Advisor, asked "put Cy on construction": "I can't do that; Cy has no manipulation and is incapable of
+  construction."
+- The system prompt was 25.1k chars. Outputs are in ~/.local/share/rimworld-hermes-engine/xlate/live/.
+
+## Phase 4: trade, caravans, quests
+
+The ending on Core + Biotech is the ship; trade buys the components and advanced parts the colony cannot make,
+caravans and quests bring silver, people and loot. Phase 4 gives the narrator eyes on the economy and hands to trade,
+form and run caravans, and work accepted quests. Accepting or declining a quest stays in the dialogs path (`choose`).
+Nothing here is undoable (a trade is final; a forming caravan can be cancelled with `op: cancel`), so the hands check
+first and refuse with a reason.
+
+### Pieces and where they live
+- `Mod/Source/Bridge/VivariumTrade.cs` (Verse-free, tested in `Mod.Tests/VivariumTradeTests.cs`): the argument records
+  (`TradeArgs`, `DealLine`, `CaravanArgs`), `TradeRules` (the never-sell rules), `TradeDay` (per-game-day caps, saved in
+  the vivarium JSON as `trade_day`), `DealPlanner` (checks a deal against the trader's offers, silver on both sides,
+  never-sell and caps; returns the resolved lines or a refusal), `CaravanPlanner` (travel days, food days with margin,
+  carry capacity, which food to pack), `CaravanRules` (who may go), `QuestPure` (quest kind from its def and parts,
+  feasibility), `CaravanPlans` (what each narrator caravan is for; saved as `caravan_plans`).
+- `Mod/Source/Bridge/VivariumRoutesTrade.cs`: the routes below through the normal `Act` pipeline.
+- `Mod/Source/RimWorld/VivariumTradeHands.cs`: the game bodies (`IVivariumHands.TradeOffer/Trade/CaravanPlan/Caravan`),
+  `VivariumTradeView.cs`: the digest's `trade`, `caravans` and `quests` blocks; `VivariumCaravanWatch.cs`: gives a
+  formed narrator caravan its arrival action and notes arrivals (run from the game component, every 120 ticks).
+- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer`, `trade`, `caravan_plan`, `caravan` tools),
+  the digest renderer's TRADE / TRADERS / SETTLEMENTS / CARAVANS / QUESTS lines, the playbook's trade lines.
+
+### Digest blocks (each fails alone, logged once, like `build`)
+```json
+"trade": {
+  "silver": 1240,
+  "negotiator": {"pawn": 3, "name": "Ana", "social": 9, "price_bonus": 0.13},
+  "comms": "ready",
+  "beacon": true,
+  "stock": [{"item": "cloth", "count": 420, "value": 630, "surplus": 300},
+            {"item": "jade sculpture", "count": 1, "value": 410, "surplus": 1}],
+  "needs": ["components (4 left, cannot make them)", "medicine (3, keep 10)", "steel (60)"],
+  "never_sell": ["weapons and apparel in use", "medicine below 10", "food below 10 days", "forbidden items", "jade"],
+  "traders": [{"id": "P5521", "kind": "caravan", "name": "Bulk goods trader Tomas", "faction": "Hill Union",
+               "trader": "bulk goods", "leaves_h": 18, "silver": 1800, "can_trade": true,
+               "sells": ["steel 400", "components 12", "herbal medicine 20"], "buys": ["textiles", "art", "food"]},
+              {"id": "S31", "kind": "orbital", "name": "Exotic goods trader Sigma", "trader": "exotic goods",
+               "leaves_h": 30, "silver": 2600, "can_trade": true, "sells": ["advanced components 6", "glitterworld medicine 4"],
+               "buys": ["art", "drugs"]}],
+  "settlements": [{"id": "T4321", "name": "Rivermouth", "faction": "Hill Union", "relation": "neutral", "goodwill": 12,
+                   "days": 3.1, "trader": "outlander base"}],
+  "today": {"deals": 1, "deals_left": 2, "spent": 300, "got": 200, "value_left": 4500}
+}
+"caravans": [{"id": "C88", "name": "Caravan Ana", "pawns": ["Ana", "Bram"], "animals": 1, "at": "Rivermouth",
+              "to": "home", "days_left": 2.4, "food_days": 6.5, "mass": "120/210", "danger": "none",
+              "purpose": "trade", "can_trade": "T4321", "narrator": true}]
+"quests": [{"id": "Q77", "name": "Trade request: 20 cloth", "state": "active", "kind": "delivery",
+            "what": "bring 20 cloth to Rivermouth", "reward": "600 silver", "expires_h": 240, "days": 3.1,
+            "site": "T4321", "items": [{"item": "cloth", "count": 20}], "danger": "none", "can": true, "why_not": null}]
+```
+- `trade`: `silver` = colony silver on the home map. `negotiator` = the free colonist with the best trade price bonus
+  (`StatDefOf.TradePriceImprovement`). `comms`: `ready` (a powered comms console a free colonist can reach), `no power`,
+  `none`. `beacon`: a powered orbital trade beacon exists. `stock` = the top 10 tradeable item stacks (grouped by def and
+  stuff) by total market value; `surplus` = what can be sold under the never-sell rules. `needs` (at most 8) from the
+  Verse-free `TradeView.Needs`: components when Fabrication is not done and under 10, medicine under the keep floor,
+  steel under 100, food under the keep days, plasteel/uranium/advanced components when ship research is done.
+  `never_sell` = the active rules (below). `traders`: visiting trade caravans on the map (`P<pawn id>`, the trader pawn)
+  and orbital traders in range (`S<ship load id>`), each with up to 6 sells (top by value) and 4 bought categories;
+  `can_trade` false gives `why_not` ("no comms console", "the trader is leaving", "hostile"). `settlements`: the
+  nearest 6 non-hostile settlements that trade (`T<tile>`), `days` = estimated travel days on foot from home.
+  `today`: the trade caps for the current game day.
+- `caravans`: player caravans on the world map (and ones still forming: `"at": "forming"`), at most 4. `can_trade` =
+  the settlement id when the caravan sits on a settlement that trades with it. `narrator` = it is one of the narrator's
+  (has a plan).
+- `quests`: accepted, ongoing quests (and offers still open, `state: "offer"`, so a choose has the facts), at most 6.
+  `kind` (from `QuestPure.Kind`): `site` (go to a world site), `delivery` (a trade request: bring items),
+  `hosting` (guests/lodgers stay), `combat` (raid/defend/bandit camp), `other`. `can` / `why_not` from
+  `QuestPure.Feasible` (danger vs the colony's strength, deadline vs travel, food).
+
+### Routes (POST bodies also take `op_id` and the optional `why`)
+| Route | Body / query | Notes |
+|---|---|---|
+| `GET /trade/offer?with=ID` | `with` = a trader id (`P…`, `S…`) or `T<tile>` (only with one of our caravans there) | `{with, name, silver, negotiator, buys:[{item, count, price}], sells:[{item, count, price}], left}`: what the trader sells to us (price we pay each) and what of ours it buys (price we get each), at most 30 each, after the negotiator's bonus; `sells` of ours lists only sellable counts (never-sell applied). |
+| `POST /act/trade` | `with`, `buy` [{item, count}], `sell` [{item, count}] (at least one line, at most 12 lines) | Opens the game's `TradeSession` with the best negotiator (no window), sets each `Tradeable` count, checks with `DealPlanner`, executes `TradeDeal.TryExecute`, closes the session. Done: "bought 10 components, sold 200 cloth (+120 silver), Ana negotiated". Extra: `spent`, `got`, `net`, `today`. |
+| `GET /caravan/plan?pawns=3,5&animals=9&to=T4321&goods=cloth:20` | as `/act/caravan` form | `CaravanPlanner`'s answer, no action: `{days, food_days, food_need, mass, capacity, food:[{item,count}], ok, problems:[...]}`. |
+| `POST /act/caravan` | `op` form\|send\|cancel; form: `pawns` [ids] (1..6), `animals` [ids]?, `goods` [{item,count}]?, `to` (`T<tile>`, `Q<quest id>`, a site `W<tile>`), `purpose` trade\|visit\|quest\|deliver, `player_asked`?; send: `caravan` (`C…`), `to` (as form, or `home`); cancel: `caravan` (forming only) | Form: checks `CaravanRules` and the planner, packs food automatically (planner's pick), then forms the caravan the game's way (`CaravanFormingUtility.StartFormingCaravan`: pawns gather the goods and leave). `Q<id>`: a delivery quest packs its items and goes to its settlement; a site quest goes to the site; a combat quest is refused "needs combat (not yet)"; hosting needs no caravan (refused with what to prepare). Send: paths an existing caravan (home = enter the home map). |
+
+**Hands interface (as built, `IVivariumHands`).** `JObject TradeOffer(string with, TradeLimits limits)`;
+`HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day)`; `JObject CaravanPlan(CaravanArgs a, TradeLimits limits)`;
+`HandResult Caravan(CaravanArgs a, int maxPawns)`. The two JObject hands signal a refusal with `{"refused": "reason"}` (the
+route answers 409 `refused`), return null for no game; otherwise the object is the reply body (`/trade/offer` gets `today`
+added when missing). `Trade` runs `DealPlanner.Plan(args, situation, limits, day, tick)` on the live offers, then executes;
+its success Extra holds `spent`, `got`, `net` (optional `value`, default spent + got); the route calls `day.Charge` from them
+and adds `today` to the reply (the route has already rolled `day` to this tick and refused when the day's deals are used up).
+`Caravan` success Extra for `form` must hold `caravan` (the key the digest lists as `id`, e.g. `C88`); the route stores
+`CaravanPlans.Set(key, purpose, to, quest (to when Q..), tick, note)`; `send` updates the plan's `to`, `cancel` removes it.
+`TradeDay.Roll(tick)` / `Charge(spent, got, value = -1)`. Query/body shapes: `to` matches `[TQW]<digits>` (`home` only for
+send), `with` matches `[PST]<digits>`, `caravan` matches `C<digits>`, `purpose` defaults to `visit`, goods `item:count,...`
+in the query. Routes refuse before the hand when `settings.trade` / `settings.caravans` is off, when the day's deals are
+spent, and for `player_asked` without a recent player line. Pure helpers: `TradeRules.Reason` returns the full sentence
+("can't sell medicine: the colony keeps 10 medicine"); `DealPlan.Clips` lists sells cut to a floor; `CaravanPlanner` feeds
+kibble to animals with `EatsKibble` only, other animals forage; `QuestPure.Feasible` returns a `(bool can, string whyNot)`
+tuple, expiresDays infinity or NaN = no deadline; `CaravanRules` also takes `FreeColonists`/`FreeFighters`.
+Pure files: `VivariumTrade.cs`, `VivariumCaravan.cs`, `TradeView.cs` (`TradeView.Needs(NeedsInput)`).
+
+**Never sell (TradeRules).** Weapons and apparel a colonist has equipped or worn; medicine below `narratorKeepMedicine`
+(default 10 units, all kinds together); food below `narratorKeepFoodDays` days for the colony (default 10, from the
+colony's daily nutrition); forbidden items; anything matching the player's list `narratorNeverSell` (comma-separated
+words or defNames, matched against the item's label and def, case-insensitive). A deal that sells past a floor sells
+only down to it, or is refused when nothing is left ("can't sell medicine: the colony keeps 10").
+
+**Caps (TradeDay, per game day).** `narratorTradeMaxDeal` (2000 silver of value per deal, buys + sells),
+`narratorTradeMaxDay` (6000 per day), `narratorTradeDealsPerDay` (3). Over the deal cap is refused whole; the day
+counters reset at the game day's change and are saved with the game.
+
+**Who may go (CaravanRules).** Never every free colonist (at least one stays, and at least one able to fight);
+never the only doctor (best Medicine) or the only cook unless `player_asked`; at most `narratorCaravanMaxPawns`
+(default 3) pawns unless `player_asked`; no downed, drafted, sick-in-bed or mental-state pawns; a pawn under 13 never.
+An animal must be a tame pack animal or one that can carry (capacity > 0).
+
+**Planner (CaravanPlanner, pure).** Travel days from the game's estimate (else world tiles / 9 a day). Food needed
+= days x 2 + 3 for a round trip (trade, visit, deliver), days + 3 one way (quest site; the return is planned on
+arrival). Pack food in this order: pemmican, packaged survival meals, kibble (animals only), simple/fine meals only when
+their spoil time is longer than the trip, raw food that keeps. Capacity = 35 kg per body size (pawns' own capacity
+from the game); refuse over capacity ("too heavy: 260/210 kg"); refuse when food is short ("food for 4.0 days, needs 9.2").
+
+**Settings (Colonists → Narrator plays).** `narratorTrade` (default on), `narratorCaravans` (default on),
+`narratorTradeMaxDeal`, `narratorTradeMaxDay`, `narratorTradeDealsPerDay`, `narratorKeepMedicine`,
+`narratorKeepFoodDays`, `narratorNeverSell` (text), `narratorCaravanMaxPawns`. Mirrored as `settings.trade`,
+`settings.caravans`, `settings.trade_max_deal`, ... in `GET /vivarium`.
+
+### Steward
+Four tools when the digest has a `trade` block: `trade_offer` (with: look at prices; not an action), `trade` (with,
+buy, sell as "item xN, item xN"), `caravan_plan` (not an action), `caravan` (op form|send|cancel, pawns as names, to,
+quest, goods, purpose). The prompt's playbook lines: sell surplus art, textiles and drugs; buy components early;
+keep a silver reserve (500); never strip the base's defense for a caravan; take quests only when `can` is true.
+
+### Phase 4 status (what is built)
+- Mod, Verse-free and unit-tested: `VivariumTrade.cs` (deal planner, never-sell rules, day caps), `VivariumCaravan.cs`
+  (caravan planner, who may go, quest kind and feasibility, caravan plans), `TradeView.cs` (needs),
+  `VivariumTradeKeys.cs` (id parsing, food kinds), `NeverSellList.cs`; routes in `VivariumRoutesTrade.cs`. Tests:
+  `VivariumTradeTests`, `VivariumTradeRoutesTests`, `VivariumTradeKeysTests`, `NeverSellListTests`.
+- Mod, game bodies (compile-checked against the 1.7 reference assemblies only; the playtest, section J, is their first
+  run): `VivariumTradeHands.cs` (offer and trade through `TradeSession`/`TradeDeal`; worn, wielded and forbidden
+  things are taken off the colony side; pawns and animals are never traded), `VivariumCaravanHands.cs` (plan, form via
+  `CaravanFormingUtility.StartFormingCaravan`, send via the path follower, cancel), `VivariumTradeUtil.cs`,
+  `VivariumQuestUtil.cs`, `VivariumTradeView.cs` (digest blocks, plus `trade.animals`: tame pack animals, at most 8),
+  `VivariumCaravanWatch.cs` (every 120 ticks: re-keys a plan from the forming lord to the formed caravan, restores a
+  site's arrival action, notes a settlement arrival once in the chat, drops plans whose caravan is gone).
+- Agent: `steward_trade.py` (`TradeKit`), the look-tool path in `Session.run` (`trade_offer`, `caravan_plan` are not
+  actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
+  `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
+  reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
+- Decisions: a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
+  caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
+  fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
+  best doctor (not only the only one) stays home unless the player asks; ship needs in `trade.needs` are approximated
+  from the costs of a computer core, a reactor and one engine, shown only after ShipBasics.
+- Not yet: caravans to quest sites returning home on their own (the steward sends them), fulfilling a trade request
+  on arrival (the caravan arrives with the goods; the player or a later hand clicks the request), gifts, selling
+  prisoners or animals, buying from settlements without a caravan there.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
+`custom/use`, 2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against the fake bridge on the three trade
+samples, also with food raised to 14 days).** System prompt about 29k chars (user turn about 5k); a cycle took
+16-28 s.
+- Visiting bulk trader, heartbeat (three runs): `trade_offer` first, then one deal: buy herbal medicine x20 and
+  components x6-10, sell cloth x300, the jade sculpture and the smokeleaf joints, "since we need components and
+  medicine"; then the build work.
+- Orbital exotic trader, chat "get what we need": `trade_offer S31`, then buy components x20 and glitterworld
+  medicine x4, sell cloth and the gold sculptures. On heartbeats the build list (freezer, table, research bench) took
+  the step budget first; with the amended `growth.trade` alert it looked at the offer in its last step.
+- Settlement 3.1 days away with an accepted delivery quest, chat "let's do the Rivermouth cloth delivery":
+  `caravan_plan` (3.1 days, food need 9.2, packs pemmican 18, 60/105 kg, ok), then `caravan form` with Ana, Bram and
+  Eli, cloth x20, to Q77, purpose quest. Advisor "should we send a caravan to Rivermouth?": advice only (the 600
+  silver reward is worth it, the cloth is surplus), no action.
+- With food at 2.4 days (the samples as recorded) it left the caravan alone and fixed food first.
+- Fixed from it: `growth.trade` only fired above 1500 silver; it now fires when a trader can trade and NEEDS has
+  entries; the strategy says to trade first in a turn because traders leave. Seen, not fixed (phase 2): the model
+  keeps trying a cooler for a freezer that is only planned (refused with the reason each time).

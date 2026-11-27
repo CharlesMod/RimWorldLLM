@@ -23,6 +23,9 @@ namespace RimWorldLLM.Bridge
         BadUrl,
         NothingListening,
         KeyRejected,
+        TokenRequired,    // an easyEngine said token_required: pair with it (or paste a key)
+        TokenInvalid,     // an easyEngine said token_invalid: it does not know this key; pair again
+        TokenRevoked,     // an easyEngine said token_revoked: pair again
         WrongBase,        // 404 on /models either way; Arg = the suggestion, e.g. ".../v1"
         ModelNotFound,    // Arg = model
         Tls,
@@ -143,6 +146,23 @@ namespace RimWorldLLM.Bridge
             return c != null && c.Type == JTokenType.String && (string)c == "yielded";
         }
 
+        /// <summary>A 401/403: an easyEngine's 401 says why by its code (§7 of its contract); anything else is KeyRejected.</summary>
+        public static ProbeResult Rejected(HttpOutcome o)
+        {
+            if (o.Status == 401)
+            {
+                string code = null;
+                var t = TryJson(o.Body ?? "") as JObject;
+                var c = t != null ? t["code"] : null;
+                if (c != null && c.Type == JTokenType.String) code = (string)c;
+                if (code != null) EngineAuthStatus.Note(401, o.Body);
+                if (code == "token_required") return ProbeResult.Make(ProbeLight.Red, ProbeCode.TokenRequired);
+                if (code == "token_invalid") return ProbeResult.Make(ProbeLight.Red, ProbeCode.TokenInvalid);
+                if (code == "token_revoked") return ProbeResult.Make(ProbeLight.Red, ProbeCode.TokenRevoked);
+            }
+            return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
+        }
+
         static ProbeResult Unavailable503(HttpOutcome o)
         {
             return IsYielded(o) ? ProbeResult.Make(ProbeLight.Amber, ProbeCode.Paused) : ProbeResult.Make(ProbeLight.Amber, ProbeCode.Loading);
@@ -155,7 +175,7 @@ namespace RimWorldLLM.Bridge
         public static ProbeResult ClassifyModels(HttpOutcome o, string model)
         {
             if (o.Error != null) return FromTransport(o);
-            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
+            if (o.Status == 401 || o.Status == 403) return Rejected(o);
             if (o.Status == 404) return ProbeResult.Make(ProbeLight.Red, ProbeCode.WrongBase);
             if (o.Status == 503) return Unavailable503(o);
             if (o.Status < 200 || o.Status >= 300) return ProbeResult.Make(ProbeLight.Red, ProbeCode.HttpError, o.Status.ToString());
@@ -181,7 +201,7 @@ namespace RimWorldLLM.Bridge
         public static ProbeResult ClassifyChat(HttpOutcome o, string model)
         {
             if (o.Error != null) return FromTransport(o);
-            if (o.Status == 401 || o.Status == 403) return ProbeResult.Make(ProbeLight.Red, ProbeCode.KeyRejected);
+            if (o.Status == 401 || o.Status == 403) return Rejected(o);
             if (o.Status == 404)
             {
                 // Servers answer 404 for an unknown model on /chat/completions as well.

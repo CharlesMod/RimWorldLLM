@@ -444,7 +444,8 @@ RimWorld schema (`Mod/Source/RimWorld/Vivarium*.cs`). All replies carry the usua
 ### `GET /vivarium` (no game needed)
 ```json
 {"playing": true, "paused_by_narrator": false, "chat_seq": 41, "goals_rev": 7, "actions_seq": 19,
- "settings": {"may_pause_for_emergencies": true, "controls_speed": false, "heartbeat_hours": 6.0}}
+ "undoable": 0, "combat": {"active": false, "hostiles": 0, "since_tick": -1},
+ "settings": {"may_pause_for_emergencies": true, "controls_speed": false, "slow_for_combat": true, "heartbeat_hours": 6.0}}
 ```
 The steward polls this every director step (cheap) to see the switch, new chat and settings.
 
@@ -641,6 +642,36 @@ and caps: docs/VIVARIUM.md "Phase 2".
 `GET /vivarium` also carries `undoable` (the ledger's size). The ledger is saved with the vivarium state
 (`ledger` in the save JSON); the caps are not saved. The digest gains a `build` block (docs/VIVARIUM.md).
 
+### Phase 3: combat and defense (game needed)
+Full shapes and behaviour: docs/VIVARIUM.md "Phase 3".
+
+| Route | Example body | Checks before the game is asked |
+| --- | --- | --- |
+| `GET /combat` | | `{"active", "home", "threats": [{"id", "faction", "kind", "count", "where", "dist", "heading", "labels", "ids", "dormant"?}], "fighters", "others", "downed": {"colonists", "enemies"}, "fires": {"count", "home", "where"?}, "defenses", "positions", "squad", "speed_rule": {"slowed", "before"}}` |
+| `/act/squad` | `{"op": "move", "at": "chokepoint"}` / `{"op": "focus", "target": 9201, "pawns": [101, 102]}` / `{"op": "retreat", "below": 0.4}` / `{"op": "undraft"}` | op in draft, move, hold, fire_at_will, focus, retreat, rescue, extinguish, flee, undraft; pawns ≤ 30 positive ids (duplicates dropped); at in cover, chokepoint, door, wall_n/e/s/w, home, inside; at or x,z, not both; move needs one of them; retreat defaults to at inside; room only with at door/inside; focus needs target; below 0.1..0.6. No caps. Reply adds `squad` (and `spots` for move/retreat). |
+| `/act/defend` | `{"kind": "sandbags", "side": "n", "length": 7}` / `{"kind": "turret", "count": 2}` / `{"kind": "killbox", "at": "entrance"}` / `{"kind": "traps", "side": "threat"}` | kind known; side n/e/s/w/threat; at chokepoint/entrance; at or x,z, not both; count turret 1..4, traps 1..8; length 1..20; a killbox is not at a chokepoint; blueprints left. Placed things are `blueprint` marks: `undo_seq`, `left`, `/undo`. |
+| `/act/time` (fight) | `{"speed": 1, "combat": true}` / `{"combat": true, "restore": true}` | combat takes speed 1 or restore, never pause; slow needs **slow_for_combat** or **controls_speed** (the game remembers the old speed, reply `before`); restore needs a remembered speed and the game still at 1x. |
+
+`GET /vivarium` gains `"combat": {"active", "hostiles", "since_tick"}` and `settings.slow_for_combat`. The squad,
+the remembered speed and the last raid side are saved in the vivarium JSON (`combat`). The digest gains `combat`
+(the `GET /combat` object) while a fight is active.
+
+### Phase 4: trade, caravans, quests (game needed)
+Full shapes and behaviour: docs/VIVARIUM.md "Phase 4". Same rules as the other `/act/*`. Nothing here is undoable;
+the hands check first and refuse with a reason. The JObject reads (`/trade/offer`, `/caravan/plan`) answer `409 refused`
+with the hand's reason and write no chat line.
+
+| Route | Example | Checks before the game is asked |
+| --- | --- | --- |
+| `GET /trade/offer?with=P5521` | | `with` matches `P<id>` (visiting trader pawn), `S<id>` (orbital ship) or `T<tile>` (a settlement where one of our caravans is). Reply `{"with", "name", "silver", "negotiator", "colony_silver", "buys": [{"item", "count", "price"}], "sells": [{"item", "count", "price"}], "today"}`: `buys` = what the trader sells to us (price each, after the negotiator's bonus), `sells` = what of ours it takes (sellable counts after the never-sell rules), at most 30 each. |
+| `/act/trade` | `{"with": "P5521", "buy": [{"item": "components", "count": 6}], "sell": [{"item": "cloth", "count": 300}]}` | `settings.trade` on; `with` as above; 1..12 lines in all, item 1..60 chars, count 1..100000; the day's deals not used up. The hand runs the deal planner on the live offers (item matching, trader stock, never-sell floors, both sides' silver, the deal and day caps) and executes the game's trade deal without the window. Reply `{"done": "bought 6 components, sold 300 cloth (+120 silver), Ana negotiated", "spent", "got", "net", "value", "today": {"deals", "deals_left", "spent", "got", "value_left"}}`. |
+| `GET /caravan/plan?pawns=101,102&to=T4321&goods=cloth:20&purpose=deliver` | | `pawns`/`animals` comma ids; `to` `T<tile>`, `W<tile>` (site) or `Q<id>` (quest); goods `item:count,...`; `purpose` trade/visit/quest/deliver (default visit). Reply: `{"days", "food_days", "food_need", "mass", "capacity", "food": [{"item", "count"}], "ok", "problems": [...], "to", "rules"}` (`rules` = the who-may-go refusal or null). |
+| `/act/caravan` | `{"op": "form", "pawns": [101, 102], "to": "Q77", "purpose": "deliver"}` / `{"op": "send", "caravan": "C88", "to": "home"}` / `{"op": "cancel", "caravan": "C9001"}` | `settings.caravans` on; op form/send/cancel; form: 1..6 pawns, animals optional, goods ≤ 12 lines, `to` required (no `home`), purpose known, `player_asked` needs a player chat line in the last 2500 ticks; send: `caravan` `C<id>` and `to` (or `home`); cancel: `caravan`. Form replies `{"done": "...", "caravan": "C<lord id>"}` and the route remembers the plan (purpose, to, quest) in `caravan_plans`. |
+
+`GET /vivarium` `settings` carries `trade`, `caravans`, `trade_max_deal`, `trade_max_day`, `trade_deals_per_day`,
+`keep_medicine`, `keep_food_days`, `never_sell`, `caravan_max_pawns`. The save JSON gains `trade_day` and
+`caravan_plans`. The digest gains the `trade`, `caravans` and `quests` blocks.
+
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`
 (severity 0.3 when the letter has no choice). `alert`: `{"type": "alert", "severity": 0.8,
@@ -660,13 +691,19 @@ visitors, betray_visitors, ransom, choose_pawn, baby_to_child, growth_moment, qu
 naming. `disabled_reason` appears on a disabled option, `risk` (a few words) on a costly or destructive one. Naming
 dialogs have `fields` and no options. `default` is what the safe default would pick. `open_s` is real seconds open.
 The same list is the digest's `dialogs` array (omitted when none are open).
+A `growth_moment` (Biotech birthday letter) also carries `growth`: `{"child": "Mia", "age": "7", "skills": "Shooting 2*, Social 3",
+"traits": "Kind", "passions": ["Shooting", "Melee"], "max_passions": 2, "trait_choices": [{"label": "Tough", "description":
+"Takes 25% less damage."}]}`. Its one `option` (0) still means "take the first choices".
 
 `POST /act/choose` `{"dialog": "L4021", "option": 0 | "Accept the refugee" | "#0", "why": "since we have room"}` or, for
 naming, `{"dialog": "W3", "text": "Ferngrove"}` / `{"dialog": "W3", "text": {"faction": "The Lanterns", "settlement":
 "Ashford"}}`. Checks: `dialog` 1..64 chars; `option` an integer or a string, or `text` a string or an object of strings (each
 1..60 chars; cut to the field's max_len); at least one of them (`400`). Then the usual `/act/*` path: `409 refused` with a
 reason when the dialog is gone, the option is disabled or unknown, a choice dialog got `text` or a naming dialog got only
-an `option`, or the game refused. A success is an action (`choose`) and a greentext line. A name the dialog
+an `option`, or the game refused. A growth moment is answered with `{"dialog": "L5120", "passions": ["Shooting", "Melee"],
+"trait": "Tough", "why": "since she likes guns"}` (not with `option`: both is `400`): `passions` 1..`max_passions` distinct offered skill
+names, `trait` one offered label (case-insensitive); `409 refused` with the reason when too many, unknown, repeated or
+missing, or the dialog is not a growth moment. The timeout default is unchanged: the first passions and the first trait. A success is an action (`choose`) and a greentext line. A name the dialog
 rejects (too long, already taken) is refused with the reason.
 
 ### Event `dialog`

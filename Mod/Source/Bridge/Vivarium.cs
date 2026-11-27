@@ -70,6 +70,35 @@ namespace RimWorldLLM.Bridge
         /// <summary>Takes back what the marks recorded, where it still exists: cancels blueprints and frames, removes
         /// designations, deletes zones/zone cells/area cells and bills. Finished buildings stay.</summary>
         HandResult Undo(IList<NarratorMark> marks);
+
+        // ---- phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"). The routes check shapes and the settings gates; the
+        // hands check the game and refuse with a reason. The JObject hands signal a refusal with {"refused": "reason"}
+        // (the route turns it into a 409); anything else is the reply body. null = no game.
+
+        /// <summary>GET /trade/offer: what the trader `with` sells and buys. `with` = P.., S.. or T<tile>.</summary>
+        JObject TradeOffer(string with, TradeLimits limits);
+        /// <summary>POST /act/trade: runs DealPlanner.Plan against the live offers, then executes. Extra: spent, got, net (and value, optional).
+        /// The route charges `day` (already rolled to this tick) from spent/got and adds `today`.</summary>
+        HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day);
+        /// <summary>GET /caravan/plan: CaravanPlanner's answer for the form args, no action. {"refused": ...} on a refusal.</summary>
+        JObject CaravanPlan(CaravanArgs a, TradeLimits limits);
+        /// <summary>POST /act/caravan form | send | cancel. Form success Extra must hold `caravan` (the key the digest lists), which the route
+        /// stores in Vivarium.CaravanPlans with purpose, to and the quest id (when to is Q..).</summary>
+        HandResult Caravan(CaravanArgs a, int maxPawns);
+        // ---- phase 3: combat and defense (docs/VIVARIUM.md "Phase 3"). The CombatState holds the squad (the hand updates it)
+        // and the last raid side; orders place nothing; defenses return blueprint marks like phase 2.
+
+        /// <summary>GET /combat: threats, fighters, others, downed, fires, defenses in words, positions. "active" false when quiet.</summary>
+        JObject Combat(CombatState state);
+        /// <summary>A squad order: draft, move (to a named position the hand finds), hold, fire_at_will, focus, retreat, rescue,
+        /// extinguish, flee, undraft.</summary>
+        HandResult Squad(SquadArgs a, CombatState state);
+        /// <summary>Turrets, sandbags, barricades, a killbox, traps or a wall segment, as blueprints within the cycle caps.</summary>
+        HandResult Defend(DefendArgs a, BuildBudget left, CombatState state);
+        /// <summary>The fight's speed rule. restore false: set speed (1) and return Extra "before" (the speed it was, 1..4); refuses
+        /// when paused or already at 1x. restore true: put speed (the remembered one, 2..4) back, refusing when the game is not at 1x (the
+        /// player changed it).</summary>
+        HandResult CombatSpeed(int speed, bool restore);
     }
 
 }

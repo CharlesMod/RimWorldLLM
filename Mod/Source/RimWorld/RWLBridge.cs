@@ -124,6 +124,7 @@ namespace RimWorldLLM
             AgentDialOut.FlushLogs();
             EngineManager.Tick();
             MindHost.Tick();
+            EnginePairingUi.Tick();
         }
     }
 
@@ -137,6 +138,8 @@ namespace RimWorldLLM
             catch (Exception e) { Log.Error("[RimWorldLLM] Bridge startup failed: " + e); }
             try { EngineManager.StartAtStartup(); }   // after the bridge: the engine's profile points at bridge.json
             catch (Exception e) { Log.Error("[RimWorldLLM] Engine startup failed: " + e); }
+            try { EnginePairingUi.StartupCheck(); }   // a paired engine on another machine: find it by engine_id, check the token
+            catch (Exception e) { Log.Error("[RimWorldLLM] Engine pairing check failed: " + e.GetType().Name); }
         }
     }
 

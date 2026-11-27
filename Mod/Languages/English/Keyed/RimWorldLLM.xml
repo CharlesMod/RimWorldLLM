@@ -131,6 +131,43 @@
   <RWL_Conn_LlmKey>API key</RWL_Conn_LlmKey>
   <RWL_Conn_KeyNone>(none)</RWL_Conn_KeyNone>
   <RWL_Conn_KeyNote>The key is stored in the mod settings and in bridge.json, which only your user account can read. It is never sent through the bridge API.</RWL_Conn_KeyNote>
+  <RWL_Pair_Title>easyEngine on another computer</RWL_Pair_Title>
+  <RWL_Pair_Find>Find engines on my network</RWL_Pair_Find>
+  <RWL_Pair_Finding>Looking on the network...</RWL_Pair_Finding>
+  <RWL_Pair_FindTip>Looks for easyEngine on this network (a few seconds). Pick one to connect: you compare a code and press Allow on the engine's computer. Nothing to type.</RWL_Pair_FindTip>
+  <RWL_Pair_NoneFound>No engine answered on this network. Is easyEngine running there and open to the network? You can also type its address below.</RWL_Pair_NoneFound>
+  <RWL_Pair_Typed>Or its address:</RWL_Pair_Typed>
+  <RWL_Pair_TypedTip>The engine computer's name or IP address, with :port if it is not 47480 (for example 192.168.1.20 or den-pc:47480).</RWL_Pair_TypedTip>
+  <RWL_Pair_Look>Look</RWL_Pair_Look>
+  <RWL_Pair_Looking>Asking that address...</RWL_Pair_Looking>
+  <RWL_Pair_NoEngineAt>No easyEngine answered at {0}.</RWL_Pair_NoEngineAt>
+  <RWL_Pair_Row>{0}: {1}, {2} ({3})</RWL_Pair_Row>
+  <RWL_Pair_RowSilent>{0} ({1}): did not answer</RWL_Pair_RowSilent>
+  <RWL_Pair_HaveToken>[paired]</RWL_Pair_HaveToken>
+  <RWL_Pair_Connect>Connect</RWL_Pair_Connect>
+  <RWL_Pair_Use>Use</RWL_Pair_Use>
+  <RWL_Pair_Reconnect>Check again</RWL_Pair_Reconnect>
+  <RWL_Pair_Asking>Asking {0} to pair...</RWL_Pair_Asking>
+  <RWL_Pair_CodeIntro>Pairing with {0}. This code is on its screen too:</RWL_Pair_CodeIntro>
+  <RWL_Pair_CodeCompare>Compare with the code on the engine's screen and press Allow there.</RWL_Pair_CodeCompare>
+  <RWL_Pair_Reconnecting>Lost the connection to the engine; trying again...</RWL_Pair_Reconnecting>
+  <RWL_Pair_Cancel>Cancel</RWL_Pair_Cancel>
+  <RWL_Pair_Close>Close</RWL_Pair_Close>
+  <RWL_Pair_TryAgain>Try again</RWL_Pair_TryAgain>
+  <RWL_Pair_Denied>Denied on the engine ({0}).</RWL_Pair_Denied>
+  <RWL_Pair_Gone>The request ended on {0} (the engine restarted, or another request from this computer replaced it).</RWL_Pair_Gone>
+  <RWL_Pair_NotAnEngine>{0} did not answer as an easyEngine. For another server, fill in the fields below by hand.</RWL_Pair_NotAnEngine>
+  <RWL_Pair_NoPairing>{0} needs a key but does not offer pairing. Paste the key it gives (easy-engine token) below.</RWL_Pair_NoPairing>
+  <RWL_Pair_Unreachable>Nothing answered at {0}.</RWL_Pair_Unreachable>
+  <RWL_Pair_Failed>Pairing with {0} failed ({1}).</RWL_Pair_Failed>
+  <RWL_Pair_StatusTyped>Endpoint typed by hand (not a paired engine).</RWL_Pair_StatusTyped>
+  <RWL_Pair_StatusChecking>Checking {0}...</RWL_Pair_StatusChecking>
+  <RWL_Pair_StatusPaired>Paired with {0} at {1}.</RWL_Pair_StatusPaired>
+  <RWL_Pair_StatusOpen>Connected to {0} at {1} (no pairing needed).</RWL_Pair_StatusOpen>
+  <RWL_Pair_StatusPairAgain>{0} does not accept this game's key. Pair again.</RWL_Pair_StatusPairAgain>
+  <RWL_Pair_StatusRevoked>{0} revoked this game's key. Pair again.</RWL_Pair_StatusRevoked>
+  <RWL_Pair_PairAgain>Pair again</RWL_Pair_PairAgain>
+  <RWL_Pair_MsgPairAgain>RimWorldLLM: the engine no longer accepts this game. Pair again in the mod settings (Model).</RWL_Pair_MsgPairAgain>
   <RWL_Test_Button>Test</RWL_Test_Button>
   <RWL_Test_Running>Testing...</RWL_Test_Running>
   <RWL_Test_NotRun>Not tested yet.</RWL_Test_NotRun>
@@ -145,6 +182,9 @@
   <RWL_Probe_BadUrl>That is not a usable http or https URL.</RWL_Probe_BadUrl>
   <RWL_Probe_NothingListening>Nothing is listening there. Check the host, port and that the server is running.</RWL_Probe_NothingListening>
   <RWL_Probe_KeyRejected>The server rejected the API key.</RWL_Probe_KeyRejected>
+  <RWL_Probe_TokenRequired>The engine needs this game to be paired with it. Use "Find engines on my network" above and connect.</RWL_Probe_TokenRequired>
+  <RWL_Probe_TokenInvalid>The engine does not know this key (another engine at this address, or its keys were replaced). Pair again.</RWL_Probe_TokenInvalid>
+  <RWL_Probe_TokenRevoked>The engine revoked this game's key. Pair again.</RWL_Probe_TokenRevoked>
   <RWL_Probe_WrongBase>Wrong base URL: no /models there. Did you mean {0}?</RWL_Probe_WrongBase>
   <RWL_Probe_ModelNotFound>The server has no model called "{0}".</RWL_Probe_ModelNotFound>
   <RWL_Probe_Tls>TLS error: the certificate is not trusted, or the server is not speaking https.</RWL_Probe_Tls>
@@ -349,6 +389,26 @@ Use it anyway?</RWL_Fallback_ConfirmText>
   <RWL_Watch_CaptionsTip>One short line per shot of interest, at most one every twelve seconds (four for urgent events). Filler shots get none.</RWL_Watch_CaptionsTip>
   <RWL_Watch_PauseSec>Watch mode: seconds the camera stays still after you move it</RWL_Watch_PauseSec>
   <RWL_Watch_PauseSecTip>Moving, zooming or edge-scrolling the camera pauses the director for this long.</RWL_Watch_PauseSecTip>
+  <RWL_Watch_Zoom>Watch mode: zoom for each shot</RWL_Watch_Zoom>
+  <RWL_Watch_ZoomTip>Close for meals, deathbeds and art, middle for work, wide for raids and battles, always inside your own zoom limits. Your zoom comes back when watch mode turns off.</RWL_Watch_ZoomTip>
+  <RWL_Watch_SelectFollowed>Watch mode: select the pawn the camera follows</RWL_Watch_SelectFollowed>
+  <RWL_Watch_SelectFollowedTip>Off by default: selecting opens the inspect pane, which covers part of the screen. Selecting never drafts or changes anything else.</RWL_Watch_SelectFollowedTip>
+  <RWL_Watch_Pace>Watch mode pace</RWL_Watch_Pace>
+  <RWL_Watch_PaceTip>How long the camera stays on each shot and how soon it may show the same pawn or scene again. Calm: long shots, five minutes before a repeat. Lively: short shots, two and a half minutes.</RWL_Watch_PaceTip>
+  <RWL_Watch_PaceCalm>calm</RWL_Watch_PaceCalm>
+  <RWL_Watch_PaceNormal>normal</RWL_Watch_PaceNormal>
+  <RWL_Watch_PaceLively>lively</RWL_Watch_PaceLively>
+  <RWL_Watch_Scenes>Watch mode: everyday scenes to show when nothing else is happening</RWL_Watch_Scenes>
+  <RWL_Watch_ScenesTip>Events (raids, deaths, births and more) always come first. Scenes fill the quiet stretches.</RWL_Watch_ScenesTip>
+  <RWL_Watch_SceneMeals>Shared meals</RWL_Watch_SceneMeals>
+  <RWL_Watch_SceneRecreation>Recreation together</RWL_Watch_SceneRecreation>
+  <RWL_Watch_SceneWork>Work side by side</RWL_Watch_SceneWork>
+  <RWL_Watch_SceneWorkTip>Fields, kitchen, building, workshop and mining; also prisoners being talked to and animals being tamed.</RWL_Watch_SceneWorkTip>
+  <RWL_Watch_SceneNight>Someone awake alone at night</RWL_Watch_SceneNight>
+  <RWL_Watch_SceneMedical>A doctor tending a patient</RWL_Watch_SceneMedical>
+  <RWL_Watch_SceneChildren>Children playing and learning</RWL_Watch_SceneChildren>
+  <RWL_Watch_SceneRomance>Partners spending time together</RWL_Watch_SceneRomance>
+  <RWL_Watch_SceneRomanceTip>Adults only, and never in bed.</RWL_Watch_SceneRomanceTip>
   <!-- File browser (.gguf picker) -->
   <RWL_FileBrowser_Title>Choose a model file</RWL_FileBrowser_Title>
   <RWL_FileBrowser_Up>Up</RWL_FileBrowser_Up>
@@ -505,6 +565,8 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayPause>The narrator may pause for emergencies</RWL_Viv_MayPause>
   <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
   <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
+  <RWL_Viv_SlowForCombat>The narrator slows the game for fights</RWL_Viv_SlowForCombat>
+  <RWL_Viv_SlowForCombatTip>On: when a fight starts the narrator sets normal speed, and puts your speed back when it ends (unless you changed it meanwhile). Works even when the narrator does not control the speed.</RWL_Viv_SlowForCombatTip>
   <RWL_Viv_Commentary>Narrator commentary</RWL_Viv_Commentary>
   <RWL_Viv_CommentaryTip>While Narrator plays is on, the narrator adds a short documentary line at big moments (raids, deaths, births, weddings, masterworks, ship parts) and one recap line a game day, when its slot is free. The lines are under the Story filter.</RWL_Viv_CommentaryTip>
   <RWL_Viv_AnswerDialogs>Answer popups when the narrator plays</RWL_Viv_AnswerDialogs>
@@ -520,6 +582,24 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_AutosaveDaysTip>How often the mod's autosave runs, in game days. It waits while a window is open or a raid is on (but not for ever).</RWL_Viv_AutosaveDaysTip>
   <RWL_Viv_AutosaveKeep>Keep {0} autosaves</RWL_Viv_AutosaveKeep>
   <RWL_Viv_AutosaveKeepTip>How many RWL-Narrator saves rotate. The oldest is overwritten; saves the mod did not make are never touched.</RWL_Viv_AutosaveKeepTip>
+  <RWL_Viv_Trade>Let the narrator trade</RWL_Viv_Trade>
+  <RWL_Viv_TradeTip>Lets the narrator buy and sell with visiting traders and settlements, within the limits below. In advisor mode only when you ask.</RWL_Viv_TradeTip>
+  <RWL_Viv_Caravans>Let the narrator send caravans</RWL_Viv_Caravans>
+  <RWL_Viv_CaravansTip>Lets the narrator send colonists out on caravans to trade or work quests. It never sends everyone, nor the best doctor or only cook unless you ask.</RWL_Viv_CaravansTip>
+  <RWL_Viv_TradeMaxDeal>Largest single deal: {0} silver</RWL_Viv_TradeMaxDeal>
+  <RWL_Viv_TradeMaxDealTip>The most silver one trade may move. Bigger deals are refused.</RWL_Viv_TradeMaxDealTip>
+  <RWL_Viv_TradeMaxDay>Daily trade limit: {0} silver</RWL_Viv_TradeMaxDay>
+  <RWL_Viv_TradeMaxDayTip>The most silver the narrator may move in trades per day.</RWL_Viv_TradeMaxDayTip>
+  <RWL_Viv_TradeDealsPerDay>Deals per day: {0}</RWL_Viv_TradeDealsPerDay>
+  <RWL_Viv_TradeDealsPerDayTip>The most trades the narrator may make in a day.</RWL_Viv_TradeDealsPerDayTip>
+  <RWL_Viv_KeepMedicine>Keep {0} medicine</RWL_Viv_KeepMedicine>
+  <RWL_Viv_KeepMedicineTip>The narrator never sells medicine below this many.</RWL_Viv_KeepMedicineTip>
+  <RWL_Viv_KeepFoodDays>Keep {0} days of food</RWL_Viv_KeepFoodDays>
+  <RWL_Viv_KeepFoodDaysTip>The narrator never sells food that would leave the colony with fewer days than this.</RWL_Viv_KeepFoodDaysTip>
+  <RWL_Viv_NeverSell>Never sell (comma separated)</RWL_Viv_NeverSell>
+  <RWL_Viv_NeverSellTip>Item names the narrator must never sell, separated by commas. For example: Mortar shell, Neutroamine.</RWL_Viv_NeverSellTip>
+  <RWL_Viv_CaravanMaxPawns>Caravan size: up to {0} colonists</RWL_Viv_CaravanMaxPawns>
+  <RWL_Viv_CaravanMaxPawnsTip>The most colonists the narrator may send on one caravan.</RWL_Viv_CaravanMaxPawnsTip>
   <RWL_Viv_RestartMode>When the colony is lost: {0}</RWL_Viv_RestartMode>
   <RWL_Viv_RestartMode_0>ask me</RWL_Viv_RestartMode_0>
   <RWL_Viv_RestartMode_1>restart by itself</RWL_Viv_RestartMode_1>

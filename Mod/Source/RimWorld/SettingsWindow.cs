@@ -139,6 +139,7 @@ namespace RimWorldLLM
 
             if (local) { LocalEngine(l, s); return; }
             Note(l, UiUtil.T("RWL_Conn_EndpointHelp"));
+            EnginePairingUi.Draw(l, s);
             TextRow(l, "RWL_Conn_LlmUrl", ref s.llmBaseUrl, "RWL_Tip_LlmUrl");
             TextRow(l, "RWL_Conn_LlmModel", ref s.llmModel, "RWL_Tip_LlmModel");
             float y0 = l.CurHeight;
@@ -314,6 +315,7 @@ namespace RimWorldLLM
             Note(l, UiUtil.T("RWL_Viv_Help"));
             Check(l, "RWL_Viv_MayPause", ref s.narratorMayPauseForEmergencies, "RWL_Viv_MayPauseTip");
             Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
+            Check(l, "RWL_Viv_SlowForCombat", ref s.narratorSlowsForCombat, "RWL_Viv_SlowForCombatTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
             s.stewardHeartbeatHours = Mathf.Round(s.stewardHeartbeatHours);
             Check(l, "RWL_Viv_AnswerDialogs", ref s.narratorAnswerDialogs, "RWL_Viv_AnswerDialogsTip");
@@ -329,6 +331,31 @@ namespace RimWorldLLM
                 float keep = s.narratorAutosaveKeep;
                 SliderRow(l, "RWL_Viv_AutosaveKeep", s.narratorAutosaveKeep, ref keep, 1f, 20f, "RWL_Viv_AutosaveKeepTip");
                 s.narratorAutosaveKeep = Mathf.Clamp(Mathf.RoundToInt(keep), 1, 20);
+            }
+            Check(l, "RWL_Viv_Trade", ref s.narratorTrade, "RWL_Viv_TradeTip");
+            Check(l, "RWL_Viv_Caravans", ref s.narratorCaravans, "RWL_Viv_CaravansTip");
+            if (s.narratorTrade || s.narratorCaravans)
+            {
+                float tv;
+                tv = s.narratorTradeMaxDeal;
+                SliderRow(l, "RWL_Viv_TradeMaxDeal", s.narratorTradeMaxDeal, ref tv, 100f, 20000f, "RWL_Viv_TradeMaxDealTip");
+                s.narratorTradeMaxDeal = Mathf.Clamp(Mathf.RoundToInt(tv / 100f) * 100, 100, 20000);
+                tv = s.narratorTradeMaxDay;
+                SliderRow(l, "RWL_Viv_TradeMaxDay", s.narratorTradeMaxDay, ref tv, 100f, 50000f, "RWL_Viv_TradeMaxDayTip");
+                s.narratorTradeMaxDay = Mathf.Clamp(Mathf.RoundToInt(tv / 100f) * 100, 100, 50000);
+                tv = s.narratorTradeDealsPerDay;
+                SliderRow(l, "RWL_Viv_TradeDealsPerDay", s.narratorTradeDealsPerDay, ref tv, 1f, 10f, "RWL_Viv_TradeDealsPerDayTip");
+                s.narratorTradeDealsPerDay = Mathf.Clamp(Mathf.RoundToInt(tv), 1, 10);
+                tv = s.narratorKeepMedicine;
+                SliderRow(l, "RWL_Viv_KeepMedicine", s.narratorKeepMedicine, ref tv, 0f, 50f, "RWL_Viv_KeepMedicineTip");
+                s.narratorKeepMedicine = Mathf.Clamp(Mathf.RoundToInt(tv), 0, 50);
+                tv = s.narratorKeepFoodDays;
+                SliderRow(l, "RWL_Viv_KeepFoodDays", s.narratorKeepFoodDays, ref tv, 0f, 30f, "RWL_Viv_KeepFoodDaysTip");
+                s.narratorKeepFoodDays = Mathf.Clamp(Mathf.RoundToInt(tv), 0, 30);
+                TextRow(l, "RWL_Viv_NeverSell", ref s.narratorNeverSell, "RWL_Viv_NeverSellTip");
+                tv = s.narratorCaravanMaxPawns;
+                SliderRow(l, "RWL_Viv_CaravanMaxPawns", s.narratorCaravanMaxPawns, ref tv, 1f, 6f, "RWL_Viv_CaravanMaxPawnsTip");
+                s.narratorCaravanMaxPawns = Mathf.Clamp(Mathf.RoundToInt(tv), 1, 6);
             }
             s.narratorRestartMode = Mathf.Clamp(s.narratorRestartMode, 0, 2);
             var modeRect = l.GetRect(30f);
@@ -418,6 +445,20 @@ namespace RimWorldLLM
             {
                 Check(l, "RWL_Watch_Captions", ref s.watchCaptions, "RWL_Watch_CaptionsTip");
                 NumRow(l, "RWL_Watch_PauseSec", ref s.watchPlayerPauseSec, ref _watchPauseBuf, 3, 300, "RWL_Watch_PauseSecTip");
+                Check(l, "RWL_Watch_Zoom", ref s.watchZoom, "RWL_Watch_ZoomTip");
+                Check(l, "RWL_Watch_SelectFollowed", ref s.watchSelectFollowed, "RWL_Watch_SelectFollowedTip");
+                float paceY = l.CurHeight;
+                string paceKey = s.watchPace <= 0 ? "RWL_Watch_PaceCalm" : s.watchPace >= 2 ? "RWL_Watch_PaceLively" : "RWL_Watch_PaceNormal";
+                if (l.ButtonTextLabeled(UiUtil.T("RWL_Watch_Pace"), UiUtil.T(paceKey))) s.watchPace = (Mathf.Clamp(s.watchPace, 0, 2) + 1) % 3;
+                Tip(l, paceY, UiUtil.T("RWL_Watch_PaceTip"));
+                l.Label(UiUtil.T("RWL_Watch_Scenes"));
+                Check(l, "RWL_Watch_SceneMeals", ref s.watchSceneMeals, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneRecreation", ref s.watchSceneRecreation, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneWork", ref s.watchSceneWork, "RWL_Watch_SceneWorkTip");
+                Check(l, "RWL_Watch_SceneNight", ref s.watchSceneNight, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneMedical", ref s.watchSceneMedical, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneChildren", ref s.watchSceneChildren, "RWL_Watch_ScenesTip");
+                Check(l, "RWL_Watch_SceneRomance", ref s.watchSceneRomance, "RWL_Watch_SceneRomanceTip");
             }
             l.GapLine();
             Check(l, "RWL_Share_Footer", ref s.shareFooter, "RWL_Share_FooterTip");
