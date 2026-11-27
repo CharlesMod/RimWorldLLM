@@ -120,7 +120,7 @@ class BioKit:
                 ps.append(_opt("who", "implant: which colonist", list(self.adults)))
             if "donate" in gops:
                 ps.append(_opt("prisoner", "donate: who", list(self.prisoners)))
-            out.append(ToolSpec("genes", "Genepacks, xenogerms and blood.", ps + [_WHY]))
+            out.append(ToolSpec("genes", "Genepacks and xenogerms; op donate sets a prisoner to give blood (hemogen) for hemogen-needing colonists.", ps + [_WHY]))
         cops = (["schedule"] if self.children else []) + (["feed"] if self.babies else []) \
             + (["care"] if (self.children or self.babies) and self.adults else [])
         if cops:

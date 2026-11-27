@@ -927,3 +927,24 @@ text when all are offered (about 0.7..0.9 k for one).
   babies), no mech resurrection or boss calls. Hemogen comes from prisoner donation; hemogen packs are kept by the
   game's own hemogen-farm bills (no colonist donation).
 - The pollution trend lives in memory: a loaded game starts "steady" and needs a game day to compare.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
+32k, q4_0 KV, `steward_try --playing` on the four `bio_*` samples).** Prompt about 8.5 k tokens (system about 29 k chars
+with the Biotech notes and tools), a cycle 11..30 s. With the samples' food emergency left in, the model spent its turns on
+food and the freezer (sensible) and only the hungry baby got Biotech care, so the live digests were made calm (12 food
+days, nothing missing in BUILD) to see the Biotech choices:
+- Hungry baby, no feeder: every cycle (5 of 5) set Ana to feed Dee "urgent" first, then built a crib and a school desk
+  for the 6-year-old when they were buildable.
+- Mechanitor with 2 bandwidth free and no recharger: it built a mech recharger first (playbook order) and went on to
+  bedrooms; asked in chat to use the spare bandwidth, it built the recharger and queued one lifter (keeping 1 free).
+- Pollution growing, wastepacks near home, no waste stockpile: a waste stockpile in 3 of 7 cycles (other turns went to
+  bedrooms and the table, the other P2-P4 alerts of the sample).
+- Sanguophage at 15% hemogen with a grown prisoner: ignored in 7 cycles while the HEMOGEN line only said who needed it;
+  once the line named "prisoners who could give blood: Cole" it set Cole to give blood in a heartbeat cycle, and at once
+  when the player asked.
+- Fixed from it: the fake bridge did not know the Biotech verbs; `feed` without a feeder reset the baby's feeders (the
+  model sent "none"): feed now needs a named feeder; `bio.hemogen_low` is priority 1 and says "this turn"; the MECHS line
+  says how much bandwidth is free; the HEMOGEN line names grown, non-hemogenic prisoners who could give blood (the mod
+  sends them as `hemogen.prisoners`); the `genes` tool says op donate is blood from a prisoner.
+- Seen, not fixed here: the grammar fills `count` and `until` on a bill (the bill hand refuses both and the model retries),
+  and planned-freezer cooler attempts (phase 2's guard refuses them), as in the earlier live checks.

@@ -835,6 +835,12 @@
    "donors": [],
    "needing": [
     "Bram 15%"
+   ],
+   "prisoners": [
+    {
+     "id": 108,
+     "name": "Cole"
+    }
    ]
   },
   "genebank": {
