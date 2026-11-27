@@ -71,5 +71,24 @@ namespace RimWorldLLM.Tests.Mind
             c.Wants = true;
             using (var b = MindRunner.MakeToolBackend(c)) Assert.NotNull(b);
         }
+
+        [Fact]
+        public void WantsAreWiredOnByDefaultAtTheAgentsEngine()
+        {
+            using var t = new TempDir();
+            var c = Cfg(t); c.Llm.BaseUrl = "http://engine:4480";
+            using var b = MindRunner.MakeToolBackend(c);
+            Assert.NotNull(b);
+            Assert.Equal("http://engine:4480/v1", b.Base);
+        }
+
+        [Fact]
+        public void StewardKeepsTheBackendWhenWantsAreOff()
+        {
+            using var t = new TempDir();
+            var c = Cfg(t); c.Wants = false;
+            using var b = MindRunner.MakeToolBackend(c);
+            Assert.NotNull(b);
+        }
     }
 }
