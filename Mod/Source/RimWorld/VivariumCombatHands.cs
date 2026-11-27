@@ -577,6 +577,11 @@ namespace RimWorldLLM
                 if (p.Downed) { skipped.Add(Name(p) + " is downed"); continue; }
                 l.Add(p);
             }
+            // named fighters join the squad (the narrator may have drafted them with the plain draft hand), so the controller
+            // looks after them too; undraft is the exception: it takes them out
+            if (a.Op != "undraft" && a.Pawns.Count > 0)
+                foreach (var p in l)
+                    if (Fighter(p) && !state.Squad.Members.Contains(p.thingIDNumber)) state.Squad.Members.Add(p.thingIDNumber);
             if (l.Count == 0)
                 no = HandResult.No(a.Pawns.Count > 0 ? (skipped.Count > 0 ? string.Join("; ", skipped) : "none of those can act")
                     : "there is no squad yet; draft one first (squad draft)");
@@ -669,12 +674,11 @@ namespace RimWorldLLM
                     {
                         var drafted = a.Pawns.Count > 0 ? SquadPawns(a, state, skipped, out no) : map.mapPawns.FreeColonistsSpawned.Where(p => p.Drafted).ToList();
                         if (a.Pawns.Count > 0 && no != null) return no;
-                        if (a.Pawns.Count == 0)
                         {
                             var home = HomeCenter(map);
                             HashSet<int> dorm;
                             var near = Hostiles(map, out dorm).Where(h => !h.Downed && !dorm.Contains(h.Id) && BuildHelpers.Dist2(h.X, h.Z, home.x, home.z) <= 900).ToList();
-                            if (near.Count > 0) return HandResult.No(near.Count + " enem" + (near.Count == 1 ? "y is" : "ies are") + " still within 30 cells of home; undraft by name if you must");
+                            if (near.Count > 0) return HandResult.No(near.Count + " enem" + (near.Count == 1 ? "y is" : "ies are") + " still within 30 cells of home; the squad stays drafted (you can still undraft them yourself)");
                         }
                         var done = new List<string>();
                         foreach (var p in drafted) if (p.Drafted) { p.drafter.Drafted = false; done.Add(Name(p)); }

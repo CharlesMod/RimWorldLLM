@@ -154,8 +154,9 @@ def test_squad_move_and_retreat_bodies():
     assert body(s, "squad", op="hold", at="cover", target="the pirates", below=30, room="12")[1] == {"op": "hold"}
     with pytest.raises(ValueError, match="move needs at"):
         body(s, "squad", op="move", at="none")
-    with pytest.raises(ValueError, match="percent"):
-        body(s, "squad", op="retreat", below=5)
+    assert body(s, "squad", op="retreat", below=5)[1]["below"] == 0.1        # clamped to 10..60
+    assert body(s, "squad", op="retreat", below=90)[1]["below"] == 0.6
+    assert "below" not in body(s, "squad", op="retreat", below=0)[1]
     with pytest.raises(ValueError, match="no such room"):
         s.combat._squad({"op": "move", "at": "door", "room": "999"})
 
@@ -765,3 +766,31 @@ def test_killbox_ignores_a_chokepoint_position():
     kit = CombatKit({"active": True, "threats": [], "positions": ["cover"]}, {}, after_fight=False)
     verb, body = kit.body("defend", {"kind": "killbox", "at": "chokepoint", "side": "n"})
     assert verb == "defend" and "at" not in body and body["side"] == "n"
+
+
+def test_fight_drops_the_single_order_tool_and_zero_cell_moves_are_errors():
+    import json, pathlib
+    from rimworldllm_agent.games.rimworld.steward_tools import StewardKit
+    d = json.loads((pathlib.Path(__file__).parent / "data" / "combat_digest_pirate_ranged.json").read_text())
+    names = {t.name for t in StewardKit().session(d, None, False).tools}
+    assert "squad" in names and "order" not in names
+    d.pop("combat")
+    s = StewardKit().session(d, None, False)
+    assert "order" in {t.name for t in s.tools}
+    pawn = next(iter(s.pawns))
+    try:
+        s._verb_body("order", {"pawn": pawn, "order": "move", "x": 0, "z": 0, "target_id": 0, "hold": "no"})
+    except ValueError as e:
+        assert "real cell" in str(e)
+    else:
+        raise AssertionError("a 0,0 move must be an error")
+
+
+def test_fake_refuses_undraft_while_enemies_are_near():
+    from rimworldllm_agent.games.rimworld.fakes import FakeBridge
+    fb = FakeBridge()
+    fb.combat = {"active": True, "threats": [{"id": 1, "dist": 12}]}
+    refusal, _ = fb._act_apply("squad", {"op": "undraft"})
+    assert "within 30 cells" in refusal
+    fb.combat = {"active": True, "threats": [{"id": 1, "dist": 50}]}
+    assert fb._act_apply("squad", {"op": "undraft"})[0] == ""

@@ -477,6 +477,9 @@ class FakeBridge:
     def _act_apply(self, verb: str, b: dict) -> tuple[str, str]:
         """The settings checks of /act/time and a short success note. (refusal, note)."""
         st = self.viv_settings
+        if verb == "squad" and b.get("op") == "undraft" and isinstance(self.combat, dict) and self.combat.get("active") \
+                and any(not t.get("dormant") and t.get("dist", 99) <= 30 for t in self.combat.get("threats") or []):
+            return "enemies are still within 30 cells of home; the squad stays drafted", ""    # as the mod
         if verb == "time" and b.get("combat"):
             if b.get("restore"):
                 if self.speed_before_combat is None or self.speed != 1:

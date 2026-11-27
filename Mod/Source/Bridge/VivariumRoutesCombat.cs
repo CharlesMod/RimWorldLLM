@@ -62,7 +62,7 @@ namespace RimWorldLLM.Bridge
             if ((x == null) != (z == null)) throw new ArgError("give both x and z, or neither");
             a.X = x; a.Z = z;
             a.Target = OptInt(b, "target", 1, int.MaxValue) ?? 0;
-            a.Below = OptFloat(b, "below", 0.1f, 0.9f) ?? 0f;
+            a.Below = OptFloat(b, "below", 0.1f, 0.6f) ?? 0f;   // above 60% would pull back the barely scratched
             if (a.At != null && a.X != null) throw new ArgError("give a position (at) or a cell (x, z), not both");
             if (a.Op == "move" && a.At == null && a.X == null) throw new ArgError("move needs at (cover, chokepoint, door, wall_n/e/s/w, home, inside) or x and z");
             if (a.Op == "focus" && a.Target == 0) throw new ArgError("focus needs target: a threat group id or a hostile pawn id from GET /combat");

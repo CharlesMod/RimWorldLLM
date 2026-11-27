@@ -104,7 +104,7 @@ namespace RimWorldLLM.Tests
         [InlineData("{\"op\":\"focus\"}", "focus needs target")]
         [InlineData("{\"op\":\"draft\",\"pawns\":[0]}", "positive integer ids")]
         [InlineData("{\"op\":\"draft\",\"pawns\":\"Ana\"}", "array of pawn ids")]
-        [InlineData("{\"op\":\"retreat\",\"below\":0.95}", "below must be 0.1..0.9")]
+        [InlineData("{\"op\":\"retreat\",\"below\":0.95}", "below must be 0.1..0.6")]
         [InlineData("{\"op\":\"retreat\",\"below\":\"half\"}", "below must be a number")]
         [InlineData("{\"op\":\"move\",\"at\":\"cover\",\"room\":12}", "room goes with at door or at inside")]
         public void SquadShapes(string body, string why)

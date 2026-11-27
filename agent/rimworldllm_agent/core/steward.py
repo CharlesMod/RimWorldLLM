@@ -47,6 +47,7 @@ FINAL_MAX = 300
 # a combat turn is small: the combat view and the plan line, the combat tools only, three steps (the last is the closing line)
 COMBAT_STEPS, COMBAT_BUDGET_S, COMBAT_STEP_TIMEOUT_S, COMBAT_MAX_TOKENS, COMBAT_FINAL_MAX = 3, 40.0, 30.0, 160, 120
 TICKS_PER_GAME_S = 60
+COMBAT_START_STEPS = 5                     # the "combat started" cycle: draft, place, flee, one defence, the line; the combat turns follow
 ENV_STRATEGY = "RIMWORLDLLM_STEWARD_STRATEGY"
 STRATEGY_HEADING = "## Strategy notes"
 _NO_LINE = {"", "done", "nothing", "nothing to say", "none", "n/a", "ok"}
@@ -416,7 +417,8 @@ class Steward:
                 self.stats.refused += 1
             return out.result
 
-        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=STEPS, time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
+        harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=COMBAT_START_STEPS if reason == "combat started" else STEPS,
+                              time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
         self._streams += 1
         stream_id = f"steward-{os.getpid()}-{self._streams}"
         await self._status("thinking", stream_id)

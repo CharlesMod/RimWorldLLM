@@ -98,7 +98,7 @@ class CombatKit:
                 roles = ", ".join(f"{i} {r}" if r else i for i, r in self.rooms.items())
                 ps.append(Param("room", "enum", f"at door or inside: which room (room id: {roles})", choices=[NONE] + list(self.rooms), required=False))
             ps += [Param("target", "text", "focus: the threat, as its group number from THREATS or words like the pirates", max_len=60, required=False),
-                   Param("below", "int", "retreat: wounded fall back under this health percent (10 to 90), 0 if unused", lo=0, hi=90, required=False), _WHY]
+                   Param("below", "int", "retreat: wounded fall back under this health percent (10 to 60), 0 if unused", lo=0, hi=90, required=False), _WHY]
             out.append(ToolSpec("squad", "Order the fighters in a fight: draft, move to cover or a door, hold, focus a threat, retreat the wounded, "
                                 "rescue the downed, put out fires, send non-fighters indoors, undraft.", ps))
         if self.view or self.build or self.after_fight:
@@ -188,9 +188,8 @@ class CombatKit:
         if op == "retreat":
             below = self._get(v, "below")
             if below is not None:
-                if not 10 <= int(below) <= 90:
-                    raise ValueError("below is a health percent from 10 to 90")
-                b["below"] = round(int(below) / 100, 2)
+                if int(below) > 0:                       # the grammar writes every field: 0 = unused; over 60 would pull back the barely scratched
+                    b["below"] = round(min(60, max(10, int(below))) / 100, 2)
         return b
 
     def _defend(self, v: dict) -> dict:

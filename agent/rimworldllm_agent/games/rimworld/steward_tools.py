@@ -80,7 +80,10 @@ class Session:
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
         self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
-        self.tools = self._tools() + self.build.tools + self.combat.tools
+        tools = self._tools()
+        if self.combat.tools and any(t.name == "squad" for t in self.combat.tools):
+            tools = [t for t in tools if t.name != "order"]   # in a fight squad orders replace single orders (cells by name, not x/z)
+        self.tools = tools + self.build.tools + self.combat.tools
         self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names}
 
     # ---- the tool list for this digest ----------------------------------------------
@@ -214,6 +217,8 @@ class Session:
         if tool == "order":
             pid, kind = self._pawn(v["pawn"]), v["order"]
             if kind == "move":
+                if not v["x"] and not v["z"]:
+                    raise ValueError("move needs a real cell (x and z); in a fight use squad move with a named position")
                 return "order", {"pawn": pid, "order": "move", "x": v["x"], "z": v["z"]}
             if kind == "attack":
                 if v["target_id"] <= 0:
