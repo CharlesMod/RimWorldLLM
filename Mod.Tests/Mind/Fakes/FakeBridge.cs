@@ -124,7 +124,7 @@ namespace RimWorldLLM.Mind.Fakes
         public bool VivariumSupported = true;     // false models an older mod: every vivarium route answers 404
         public bool Playing;
         public bool PausedByNarrator;
-        public JObject VivSettings = J(@"{""may_pause_for_emergencies"": true, ""controls_speed"": false, ""heartbeat_hours"": 6.0}");
+        public JObject VivSettings = J(@"{""may_pause_for_emergencies"": true, ""controls_speed"": false, ""heartbeat_hours"": 6.0, ""slow_for_combat"": true}");
         public List<JObject> Chat = new List<JObject>();   // entries, oldest first (cap 300)
         public int ChatSeq;
         public List<JObject> ChatStatus = new List<JObject>();     // POST /chat/status bodies (minus op_id), in order
@@ -136,6 +136,9 @@ namespace RimWorldLLM.Mind.Fakes
         public List<JObject> Actions = new List<JObject>();
         public List<JObject> Dialogs = new List<JObject>();    // what GET /dialogs lists; POST /act/choose removes the answered one
         public JObject Digest;                    // what GET /digest returns (null: 409 no_game)
+        public JObject Combat;                    // what GET /combat returns (null: {"active": false}); a test sets a recorded view
+        public int CombatSince;                   // tick the fight began (GET /vivarium combat.since_tick)
+        public int? SpeedBeforeCombat;            // /act/time {combat: true, speed: 1} remembers the speed here
         public List<KeyValuePair<string, JObject>> ActLog = new List<KeyValuePair<string, JObject>>();   // (verb, body) of every accepted /act/<verb>
         public Dictionary<string, string> ActRefuse = new Dictionary<string, string>();   // verb -> reason: refused 409 "refused"
         public Dictionary<string, JObject> ActExtra = new Dictionary<string, JObject>();   // verb -> extra fields in the success reply
@@ -483,12 +486,25 @@ namespace RimWorldLLM.Mind.Fakes
             Actions.Add(new JObject { ["seq"] = Actions.Count + 1, ["tick"] = Tick, ["verb"] = verb, ["note"] = note, ["by"] = "narrator" });
         }
 
+        JObject CombatBlock()
+        {
+            var cv = Combat ?? new JObject();
+            bool active = T(cv["active"]);
+            long hostiles = 0;
+            if (cv["threats"] is JArray th)
+                foreach (var g in th.OfType<JObject>()) hostiles += g["count"] == null ? 0 : (long)RimWorldLLM.Mind.RimWorld.DigestJson.PyInt(g["count"]);
+            return new JObject { ["active"] = active, ["since_tick"] = active ? CombatSince : 0, ["hostiles"] = hostiles };
+        }
+
         BridgeReply Vivarium(BridgeRequest req, string path, JObject body)
         {
             string method = req.Method;
             if (path == "/vivarium" && method == "GET")
                 return Ok(("playing", Playing), ("paused_by_narrator", PausedByNarrator), ("chat_seq", ChatSeq),
-                    ("goals_rev", GoalsBoard["rev"].DeepClone()), ("actions_seq", Actions.Count), ("settings", VivSettings.DeepClone()));
+                    ("goals_rev", GoalsBoard["rev"].DeepClone()), ("actions_seq", Actions.Count), ("settings", VivSettings.DeepClone()),
+                    ("combat", CombatBlock()));
+            if (path == "/combat" && method == "GET")
+                return Ok(Combat ?? new JObject { ["active"] = false });
             if (path == "/digest" && method == "GET")
             {
                 if (Digest == null) return Err(409, "no_game", "no game loaded");
@@ -560,7 +576,7 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose" }, verb) < 0)
                     return null;
                 string bad = ActShape(verb, body);
                 if (bad.Length > 0) return Err(400, "bad_request", bad);
@@ -632,7 +648,11 @@ namespace RimWorldLLM.Mind.Fakes
             switch (verb)
             {
                 case "time":
+                    if (b["combat"] != null && b["combat"].Type == JTokenType.Boolean && (bool)b["combat"] && b["restore"] != null && b["restore"].Type == JTokenType.Boolean && (bool)b["restore"])
+                        return !b.ContainsKey("speed") && !b.ContainsKey("pause") ? "" : "restore takes no speed or pause";
                     if (!Has(b, "pause") && !Has(b, "speed")) return "pause or speed required";
+                    if (b.ContainsKey("combat") && !(b["combat"].Type == JTokenType.Boolean && (bool)b["combat"] && NumEq(b["speed"], 1) && !b.ContainsKey("pause")))
+                        return "combat: true goes with speed 1 only";
                     if (Has(b, "speed") && !(NumEq(b["speed"], 1) || NumEq(b["speed"], 2) || NumEq(b["speed"], 3) || NumEq(b["speed"], 4)))
                         return "speed 1..4";
                     break;
@@ -688,6 +708,31 @@ namespace RimWorldLLM.Mind.Fakes
                         return "pawns [1..30 ids] and drafted required";
                     break;
                 }
+                case "squad":
+                {
+                    string[] ops = { "draft", "move", "hold", "fire_at_will", "focus", "retreat", "rescue", "extinguish", "flee", "undraft" };
+                    var ids = b["pawns"];
+                    string op = b["op"] != null && b["op"].Type == JTokenType.String ? b.Value<string>("op") : null;
+                    if (Array.IndexOf(ops, op) < 0) return "op required: " + string.Join(", ", ops);
+                    if (ids != null && ids.Type != JTokenType.Null && (!(ids is JArray ia) || ia.Count < 1 || ia.Count > 30 || !ia.All(Pos))) return "pawns: 1..30 ids";
+                    if (b.ContainsKey("at") && b["at"].Type != JTokenType.String) return "at must be a position word";
+                    if (op == "move" && !b.ContainsKey("at") && !(b.ContainsKey("x") && b.ContainsKey("z"))) return "move needs at or x, z";
+                    if (op == "focus" && !Pos(b["target"])) return "focus needs target";
+                    if (b.ContainsKey("below") && !((b["below"].Type == JTokenType.Integer || b["below"].Type == JTokenType.Float) && b["below"].Value<double>() >= 0.1 && b["below"].Value<double>() <= 0.9))
+                        return "below 0.1..0.9";
+                    break;
+                }
+                case "defend":
+                {
+                    string k = b["kind"] != null && b["kind"].Type == JTokenType.String ? b.Value<string>("kind") : null;
+                    if (Array.IndexOf(new[] { "turret", "sandbags", "barricade", "killbox", "traps", "wall" }, k) < 0)
+                        return "kind required: turret, sandbags, barricade, killbox, traps, wall";
+                    if (b.ContainsKey("side") && Array.IndexOf(new[] { "n", "e", "s", "w", "threat" }, b["side"].Type == JTokenType.String ? b.Value<string>("side") : null) < 0) return "side n/e/s/w/threat";
+                    if (b.ContainsKey("at") && Array.IndexOf(new[] { "chokepoint", "entrance" }, b["at"].Type == JTokenType.String ? b.Value<string>("at") : null) < 0) return "at chokepoint/entrance";
+                    if (b.ContainsKey("count") && !(IsInt(b["count"]) && b.Value<long>("count") >= 1 && b.Value<long>("count") <= (k == "turret" ? 4 : 8))) return "count out of range";
+                    if (b.ContainsKey("length") && !(IsInt(b["length"]) && b.Value<long>("length") >= 1 && b.Value<long>("length") <= 20)) return "length 1..20";
+                    break;
+                }
                 case "order":
                 {
                     string o = b["order"] != null && b["order"].Type == JTokenType.String ? b.Value<string>("order") : null;
@@ -708,6 +753,26 @@ namespace RimWorldLLM.Mind.Fakes
             note = "";
             bool controls = T(VivSettings["controls_speed"]);
             bool mayPause = T(VivSettings["may_pause_for_emergencies"]);
+            if (verb == "squad" && b.Value<string>("op") == "undraft" && Combat != null && T(Combat["active"])
+                && (Combat["threats"] as JArray ?? new JArray()).OfType<JObject>().Any(t => !T(t["dormant"]) && (t["dist"] == null || t["dist"].Type == JTokenType.Null ? 99 : t.Value<double>("dist")) <= 30))
+                return "enemies are still within 30 cells of home; the squad stays drafted";    // as the mod
+            if (verb == "time" && T(b["combat"]))
+            {
+                if (T(b["restore"]))
+                {
+                    if (SpeedBeforeCombat == null || Speed != 1)
+                        return "nothing to put back: the speed was not slowed for a fight, or the player changed it";
+                    Speed = SpeedBeforeCombat.Value;
+                    SpeedBeforeCombat = null;
+                    note = "put the speed back to " + Speed.ToString(CultureInfo.InvariantCulture) + "x";
+                    return "";
+                }
+                if (!T(VivSettings["slow_for_combat"])) return "the player has not allowed slowing the game for a fight";
+                if (SpeedBeforeCombat == null && Speed > 1) SpeedBeforeCombat = Speed;
+                Speed = 1;
+                note = "slowed the game to normal speed for the fight";
+                return "";
+            }
             var pause = b["pause"];
             bool pauseTrue = pause != null && pause.Type == JTokenType.Boolean && pause.Value<bool>();
             bool pauseFalse = pause != null && pause.Type == JTokenType.Boolean && !pause.Value<bool>();
@@ -751,7 +816,7 @@ namespace RimWorldLLM.Mind.Fakes
                 case "letter": note = "letter " + PyStr(b["letter"]) + ": " + PyStr(b["choice"]); break;
                 case "draft": note = (b.Value<bool>("drafted") ? "drafted" : "undrafted") + " " + ((JArray)b["pawns"]).Count + " pawn(s)"; break;
                 case "order": note = PyStr(b["order"]) + " order for pawn " + PyStr(b["pawn"]); break;
-                case "room": case "build": case "zone": case "designate": case "bill":     // phase 2 hands: accepted as sent
+                case "room": case "build": case "zone": case "designate": case "bill": case "squad": case "defend":     // phase 2-3 hands: accepted as sent
                     note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + PyStr(p.Value)));
                     break;
             }

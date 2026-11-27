@@ -49,8 +49,12 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly HashSet<string> Acting;
         /// <summary>The builder tools; they exist only when the digest has a build block.</summary>
         public readonly BuildKit Build;
+        /// <summary>The colonists the digest marks incapable of violence (they stay out of "draft all").</summary>
+        public readonly HashSet<string> CannotFight = new HashSet<string>(StringComparer.Ordinal);
+        /// <summary>The combat tools (squad, defend): squad needs a combat view, defend also a build block.</summary>
+        public readonly CombatKit Combat;
 
-        public StewardSession(JObject digest, IBridge bridge, bool advisor)
+        public StewardSession(JObject digest, IBridge bridge, bool advisor, bool afterFight = false)
         {
             Digest = digest ?? new JObject(); Bridge = bridge; Advisor = advisor;
             Pawns = StewardDigest.PawnNames(Digest);
@@ -73,9 +77,25 @@ namespace RimWorldLLM.Mind.RimWorld
                 foreach (var kv in pol.Properties())
                     if (kv.Value is JArray arr) Policies[kv.Name] = arr.Select(x => PyJson.Str(x)).ToList();
             Research = DigestJson.Items(DigestJson.G(DigestJson.G(Digest, "research"), "available")).OfType<JObject>().ToList();
+            foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
+                if (p is JObject po && IncapableOfViolence(DigestJson.G(po, "incapable"))) CannotFight.Add(GameData.Name(DigestJson.G(po, "name")));
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
-            Tools = BuildTools().Concat(Build.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n)), StringComparer.Ordinal);
+            Combat = new CombatKit(DigestJson.G(Digest, "combat"), Pawns, Build, afterFight);   // squad needs a combat view; defend also a build block
+            // SEAM (worker C, trade): the Python builds `self.trade = TradeKit(digest)` here and appends trade.tools after Combat.Tools;
+            // acting also includes trade.acting. Nothing of it is ported in this branch.
+            var tools = BuildTools();
+            if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
+                tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
+            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n)), StringComparer.Ordinal);
+        }
+
+        /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
+        private static bool IncapableOfViolence(JToken t)
+        {
+            if (!DigestJson.Truthy(t)) return false;
+            if (t.Type == JTokenType.String) return ((string)t).Contains("Violent");
+            return DigestJson.Items(t).Any(x => x.Type == JTokenType.String && (string)x == "Violent");
         }
 
         // ---- the tool list for this digest ----------------------------------------------
@@ -341,7 +361,7 @@ namespace RimWorldLLM.Mind.RimWorld
                         var ids = new List<int>();
                         if (raw.ToLowerInvariant() == "all")
                         {
-                            foreach (var kv in Pawns) if (!IsColonist.TryGetValue(kv.Key, out bool col) || col) ids.Add(kv.Value);
+                            foreach (var kv in Pawns) if ((!IsColonist.TryGetValue(kv.Key, out bool col) || col) && !CannotFight.Contains(kv.Key)) ids.Add(kv.Value);
                         }
                         else
                         {
@@ -359,7 +379,11 @@ namespace RimWorldLLM.Mind.RimWorld
                     {
                         int pid = PawnId(S(v, "pawn"));
                         string kind = S(v, "order");
-                        if (kind == "move") return ("order", new JObject { ["pawn"] = pid, ["order"] = "move", ["x"] = v["x"].DeepClone(), ["z"] = v["z"].DeepClone() });
+                        if (kind == "move")
+                        {
+                            if (I(v, "x") == 0 && I(v, "z") == 0) throw new PyValueError("move needs a real cell (x and z); in a fight use squad move with a named position");
+                            return ("order", new JObject { ["pawn"] = pid, ["order"] = "move", ["x"] = v["x"].DeepClone(), ["z"] = v["z"].DeepClone() });
+                        }
                         if (kind == "attack")
                         {
                             if (I(v, "target_id") <= 0) throw new PyValueError("attack needs target_id");
@@ -369,6 +393,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     }
                 default:
                     if (Build.Names.Contains(tool)) return Build.Body(tool, v);
+                    if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
                     throw new PyValueError("unknown tool " + tool);
             }
         }
@@ -392,13 +417,16 @@ namespace RimWorldLLM.Mind.RimWorld
             "PlantCutting", "Smithing", "Tailoring", "Art", "Crafting", "Hauling", "Cleaning", "Research",
         };
 
+        /// <summary>COMBAT_TOOLS: what a combat turn may use (core/steward.py).</summary>
+        public static readonly string[] CombatToolNames = { "squad", "defend", "draft", "note", "do_nothing" };
+
         public static readonly string[] ActingNames = { "set_time", "set_work", "set_schedule", "set_policy", "assign_bed", "set_research", "answer_letter", "choose", "draft", "order" };
         public static readonly HashSet<string> Acting = new HashSet<string>(ActingNames, StringComparer.Ordinal);
 
         public const string AdvisorNote =
             "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
             + "player's message explicitly asks for, and do at most one task (one action tool call); then say plainly what you did. "
-            + "If they ask for something you cannot do yet (trade, caravans, anything with no tool listed), say you cannot yet. If they only "
+            + "If they ask for something you have no tool for, say you cannot yet. If they only "
             + "ask or talk, just answer. A question (\"should we take the quest?\", \"what do you think about...?\") is not a request: "
             + "answer it with your advice and do not act. Act only on a plain instruction such as \"put Ana on cooking\". "
             + "Do not change the goals board except to record a standing order they ask for.";
@@ -464,6 +492,28 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public string RenderDigest(JObject digest) => StewardDigest.RenderDigest(digest);
 
-        public StewardSession Session(JObject digest, IBridge bridge, bool advisor) => new StewardSession(digest, bridge, advisor);
+        public StewardSession Session(JObject digest, IBridge bridge, bool advisor, bool afterFight = false) => new StewardSession(digest, bridge, advisor, afterFight);
+
+        /// <summary>The tools of a combat turn: built from the combat view alone (the colonists in it), no digest.</summary>
+        public StewardSession CombatSession(JObject view, IBridge bridge)
+        {
+            var pawns = new JArray();
+            foreach (var kv in new[] { ("fighters", false), ("others", true) })
+                foreach (var f in CombatKit.OrList(DigestJson.G(view, kv.Item1)))
+                    if (f is JObject fo && DigestJson.Truthy(DigestJson.G(fo, "id")) && DigestJson.Truthy(DigestJson.G(fo, "name")))
+                    {
+                        var p = new JObject { ["id"] = fo["id"].DeepClone(), ["name"] = fo["name"].DeepClone(), ["role"] = "colonist" };
+                        if (kv.Item2) p["incapable"] = new JArray("Violent");
+                        pawns.Add(p);
+                    }
+            foreach (var c in CombatKit.OrList(DigestJson.G(DigestJson.G(view, "downed") is JObject dn ? dn : new JObject(), "colonists")))
+                if (c is JObject co && DigestJson.Truthy(DigestJson.G(co, "id")) && DigestJson.Truthy(DigestJson.G(co, "name")))
+                    pawns.Add(new JObject { ["id"] = co["id"].DeepClone(), ["name"] = co["name"].DeepClone(), ["role"] = "colonist", ["incapable"] = new JArray("Violent") });
+            return new StewardSession(new JObject { ["pawns"] = pawns, ["combat"] = view }, bridge, false);
+        }
+
+        public string CombatSystemPrompt() => StewardCombat.SystemPrompt();
+
+        public string RenderCombat(JObject view) => StewardCombat.RenderCombat(view);
     }
 }

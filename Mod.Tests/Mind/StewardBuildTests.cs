@@ -277,7 +277,7 @@ namespace RimWorldLLM.Tests.Mind
             string strat = kit.DefaultStrategy();
             Assert.Contains("## Build order", strat); Assert.True(Encoding.UTF8.GetByteCount(strat) <= 12288);
             var s = Session();
-            Assert.True(Prompt.RenderTools(s.Tools).Length < 8500);   // 7.7k with main's why on every acting tool (13 x ~250 chars)
+            Assert.True(Prompt.RenderTools(s.Tools).Length < 8800);   // 7.9k with the why on every acting tool (13 x ~250 chars) + defend (0.8k, phase 3)
         }
 
         [Fact]

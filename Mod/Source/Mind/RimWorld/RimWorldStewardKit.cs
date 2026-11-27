@@ -6,7 +6,7 @@ using RimWorldLLM.Mind.ToolLoop;
 namespace RimWorldLLM.Mind.RimWorld
 {
     /// <summary>The RimWorld StewardKit as the core Steward's IStewardKit (the adapter's StewardKit object).</summary>
-    public sealed class RimWorldStewardKit : IStewardKit
+    public sealed class RimWorldStewardKit : IStewardKit, IStewardCombatKit
     {
         private readonly StewardKit _k;
         public RimWorldStewardKit(StewardKit k) { _k = k; }
@@ -17,6 +17,11 @@ namespace RimWorldLLM.Mind.RimWorld
         public IStewardSession Session(JObject digest, IBridge bridge, bool advisor) { return new Sess(_k.Session(digest, bridge, advisor)); }
         public string PlaybookAlerts(JObject digest) { return _k.PlaybookAlerts(digest); }
         public string RenderDigest(JObject digest) { return _k.RenderDigest(digest); }
+        public IReadOnlyCollection<string> CombatTools { get { return StewardKit.CombatToolNames; } }
+        public IStewardSession SessionAfterFight(JObject digest, IBridge bridge, bool advisor) { return new Sess(_k.Session(digest, bridge, advisor, true)); }
+        public IStewardSession CombatSession(JObject view, IBridge bridge) { return new Sess(_k.CombatSession(view, bridge)); }
+        public string CombatSystemPrompt() { return _k.CombatSystemPrompt(); }
+        public string RenderCombat(JObject view) { return _k.RenderCombat(view); }
 
         private sealed class Sess : IStewardSession
         {

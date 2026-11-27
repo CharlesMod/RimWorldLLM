@@ -59,6 +59,20 @@ namespace RimWorldLLM.Mind
         string RenderDigest(JObject digest);
     }
 
+    /// <summary>NEW (the Python's hasattr(kit, "combat_session")): a kit that has the combat loop. core/steward.py reads these members
+    /// only through this interface, so a kit without combat is untouched.</summary>
+    public interface IStewardCombatKit
+    {
+        /// <summary>COMBAT_TOOLS: what a combat turn may use.</summary>
+        IReadOnlyCollection<string> CombatTools { get; }
+        /// <summary>kit.session(digest, bridge, advisor, after_fight=True): the "combat over" cycle keeps squad for undraft and rescue.</summary>
+        IStewardSession SessionAfterFight(JObject digest, IBridge bridge, bool advisor);
+        /// <summary>The tools of a combat turn: built from the combat view alone, no digest.</summary>
+        IStewardSession CombatSession(JObject view, IBridge bridge);
+        string CombatSystemPrompt();
+        string RenderCombat(JObject view);
+    }
+
     /// <summary>The idle scheduler as the steward sees it (d.idle).</summary>
     public interface IStewardIdle
     {
@@ -125,6 +139,11 @@ namespace RimWorldLLM.Mind
         public const int Steps = 8;
         public const double BudgetS = 120.0, StepTimeoutS = 60.0;
         public const int FinalMax = 300;
+        // a combat turn is small: the combat view and the plan line, the combat tools only, three steps (the last is the closing line)
+        public const int CombatSteps = 3, CombatMaxTokens = 160, CombatFinalMax = 120;
+        public const double CombatBudgetS = 40.0, CombatStepTimeoutS = 30.0;
+        public const int TicksPerGameS = 60;
+        public const int CombatStartSteps = 5;            // the "combat started" cycle: draft, place, flee, one defence, the line; the combat turns follow
         public const string EnvStrategy = "RIMWORLDLLM_STEWARD_STRATEGY";
         public const string StrategyHeading = "## Strategy notes";
         public const string PausedNote = "Paused: a game is running on that machine";
@@ -155,6 +174,10 @@ namespace RimWorldLLM.Mind
         public bool SwitchedOn;
         public bool PauseWoken;
         public bool DialogPending;                        // a choice window opened: wakes even while the game is paused
+        public bool CombatOn;                             // a fight is running and the combat loop owns the cadence
+        public bool CombatStart;                          // the "combat started" cycle is due
+        public bool CombatOver;                           // the "combat over" cycle is due
+        public bool Slowed;                               // we put the game on 1x for the fight
 
         public Steward(IStewardHost d)
         {
@@ -225,6 +248,10 @@ namespace RimWorldLLM.Mind
             WasPlaying = false;
             SwitchedOn = false;
             PauseWoken = false;
+            CombatOn = false;
+            CombatStart = false;
+            CombatOver = false;
+            Slowed = false;
             DialogPending = false;
             Vv = new JObject();
             if (D.Leases.NarratorOwner == "steward") D.Leases.NarratorOwner = null;
@@ -314,10 +341,51 @@ namespace RimWorldLLM.Mind
                 Urgent.Clear();
                 DialogPending = false;
             }
+            await CombatStateAsync(playing).ConfigureAwait(false);
             if (!Truthy(JobsJson.Get(vv, "paused_by_narrator"))) PauseWoken = false;
             if (Active()) return;
             string reason = Wake(playing);
             if (reason != null) Start(reason, playing);
+        }
+
+        /// <summary>Follow GET /vivarium combat.active: a fight starting (speed rule in code, a full cycle), ending (a full cycle, the
+        /// speed put back). Only while the narrator plays and the kit has combat; advisor mode has no combat loop.</summary>
+        private async Task CombatStateAsync(bool playing)
+        {
+            if (!(Kit is IStewardCombatKit)) return;
+            bool active = playing && Truthy(JobsJson.Get(JobsJson.Get(Vv, "combat") as JObject ?? new JObject(), "active"));
+            if (active && !CombatOn)
+            {
+                CombatOn = true; CombatStart = true; CombatOver = false;
+                SwitchedOn = false;                              // the combat cycle is the first look
+                var st = JobsJson.Get(Vv, "settings") as JObject ?? new JObject();
+                var env = D.Bridge.Env;
+                if (Truthy(JobsJson.Get(st, "slow_for_combat")) && env.Speed > 1 && !Slowed)
+                {
+                    try
+                    {
+                        await D.Bridge.ActAsync("time", new JObject { ["speed"] = 1, ["combat"] = true }).ConfigureAwait(false);
+                        Slowed = true;
+                    }
+                    catch (BridgeError e) { LlmLog.Info("rimworldllm.steward", "steward: speed not slowed for the fight: " + e.Message); }
+                }
+            }
+            else if (!active && CombatOn)
+            {
+                CombatOn = false; CombatStart = false;
+                CombatOver = playing;                            // a fight that ended because the player took over needs no cycle
+                await RestoreSpeedAsync().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>Put the speed back if we slowed it and the player has not changed it since (still 1x).</summary>
+        private async Task RestoreSpeedAsync()
+        {
+            if (!Slowed) return;
+            Slowed = false;
+            if (D.Bridge.Env.Speed != 1) return;                 // the player changed it: leave it
+            try { await D.Bridge.ActAsync("time", new JObject { ["combat"] = true, ["restore"] = true }).ConfigureAwait(false); }
+            catch (BridgeError e) { LlmLog.Info("rimworldllm.steward", "steward: speed not restored after the fight: " + e.Message); }
         }
 
         /// <summary>First sight of a chat log: queue the player's lines after the last narrator line (typed while the agent was starting,
@@ -349,6 +417,16 @@ namespace RimWorldLLM.Mind
                 SwitchedOn = false;
                 if (LastGame != null) return "switched on";      // never looked yet: the heartbeat below fires anyway
             }
+            if (DialogPending && (CombatOn || CombatOver) && (LastReal == null || d.Clock() - LastReal.Value >= d.Cfg.StewardCombatGapRealS))
+            {
+                DialogPending = false;
+                return "dialog";                                 // a choice in a fight (a ransom, a joiner) is not starved by the combat turns
+            }
+            if (!env.Paused)
+            {
+                string fight = CombatWake();
+                if (fight != null) return fight.Length > 0 ? fight : null;
+            }
             if (LastReal != null && d.Clock() - LastReal.Value < d.Cfg.StewardMinGapRealS) return null;
             if (DialogPending)
             {
@@ -373,14 +451,41 @@ namespace RimWorldLLM.Mind
             return null;
         }
 
+        /// <summary>The combat wakes. "" = a fight is on and nothing is due (nothing else wakes); null = not in a fight, carry on.</summary>
+        private string CombatWake()
+        {
+            var d = D;
+            var env = d.Bridge.Env;
+            if (!(CombatOn || CombatOver)) return null;
+            if (LastReal != null && d.Clock() - LastReal.Value < d.Cfg.StewardCombatGapRealS) return "";
+            if (CombatStart)
+            {
+                CombatStart = false;
+                return "combat started";
+            }
+            if (CombatOver)
+            {
+                CombatOver = false;
+                return "combat over";
+            }
+            double gap = d.Cfg.StewardCombatGapGameS * TicksPerGameS;
+            if (LastGame == null || env.Game < LastGame || env.Game - LastGame.Value >= gap) return "combat";
+            return "";
+        }
+
         private void Start(string reason, bool playing)
         {
             var d = D;
             var chat = PendingChat;
             PendingChat = new List<JObject>();
-            var events = playing ? Events : new List<string>();
-            Events = new List<string>();
-            Urgent = new List<string>();
+            List<string> events;
+            if (reason == "combat") events = new List<string>();   // a combat turn leaves the events for the full cycle that follows the fight
+            else
+            {
+                events = playing ? Events : new List<string>();
+                Events = new List<string>();
+                Urgent = new List<string>();
+            }
             d.Leases.NarratorOwner = "steward";                  // idle narrator work yields from here on
             if (d.Idle != null && d.Idle.Active() && (d.Idle.Kind == "chronicle" || d.Idle.Kind == "art"))
                 d.Idle.Preempt("steward");                       // a running slot-0 job is cancelled; nothing it made is applied
@@ -480,6 +585,7 @@ namespace RimWorldLLM.Mind
             var d = D;
             var kit = Kit;
             bool advisor = !playing;
+            if (reason == "combat") { await RunCombatAsync(t).ConfigureAwait(false); return; }
             JObject digest, board;
             try
             {
@@ -500,7 +606,7 @@ namespace RimWorldLLM.Mind
                 if (snote.Length > 0) LlmLog.Info("rimworldllm.steward", "steward: " + snote);
             }
             string system = kit.SystemPrompt(advisor) + (strategy.Length > 0 ? "\n\n" + StrategyHeading + "\n" + strategy : "") + "\n\n" + GameData.DataRule;
-            var session = kit.Session(digest, d.Bridge, advisor);
+            var session = reason == "combat over" && kit is IStewardCombatKit afterKit ? afterKit.SessionAfterFight(digest, d.Bridge, advisor) : kit.Session(digest, d.Bridge, advisor);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board, advisor)).ToList();
             HashSet<string> allowed = advisor
                 ? new HashSet<string>(session.Tools.Select(x => x.Name)) { "note", "add_order", "do_nothing" }
@@ -569,7 +675,7 @@ namespace RimWorldLLM.Mind
                 return outc.Result;
             }
 
-            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, Steps, 2, BudgetS, StepTimeoutS);
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, reason == "combat started" ? CombatStartSteps : Steps, 2, BudgetS, StepTimeoutS);
             _streams++;
             string streamId = "steward-" + Environment.ProcessId + "-" + _streams;
             StewardLiveSink sink = null;
@@ -637,6 +743,88 @@ namespace RimWorldLLM.Mind
             if (edits.Any || acts.Count > 0) await SaveBoardAsync(board, edits, reason, chat, acts, t).ConfigureAwait(false);
         }
 
+        /// <summary>A combat turn: GET /combat and the plan line, the small combat prompt, the combat tools, three steps. No digest, no
+        /// board edits (notes only), no closing chat line (the game prints each act and its why as greentext).</summary>
+        private async Task RunCombatAsync(JObject t)
+        {
+            var d = D;
+            var kit = (IStewardCombatKit)Kit;
+            JObject view, board;
+            try
+            {
+                view = await d.Bridge.CombatAsync().ConfigureAwait(false);
+                board = await d.Bridge.GoalsAsync().ConfigureAwait(false);
+            }
+            catch (BridgeError e)
+            {
+                t["error"] = "read failed: " + e.Message;
+                Stats.Failed++;
+                return;
+            }
+            if (!Truthy(JobsJson.Get(view, "active")))
+            {
+                t["skipped"] = "the fight is over";             // the next step sees combat.active false and starts the "combat over" cycle
+                return;
+            }
+            string system = kit.CombatSystemPrompt() + "\n\n" + GameData.DataRule;
+            var session = kit.CombatSession(view, d.Bridge);
+            var allowed = new HashSet<string>(kit.CombatTools, StringComparer.Ordinal);
+            var tools = session.Tools.Concat(StewardBoard.BoardTools(board)).Where(x => allowed.Contains(x.Name)).ToList();
+            JToken planTok = JobsJson.Get(board, "plan");
+            string plan = StewardBoard.Plain(Truthy(planTok) ? PyJson.Str(planTok) : "", 300);
+            string user = string.Join("\n", new[]
+            {
+                "=== COMBAT TURN ===\nA fight is on. Look at the fight below and give the orders it needs now, or call do_nothing if the squad is fine.\n",
+                "=== YOUR PLAN ===\n" + (plan.Length > 0 ? plan : "none") + "\n",
+                "=== THE FIGHT ===\n" + GameData.DataSection("combat", kit.RenderCombat(view)),
+                "Decide now: call at most a couple of tools, then end with done.",
+            });
+            t["system_chars"] = PyStr.Len(system);
+            t["user_chars"] = PyStr.Len(user);
+            int notes = 0;
+
+            Task<string> validator(string tool, JObject v)
+            {
+                if (tool == "note" && notes >= MaxNotes) return Task.FromResult("at most " + MaxNotes + " notes per turn");
+                string text = string.Join(" ", v.Properties().Where(p => p.Value.Type == JTokenType.String).Select(p => (string)p.Value));
+                if (AgeGate.Violation(text, false, d.MinorTokens())) return Task.FromResult("not allowed: nothing romantic or sexual involving a minor");
+                return Task.FromResult<string>(null);
+            }
+
+            async Task<JToken> executor(string tool, JObject v)
+            {
+                if (tool == "do_nothing") return null;
+                if (tool == "note")
+                {
+                    string line = CleanLine(Need(v, "text"), 160);
+                    if (line == null) return new JObject { ["error"] = "empty note" };
+                    notes++;
+                    if (await SayAsync("note", line).ConfigureAwait(false)) Stats.Notes++;
+                    return new JObject { ["done"] = "note posted" };
+                }
+                var outc = await session.RunAsync(tool, v).ConfigureAwait(false);
+                if (outc.Ok) Stats.Acts++;
+                else if (outc.Result.ContainsKey("refused")) Stats.Refused++;
+                return outc.Result;
+            }
+
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, CombatSteps, 2, CombatBudgetS, CombatStepTimeoutS);
+            var allowedSorted = allowed.OrderBy(x => x, StringComparer.Ordinal).ToList();
+            LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
+            {
+                o.Allowed = allowedSorted;
+                o.Slot = d.Cfg.NarratorSlot;
+                o.FinalMax = CombatFinalMax;
+                o.MaxTokens = CombatMaxTokens;
+            }).ConfigureAwait(false);
+            t["outcome"] = res.Outcome;
+            t["reason_ended"] = res.Reason;
+            t["protocol"] = res.Protocol;
+            t["failures"] = new JArray(res.Failures.Skip(Math.Max(0, res.Failures.Count - 4)).Cast<object>().ToArray());
+            t["executed"] = new JArray(res.Executed.Select(e => (object)new JArray(e.Tool, e.Args, e.Result)).ToArray());
+            t["elapsed_s"] = Math.Round(res.ElapsedS, 2);
+        }
+
         private bool LivePartialOk(string text)
         {
             return !AgeGate.Violation(StewardBoard.Plain(text, 500), false, D.MinorTokens());
@@ -653,7 +841,7 @@ namespace RimWorldLLM.Mind
 
         private string LogLine(string reason, List<JObject> chat, List<(string Verb, string Note)> acts, Edits edits)
         {
-            string label = reason == "chat" ? "Asked" : reason == "heartbeat" ? "Routine look" : reason == "paused" ? "After my pause" : "On " + reason;
+            string label = reason == "chat" ? "Asked" : reason == "heartbeat" ? "Routine look" : reason == "paused" ? "After my pause" : reason == "combat over" ? "After the fight" : "On " + reason;
             if (reason == "chat" && chat.Count > 0) label += " (" + StewardBoard.Plain(JobsJson.Str(chat[chat.Count - 1], "text", ""), 50) + ")";
             var did = acts.Select(a => a.Note).ToList();
             if (edits.Any) did.Add("updated the goals board");
@@ -706,6 +894,12 @@ namespace RimWorldLLM.Mind
                 why.Add("The player said in the chat:\n" + string.Join("\n", chat.Select(c => "> " + StewardBoard.Plain(JobsJson.Str(c, "text", ""), 500))));
             if (reason == "heartbeat") why.Add("Routine look: time has passed since you last checked. Look for what needs doing.");
             else if (reason == "event") why.Add("Something important happened (see below). Deal with it first.");
+            else if (reason == "combat started")
+                why.Add("A fight has started (see COMBAT in the state below). Act now: draft the fighters and put them in cover or at the chokepoint, "
+                    + "send non-fighters indoors, then plan defences if there is time. Leave the long-term work for later.");
+            else if (reason == "combat over")
+                why.Add("The fight is over. Undraft the fighters (squad undraft), rescue the downed, make sure the wounded are tended, "
+                    + "check fires, and send everyone back to work. Then the routine look.");
             else if (reason == "dialog") why.Add("A window or letter is waiting for a choice (see OPEN DIALOGS in the state). Answer it with choose.");
             else if (reason == "paused")
                 why.Add("The game is paused because you paused it for an emergency. If it is handled, unpause with set_time (pause no); otherwise carry on.");
