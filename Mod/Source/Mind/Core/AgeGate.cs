@@ -73,7 +73,7 @@ namespace RimWorldLLM.Mind
 
         private const RegexOptions Opts = RegexOptions.CultureInvariant;
         private static readonly Regex Romantic_ = new Regex(@"\b(?:" + string.Join("|", Words) + @")\b", Opts | RegexOptions.IgnoreCase);
-        private static readonly Regex Squash = new Regex("[​-‏‪-‮⁠-⁤⁦-⁩﻿­]", Opts);
+        private static readonly Regex Squash = new Regex("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff\u00ad]", Opts);
         private static readonly Regex Spaced = new Regex(@"\b(?:[A-Za-z][\s._*-]+){2,}[A-Za-z]\b", Opts);
         private static readonly Regex SpacedJoin = new Regex(@"[\s._*-]+", Opts);
         private static readonly Regex WordTok = new Regex(@"[a-z0-9']+", Opts);
@@ -95,6 +95,20 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>Python _LEET translate: 0 1 3 4 5 7 @ $ ! to letters.</summary>
+        public static string Leetspeak(string t)
+        {
+            var sb = new StringBuilder(t.Length);
+            foreach (char c in t) sb.Append(Leet(c));
+            return sb.ToString();
+        }
+
+        /// <summary>Python _SPACED.sub(...): letter-spaced runs ("s e x y", "s.e.x.y") joined.</summary>
+        public static string JoinSpaced(string t)
+        {
+            return Spaced.Replace(t, m => SpacedJoin.Replace(m.Value, ""));
+        }
+
         /// <summary>NFKC after removing zero-width and format characters.</summary>
         public static string Norm(string text)
         {
@@ -106,10 +120,8 @@ namespace RimWorldLLM.Mind
         {
             string t = Norm(text);
             if (Romantic_.IsMatch(t)) return true;
-            var sb = new StringBuilder(t.Length);
-            foreach (char c in t) sb.Append(Leet(c));
-            if (Romantic_.IsMatch(sb.ToString())) return true;
-            string joined = Spaced.Replace(t, m => SpacedJoin.Replace(m.Value, ""));   // "s e x y", "s.e.x.y"
+            if (Romantic_.IsMatch(Leetspeak(t))) return true;
+            string joined = JoinSpaced(t);   // "s e x y", "s.e.x.y"
             return joined != t && Romantic_.IsMatch(joined);
         }
 

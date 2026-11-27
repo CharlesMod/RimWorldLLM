@@ -1,4 +1,8 @@
-// Ported from agent/tests/test_agegate.py (the tests that need no Director/world fixture).
+// Ported from agent/tests/test_agegate.py (the tests that need no Director/world fixture). The sanitiser tests (c) live in SanitizeTests.
+// Deferred (need Director/world fixture, prompt building, passes): test_prompt_carries_minor_flags_and_rule, test_prompt_marks_minors_present_and_adult_prompt_has_no_flag,
+// test_labels_offered_exclude_romance_for_minor_exchange, test_conversation_with_a_minor_drops_romantic_lines, test_adult_pair_may_be_romantic_with_no_minor_around,
+// test_group_minor_*, test_adults_naming_a_minor_romantically_is_dropped, test_unknown_age_is_treated_as_minor, test_intent_refusal_is_the_last_guard,
+// test_vanilla_romance_*, test_player_*_talk_*, test_romantic_prose_about_a_minor_is_dropped_in_a_diary_path.
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -6,8 +10,12 @@ using G = RimWorldLLM.Mind.AgeGate;
 
 namespace RimWorldLLM.Tests.Mind
 {
-    public class AgeGateTests
+    [Collection("AdultState")]
+    public class AgeGateTests : System.IDisposable
     {
+        public AgeGateTests() { RimWorldLLM.Mind.Adult.SetEnabled(false); }
+        public void Dispose() { RimWorldLLM.Mind.Adult.SetEnabled(false); }
+
         public static readonly string[] RomanticLines =
         {
             "Hey, want to go kiss behind the barn?", "I love you, you know that.", "You look so sexy tonight.",
