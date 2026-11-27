@@ -61,6 +61,14 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `recapOnLoad` | true | P | "Previously on..." recap when a save loads | Talk -> Colonists |
 | `artDescriptions` | true | P | Art descriptions (also needs the Art event) | Talk -> Colonists |
 | `evInjury` ... `evGatherings` (17) | true | P | Which event kinds get lines; each now has a tooltip | Events -> Colonists |
+| `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
+| `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
+| `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
+
+The "Narrator plays" switch itself is not a mod setting: it is saved per game (GameComponent, `rwlVivarium`) and
+sits in the bottom-right play-settings row, with a key `RWL_ToggleNarratorPlays` (unbound by default) under
+Options > Controls. The three settings above reach the agent on `GET /vivarium` (`settings`) and `GET /config`
+(`vivarium_may_pause`, `vivarium_controls_speed`, `vivarium_heartbeat_hours`). See docs/VIVARIUM.md.
 
 ### Display
 
@@ -115,8 +123,20 @@ The agent polls the mod's `GET /config` every 10 s. Fields and their readers: `e
 `events` (director.py, dreams.py, group.py, art.py), `talk_frequency` (idle.py, director.py, group.py),
 `wants_enabled`, `recap` / `recap_open` (recap.py, director.py), `adult_content` (adult.py; enforced in prompt.py and
 sanitize.py), `dreams`, `art_descriptions`, `pause_ambient_at_speed` (director.py, lease.py).
-Sent but unread: `dlc` and the `llm` block (the agent takes its endpoint from bridge.json). Both kept: harmless,
+The vivarium keys (`vivarium_*`) are sent for tools and logs; the steward reads the same values from
+`GET /vivarium`. Sent but unread: `dlc` and the `llm` block (the agent takes its endpoint from bridge.json). Both kept: harmless,
 and `llm` documents what the mod uses.
+
+### Agent config for the steward (vivarium)
+
+Agent config file / defaults (core/config.py):
+
+| Key | Default | What |
+|---|---|---|
+| `steward` | true | The vivarium steward. It also stays off by itself against a mod without `/vivarium`. |
+| `steward_min_gap_real_s` | 20 | Least real seconds between two steward cycles that are not chat (heartbeat, events). Chat ignores it. |
+| `steward_strategy_path` | "" | A strategy playbook file for the steward prompt; "" = the shipped `games/rimworld/strategy/steward_strategy.md`. The env var `RIMWORLDLLM_STEWARD_STRATEGY` wins over it. A missing or empty chosen file leaves the section out. |
+| `steward_strategy_max_bytes` | 12288 | The strategy section is cut on a line at this size. |
 
 ## Engine-side state
 

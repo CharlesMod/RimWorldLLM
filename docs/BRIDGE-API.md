@@ -477,6 +477,19 @@ A compact colony read for the steward: only what the player could see in the UI.
 - `work` lists only non-zero priorities (1 = highest). `work_types` are defNames in the game's order.
 - Caps: 30 pawns (colonists, then slaves), 4 skills per pawn (highest), 25 resources, 15 research
   options, 10 alerts, 10 letters, 20 beds.
+- `facts`: a flat block named exactly as the playbook's `digest_fields`
+  (`agent/rimworldllm_agent/games/rimworld/strategy/rules.json`), for the agent's rule evaluation; the agent
+  does not render it into the prompt. Filled (a key is left out when it cannot be computed): `day` (days
+  since landing), `season` (spring/summer/fall/winter), `biome` (snake_case defName), `temp_c`, `storyteller`,
+  `difficulty_threat_scale`, `wealth`, `food_days`, `dlc`; `colonists` (free adult colonists spawned),
+  `colonists_capable_fighters`, `colonists_armed`, `colonists_downed`, `colonists_bleeding`, `colonists_sick`,
+  `colonists_below_minor`, `colonists_below_major`, `mental_breaks_active`, `mood_avg`, `mood_min`,
+  `recreation_avg`, `colonists_without_bedroom`, `best_cook_skill`, `best_doctor_skill`, `doctors_capable`;
+  `prisoners`, `animals`, `beds_free`, `prisoner_beds_free`, `hospital_beds`; `raid_active`, `enemies_count`,
+  `turrets`, `events` (active game conditions, snake_case), `fires`; `power_net_w`, `battery_wd`,
+  `battery_capacity_wd`, `unroofed_electrics`; `medicine_total`, `medicine_industrial`, `steel`, `wood`,
+  `components`, `silver`; `research_current`, `research_done` (finished defNames) and `research_known`
+  (every ResearchProjectDef defName in this game: a playbook rule naming research the game lacks stays off).
 
 ### `POST /act/*` (game needed)
 Normal writes (`op_id`, optional `expires_tick`). Shape errors are `400 bad_request`; anything the game
@@ -494,6 +507,22 @@ or the settings refuse is `409 refused` with `detail` = a short human reason. Su
 | `/act/letter` | `{"letter": 77, "choice": "Accept"}` | choice 1..80 chars: a label, `#<index>`, or `dismiss` |
 | `/act/draft` | `{"pawns": [101, 102], "drafted": true}` | 1..30 positive ids |
 | `/act/order` | `{"pawn": 101, "order": "move", "x": 40, "z": 61}` / `{"order": "attack", "target": 5512}` / `{"order": "hold", "hold": true}` | order known; move needs x,z ≥ 0; attack needs target > 0 |
+
+Details of the phase 1 implementation (Mod/Source/Bridge/VivariumRoutes.cs):
+- `next_seq` on `/chat` and `/actions` is the last seq returned, used as the next `since` (as on `/events`);
+  a `since` past the end is pulled back.
+- `PUT /goals` is all-or-nothing: an over-cap list, an over-long text or a bad horizon/status is `400` and
+  changes nothing. Ids are never reused.
+- `/act/*` checks in this order: shape (`400`), no game (`503 no_game`), the time gate (`409 refused`), then the
+  hand. With both `pause` and `speed` given, both must pass the gate. `paused_by_narrator` is set by any
+  successful `pause: true` and cleared by any successful `pause: false`.
+- `/act/schedule`: `from_hour == to_hour` is `400`; `0` to `24` is the whole day.
+- `/act/order`: `hold` needs a boolean `hold`. Vanilla has no "hold position" order, so hold = stop the pawn's
+  current job and turn fire-at-will off; `hold: false` turns fire-at-will back on. Orders need a drafted pawn.
+- `/act/work` may partly succeed: the note says what was set and what was refused; it is a refusal only when
+  nothing was set. It turns on manual work priorities when they were off, and says so.
+- `/act/letter` runs the chosen option's action, as the letter dialog would; an option with no action (one that
+  only opens a window) is refused; `dismiss` works only on letters vanilla lets you right-click away.
 
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`

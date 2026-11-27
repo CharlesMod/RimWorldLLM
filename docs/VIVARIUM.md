@@ -158,3 +158,51 @@ The user turn carries why it woke (chat text, events), the goals board, and the 
 ### Phase 1 limits
 No designations, building, zones, bills, trade or caravans yet; draft orders are single commands
 (no tactical controller). The digest is capped (about 6 KB rendered) and lists the top items only.
+
+## Phase 1 status (what is built)
+
+**Mod (C#).**
+- `Mod/Source/Bridge/Vivarium.cs`, `VivariumState.cs`, `VivariumRoutes.cs`: the state (playing flag, settings
+  mirror, chat log, goals board, action log, saved as one JSON string `rwlVivarium`), every route above, argument
+  checks and the time gate. Covered by `Mod.Tests/VivariumTests.cs`.
+- `Mod/Source/RimWorld/VivariumHands.cs`: the hands through vanilla calls (TickManager, workSettings, timetable,
+  outfit/food/drug databases, CompAssignableToPawn, ResearchManager, LetterStack + DiaOption actions, drafter,
+  Goto job, `FloatMenuUtility.GetAttackAction`). Pure helpers (`VivariumHandsPure.cs`, `VivariumChatParse.cs`,
+  `VivariumFactsPure.cs`) are unit-tested; the game bodies are compile-checked only (no game here).
+- `VivariumDigest.cs`, `VivariumFacts.cs`: `GET /digest` with the `facts` block (each section and each fact fails
+  alone, logged once).
+- `VivariumUi.cs`, `VivariumChat.cs`, `VivariumGoalsPage.cs`: the eye toggle in the play-settings row
+  (`Mod/Textures/RimWorldLLM/UI/RWL_NarratorPlays.png`) and its key, the chat bar and scrollback, and the "Goals"
+  tab of the Voices window (plan, goals, standing orders, the narrator's log, the last 30 actions).
+- `VivariumEvents.cs`: the `letter` and `alert` events.
+- Settings: the "Narrator plays" group in the Colonists tab (docs/SETTINGS.md).
+
+**Agent (Python).**
+- `core/steward.py`: the loop. One `GET /vivarium` per director step when idle. Wakes: chat (at once, playing or
+  not, paused or not), urgent events (raid_start, mental_break, death, critical/fire/starvation/rescue alerts, a
+  letter with choices; playing and unpaused), the heartbeat (`heartbeat_hours` of game time since the last cycle;
+  playing and unpaused), and once after its own emergency pause. Non-chat cycles keep 20 real seconds apart. One
+  cycle at a time. Against a mod without `/vivarium` it switches itself off.
+- A cycle: `GET /digest` + `GET /goals` → system prompt (`steward_system.txt` + the strategy section + the tool
+  protocol) and user turn (why it woke, playbook alerts, settings, the goals board, the rendered digest, ~6 KB cap)
+  → the tool loop on slot 0 (8 steps, 120 s, 60 s a step) → at most 3 chat notes ("→ …", the bridge's own words),
+  the final line as a `narrator` chat line ("done" posts nothing), one `PUT /goals` with the board edits and one
+  log line (only if it acted). Advisor mode (not playing): one acting tool call at most.
+- Slot 0: while a cycle runs `LeaseManager.narrator_owner = "steward"`; a running chronicle/art job is
+  preempted, narrator cover and new lore wait, the load recap waits for the cycle to end.
+- `games/rimworld/steward_tools.py` (the game tools: names → ids from the digest, wrong names come back to the
+  model as errors), `steward_digest.py` (the renderer), `steward_rules.py` (the playbook rules), `steward_try.py`
+  (one cycle against a recorded digest, for live checks: `python -m rimworldllm_agent.games.rimworld.steward_try
+  --digest agent/tests/data/steward_digest_sample.json --chat "..." --playing --llm-url http://host:port/v1`).
+- `letter`/`alert` events are silent for the director (no speech, memory or chronicle).
+
+**The strategy playbook.** `games/rimworld/strategy/steward_strategy.md` is the compact playbook (written by the
+strategy research task; full reference outside the repo) and `strategy/rules.json` holds 66 if-then rules over
+the digest `facts`. The agent evaluates the rules each cycle with a whitelisted AST walker (no `eval`), and the
+ones that fire (all priority-1, at most 8 in all, ~1.5 KB) go into the user turn as "PLAYBOOK ALERTS". Always-on
+rules are left out (the playbook text covers them). A rule naming a research project the game does not define
+(checked against the digest's `research_known`) stays off, with one warning per name. To swap the playbook,
+point `RIMWORLDLLM_STEWARD_STRATEGY` (or `steward_strategy_path`) at another file.
+
+**Not in phase 1:** designations, building, zones, bills, trade, caravans, animals, the tactical controller.
+The steward is told to recommend those to the player instead of pretending.
