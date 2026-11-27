@@ -35,8 +35,9 @@ namespace RimWorldLLM.Mind
         public Completion(string text, CallStats stats) { Text = text; Stats = stats; }
     }
 
-    public class LlmError : Exception
+    public class LlmError : Exception, RimWorldLLM.Mind.Py.IPyNamed
     {
+        public virtual string PyName => "LLMError";
         public string Cause { get; }
         public int Status { get; }
         public LlmError(string cause, int status = 0) : base(cause) { Cause = cause; Status = status; }
@@ -48,6 +49,7 @@ namespace RimWorldLLM.Mind
         /// <summary>Python: LLMAway.message (the server's text).</summary>
         public string AwayMessage { get; }
         public double RetryAfter { get; }
+        public override string PyName => "LLMAway";
         public LlmAway(string message, double retryAfter = 5.0) : base("yielded", 503) { AwayMessage = message; RetryAfter = retryAfter; }
     }
 

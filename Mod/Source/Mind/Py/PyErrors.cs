@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RimWorldLLM.Mind.Py
 {
-    public class PyException : Exception
+    public class PyException : Exception, IPyNamed
     {
         public string PyName { get; }
         public PyException(string pyName, string message) : base(message) { PyName = pyName; }
