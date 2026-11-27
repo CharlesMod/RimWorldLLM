@@ -24,6 +24,8 @@ namespace RimWorldLLM.Mind
         public bool Ok = true;
         public string Error = "";
         public double Ts = NowS();
+        /// <summary>The X-Request-Id sent with the call (HttpLlm only; null for a call that was never sent). Appended to the row last.</summary>
+        public string RequestId;
 
         /// <summary>time.time(): seconds since the Unix epoch.</summary>
         public static double NowS() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
@@ -54,6 +56,7 @@ namespace RimWorldLLM.Mind
             };
             d["raw_prefill_tps"] = PyRound.Round(RawPrefillTps, 1);
             d["effective_prefill_tps"] = PyRound.Round(EffectivePrefillTps, 1);
+            if (RequestId != null) d["request_id"] = RequestId;
             return d;
         }
     }
