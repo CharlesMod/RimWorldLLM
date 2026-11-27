@@ -241,6 +241,11 @@ namespace RimWorldLLM.Mind
 
         public Task<JObject> ActionsSinceAsync(int seq) { return Req("GET", "/actions", null, true, Q("since", seq)); }
 
+        public Task<JObject> LookAsync(string path, IList<KeyValuePair<string, string>> query = null)
+        {
+            return Req("GET", path, null, true, query == null ? new KeyValuePair<string, string>[0] : System.Linq.Enumerable.ToArray(query));
+        }
+
         public Task<JObject> ActAsync(string verb, JObject body, int? expiresAt = null, string opId = null)
         {
             return Req("POST", "/act/" + verb, WriteBody(body, expiresAt, opId));

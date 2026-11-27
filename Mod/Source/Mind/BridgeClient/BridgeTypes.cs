@@ -148,6 +148,8 @@ namespace RimWorldLLM.Mind
         Task<JObject> PutGoalsAsync(int rev, JObject fields = null, string opId = null);
         Task<JObject> ActAsync(string verb, JObject body, int? expiresAt = null, string opId = null);
         Task<JObject> ActionsSinceAsync(int seq);
+        /// <summary>A read-only GET of a Vivarium route with query parameters (for example /trade/offer?with=P5521); the reply body.</summary>
+        Task<JObject> LookAsync(string path, IList<KeyValuePair<string, string>> query = null);
         Task CloseAsync();
     }
 

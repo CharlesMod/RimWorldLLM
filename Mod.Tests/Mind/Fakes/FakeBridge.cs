@@ -139,6 +139,8 @@ namespace RimWorldLLM.Mind.Fakes
         public List<KeyValuePair<string, JObject>> ActLog = new List<KeyValuePair<string, JObject>>();   // (verb, body) of every accepted /act/<verb>
         public Dictionary<string, string> ActRefuse = new Dictionary<string, string>();   // verb -> reason: refused 409 "refused"
         public Dictionary<string, JObject> ActExtra = new Dictionary<string, JObject>();   // verb -> extra fields in the success reply
+        public List<KeyValuePair<string, Dictionary<string, string>>> Looks = new List<KeyValuePair<string, Dictionary<string, string>>>();   // (path, query) of every GET /trade/offer
+        public Dictionary<string, JObject> Offers = new Dictionary<string, JObject>();   // trader id -> a canned /trade/offer reply that replaces the one built from the digest
 
         public FakeBridge(string token = "tok") { Token = token; }
 
@@ -497,6 +499,12 @@ namespace RimWorldLLM.Mind.Fakes
                 withDialogs["dialogs"] = new JArray(Dialogs.Select(d => d.DeepClone()));
                 return Ok(withDialogs);
             }
+            if (path == "/trade/offer" && method == "GET")
+            {
+                var q = req.Query.ToDictionary(kv => kv.Key, kv => kv.Value);
+                Looks.Add(new KeyValuePair<string, Dictionary<string, string>>(path, q));
+                return TradeOffer(q);
+            }
             if (path == "/dialogs" && method == "GET")
                 return Ok(("dialogs", new JArray(Dialogs.Select(d => d.DeepClone()))), ("timeout_s", 90));
             if (path == "/chat")
@@ -560,7 +568,7 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "choose", "trade" }, verb) < 0)
                     return null;
                 string bad = ActShape(verb, body);
                 if (bad.Length > 0) return Err(400, "bad_request", bad);
@@ -578,6 +586,32 @@ namespace RimWorldLLM.Mind.Fakes
                 return Ok(o);
             }
             return null;
+        }
+
+        /// <summary>A deterministic offer from the digest's trade block: the trader's sells at 2.0 each, our surplus stock at 1.0.</summary>
+        BridgeReply TradeOffer(Dictionary<string, string> q)
+        {
+            string w = q.TryGetValue("with", out string wq) ? wq : "";
+            if (Offers.TryGetValue(w, out JObject canned)) return Ok(canned);
+            var t = (Digest != null && Digest["trade"] is JObject to) ? to : new JObject();
+            var tr = (t["traders"] as JArray ?? new JArray()).OfType<JObject>().FirstOrDefault(x => x["id"] != null && x["id"].Type == JTokenType.String && (string)x["id"] == w);
+            if (tr == null) return Err(404, "not_found", "no trader " + w);
+            Func<string, JObject> line = text =>
+            {
+                int sp = text.LastIndexOf(' ');
+                string n = sp >= 0 ? text.Substring(sp + 1) : text;
+                bool dig = sp >= 0 && n.Length > 0 && n.All(char.IsDigit);
+                return new JObject { ["item"] = dig ? text.Substring(0, sp) : text, ["count"] = dig ? int.Parse(n, CultureInfo.InvariantCulture) : 1, ["price"] = 2.0 };
+            };
+            var ours = (t["stock"] as JArray ?? new JArray()).OfType<JObject>().Where(x => T(x["surplus"]))
+                .Select(x => new JObject { ["item"] = x["item"], ["count"] = x["surplus"], ["price"] = 1.0 });
+            JToken neg = t["negotiator"] is JObject no ? no["name"] : null;
+            return Ok(new JObject
+            {
+                ["with"] = w, ["name"] = tr["name"] ?? w, ["silver"] = tr["silver"] ?? 0, ["negotiator"] = neg ?? JValue.CreateNull(),
+                ["buys"] = new JArray((tr["sells"] as JArray ?? new JArray()).Select(x => (object)line(PyStr(x)))),
+                ["sells"] = new JArray(ours), ["left"] = 3,
+            });
         }
 
         BridgeReply Goals(string method, JObject body)
@@ -678,7 +712,16 @@ namespace RimWorldLLM.Mind.Fakes
                     var op = b["option"]; var tx = b["text"];
                     bool optOk = op != null && (op.Type == JTokenType.Integer || op.Type == JTokenType.String || op.Type == JTokenType.Boolean);
                     bool txOk = tx != null && (tx.Type == JTokenType.String || tx.Type == JTokenType.Object);
-                    if (!optOk && !txOk) return "option or text required";
+                    bool grOk = (b["passions"] is JArray) || (b["trait"] != null && b["trait"].Type == JTokenType.String);
+                    if (!optOk && !txOk && !grOk) return "option or text required";
+                    break;
+                }
+                case "trade":
+                {
+                    var lines = ((b["buy"] as JArray) ?? new JArray()).Concat((b["sell"] as JArray) ?? new JArray()).ToList();
+                    Func<JToken, bool> lineOk = x => x is JObject xo && xo["item"] != null && xo["item"].Type == JTokenType.String && xo.Value<string>("item").Length > 0 && Pos(xo["count"]);
+                    if (b["with"] == null || b["with"].Type != JTokenType.String || b.Value<string>("with").Length == 0 || lines.Count < 1 || lines.Count > 12 || !lines.All(lineOk))
+                        return "with, and 1..12 buy/sell lines {item, count} required";
                     break;
                 }
                 case "draft":
@@ -751,6 +794,9 @@ namespace RimWorldLLM.Mind.Fakes
                 case "letter": note = "letter " + PyStr(b["letter"]) + ": " + PyStr(b["choice"]); break;
                 case "draft": note = (b.Value<bool>("drafted") ? "drafted" : "undrafted") + " " + ((JArray)b["pawns"]).Count + " pawn(s)"; break;
                 case "order": note = PyStr(b["order"]) + " order for pawn " + PyStr(b["pawn"]); break;
+                case "trade":      // phase 4 hand: accepted as sent
+                    note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + (p.Value.Type == JTokenType.String ? (string)p.Value : RimWorldLLM.Mind.Py.PyJson.Repr(p.Value))));
+                    break;
                 case "room": case "build": case "zone": case "designate": case "bill":     // phase 2 hands: accepted as sent
                     note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + PyStr(p.Value)));
                     break;
