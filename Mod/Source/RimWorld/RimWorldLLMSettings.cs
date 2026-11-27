@@ -107,6 +107,12 @@ namespace RimWorldLLM
         public float chatPanelOpacity = 0.3f;    // background alpha while the mouse is elsewhere
         public float chatPanelWidth = 420f;
         public int chatPanelLines = 10;
+        // Where the player dragged/resized the log box, as fractions of the screen; negative = not customised (the side + width/lines above).
+        public float chatPanelX = -1f, chatPanelY = -1f, chatPanelW = -1f, chatPanelH = -1f;
+        // Per-group line filters (chips in the panel's title strip).
+        public bool chatShowTalk = true, chatShowThoughts = true, chatShowNarrator = true, chatShowActions = true, chatShowStory = true;
+        public bool ChatCustom { get { return chatPanelX >= 0f && chatPanelY >= 0f && chatPanelW > 0f && chatPanelH > 0f; } }
+        public void ChatResetPosition() { chatPanelX = chatPanelY = chatPanelW = chatPanelH = -1f; }
 
         public override void ExposeData()
         {
@@ -187,6 +193,15 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref chatPanelOpacity, "chatPanelOpacity", 0.3f);
             Scribe_Values.Look(ref chatPanelWidth, "chatPanelWidth", 420f);
             Scribe_Values.Look(ref chatPanelLines, "chatPanelLines", 10);
+            Scribe_Values.Look(ref chatPanelX, "chatPanelX", -1f);
+            Scribe_Values.Look(ref chatPanelY, "chatPanelY", -1f);
+            Scribe_Values.Look(ref chatPanelW, "chatPanelW", -1f);
+            Scribe_Values.Look(ref chatPanelH, "chatPanelH", -1f);
+            Scribe_Values.Look(ref chatShowTalk, "chatShowTalk", true);
+            Scribe_Values.Look(ref chatShowThoughts, "chatShowThoughts", true);
+            Scribe_Values.Look(ref chatShowNarrator, "chatShowNarrator", true);
+            Scribe_Values.Look(ref chatShowActions, "chatShowActions", true);
+            Scribe_Values.Look(ref chatShowStory, "chatShowStory", true);
         }
     }
 }

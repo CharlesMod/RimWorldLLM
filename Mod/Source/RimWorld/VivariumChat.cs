@@ -71,8 +71,138 @@ namespace RimWorldLLM
             return ChatLayout.Compute(new ChatLayout.Input
             {
                 ScreenW = UI.screenWidth, ScreenH = UI.screenHeight, Width = s.chatPanelWidth,
-                Lines = s.chatPanelLines, LineH = lh, Right = s.chatPanelRight
+                Lines = s.chatPanelLines, LineH = lh, Right = s.chatPanelRight,
+                Custom = s.ChatCustom, FX = s.chatPanelX, FY = s.chatPanelY, FW = s.chatPanelW, FH = s.chatPanelH
             });
+        }
+
+        static float LineHeight()
+        {
+            var old = Text.Font;
+            Text.Font = Font;
+            float lh = Text.LineHeight;
+            Text.Font = old;
+            return lh;
+        }
+
+        // ---- drag (move / resize) state; the box lives in settings as screen fractions, so UI scale and resolution changes keep it
+        const int DragNone = 0, DragMove = 1, DragResize = 2;
+        static int _drag;
+        static Vector2 _dragMouse;
+        static ChatRect _dragStart;
+
+        static void SaveSettings()
+        {
+            try { if (RimWorldLLMMod.Instance != null) RimWorldLLMMod.Instance.WriteSettings(); }
+            catch (Exception ex) { Log.ErrorOnce("[RimWorldLLM] saving chat panel settings failed: " + ex.Message, 7340212); }
+        }
+
+        static void SetBox(ChatRect box)
+        {
+            var f = ChatLayout.ToFractions(box, UI.screenWidth, UI.screenHeight);
+            var s = S;
+            s.chatPanelX = f.X; s.chatPanelY = f.Y; s.chatPanelW = f.W; s.chatPanelH = f.H;
+        }
+
+        static readonly string[] GroupKeys = { "RWL_Chat_ChipTalk", "RWL_Chat_ChipThoughts", "RWL_Chat_ChipNarrator", "RWL_Chat_ChipActions", "RWL_Chat_ChipStory" };
+
+        static bool GroupOn(int i)
+        {
+            var s = S;
+            switch (i) { case 0: return s.chatShowTalk; case 1: return s.chatShowThoughts; case 2: return s.chatShowNarrator; case 3: return s.chatShowActions; default: return s.chatShowStory; }
+        }
+
+        static void ToggleGroup(int i)
+        {
+            var s = S;
+            switch (i) { case 0: s.chatShowTalk = !s.chatShowTalk; break; case 1: s.chatShowThoughts = !s.chatShowThoughts; break; case 2: s.chatShowNarrator = !s.chatShowNarrator; break; case 3: s.chatShowActions = !s.chatShowActions; break; default: s.chatShowStory = !s.chatShowStory; break; }
+        }
+
+        static bool Shown(string who) { var s = S; return ChatLayout.Shown(who, s.chatShowTalk, s.chatShowThoughts, s.chatShowNarrator, s.chatShowActions, s.chatShowStory); }
+
+        /// <summary>The chips in the strip, left to right after the grip; one that does not fit is left out (rect width 0).</summary>
+        static Rect[] ChipRects(ChatLayout.Result lay)
+        {
+            var res = new Rect[GroupKeys.Length];
+            var old = Text.Font;
+            Text.Font = GameFont.Tiny;
+            float x = lay.Grip.Right + 2f, y = lay.Strip.Y + 2f, h = lay.Strip.H - 4f, maxX = lay.Strip.Right - 3f;
+            for (int i = 0; i < res.Length; i++)
+            {
+                float w = Text.CalcSize(UiUtil.T(GroupKeys[i])).x + 10f;
+                if (x + w > maxX) break;
+                res[i] = new Rect(x, y, w, h);
+                x += w + 3f;
+            }
+            Text.Font = old;
+            return res;
+        }
+
+        /// <summary>Presses on the grips, the strip and the chips; the drag itself. Returns true when it took the event.</summary>
+        static void HandleMouse(Event e, ref ChatLayout.Result lay, bool hover)
+        {
+            float lh = LineHeight();
+            if (_drag != DragNone)
+            {
+                if (e.type == EventType.MouseDrag || e.type == EventType.MouseUp || e.type == EventType.Repaint)
+                {
+                    bool up = e.type == EventType.MouseUp || (e.type == EventType.Repaint && !Input.GetMouseButton(0));
+                    float dx = e.mousePosition.x - _dragMouse.x, dy = e.mousePosition.y - _dragMouse.y;
+                    if (e.type == EventType.MouseDrag || up)
+                    {
+                        float sw = UI.screenWidth, sh = UI.screenHeight;
+                        var nb = _drag == DragMove ? ChatLayout.Move(_dragStart, dx, dy, sw, sh) : ChatLayout.Resize(_dragStart, dx, dy, sw, sh, lh);
+                        SetBox(nb);
+                        lay = Layout();
+                    }
+                    if (up) { _drag = DragNone; SaveSettings(); }
+                    if (e.type != EventType.Repaint) e.Use();
+                }
+                return;
+            }
+            if (!hover || e.type != EventType.MouseDown || e.button != 0) return;
+            var m = e.mousePosition;
+            var chips = ChipRects(lay);
+            for (int i = 0; i < chips.Length; i++)
+                if (chips[i].width > 0f && chips[i].Contains(m)) { ToggleGroup(i); SaveSettings(); e.Use(); return; }
+            if (R(lay.Resize).Contains(m)) { BeginDrag(DragResize, lay, m); e.Use(); return; }
+            if (R(lay.Strip).Contains(m)) { BeginDrag(DragMove, lay, m); e.Use(); }
+        }
+
+        static void BeginDrag(int mode, ChatLayout.Result lay, Vector2 mouse)
+        {
+            _drag = mode; _dragMouse = mouse; _dragStart = lay.Box;
+            SetBox(lay.Box);   // from now on the panel is customised, starting exactly where it was
+        }
+
+        static void DrawChrome(ChatLayout.Result lay)
+        {
+            var strip = R(lay.Strip);
+            Widgets.DrawBoxSolid(strip, new Color(0.05f, 0.05f, 0.05f, 0.9f));
+            // move grip: three short bars
+            for (int k = 0; k < 3; k++)
+                Widgets.DrawBoxSolid(new Rect(strip.x + 5f, strip.y + 5f + k * 4f, 10f, 2f), new Color(1f, 1f, 1f, _drag == DragMove ? 0.9f : 0.5f));
+            var chips = ChipRects(lay);
+            var oldAnchor = Text.Anchor;
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            var mouse = Event.current.mousePosition;
+            for (int i = 0; i < chips.Length; i++)
+            {
+                if (chips[i].width <= 0f) continue;
+                bool on = GroupOn(i), over = chips[i].Contains(mouse);
+                Widgets.DrawBoxSolid(chips[i], on ? new Color(0.25f, 0.4f, 0.3f, over ? 1f : 0.9f) : new Color(0.15f, 0.15f, 0.15f, over ? 0.9f : 0.6f));
+                GUI.color = on ? Color.white : new Color(1f, 1f, 1f, 0.35f);
+                Widgets.Label(chips[i], UiUtil.T(GroupKeys[i]));
+                if (over) TooltipHandler.TipRegion(chips[i], UiUtil.T("RWL_Chat_ChipTip"));
+            }
+            Text.Anchor = oldAnchor;
+            GUI.color = Color.white;
+            // resize grip: a little staircase in the corner
+            var rz = R(lay.Resize);
+            for (int k = 0; k < 3; k++)
+                Widgets.DrawBoxSolid(new Rect(rz.xMax - 3f - k * 4f - 2f, rz.yMax - 3f - (2 - k) * 4f - 2f + 0f, 2f + k * 4f, 2f), new Color(1f, 1f, 1f, _drag == DragResize ? 0.9f : 0.55f));
+            Text.Font = GameFont.Small;
         }
 
         static Rect R(ChatRect c) { return new Rect(c.X, c.Y, c.W, c.H); }
@@ -107,7 +237,13 @@ namespace RimWorldLLM
             if (!panel) return;
 
             var lay = Layout();
-            bool hover = R(lay.Whole).Contains(e.mousePosition);
+            bool hover = _drag != DragNone || R(lay.Whole).Contains(e.mousePosition);
+            HandleMouse(e, ref lay, hover);
+            if (open)
+            {
+                var bw = Find.WindowStack.WindowOfType<Window_RWLChat>();
+                if (bw != null) bw.windowRect = R(lay.Bar);   // the input bar follows the panel
+            }
             if (!hover) _scroll = 0f;   // back to the newest line when the mouse leaves
             if (hover && e.type == EventType.ScrollWheel)
             {
@@ -116,7 +252,7 @@ namespace RimWorldLLM
                 Text.Font = GameFont.Small;
                 e.Use();   // the wheel reads history instead of zooming; clicks are never taken
             }
-            if (e.type == EventType.Repaint) DrawPanel(lay, hover);
+            if (e.type == EventType.Repaint) { DrawPanel(lay, hover); if (hover) DrawChrome(lay); }
         }
 
         /// <summary>The input line. A real window, so the camera, the vanilla hotkeys and Esc leave it alone while it is open.</summary>
@@ -224,9 +360,18 @@ namespace RimWorldLLM
                 case "player": return to > 0 ? new Color(0.6f, 0.95f, 0.9f) : new Color(0.75f, 0.88f, 1f);
                 case "narrator": return new Color(1f, 0.85f, 0.5f);
                 case "colonist": return new Color(0.65f, 0.95f, 0.6f);
+                case "thought": return new Color(0.6f, 0.76f, 0.6f, 0.9f);    // dimmer green, italic
+                case "dream": return new Color(0.7f, 0.66f, 0.92f, 0.9f);     // dim violet, italic
+                case "diary": return new Color(0.7f, 0.64f, 0.5f, 0.9f);      // dim paper brown
+                case "chronicle": case "recap": return new Color(0.86f, 0.76f, 0.54f);   // muted gold
+                case "art": return new Color(0.82f, 0.7f, 0.86f);
+                case "action": return new Color(0.56f, 0.71f, 0.23f);   // #8FB43A: greentext #789922, lifted a touch for dark backgrounds
+                case "refused": return new Color(0.5f, 0.5f, 0.5f);
                 default: return new Color(0.72f, 0.72f, 0.72f);   // notes ("→ ...")
             }
         }
+
+        static string Name(ChatEntry c) { return string.IsNullOrEmpty(c.Name) ? "?" : c.Name; }
 
         static string Line(ChatEntry c)
         {
@@ -234,8 +379,17 @@ namespace RimWorldLLM
             {
                 case "player": return c.To > 0 ? UiUtil.T("RWL_Viv_LinePlayerTo", c.Name, c.Text) : UiUtil.T("RWL_Viv_LinePlayer", c.Text);
                 case "narrator": return UiUtil.T("RWL_Viv_LineNarrator", c.Text);
-                case "colonist": return (string.IsNullOrEmpty(c.Name) ? "?" : c.Name) + ": " + c.Text;
-                default: return c.Text;
+                case "colonist":
+                    return string.IsNullOrEmpty(c.Listener) ? UiUtil.T("RWL_Viv_LineColonist", Name(c), c.Text)
+                        : UiUtil.T("RWL_Viv_LineColonistTo", Name(c), c.Listener, c.Text);
+                case "thought": return "<i>" + UiUtil.T("RWL_Viv_LineThought", Name(c), c.Text) + "</i>";
+                case "dream": return "<i>" + UiUtil.T("RWL_Viv_LineDream", Name(c), c.Text) + "</i>";
+                case "diary": return UiUtil.T("RWL_Viv_LineDiary", Name(c), c.Text);
+                case "chronicle":
+                    return string.IsNullOrEmpty(c.Name) ? UiUtil.T("RWL_Viv_LineChronicle", c.Text) : UiUtil.T("RWL_Viv_LineChronicleDay", c.Name, c.Text);
+                case "recap": return UiUtil.T("RWL_Viv_LineRecap", c.Text);
+                case "action": case "refused": return "> " + c.Text;
+                default: return c.Text;   // note, art (stored as a one-liner)
             }
         }
 
@@ -283,9 +437,11 @@ namespace RimWorldLLM
             var rows = new List<Row>();
             float freshest = 0f, need = innerH + Mathf.Max(0f, _scroll);
             // newest first until the box (plus the scroll) is filled, then flip
-            for (int i = live.Count - 1; i >= 0; i--) rows.Add(LiveRow(live[i], now));
+            for (int i = live.Count - 1; i >= 0; i--)
+                if (Shown(live[i].Who == "narrator" ? "narrator" : "colonist")) rows.Add(LiveRow(live[i], now));
             for (int i = entries.Count - 1; i >= 0; i--)
             {
+                if (!Shown(entries[i].Who)) continue;
                 double at;
                 float fresh = _arrived.TryGetValue(entries[i].Seq, out at) ? ChatLayout.Freshness(now - at) : 0f;
                 rows.Add(new Row { Text = Line(entries[i]), Col = ColorOf(entries[i].Who, entries[i].To), Fresh = fresh });

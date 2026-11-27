@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RimWorldLLM.Bridge;
 
 namespace RimWorldLLM
 {
@@ -47,6 +48,8 @@ namespace RimWorldLLM
             public int Lines;         // wanted number of visible lines
             public float LineH;       // one line at the chosen font (Text.LineHeight)
             public bool Right;        // position: false = left, true = right
+            public bool Custom;       // true: the player placed it; FX/FY/FW/FH (fractions of the screen) give the log box
+            public float FX, FY, FW, FH;
         }
 
         public struct Result
@@ -55,11 +58,19 @@ namespace RimWorldLLM
             public ChatRect Bar;      // the input bar slot under it (drawn while typing)
             public ChatRect Whole;    // box + bar, the mouse-over area
             public int Lines;         // visible lines that fit
+            public ChatRect Strip;    // the hover title strip: the top StripH of the box
+            public ChatRect Grip;     // move grip in the strip's left end
+            public ChatRect Resize;   // resize grip at the box's bottom-right corner
         }
+
+        public const float StripH = 20f, GripSize = 16f, ResizeSize = 16f;
+        public const float BarGap = 2f;
+        public static float MinBoxH(float lineH) { return MinLines * (lineH > 1f ? lineH : 22f) + 2f * Pad; }
 
         public static Result Compute(Input i)
         {
             float lineH = i.LineH > 1f ? i.LineH : 22f;
+            if (i.Custom) return ComputeCustom(i, lineH);
             int lines = Math.Max(MinLines, i.Lines);
 
             // width: the wanted one, within what the side leaves free
@@ -80,7 +91,83 @@ namespace RimWorldLLM
             if (fit < lines) lines = Math.Max(1, fit);   // a tiny screen (under ~400 tall) keeps one line even under the colonist bar
             float h = lines * lineH + 2f * Pad;
             var box = new ChatRect(x, boxBottom - h, w, h);
-            return new Result { Box = box, Bar = bar, Whole = new ChatRect(x, box.Y, w, bar.Bottom - box.Y), Lines = lines };
+            return Finish(box, bar, lines);
+        }
+
+        static Result Finish(ChatRect box, ChatRect bar, int lines)
+        {
+            float top = Math.Min(box.Y, bar.Y), bottom = Math.Max(box.Bottom, bar.Bottom);
+            return new Result
+            {
+                Box = box, Bar = bar, Whole = new ChatRect(box.X, top, box.W, bottom - top), Lines = lines,
+                Strip = new ChatRect(box.X, box.Y, box.W, Math.Min(StripH, box.H)),
+                Grip = new ChatRect(box.X, box.Y, GripSize + 4f, Math.Min(StripH, box.H)),
+                Resize = new ChatRect(box.Right - ResizeSize, box.Bottom - ResizeSize, ResizeSize, ResizeSize)
+            };
+        }
+
+        static Result ComputeCustom(Input i, float lineH)
+        {
+            var box = ClampBox(FromFractions(i.FX, i.FY, i.FW, i.FH, i.ScreenW, i.ScreenH), i.ScreenW, i.ScreenH, lineH);
+            var bar = BarFor(box, i.ScreenH);
+            int lines = Math.Max(1, (int)Math.Floor((box.H - 2f * Pad) / lineH + 0.0001f));
+            return Finish(box, bar, lines);
+        }
+
+        /// <summary>The input bar follows the box: right below it, or right above it when there is no room below.</summary>
+        public static ChatRect BarFor(ChatRect box, float screenH)
+        {
+            float below = box.Bottom + BarGap;
+            if (below + BarH <= screenH) return new ChatRect(box.X, below, box.W, BarH);
+            return new ChatRect(box.X, Math.Max(0f, box.Y - BarGap - BarH), box.W, BarH);
+        }
+
+        public static ChatRect FromFractions(float fx, float fy, float fw, float fh, float screenW, float screenH)
+        {
+            return new ChatRect(fx * screenW, fy * screenH, fw * screenW, fh * screenH);
+        }
+
+        /// <summary>The box as fractions of the screen (X, Y, W, H hold the fractions).</summary>
+        public static ChatRect ToFractions(ChatRect r, float screenW, float screenH)
+        {
+            float sw = Math.Max(1f, screenW), sh = Math.Max(1f, screenH);
+            return new ChatRect(r.X / sw, r.Y / sh, r.W / sw, r.H / sh);
+        }
+
+        /// <summary>Fully on screen, at least MinW x MinBoxH (or the whole screen if that is smaller).</summary>
+        public static ChatRect ClampBox(ChatRect r, float screenW, float screenH, float lineH)
+        {
+            float w = Clamp(r.W, Math.Min(MinW, screenW), screenW);
+            float h = Clamp(r.H, Math.Min(MinBoxH(lineH), screenH), screenH);
+            return new ChatRect(Clamp(r.X, 0f, screenW - w), Clamp(r.Y, 0f, screenH - h), w, h);
+        }
+
+        /// <summary>Drag the whole box by (dx, dy) from where it was when the drag began; stays on screen.</summary>
+        public static ChatRect Move(ChatRect start, float dx, float dy, float screenW, float screenH)
+        {
+            return new ChatRect(Clamp(start.X + dx, 0f, Math.Max(0f, screenW - start.W)), Clamp(start.Y + dy, 0f, Math.Max(0f, screenH - start.H)), start.W, start.H);
+        }
+
+        /// <summary>Drag the bottom-right corner by (dx, dy): the top-left stays; min size, never past the screen edge.</summary>
+        public static ChatRect Resize(ChatRect start, float dx, float dy, float screenW, float screenH, float lineH)
+        {
+            float minW = Math.Min(MinW, Math.Max(1f, screenW - start.X)), minH = Math.Min(MinBoxH(lineH), Math.Max(1f, screenH - start.Y));
+            float w = Clamp(start.W + dx, minW, Math.Max(minW, screenW - start.X));
+            float h = Clamp(start.H + dy, minH, Math.Max(minH, screenH - start.Y));
+            return new ChatRect(start.X, start.Y, w, h);
+        }
+
+        /// <summary>Does this line show with the five group filters? Unknown kinds count as narrator (see ChatKinds.Group).</summary>
+        public static bool Shown(string who, bool talk, bool thoughts, bool narrator, bool actions, bool story)
+        {
+            switch (ChatKinds.Group(who))
+            {
+                case ChatKinds.Talk: return talk;
+                case ChatKinds.Thoughts: return thoughts;
+                case ChatKinds.Actions: return actions;
+                case ChatKinds.Story: return story;
+                default: return narrator;
+            }
         }
 
         /// <summary>

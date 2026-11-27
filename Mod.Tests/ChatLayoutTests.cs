@@ -148,5 +148,90 @@ namespace RimWorldLLM.Tests
             Assert.Equal("", ChatLayout.ProgressText(-1f));
             Assert.Equal(0, ChatLayout.Dots(0)); Assert.Equal(1, ChatLayout.Dots(0.34)); Assert.Equal(0, ChatLayout.Dots(4.0 / 3.0 + 0.01));
         }
+    
+        const float SW = 1920f, SH = 1080f;
+
+        [Fact]
+        public void FractionsRoundTrip()
+        {
+            var r = new ChatRect(192, 108, 480, 270);
+            var f = ChatLayout.ToFractions(r, SW, SH);
+            Assert.Equal(0.1f, f.X, 4); Assert.Equal(0.1f, f.Y, 4); Assert.Equal(0.25f, f.W, 4); Assert.Equal(0.25f, f.H, 4);
+            Assert.Equal(r.ToString(), ChatLayout.FromFractions(f.X, f.Y, f.W, f.H, SW, SH).ToString());
+            // another resolution keeps the proportions
+            var g = ChatLayout.FromFractions(f.X, f.Y, f.W, f.H, 1280, 720);
+            Assert.Equal(128f, g.X, 3); Assert.Equal(320f, g.W, 3);
+        }
+
+        [Fact]
+        public void CustomBoxIsUsedAndLinesFollowHeight()
+        {
+            var r = ChatLayout.Compute(new ChatLayout.Input { ScreenW = SW, ScreenH = SH, LineH = 22f, Custom = true, FX = 0.5f, FY = 0.2f, FW = 0.25f, FH = 0.3f });
+            Assert.Equal(new ChatRect(960, 216, 480, 324).ToString(), r.Box.ToString());
+            Assert.Equal((int)System.Math.Floor((324f - 10f) / 22f), r.Lines);
+            Assert.Equal(new ChatRect(960, 542, 480, 28).ToString(), r.Bar.ToString());
+            Assert.Equal(r.Box.X, r.Whole.X); Assert.Equal(r.Bar.Bottom, r.Whole.Bottom); Assert.Equal(r.Box.Y, r.Whole.Y);
+        }
+
+        [Fact]
+        public void BarGoesAboveWhenNoRoomBelow()
+        {
+            var r = ChatLayout.Compute(new ChatLayout.Input { ScreenW = SW, ScreenH = SH, LineH = 22f, Custom = true, FX = 0.1f, FY = 0.7f, FW = 0.25f, FH = 0.3f });
+            Assert.Equal(SH, r.Box.Bottom, 2);
+            Assert.Equal(r.Box.Y - 2f - 28f, r.Bar.Y, 2);
+            Assert.Equal(r.Bar.Y, r.Whole.Y, 2);
+            Assert.False(r.Bar.Overlaps(r.Box));
+        }
+
+        [Fact]
+        public void CustomIsClampedOnScreenWithMinimumSize()
+        {
+            var r = ChatLayout.Compute(new ChatLayout.Input { ScreenW = SW, ScreenH = SH, LineH = 22f, Custom = true, FX = 0.99f, FY = -0.5f, FW = 0.01f, FH = 0.001f });
+            Assert.True(r.Box.W >= ChatLayout.MinW && r.Box.H >= ChatLayout.MinBoxH(22f));
+            Assert.True(r.Box.X >= 0 && r.Box.Right <= SW && r.Box.Y >= 0 && r.Box.Bottom <= SH);
+            Assert.True(r.Lines >= 1);
+            var huge = ChatLayout.ClampBox(new ChatRect(-50, -50, 5000, 5000), 800, 600, 22f);
+            Assert.Equal(new ChatRect(0, 0, 800, 600).ToString(), huge.ToString());
+        }
+
+        [Fact]
+        public void MoveStaysOnScreen()
+        {
+            var s = new ChatRect(100, 100, 400, 300);
+            Assert.Equal(new ChatRect(150, 80, 400, 300).ToString(), ChatLayout.Move(s, 50, -20, SW, SH).ToString());
+            Assert.Equal(new ChatRect(0, 0, 400, 300).ToString(), ChatLayout.Move(s, -999, -999, SW, SH).ToString());
+            Assert.Equal(new ChatRect(SW - 400, SH - 300, 400, 300).ToString(), ChatLayout.Move(s, 9999, 9999, SW, SH).ToString());
+        }
+
+        [Fact]
+        public void ResizeKeepsTopLeftMinSizeAndScreenEdge()
+        {
+            var s = new ChatRect(100, 100, 400, 300);
+            Assert.Equal(new ChatRect(100, 100, 450, 280).ToString(), ChatLayout.Resize(s, 50, -20, SW, SH, 22f).ToString());
+            var small = ChatLayout.Resize(s, -9999, -9999, SW, SH, 22f);
+            Assert.Equal(ChatLayout.MinW, small.W); Assert.Equal(ChatLayout.MinBoxH(22f), small.H);
+            Assert.Equal(100f, small.X); Assert.Equal(100f, small.Y);
+            var big = ChatLayout.Resize(s, 9999, 9999, SW, SH, 22f);
+            Assert.Equal(SW, big.Right); Assert.Equal(SH, big.Bottom);
+            // a box hard against the corner can still be shrunk by its min, not past the screen
+            var corner = ChatLayout.Resize(new ChatRect(SW - 100, SH - 50, 100, 50), 500, 500, SW, SH, 22f);
+            Assert.True(corner.Right <= SW && corner.Bottom <= SH);
+        }
+
+        [Theory]
+        [InlineData("player", "talk")] [InlineData("colonist", "talk")] [InlineData("thought", "thoughts")] [InlineData("dream", "thoughts")]
+        [InlineData("diary", "thoughts")] [InlineData("narrator", "narrator")] [InlineData("note", "narrator")] [InlineData("mystery", "narrator")]
+        [InlineData("action", "actions")] [InlineData("refused", "actions")] [InlineData("chronicle", "story")] [InlineData("recap", "story")] [InlineData("art", "story")]
+        public void ShownFollowsOnlyItsGroup(string who, string group)
+        {
+            foreach (var g in new[] { "talk", "thoughts", "narrator", "actions", "story" })
+            {
+                // only group g is on
+                bool on = ChatLayout.Shown(who, g == "talk", g == "thoughts", g == "narrator", g == "actions", g == "story");
+                Assert.Equal(g == group, on);
+            }
+            Assert.True(ChatLayout.Shown(who, true, true, true, true, true));
+            Assert.False(ChatLayout.Shown(who, false, false, false, false, false));
+        }
     }
 }
