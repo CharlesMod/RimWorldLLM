@@ -377,7 +377,7 @@ namespace HermesVoice.Bridge
             return res;
         }
 
-        /// <summary>The Error of a result whose reply was the engine's 503 "yielded" (a game is running on that machine).</summary>
+        /// <summary>The Error of a result whose reply was the engine's 503 "yielded" (another program on that machine wants its graphics card).</summary>
         public const string YieldedError = "yielded";
 
         static string ErrorText(string body, int status)

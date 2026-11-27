@@ -16,7 +16,7 @@ namespace HermesVoice.Bridge
         Ok,               // all good
         OkFixedBase,      // worked after adding or removing /v1; Arg = the base that works
         Loading,          // server answered 503: the model is still loading
-        Paused,           // 503 with error.code "yielded": a game is running on that machine
+        Paused,           // 503 with error.code "yielded": another program on that machine wants its graphics card
         Slow,             // reply took too long; Arg = ms
         ReasoningText,    // reasoning text came back in the output
         NoUrl,
