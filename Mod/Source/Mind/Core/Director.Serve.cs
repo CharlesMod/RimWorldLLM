@@ -115,8 +115,12 @@ namespace RimWorldLLM.Mind
             return o;
         }
 
+        /// <summary>Test seam (Python tests monkeypatch d._listener): when set, it picks the listener instead.</summary>
+        public Func<JObject, int, int?, int?> ListenerHook;
+
         private int? ListenerOf(JObject scene, int aid, int? prefer)
         {
+            if (ListenerHook != null) return ListenerHook(scene, aid, prefer);
             if (prefer != null) return prefer;
             foreach (var (i, canHear) in Adapter.ScenePresent(scene))
                 if (canHear && Minds.ContainsKey(i) && i != aid) return i;
@@ -252,14 +256,14 @@ namespace RimWorldLLM.Mind
         }
 
         /// <summary>speak() arguments for the inner monologue: defaults when the master switch is off (today's calls, byte for byte).</summary>
-        internal sealed class InnerArgs
+        public sealed class InnerArgs
         {
             public bool Aim, SoloAim = true, DropJustWant;
             public string FreshAim, AimExtra;
             public ILlmClient IntentLlm;
         }
 
-        private InnerArgs InnerKw(Mind mind, int? listener = null)
+        public InnerArgs InnerKw(Mind mind, int? listener = null)
         {
             var kw = new InnerArgs();
             if (!Cfg.InnerMonologue) return kw;
@@ -300,7 +304,7 @@ namespace RimWorldLLM.Mind
         }
 
         /// <summary>A line the game applied: its aim joins the stream and may show as a contrast cloud.</summary>
-        private async Task InnerAfterSayAsync(int aid, Spoken sp, bool minor)
+        public async Task InnerAfterSayAsync(int aid, Spoken sp, bool minor)
         {
             if (!Cfg.InnerMonologue || string.IsNullOrEmpty(sp.Aim)) return;
             if (Inner.RepeatsRecentAim(Minds[aid], sp.Aim)) return;      // the same aim again: no duplicate in the stream, no repeat cloud

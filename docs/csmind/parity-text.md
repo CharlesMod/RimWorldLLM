@@ -20,4 +20,4 @@ The contract part (docs/csmind/parity-contract.md) ported everything that needed
 - test_loopguard: offline_bench_numbers (bench files). The 4 Director tests are ported in `ConversationWorldTests`.
 - test_memory_minds: none left.
 - test_firsts: none left (the 7 Director tests are in `ConversationWorldTests`, first_of_table in ContractDeferredTests).
-- test_habits: 2 reflection-module tests, 8 Director tests; test_gossip_chain/upkeep_gossip: Director tests (the block_b/c/d assertions are ported).
+- test_habits: nothing left (the reflection-module tests are in ReflectionHabitsTests, the Director ones in InnerWorldTests); test_gossip_chain/upkeep_gossip: Director tests (the block_b/c/d assertions are ported).

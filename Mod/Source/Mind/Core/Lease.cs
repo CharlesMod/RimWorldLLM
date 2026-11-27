@@ -300,9 +300,13 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>Test seam (Python tests wrap leases.submit): called with every submitted item before it is judged.</summary>
+        public Action<WorkItem> SubmitHook;
+
         /// <summary>Queue a request. Returns "queued", or why it was refused.</summary>
         public string Submit(WorkItem item, Now now, int speed = 1)
         {
+            if (SubmitHook != null) SubmitHook(item);
             if (item.Cls <= Cls.Social && AmbientPaused(speed)) return Why("drop", "ambient_paused");
             // the game's own interactions are already rate-limited by the game: no pair quota for them
             var (ok, why) = Quotas.Allowed(item.ActorId, Truthy(item.Payload["vanilla"]) ? null : item.Listener, item.Cls, now);

@@ -48,7 +48,7 @@ Deferred (need the Director / world fixture / modules owned by other parts; port
 
 - test_register: `bystander_prompt_has_the_register_line` (core/bystanders; not a Director test, still not ported: needs the bystander prompt builder, left to the bystanders owner).
 - test_character_card: none left. test_split: none left.
-- test_habits: the 2 reflection-module tests (`schema_and_prompt_only_when_habits_asked`, `apply_reflection...`) and the Director ones.
+- test_habits: nothing left (reflection-module tests are in ReflectionHabitsTests, the Director ones in InnerWorldTests).
 - test_firsts and test_loopguard Director tests: ported in `ConversationWorldTests` (offline_bench_numbers stays deferred: needs bench/ results). test_creative / test_clouds `world` tests still deferred.
 
 ## Behaviour differences from the Python (and why)
