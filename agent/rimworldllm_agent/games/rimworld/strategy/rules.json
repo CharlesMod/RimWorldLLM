@@ -827,7 +827,7 @@
    "id": "bio.hemogen_low",
    "category": "biotech",
    "condition": "hemogen_min_pct < 25",
-   "action": "A hemogen-needing colonist is under 25%: get a hemogen pack or a willing prisoner donor (genes tool, donate). Never strip food for it.",
+   "action": "A hemogen-needing colonist is under 25% (craving soon): this turn set a grown prisoner to give blood (genes tool, op donate), or get hemogen packs. Never strip food for it.",
    "priority": 2,
    "sources": [
     "W-hemogen"
@@ -838,7 +838,7 @@
    "id": "bio.bandwidth_idle",
    "category": "biotech",
    "condition": "bandwidth_free >= 2 and mech_kinds_ready > 0",
-   "action": "A mechanitor has 2+ bandwidth idle: gestate a labor mech (mechs tool, gestate), keeping 1 bandwidth free and a recharger in place.",
+   "action": "A mechanitor has 2+ bandwidth idle: gestate a labor mech (mechs tool, op gestate), keeping 1 bandwidth free. No mech recharger yet: build one first (build tool, mech recharger).",
    "priority": 3,
    "sources": [
     "W-mechanitor"

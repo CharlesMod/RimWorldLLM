@@ -288,6 +288,12 @@ def _bio_lines(b: dict, bl: dict, ages: dict | None = None) -> list[str]:
         t = f"{c(m.get('name'))} bandwidth {_num(m.get('bandwidth_used'))}/{_num(m.get('bandwidth_total'))}"
         if m.get("gestating_bandwidth"):
             t += f" ({_num(m['gestating_bandwidth'])} gestating)"
+        try:
+            free = int(m.get("bandwidth_total") or 0) - int(m.get("bandwidth_used") or 0) - int(m.get("gestating_bandwidth") or 0)
+        except (TypeError, ValueError):
+            free = 0
+        if free > 0:
+            t += f", {free} free"
         gs = [f"group {_num(g.get('group'))} {c(g.get('mode'))} ({_num(g.get('mechs'))})" for g in (m.get("groups") or []) if isinstance(g, dict)]
         mech_bits.append(t + ("; " + ", ".join(gs) if gs else ""))
     for m in L("mechs")[:bl["mechs"]]:
@@ -333,6 +339,9 @@ def _bio_lines(b: dict, bl: dict, ages: dict | None = None) -> list[str]:
             t += "; donors " + ", ".join(_words(hg["donors"], 3))
         if hg.get("needing"):
             t += "; needing " + ", ".join(_words(hg["needing"], 4))
+            could = [c(x.get("name")) for x in (hg.get("prisoners") or []) if isinstance(x, dict)][:3]
+            if could and not hg.get("donors"):
+                t += "; prisoners who could give blood: " + ", ".join(could)
         out.append("HEMOGEN: " + t)
     gb = b.get("genebank") if isinstance(b.get("genebank"), dict) else {}
     if gb and not urgent:

@@ -125,7 +125,7 @@ def test_child_bodies():
     s = sess(load("bio_baby"))
     assert body(s, "children", op="schedule", child="Fay", preset="school")[:2] == ("child_schedule", {"pawn": 106, "preset": "school"})
     assert body(s, "children", op="feed", child="Dee", who="Ana", feed_mode="urgent") == ("feed", {"baby": 107, "feeder": 101, "mode": "urgent"})
-    assert body(s, "children", op="feed", child="Dee")[1] == {"baby": 107, "feeder": 0, "mode": "childcare"}
+    assert "who" in err(s, "children", op="feed", child="Dee")
     assert body(s, "children", op="care", who="Dara", priority=2) == ("child_care", {"pawn": 104, "priority": 2})
     assert body(s, "children", op="care", who="Dara")[1]["priority"] == 1
     assert "Dee" in err(s, "children", op="feed", child="Fay")                 # Fay is no baby
@@ -152,7 +152,7 @@ def test_acting_set_and_why():
 # ---- digest lines
 def test_renderer_lines():
     t = render_digest(load("bio_all"))
-    for want in ("MECHS: Ana bandwidth 3/6 (1 gestating); group 1 work (2), group 2 recharge (1); Lifter 1 hauling steel 45%", "Militor 1 low power",
+    for want in ("MECHS: Ana bandwidth 3/6 (1 gestating), 2 free; group 1 work (2), group 2 recharge (1); Lifter 1 hauling steel 45%", "Militor 1 low power",
                  "POLLUTION: 12 wastepacks (4 near home), home 3% polluted, growing", "no waste stockpile",
                  "Bram Sanguophage (needs hemogen 15%, deathrest)", "HEMOGEN: 0 packs; needing Bram 15%",
                  "GENEBANK: 3 genepacks (1 unstored), 1 bank (4 free), assembler idle", "BABIES: Dee 20 days, hungry 22%, no feeder",

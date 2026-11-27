@@ -130,7 +130,7 @@ class BioKit:
             if "schedule" in cops:
                 ps.append(_opt("preset", "schedule: the day's shape", PRESETS))
             if "feed" in cops or "care" in cops:
-                ps.append(_opt("who", "feed: the feeder (none clears); care: the colonist", list(self.adults)))
+                ps.append(_opt("who", "feed: the feeder; care: the colonist", list(self.adults)))
             if "feed" in cops:
                 ps.append(_opt("feed_mode", "feed: when", FEED_MODES))
             if "care" in cops:
@@ -208,5 +208,8 @@ class BioKit:
                 raise ValueError("schedule needs preset: " + ", ".join(PRESETS))
             return "child_schedule", {"pawn": self._pick({**self.children, **self.babies}, v.get("child"), "child"), "preset": pre}
         mode = self._get(v, "feed_mode") or "childcare"
-        feeder = 0 if self._get(v, "who") is None else self._pick(self.adults, v.get("who"), "colonist")
-        return "feed", {"baby": self._pick(self.babies, v.get("child"), "baby"), "feeder": feeder, "mode": mode}
+        baby = self._pick(self.babies, v.get("child"), "baby")
+        if self._get(v, "who") is None:
+            raise ValueError("feed needs who: the colonist who feeds the baby (" + ", ".join(self.adults) + ")")
+        feeder = self._pick(self.adults, v.get("who"), "colonist")
+        return "feed", {"baby": baby, "feeder": feeder, "mode": mode}
