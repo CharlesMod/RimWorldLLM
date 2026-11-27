@@ -51,7 +51,7 @@ Deferred (need the Director / world fixture / modules owned by other parts; port
 - test_adult: `live_toggle_from_bridge_config_and_stats`, `missing_key_means_off`, `settings_refresh_on_their_own` (Director + bridge config).
 - test_gamedata: `director_prompt_holds_planted_scene_text_as_data`, `idle_prompts_wrap_game_text_too` (reflection module).
 - test_habits: the 2 reflection-module tests (`schema_and_prompt_only_when_habits_asked`, `apply_reflection...`) and the Director ones.
-- test_firsts and test_loopguard Director tests; test_creative / test_clouds `world` tests.
+- test_firsts and test_loopguard Director tests: ported in `ConversationWorldTests` (offline_bench_numbers stays deferred: needs bench/ results). test_creative / test_clouds `world` tests still deferred.
 
 ## Behaviour differences from the Python (and why)
 

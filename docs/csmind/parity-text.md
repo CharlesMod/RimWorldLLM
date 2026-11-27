@@ -19,7 +19,7 @@ The contract part (docs/csmind/parity-contract.md) ported everything that needed
 - test_adult: live_toggle_from_bridge_config_and_stats, missing_key_means_off, settings_refresh (Director + bridge config).
 - test_gamedata: director_prompt_holds_planted_scene_text_as_data, idle_prompts_wrap_game_text_too (reflection module).
 - test_sanitize: VoiceCard/passes halves of the guard tests.
-- test_loopguard: offline_bench_numbers (bench files), 4 Director tests.
+- test_loopguard: offline_bench_numbers (bench files). The 4 Director tests are ported in `ConversationWorldTests`.
 - test_memory_minds: none left.
-- test_firsts: 7 Director tests (first_of_table is ported).
+- test_firsts: none left (the 7 Director tests are in `ConversationWorldTests`, first_of_table in ContractDeferredTests).
 - test_habits: 2 reflection-module tests, 8 Director tests; test_gossip_chain/upkeep_gossip: Director tests (the block_b/c/d assertions are ported).

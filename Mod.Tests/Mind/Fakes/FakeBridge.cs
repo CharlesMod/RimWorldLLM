@@ -276,8 +276,12 @@ namespace RimWorldLLM.Mind.Fakes
 
         static readonly Regex PawnRoute = new Regex(@"^/(pawn|scene|mind)/(\d+)$", RegexOptions.CultureInvariant);
 
+        /// <summary>Test hook: runs at the start of every request (a Python test wraps _handle to change the world mid-run).</summary>
+        public Action<BridgeRequest> OnRequest;
+
         BridgeReply Handle(BridgeRequest req)
         {
+            if (OnRequest != null) OnRequest(req);
             string path = req.Path, method = req.Method;
             Requests.Add(new KeyValuePair<string, string>(method, path));
             if (path == "/health")
