@@ -29,10 +29,15 @@ namespace RimWorldLLM.Bridge
         public bool MayPauseForEmergencies = true;
         public bool ControlsSpeed = false;
         public float HeartbeatHours = 6f;
+        /// <summary>Unattended play: answer open dialogs with the safe default after DialogTimeoutS real seconds, while Narrator plays is on.</summary>
+        public bool AnswerDialogs = true;
+        public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
         public JObject ToJson()
         {
             return new JObject
             {
+                ["answer_dialogs"] = AnswerDialogs,
+                ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,
                 ["heartbeat_hours"] = HeartbeatHours
@@ -483,6 +488,11 @@ namespace RimWorldLLM.Bridge
         public readonly NarratorLedger Ledger = new NarratorLedger();
         /// <summary>Phase 2: per-cycle caps on blueprints, zone/area cells, designations and bills. Never saved.</summary>
         public readonly BuildBudget Budget = new BuildBudget();
+        /// <summary>Unattended play: the choice windows and letters open right now. Never saved.</summary>
+        public readonly DialogBook Dialogs = new DialogBook();
+        static readonly System.Diagnostics.Stopwatch RealClock = System.Diagnostics.Stopwatch.StartNew();
+        /// <summary>Real seconds since start (modal windows pause the game, so dialog timeouts use this). Tests may replace it.</summary>
+        public static Func<double> NowReal = () => RealClock.Elapsed.TotalSeconds;
 
         public JObject StatusJson()
         {
@@ -531,7 +541,7 @@ namespace RimWorldLLM.Bridge
         public void Clear()
         {
             Playing = false; PausedByNarrator = false;
-            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear();
+            Chat.Clear(); Goals.Clear(); Actions.Clear(); Live.Clear(); Ledger.Clear(); Dialogs.Clear();
         }
     }
 }

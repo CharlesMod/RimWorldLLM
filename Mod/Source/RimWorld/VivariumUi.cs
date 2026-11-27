@@ -35,6 +35,8 @@ namespace RimWorldLLM
             vs.MayPauseForEmergencies = s.narratorMayPauseForEmergencies;
             vs.ControlsSpeed = s.narratorControlsSpeed;
             vs.HeartbeatHours = s.stewardHeartbeatHours;
+            vs.AnswerDialogs = s.narratorAnswerDialogs;
+            vs.DialogTimeoutS = Mathf.Clamp(s.narratorDialogTimeoutS, 10, 600);
         }
 
         public static void OnGUIKey()

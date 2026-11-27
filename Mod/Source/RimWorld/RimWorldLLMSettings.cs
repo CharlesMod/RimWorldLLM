@@ -102,6 +102,8 @@ namespace RimWorldLLM
         public bool narratorMayPauseForEmergencies = true;
         public bool narratorControlsSpeed = false;
         public float stewardHeartbeatHours = 6f;
+        public bool narratorAnswerDialogs = true;
+        public int narratorDialogTimeoutS = 90;
 
         // The chat panel (always on, MOBA style).
         public bool chatPanelShow = true;
@@ -196,6 +198,8 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
+            Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);
+            Scribe_Values.Look(ref narratorDialogTimeoutS, "narratorDialogTimeoutS", 90);
             Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
             Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
             Scribe_Values.Look(ref chatPanelMedium, "chatPanelMedium", false);

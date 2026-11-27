@@ -20,6 +20,7 @@ namespace RimWorldLLM.Tests
         public HandResult AssignBed(int pawn, int bed) { Calls.Add("bed " + pawn + " " + bed); return Next; }
         public HandResult SetResearch(string p) { Calls.Add("research " + p); return Next; }
         public HandResult AnswerLetter(int l, string c) { Calls.Add("letter " + l + " " + c); return Next; }
+        public HandResult Choose(DialogRecord d, int o, IDictionary<string,string> t) { Calls.Add("choose " + d.Id + " " + o + " " + (t == null ? "-" : string.Join(",", t.Select(x => x.Key + "=" + x.Value)))); return Next; }
         public HandResult Draft(IList<int> pawns, bool d) { Calls.Add("draft " + string.Join(",", pawns) + " " + d); return Next; }
         public HandResult Order(int pawn, string o, int x, int z, int t, bool h) { Calls.Add("order " + pawn + " " + o + " " + x + " " + z + " " + t + " " + h); return Next; }
         // phase 2: the last args and budget seen, for the build tests

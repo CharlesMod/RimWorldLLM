@@ -496,6 +496,10 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayPause>The narrator may pause for emergencies</RWL_Viv_MayPause>
   <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
   <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
+  <RWL_Viv_AnswerDialogs>Answer popups when the narrator plays</RWL_Viv_AnswerDialogs>
+  <RWL_Viv_AnswerDialogsTip>While Narrator plays is on, the narrator answers choice windows and letters (joiners, ransom demands, quests, naming, growth moments). One it leaves open past the timeout gets the safe default: accept joiners and visitors, decline ransoms and quests, a fallback name, the harmless button.</RWL_Viv_AnswerDialogsTip>
+  <RWL_Viv_DialogTimeout>Seconds before a popup gets the safe default</RWL_Viv_DialogTimeout>
+  <RWL_Viv_DialogTimeoutTip>Real seconds, not game time: popups pause the game. Default 90.</RWL_Viv_DialogTimeoutTip>
   <RWL_Viv_ControlsSpeedTip>Off: your speed is respected. On: the narrator may pause, unpause and change the speed.</RWL_Viv_ControlsSpeedTip>
   <RWL_Viv_Heartbeat>The narrator looks at the colony every {0} game hours</RWL_Viv_Heartbeat>
   <RWL_Viv_HeartbeatTip>How often the narrator wakes up on its own to look over the colony, in game hours. It also wakes when you chat or something important happens.</RWL_Viv_HeartbeatTip>

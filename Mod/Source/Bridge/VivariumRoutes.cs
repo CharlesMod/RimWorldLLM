@@ -38,6 +38,12 @@ namespace RimWorldLLM.Bridge
             router.Add("POST", "/act/letter", true, c => Act(c, vivarium, hands, "letter", Letter));
             router.Add("POST", "/act/draft", true, c => Act(c, vivarium, hands, "draft", Draft));
             router.Add("POST", "/act/order", true, c => Act(c, vivarium, hands, "order", Order));
+            router.Add("GET", "/dialogs", false, c =>
+            {
+                var v = vivarium();
+                return ApiResult.Success(v.Dialogs.ToJson(v.Settings.DialogTimeoutS, Vivarium.NowReal()));
+            });
+            router.Add("POST", "/act/choose", true, c => Choose(c, vivarium, hands));
             RegisterBuild(router, vivarium, hands);
         }
 

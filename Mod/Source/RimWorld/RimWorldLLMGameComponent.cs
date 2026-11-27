@@ -41,6 +41,7 @@ namespace RimWorldLLM
             CheckFallbackNotice();
             DirectorCamera.Update();
             VivariumSwitch.PushSettings();
+            VivariumDialogHost.Update();
         }
 
         public override void GameComponentOnGUI()
