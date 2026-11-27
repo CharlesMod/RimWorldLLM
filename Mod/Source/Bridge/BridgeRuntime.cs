@@ -22,6 +22,7 @@ namespace RimWorldLLM.Bridge
         public readonly ChronicleBook Chronicle = new ChronicleBook();
         public readonly ArtBook Art = new ArtBook();
         public readonly TalkQueue Talk = new TalkQueue();
+        public readonly Vivarium Vivarium = new Vivarium();
         public readonly IGameAdapter Game;
         public BridgeServer Server { get; private set; }
 

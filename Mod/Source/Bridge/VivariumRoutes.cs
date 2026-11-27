@@ -1,0 +1,296 @@
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+
+namespace RimWorldLLM.Bridge
+{
+    /// <summary>Registers the vivarium routes. hands may be null in tests of the non-game routes.</summary>
+    public static class VivariumRoutes
+    {
+        static readonly string[] Assignments = { "anything", "work", "joy", "sleep", "meditate" };
+        static readonly string[] Kinds = { "outfit", "food", "drug" };
+        static readonly string[] Orders = { "move", "attack", "hold" };
+
+        public static void Register(ApiRouter router, Func<Vivarium> vivarium, Func<IVivariumHands> hands)
+        {
+            router.Add("GET", "/vivarium", false, c => ApiResult.Success(vivarium().StatusJson()));
+            router.Add("GET", "/chat", false, c => ChatGet(c, vivarium()));
+            router.Add("POST", "/chat", false, c => ChatPost(c, vivarium()));
+            router.Add("GET", "/goals", false, c => ApiResult.Success(vivarium().Goals.ToJson()));
+            router.Add("PUT", "/goals", false, c => GoalsPut(c, vivarium()));
+            router.Add("GET", "/actions", false, c => ActionsGet(c, vivarium()));
+            router.Add("GET", "/digest", true, c =>
+            {
+                var h = hands();
+                if (h == null) return NoGame();
+                var d = h.Digest();
+                return d == null ? NoGame() : ApiResult.Success(d);
+            });
+
+            router.Add("POST", "/act/time", true, c => Act(c, vivarium, hands, "time", Time));
+            router.Add("POST", "/act/work", true, c => Act(c, vivarium, hands, "work", Work));
+            router.Add("POST", "/act/schedule", true, c => Act(c, vivarium, hands, "schedule", Schedule));
+            router.Add("POST", "/act/policy", true, c => Act(c, vivarium, hands, "policy", Policy));
+            router.Add("POST", "/act/bed", true, c => Act(c, vivarium, hands, "bed", Bed));
+            router.Add("POST", "/act/research", true, c => Act(c, vivarium, hands, "research", Research));
+            router.Add("POST", "/act/letter", true, c => Act(c, vivarium, hands, "letter", Letter));
+            router.Add("POST", "/act/draft", true, c => Act(c, vivarium, hands, "draft", Draft));
+            router.Add("POST", "/act/order", true, c => Act(c, vivarium, hands, "order", Order));
+        }
+
+        static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }
+        static ApiResult Bad(string detail) { return ApiResult.Fail("bad_request", detail); }
+
+        // ---------------------------------------------------------------- non-game routes
+        static ApiResult SinceArg(RouteContext c, out int since)
+        {
+            since = 0;
+            string q = c.Q("since");
+            if (string.IsNullOrEmpty(q)) return null;
+            if (!int.TryParse(q, System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture, out since))
+                return Bad("since must be an integer");
+            return null;
+        }
+
+        static ApiResult ChatGet(RouteContext c, Vivarium v)
+        {
+            int since;
+            var err = SinceArg(c, out since);
+            return err ?? ApiResult.Success(v.Chat.Since(since));
+        }
+
+        static ApiResult ActionsGet(RouteContext c, Vivarium v)
+        {
+            int since;
+            var err = SinceArg(c, out since);
+            return err ?? ApiResult.Success(v.Actions.Since(since));
+        }
+
+        static ApiResult ChatPost(RouteContext c, Vivarium v)
+        {
+            var b = c.Body;
+            string who = b["who"] != null && b["who"].Type == JTokenType.String ? b.Value<string>("who") : null;
+            if (who != "narrator" && who != "note") return Bad("who must be \"narrator\" or \"note\"");
+            if (b["text"] == null || b["text"].Type != JTokenType.String) return Bad("text is required");
+            string text = b.Value<string>("text").Trim();
+            if (text.Length == 0) return Bad("text is empty");
+            if (text.Length > ChatLog.MaxText) return Bad("text must be at most " + ChatLog.MaxText + " chars");
+            var e = v.Chat.Add(who, text, c.State.Tick);
+            return ApiResult.Success(new JObject { ["seq"] = e.Seq });
+        }
+
+        static ApiResult GoalsPut(RouteContext c, Vivarium v)
+        {
+            var b = c.Body;
+            var rt = b["rev"];
+            if (rt == null || rt.Type != JTokenType.Integer) return Bad("rev is required (the board's current rev, an integer)");
+            if (rt.Value<long>() != v.Goals.Rev)
+                return ApiResult.Fail("conflict", "stale rev " + rt.Value<long>() + "; the board is at rev " + v.Goals.Rev, new JObject { ["board"] = v.Goals.ToJson() });
+            string err = v.Goals.Replace(b, c.State.Tick);
+            if (err != null) return Bad(err);
+            return ApiResult.Success(v.Goals.ToJson());
+        }
+
+        // ---------------------------------------------------------------- argument helpers
+        sealed class ArgError : Exception { public ArgError(string m) : base(m) { } }
+
+        static int Int(JObject b, string f, int min, int max)
+        {
+            var t = b[f];
+            if (t == null || t.Type == JTokenType.Null) throw new ArgError(f + " is required");
+            if (t.Type != JTokenType.Integer) throw new ArgError(f + " must be an integer");
+            long v = t.Value<long>();
+            if (v < min || v > max) throw new ArgError(f + " must be " + min + ".." + (max == int.MaxValue ? "max" : max.ToString()));
+            return (int)v;
+        }
+
+        static int? OptInt(JObject b, string f, int min, int max)
+        {
+            var t = b[f];
+            if (t == null || t.Type == JTokenType.Null) return null;
+            return Int(b, f, min, max);
+        }
+
+        static bool? OptBool(JObject b, string f)
+        {
+            var t = b[f];
+            if (t == null || t.Type == JTokenType.Null) return null;
+            if (t.Type != JTokenType.Boolean) throw new ArgError(f + " must be true or false");
+            return t.Value<bool>();
+        }
+
+        static bool Bool(JObject b, string f)
+        {
+            var v = OptBool(b, f);
+            if (v == null) throw new ArgError(f + " is required");
+            return v.Value;
+        }
+
+        static string Str(JObject b, string f, int min, int max)
+        {
+            var t = b[f];
+            if (t == null || t.Type == JTokenType.Null) throw new ArgError(f + " is required");
+            if (t.Type != JTokenType.String) throw new ArgError(f + " must be a string");
+            string s = t.Value<string>().Trim();
+            if (s.Length < min || s.Length > max) throw new ArgError(f + " must be " + min + ".." + max + " chars");
+            return s;
+        }
+
+        static string OneOf(JObject b, string f, string[] allowed)
+        {
+            string s = Str(b, f, 1, 40).ToLowerInvariant();
+            if (Array.IndexOf(allowed, s) < 0) throw new ArgError(f + " must be one of " + string.Join(", ", allowed));
+            return s;
+        }
+
+        static int Pawn(JObject b, string f) { return Int(b, f, 1, int.MaxValue); }
+
+        // ---------------------------------------------------------------- /act/*
+
+        // Each verb checks its arguments first (throwing ArgError) and only then calls the hand,
+        // so a 400 never reaches the game. The two-phase shape is Check (parse) + Run (gate + hand).
+        sealed class Plan
+        {
+            public Func<Vivarium, HandResult> Gate;                     // null = nothing to refuse; else a refusal or null
+            public Func<IVivariumHands, HandResult> Run;
+            public Action<Vivarium> OnOk;
+        }
+        delegate Plan Parser(JObject body);
+
+        static ApiResult Act(RouteContext c, Func<Vivarium> vivarium, Func<IVivariumHands> hands, string verb, Parser parse)
+        {
+            Plan plan;
+            try { plan = parse(c.Body); }
+            catch (ArgError e) { return Bad(e.Message); }
+            var h = hands();
+            if (h == null) return NoGame();
+            var v = vivarium();
+            if (plan.Gate != null)
+            {
+                var refusal = plan.Gate(v);
+                if (refusal != null) return ApiResult.Fail("refused", refusal.Reason);
+            }
+            var r = plan.Run(h);
+            if (r == null) return ApiResult.Fail("refused", "the game gave no answer");
+            if (!r.Ok) return ApiResult.Fail("refused", string.IsNullOrEmpty(r.Reason) ? "refused" : r.Reason);
+            if (plan.OnOk != null) plan.OnOk(v);
+            string note = r.Note ?? "";
+            v.Actions.Add(verb, note, c.State.Tick, "narrator");
+            var body = new JObject { ["done"] = note };
+            if (r.Extra != null)
+                foreach (var p in r.Extra.Properties())
+                    if (body[p.Name] == null) body[p.Name] = p.Value;
+            return ApiResult.Success(body);
+        }
+
+        static Plan Time(JObject b)
+        {
+            bool? pause = OptBool(b, "pause");
+            int? speed = OptInt(b, "speed", 1, 4);
+            bool emergency = OptBool(b, "emergency") ?? false;
+            if (pause == null && speed == null) throw new ArgError("give pause and/or speed");
+            return new Plan
+            {
+                Gate = v =>
+                {
+                    var s = v.Settings;
+                    if (speed != null && !s.ControlsSpeed) return HandResult.No("the player has not let the narrator change speed");
+                    if (pause == true && !s.ControlsSpeed)
+                    {
+                        if (!emergency) return HandResult.No("the player has not let the narrator pause the game except in an emergency (send emergency: true)");
+                        if (!s.MayPauseForEmergencies) return HandResult.No("the player has not let the narrator pause for emergencies");
+                    }
+                    if (pause == false && !s.ControlsSpeed && !v.PausedByNarrator)
+                        return HandResult.No("the narrator did not pause the game, and the player has not let it change speed");
+                    return null;
+                },
+                Run = h => h.SetTime(pause, speed),
+                OnOk = v =>
+                {
+                    if (pause == true) v.PausedByNarrator = true;
+                    else if (pause == false) v.PausedByNarrator = false;
+                }
+            };
+        }
+
+        static Plan Work(JObject b)
+        {
+            int pawn = Pawn(b, "pawn");
+            var po = b["priorities"] as JObject;
+            if (po == null) throw new ArgError("priorities must be an object of work type to 0..4");
+            if (po.Count < 1 || po.Count > 20) throw new ArgError("priorities must have 1..20 entries");
+            var d = new Dictionary<string, int>();
+            foreach (var p in po.Properties())
+            {
+                string name = p.Name.Trim();
+                if (name.Length == 0) throw new ArgError("priorities has an empty work type name");
+                if (p.Value.Type != JTokenType.Integer || p.Value.Value<long>() < 0 || p.Value.Value<long>() > 4)
+                    throw new ArgError("priority for " + name + " must be an integer 0..4");
+                d[name] = p.Value.Value<int>();
+            }
+            return new Plan { Run = h => h.SetWork(pawn, d) };
+        }
+
+        static Plan Schedule(JObject b)
+        {
+            int pawn = Pawn(b, "pawn");
+            int from = Int(b, "from_hour", 0, 23), to = Int(b, "to_hour", 0, 24);
+            if (from == to) throw new ArgError("from_hour and to_hour must differ (use 0 and 24 for the whole day)");
+            string a = OneOf(b, "assignment", Assignments);
+            return new Plan { Run = h => h.SetSchedule(pawn, from, to, a) };
+        }
+
+        static Plan Policy(JObject b)
+        {
+            int pawn = Pawn(b, "pawn");
+            string kind = OneOf(b, "kind", Kinds);
+            string name = Str(b, "name", 1, 60);
+            return new Plan { Run = h => h.SetPolicy(pawn, kind, name) };
+        }
+
+        static Plan Bed(JObject b)
+        {
+            int pawn = Pawn(b, "pawn"), bed = Pawn(b, "bed");
+            return new Plan { Run = h => h.AssignBed(pawn, bed) };
+        }
+
+        static Plan Research(JObject b)
+        {
+            string p = Str(b, "project", 1, 80);
+            return new Plan { Run = h => h.SetResearch(p) };
+        }
+
+        static Plan Letter(JObject b)
+        {
+            int letter = Pawn(b, "letter");
+            string choice = Str(b, "choice", 1, 80);
+            return new Plan { Run = h => h.AnswerLetter(letter, choice) };
+        }
+
+        static Plan Draft(JObject b)
+        {
+            var arr = b["pawns"] as JArray;
+            if (arr == null) throw new ArgError("pawns must be an array of pawn ids");
+            if (arr.Count < 1 || arr.Count > 30) throw new ArgError("pawns must have 1..30 ids");
+            var ids = new List<int>();
+            foreach (var t in arr)
+            {
+                if (t.Type != JTokenType.Integer || t.Value<long>() < 1 || t.Value<long>() > int.MaxValue) throw new ArgError("pawns must be positive integer ids");
+                ids.Add(t.Value<int>());
+            }
+            bool drafted = Bool(b, "drafted");
+            return new Plan { Run = h => h.Draft(ids, drafted) };
+        }
+
+        static Plan Order(JObject b)
+        {
+            int pawn = Pawn(b, "pawn");
+            string order = OneOf(b, "order", Orders);
+            int x = 0, z = 0, target = 0; bool hold = false;
+            if (order == "move") { x = Int(b, "x", 0, int.MaxValue); z = Int(b, "z", 0, int.MaxValue); }
+            else if (order == "attack") target = Int(b, "target", 1, int.MaxValue);
+            else hold = Bool(b, "hold");
+            return new Plan { Run = h => h.Order(pawn, order, x, z, target, hold) };
+        }
+    }
+}
