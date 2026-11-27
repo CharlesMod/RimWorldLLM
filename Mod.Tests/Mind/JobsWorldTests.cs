@@ -684,9 +684,10 @@ namespace RimWorldLLM.Tests.Mind
         public async Task IdleRunsTextFillLastWhenIdle()
         {
             using var w = await TextWorld(new[] { TextItem("a") }, TextReply("a", Good, "Smoke"));
-            await OnLoop(w, () => w.D.Idle.RunOnce());
-            Assert.Equal("textfill", w.D.Idle.Kind);
-            Assert.True(w.D.Idle.Lease.ActorId == -2 && w.D.Idle.Lease.Cls == Cls.Idle);
+            string kind = null; Lease lease = null;                                          // read on the loop: the job may finish at once (Python's task starts later)
+            await OnLoop(w, () => { w.D.Idle.RunOnce(); kind = w.D.Idle.Kind; lease = w.D.Idle.Lease; });
+            Assert.Equal("textfill", kind);
+            Assert.True(lease.ActorId == -2 && lease.Cls == Cls.Idle);
             await w.D.DrainAsync();
             Assert.Equal(new[] { "a" }, w.Fb.TextFillLog.Select(b => (string)b["id"]).ToArray());
             Assert.True(w.D.Idle.TextNext >= w.D.Clock() + 10);
