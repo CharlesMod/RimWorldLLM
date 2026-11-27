@@ -102,6 +102,11 @@ namespace RimWorldLLM
         public bool narratorMayPauseForEmergencies = true;
         public bool narratorControlsSpeed = false;
         public float stewardHeartbeatHours = 6f;
+        // Unattended play: the mod's own rotating autosave (only while the game's autosave is off) and what happens when the colony is lost.
+        public bool narratorAutosave = true;
+        public float narratorAutosaveDays = 1f;
+        public int narratorAutosaveKeep = 5;
+        public int narratorRestartMode = 0;   // 0 ask, 1 auto, 2 off (Bridge.RestartMode)
 
         // The chat panel (always on, MOBA style).
         public bool chatPanelShow = true;
@@ -196,6 +201,10 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
+            Scribe_Values.Look(ref narratorAutosave, "narratorAutosave", true);
+            Scribe_Values.Look(ref narratorAutosaveDays, "narratorAutosaveDays", 1f);
+            Scribe_Values.Look(ref narratorAutosaveKeep, "narratorAutosaveKeep", 5);
+            Scribe_Values.Look(ref narratorRestartMode, "narratorRestartMode", 0);
             Scribe_Values.Look(ref chatPanelShow, "chatPanelShow", true);
             Scribe_Values.Look(ref chatPanelRight, "chatPanelRight", false);
             Scribe_Values.Look(ref chatPanelMedium, "chatPanelMedium", false);

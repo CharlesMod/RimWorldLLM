@@ -41,6 +41,7 @@ namespace RimWorldLLM
             CheckFallbackNotice();
             DirectorCamera.Update();
             VivariumSwitch.PushSettings();
+            VivariumStability.Update();
         }
 
         public override void GameComponentOnGUI()
@@ -114,6 +115,7 @@ namespace RimWorldLLM
             DirectorCamera.OnGameStart();
             VivariumEvents.Reset();
             VivariumChat.OnGameStart();
+            VivariumStability.OnGameStart();
         }
 
         public override void StartedNewGame()
@@ -131,6 +133,8 @@ namespace RimWorldLLM
             VivariumGame.State.Clear();
             VivariumEvents.Reset();
             VivariumChat.OnGameStart();
+            VivariumStability.OnGameStart();
+            VivariumStability.ApplyHandoff();   // a lost colony hands its story and the narrator's switch to this one
         }
 
         public override void ExposeData()

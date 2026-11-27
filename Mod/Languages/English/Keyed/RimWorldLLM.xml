@@ -499,6 +499,30 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_ControlsSpeedTip>Off: your speed is respected. On: the narrator may pause, unpause and change the speed.</RWL_Viv_ControlsSpeedTip>
   <RWL_Viv_Heartbeat>The narrator looks at the colony every {0} game hours</RWL_Viv_Heartbeat>
   <RWL_Viv_HeartbeatTip>How often the narrator wakes up on its own to look over the colony, in game hours. It also wakes when you chat or something important happens.</RWL_Viv_HeartbeatTip>
+  <RWL_Viv_Autosave>Rotating autosave while the narrator plays</RWL_Viv_Autosave>
+  <RWL_Viv_AutosaveTip>Only when the game's own autosave is off: the mod saves as RWL-Narrator-1, -2 ... and rotates, never touching other saves. If the game's autosave is on, it does the job and this stays quiet.</RWL_Viv_AutosaveTip>
+  <RWL_Viv_AutosaveDays>Save every {0} game days</RWL_Viv_AutosaveDays>
+  <RWL_Viv_AutosaveDaysTip>How often the mod's autosave runs, in game days. It waits while a window is open or a raid is on (but not for ever).</RWL_Viv_AutosaveDaysTip>
+  <RWL_Viv_AutosaveKeep>Keep {0} autosaves</RWL_Viv_AutosaveKeep>
+  <RWL_Viv_AutosaveKeepTip>How many RWL-Narrator saves rotate. The oldest is overwritten; saves the mod did not make are never touched.</RWL_Viv_AutosaveKeepTip>
+  <RWL_Viv_RestartMode>When the colony is lost: {0}</RWL_Viv_RestartMode>
+  <RWL_Viv_RestartMode0>ask me</RWL_Viv_RestartMode0>
+  <RWL_Viv_RestartMode1>restart by itself</RWL_Viv_RestartMode1>
+  <RWL_Viv_RestartMode2>do nothing</RWL_Viv_RestartMode2>
+  <RWL_Viv_RestartModeTip>Only while the narrator plays. Ask: a window offers a new colony on this world, a new world, or stopping. Restart by itself: new colonists on this world if the game allows, else a new world; the lost world is saved once under a new name first and nothing is ever deleted. Click to change.</RWL_Viv_RestartModeTip>
+  <RWL_Viv_ColonyLost>The colony is lost.</RWL_Viv_ColonyLost>
+  <RWL_Viv_RestartTitle>The colony is lost</RWL_Viv_RestartTitle>
+  <RWL_Viv_RestartText>{0} has no colonists left. The narrator can carry on with a new colony.</RWL_Viv_RestartText>
+  <RWL_Viv_RestartSameBtn>New colony on this world</RWL_Viv_RestartSameBtn>
+  <RWL_Viv_RestartSameNo>The game cannot send new colonists right now.</RWL_Viv_RestartSameNo>
+  <RWL_Viv_RestartNewBtn>New world (this one is saved first)</RWL_Viv_RestartNewBtn>
+  <RWL_Viv_RestartStopBtn>Stop</RWL_Viv_RestartStopBtn>
+  <RWL_Viv_RestartAuto>The colony is lost. Starting over in {0} seconds.</RWL_Viv_RestartAuto>
+  <RWL_Viv_RestartSame>Starting a new colony on this world.</RWL_Viv_RestartSame>
+  <RWL_Viv_RestartNew>Saving the lost world, then starting a new one.</RWL_Viv_RestartNew>
+  <RWL_Viv_RestartStopped>Not restarting.</RWL_Viv_RestartStopped>
+  <RWL_Viv_RestartDismissed>Not restarting (the window was closed).</RWL_Viv_RestartDismissed>
+  <RWL_Viv_RestartSaveFailed>Could not save the lost world, so it is being kept as it is. Not restarting.</RWL_Viv_RestartSaveFailed>
   <RWL_Viv_SwitchTip>Narrator plays: the narrator runs the colony; you can still act and talk to it.</RWL_Viv_SwitchTip>
   <RWL_Viv_NoteOn>Narrator plays: on</RWL_Viv_NoteOn>
   <RWL_Viv_NoteOff>Narrator plays: off</RWL_Viv_NoteOff>
