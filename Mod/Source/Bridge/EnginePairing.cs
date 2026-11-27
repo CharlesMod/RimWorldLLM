@@ -228,6 +228,9 @@ namespace RimWorldLLM.Bridge
 
         public string ToJson() { return JsonConvert.SerializeObject(_items, Formatting.None); }
 
+        /// <summary>A deep copy, for work on another thread.</summary>
+        public PairStore Clone() { return FromJson(ToJson()); }
+
         public static PairStore FromJson(string json)
         {
             var s = new PairStore();
@@ -536,8 +539,15 @@ namespace RimWorldLLM.Bridge
                         string token = null, clientId = null, engineId = null;
                         try { var j = JObject.Parse(w.Body); token = (string)j["token"]; clientId = (string)j["client_id"]; engineId = (string)j["engine_id"]; }
                         catch { }
+                        if (string.IsNullOrEmpty(token))
+                        {
+                            // A cut-off body: ask again (a token already handed over answers 410, then Try again).
+                            _reconnecting = true;
+                            try { await Task.Delay(backoff, ct).ConfigureAwait(false); } catch (OperationCanceledException) { SetPhase(PairPhase.Cancelled); return; }
+                            backoff = Math.Min(RetryMaxMs, backoff * 2);
+                            continue;
+                        }
                         lock (_lock) _id = null;
-                        if (string.IsNullOrEmpty(token)) { End(PairPhase.Failed, "bad reply"); return; }
                         if (!string.IsNullOrEmpty(engineId) && hello != null && !string.Equals(engineId.Trim(), hello.EngineId, StringComparison.OrdinalIgnoreCase))
                             hello.EngineId = engineId.Trim().ToLowerInvariant();   // the token's own word wins
                         await Finish(hello, token, clientId ?? "", ct).ConfigureAwait(false);

@@ -138,6 +138,7 @@ namespace RimWorldLLM
 
             if (local) { LocalEngine(l, s); return; }
             Note(l, UiUtil.T("RWL_Conn_EndpointHelp"));
+            EnginePairingUi.Draw(l, s);
             TextRow(l, "RWL_Conn_LlmUrl", ref s.llmBaseUrl, "RWL_Tip_LlmUrl");
             TextRow(l, "RWL_Conn_LlmModel", ref s.llmModel, "RWL_Tip_LlmModel");
             float y0 = l.CurHeight;
