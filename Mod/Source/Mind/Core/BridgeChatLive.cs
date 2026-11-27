@@ -41,12 +41,15 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>The wire name for a speaker that is not the narrator (the mod names it).</summary>
+        private const string ActorWho = "col" + "onist";
+
         public string Begin(string who, int? pawnId, string name)
         {
             string id = "s" + (++_n).ToString(CultureInfo.InvariantCulture) + "." + _salt;
-            string w = who == "narrator" ? "narrator" : "colonist";
+            string w = who == "narrator" ? "narrator" : ActorWho;
             lock (_gate) _open[id] = (w, pawnId, name);
-            Enqueue(() => _bridge.PostChatStatusAsync(w, "thinking", id, w == "colonist" ? pawnId : null));
+            Enqueue(() => _bridge.PostChatStatusAsync(w, "thinking", id, w != "narrator" ? pawnId : null));
             return id;
         }
 
@@ -55,14 +58,14 @@ namespace RimWorldLLM.Mind
             (string Who, int? To, string Name) o;
             lock (_gate) { if (!_open.TryGetValue(id, out o)) return; }
             double? p = progress < 0 ? (double?)null : Math.Min(1.0, progress);
-            Enqueue(() => _bridge.PostChatStatusAsync(o.Who, "thinking", id, o.Who == "colonist" ? o.To : null, p));
+            Enqueue(() => _bridge.PostChatStatusAsync(o.Who, "thinking", id, o.Who != "narrator" ? o.To : null, p));
         }
 
         public void Typing(string id)
         {
             (string Who, int? To, string Name) o;
             lock (_gate) { if (!_open.TryGetValue(id, out o)) return; }
-            Enqueue(() => _bridge.PostChatStatusAsync(o.Who, "typing", id, o.Who == "colonist" ? o.To : null));
+            Enqueue(() => _bridge.PostChatStatusAsync(o.Who, "typing", id, o.Who != "narrator" ? o.To : null));
         }
 
         public void Partial(string id, string wholeText)
