@@ -968,7 +968,7 @@ first and refuse with a reason.
 - `Mod/Source/RimWorld/VivariumTradeHands.cs`: the game bodies (`IVivariumHands.TradeOffer/Trade/CaravanPlan/Caravan`),
   `VivariumTradeView.cs`: the digest's `trade`, `caravans` and `quests` blocks; `VivariumCaravanWatch.cs`: gives a
   formed narrator caravan its arrival action and notes arrivals (run from the game component, every 120 ticks).
-- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer`, `trade`, `caravan_plan`, `caravan` tools),
+- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer` and `trade` tools; the caravan tools were removed in the follow-up),
   the digest renderer's TRADE / TRADERS / SETTLEMENTS / CARAVANS / QUESTS lines, the playbook's trade lines.
 
 ### Digest blocks (each fails alone, logged once, like `build`)
@@ -1071,10 +1071,11 @@ from the game); refuse over capacity ("too heavy: 260/210 kg"); refuse when food
 `settings.caravans`, `settings.trade_max_deal`, ... in `GET /vivarium`.
 
 ### Steward
-Four tools when the digest has a `trade` block: `trade_offer` (with: look at prices; not an action), `trade` (with,
-buy, sell as "item xN, item xN"), `caravan_plan` (not an action), `caravan` (op form|send|cancel, pawns as names, to,
-quest, goods, purpose). The prompt's playbook lines: sell surplus art, textiles and drugs; buy components early;
-keep a silver reserve (500); never strip the base's defense for a caravan; take quests only when `can` is true.
+Two tools when the digest's `trade` block lists a trader: `trade_offer` (with: look at prices; not an action) and
+`trade` (with, buy, sell as "item xN, item xN"). Caravans are off (below): no `caravan_plan` or `caravan` tool, no
+CARAVANS or SETTLEMENTS lines, no caravan playbook lines. The prompt's playbook lines: sell surplus art, textiles and
+drugs; buy components early; keep a silver reserve (500); trade first in a turn (traders leave); take quests only when
+`can` is true and decline with `choose` an offer that can't.
 
 ### Phase 4 status (what is built)
 - Mod, Verse-free and unit-tested: `VivariumTrade.cs` (deal planner, never-sell rules, day caps), `VivariumCaravan.cs`
@@ -1092,7 +1093,7 @@ keep a silver reserve (500); never strip the base's defense for a caravan; take 
   actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
   `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
   reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
-- Decisions: a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
+- Decisions (superseded where the follow-up below says so: trades walk, caravans are off): a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
   caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
   fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
   best doctor (not only the only one) stays home unless the player asks; ship needs in `trade.needs` are approximated
@@ -1119,3 +1120,62 @@ samples, also with food raised to 14 days).** System prompt about 29k chars (use
 - Fixed from it: `growth.trade` only fired above 1500 silver; it now fires when a trader can trade and NEEDS has
   entries; the strategy says to trade first in a turn because traders leave. Seen, not fixed (phase 2): the model
   keeps trying a cooler for a freezer that is only planned (refused with the reason each time).
+
+### Phase 4 follow-up: caravans off, walking trades, trade turns (2026-11-27)
+The keeper's call on the phase 4 recommendations: make trades walk (the ant-farm feel), wake a trade-focused turn when
+a trader arrives instead of raising the routine step budget, and "dont do caravans at all".
+
+**Caravans off.** The narrator never forms, sends or plans caravans. The agent has no `caravan_plan`/`caravan` tools,
+no caravan lines in `steward_system.txt` or the strategy, no `growth.caravan_safety` rule, and the digest renderer shows
+neither CARAVANS nor SETTLEMENTS (settlements only mattered for caravans). The mod keeps the caravan routes, hands, plans
+and watch for scripts and a possible return, but `POST /act/caravan` and `GET /caravan/plan` refuse "caravans are off"
+unless the request says `"script": true` (`?script=true`); with it the old checks apply, `narratorCaravans` included.
+No new setting. `QuestPure.Feasible(..., caravansOff)`: the digest passes true, so `site` and `delivery` quests show
+`can` false, `why_not` "needs a caravan (caravans are off)" (the agent renders `can't: ...`); the QUESTS header, the
+system prompt and the new rule `growth.quest_decline` (fact `quest_offer_cannot`) tell the steward to decline such an
+offer with `choose`.
+
+**Walking trades.** `POST /act/trade` with a `P` (visiting trader pawn) or `S` (orbital) id starts a walk: the hand
+checks the deal now with `DealPlanner`, picks the negotiator (the best talker who can reach the target), gives a
+playerForced Goto to the comms console's interaction cell or a standable cell next to the trader pawn, then queues a
+600-tick wait so the pawn is still there when the watch looks. The reply is ok with `status: "walking"` and the route
+marks the result `Pending`: the Act pipeline posts a short note line instead of the greentext and the action log, and
+the day is not charged. One trade at a time (a second is refused "a trade is already under way: Ana is walking to the
+comms console"). `T<tile>` trades stay instant.
+- Pure, in `Mod/Source/Bridge/VivariumTradeWalk.cs` (tested in `Mod.Tests/VivariumTradeWalkTests.cs`): `PendingTrade`
+  (saved as `trade_walk`), `WalkObs`, `TradeWalk.Decide` and `TradeWalk.Step` (observe, decide, run, charge, chat).
+  Decide: trader gone or unable to trade -> refuse ("couldn't trade with the bulk goods trader: the trader has left");
+  arrived -> run; negotiator downed, drafted, in a mental state or gone -> instant; no path -> instant; 2500 ticks (one
+  in-game hour) -> instant ("Ana took too long"); our job gone (interrupted) -> give it again, up to 3 times, then
+  instant. Run and instant re-check through `IVivariumHands.Trade` (prices, stock, silver, never-sell, the deal cap, the
+  day's caps and deals rolled to now), then charge the day, log the action and post the greentext: "Ana walked to the
+  comms console and bought 10 components, sold 200 cloth (+120 silver), since ..." or "bought ..., Ana negotiated
+  (Ana took too long; traded over the radio)".
+- Game: `VivariumHands.TradeStart/TradeObserve/TradeReissue` (`VivariumTradeHands.cs`; arrived = within one cell of
+  the console's interaction cell, or within two cells of the trader and reachable; the Goto is re-aimed when the trader
+  has moved more than 3 cells), `VivariumTradeWatch.Tick` (every 60 ticks from the game component). When no walk can
+  start at all (nobody can reach), the trade runs at once with "(traded over the radio: why)".
+- The digest's `trade.pending` (`{negotiator, to, with}` or null) and the TRADE line ("a trade is under way: ...")
+  show it to the narrator.
+- Screen director: `scene_trade` (group work, weight 2.5, below the events and battles): a follow shot on the walking
+  negotiator, caption "Camera: Ana trades with the bulk goods trader" (`ScenePawn.TradeWith`).
+
+**Trade turn on arrival.** `GET /vivarium` lists `traders` (`{id, kind, name}` that can trade now, polled every 250
+ticks by `VivariumTradeView.PollTraders` with the digest's own code). The steward (`core/steward.py`) wakes "trade" when
+an id is not yet in `trade_seen` (cleared with the save epoch): after chat, dialogs, urgent events and the real-time gap,
+before the heartbeat; never in a fight, paused or in advisor mode. All listed ids are marked seen when the turn starts
+(once per visit, whatever it does), and a trade turn does not move the heartbeat clock. The turn reads `GET /digest`
+and is skipped (logged) when a fight is on, food is under 3 days (`FOOD_CRITICAL_DAYS`, the playbook's starvation
+threshold) or a critical starvation alert is up. Otherwise: `steward_trade.txt` (~1.1 KB) plus the tool list, a user
+turn with THE TRADE first (ARRIVED, TRADE, NEEDS, STOCK, NEVER SELL, TRADERS), then FOOD and the plan; tools
+`trade_offer`, `trade`, `note`, `do_nothing`; `TRADE_STEPS` 4, `TRADE_BUDGET_S` 60, `TRADE_STEP_TIMEOUT_S` 30,
+`TRADE_MAX_TOKENS` 300, `TRADE_FINAL_MAX` 120. The routine turn's step budget is unchanged (8). `steward_try
+--trade-turn --digest ...` runs one against the fake bridge.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine main
+`custom/use`, 2 x 32k, q4_0 KV, `steward_try --trade-turn`).** Prompt about 3.6k chars (~900 tokens: system 2.8k with
+the tools, user 0.8k), a turn took about 7 s. Orbital exotic trader `S31` (the recorded sample, food raised to 12 days),
+three runs: `trade_offer S31`, then one `trade`: buy components x20, glitterworld medicine x4, advanced components x6,
+sell cloth x40 and the gold sculptures, "since we need components and medicine", then done. Visiting bulk trader
+`P5521`: `trade_offer`, then buy components x6, herbal medicine x4, steel x50, sell cloth x300, the jade sculpture and
+the smokeleaf joints. The recorded orbital sample as is (food 2.4 days): skipped, "food is critical".

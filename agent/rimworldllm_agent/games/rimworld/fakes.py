@@ -113,7 +113,9 @@ class FakeBridge:
         self.act_log: list[tuple[str, dict]] = []    # (verb, body) of every accepted /act/<verb>
         self.act_refuse: dict[str, str] = {}     # verb -> reason: that verb is refused 409 "refused" with this detail
         self.act_extra: dict[str, dict] = {}     # verb -> extra fields in the success reply
-        self.looks: list[tuple[str, dict]] = []  # (path, query) of every GET /trade/offer and /caravan/plan
+        self.looks: list[tuple[str, dict]] = []  # (path, query) of every GET /trade/offer
+        self.traders: list[dict] | None = None   # what GET /vivarium lists as traders; None: the digest's trade.traders that can trade (kind P/S)
+        self.trade_pending: dict | None = None   # a walking trade ({negotiator, to, with}); the digest's trade block shows it, a second trade is refused
         self.offers: dict[str, dict] = {}        # trader id -> a canned /trade/offer reply that replaces the one built from the digest
         self.combat: dict | None = None          # what GET /combat returns (None: {"active": false}); a test sets a recorded view
         self.combat_since = 0                    # tick the fight began (GET /vivarium combat.since_tick)
@@ -306,11 +308,19 @@ class FakeBridge:
     def _log_action(self, verb: str, note: str) -> None:
         self.actions.append({"seq": len(self.actions) + 1, "tick": self.tick, "verb": verb, "note": note, "by": "narrator"})
 
+    def _viv_traders(self) -> list[dict]:
+        if self.traders is not None:
+            return list(self.traders)
+        t = (self.digest or {}).get("trade")
+        return [{"id": x["id"], "kind": x.get("kind", "caravan"), "name": x.get("name", x["id"])}
+                for x in (t.get("traders") if isinstance(t, dict) else None) or []
+                if isinstance(x, dict) and x.get("id") and x.get("can_trade", True)]
+
     def _vivarium(self, req: httpx.Request, path: str, body: dict) -> httpx.Response | None:
         if path == "/vivarium" and req.method == "GET":
             cv = self.combat or {}
             return self._ok(playing=self.playing, paused_by_narrator=self.paused_by_narrator, chat_seq=self.chat_seq,
-                            goals_rev=self.goals_board["rev"], actions_seq=len(self.actions), settings=dict(self.viv_settings),
+                            traders=self._viv_traders(), goals_rev=self.goals_board["rev"], actions_seq=len(self.actions), settings=dict(self.viv_settings),
                             combat={"active": bool(cv.get("active")), "since_tick": self.combat_since if cv.get("active") else 0,
                                     "hostiles": sum(int(g.get("count", 0)) for g in cv.get("threats") or [])})
         if path == "/combat" and req.method == "GET":
@@ -318,11 +328,13 @@ class FakeBridge:
         if path == "/digest" and req.method == "GET":
             if self.digest is None:
                 return self._err(409, "no_game", "no game loaded")
-            return self._ok(**{**self.digest, **({"dialogs": list(self.dialogs)} if self.dialogs else {})})
-        if path in ("/trade/offer", "/caravan/plan") and req.method == "GET":
+            tr = self.digest.get("trade")
+            pend = {"trade": {**tr, "pending": self.trade_pending}} if isinstance(tr, dict) else {}
+            return self._ok(**{**self.digest, **pend, **({"dialogs": list(self.dialogs)} if self.dialogs else {})})
+        if path == "/trade/offer" and req.method == "GET":
             q = dict(req.url.params)
             self.looks.append((path, q))
-            return self._trade_offer(q) if path == "/trade/offer" else self._caravan_plan(q)
+            return self._trade_offer(q)
         if path == "/dialogs" and req.method == "GET":
             return self._ok(dialogs=list(self.dialogs), timeout_s=90)
         if path == "/chat":
@@ -394,18 +406,21 @@ class FakeBridge:
             verb = path[5:]
             if verb not in ("time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care"):
                 return None
+            if verb == "caravan":
+                return self._err(409, "refused", "caravans are off")
             bad = self._act_shape(verb, body)
             if bad:
                 return self._err(400, "bad_request", bad)
             if verb in self.act_refuse:
                 return self._err(409, "refused", self.act_refuse[verb])
             refusal, note = self._act_apply(verb, body)
+            walk = self._walk if not refusal else {}
             if refusal:
                 return self._err(409, "refused", refusal)
             self.act_log.append((verb, {k: v for k, v in body.items() if k not in ("op_id", "expires_tick")}))
             self._log_action(verb, note)
             self.seen_ops[body["op_id"]] = {"done": note}
-            return self._ok(done=note, **self.act_extra.get(verb, {}))
+            return self._ok(done=note, **{**self.act_extra.get(verb, {}), **walk})
         return None
 
     def _trade_offer(self, q: dict) -> httpx.Response:
@@ -425,15 +440,6 @@ class FakeBridge:
         ours = [{"item": x["item"], "count": x["surplus"], "price": 1.0} for x in t.get("stock") or [] if x.get("surplus")]
         return self._ok(**{"with": w, "name": tr.get("name", w), "silver": tr.get("silver", 0), "negotiator": (t.get("negotiator") or {}).get("name"),
                            "buys": [line(x) for x in tr.get("sells") or []], "sells": ours, "left": 3})
-
-    def _caravan_plan(self, q: dict) -> httpx.Response:
-        d = self.digest or {}
-        known = [*((d.get("trade") or {}).get("settlements") or []), *(d.get("quests") or [])]
-        days = next((x.get("days") for x in known if isinstance(x, dict) and x.get("id") == q.get("to")), None) or 2.0
-        n = len([x for x in q.get("pawns", "").split(",") if x])
-        need = round(days * 2 + 3, 1)
-        return self._ok(days=days, food_days=need, food_need=need, mass=f"{20 * n}", capacity=f"{35 * n}",
-                        food=[{"item": "pemmican", "count": int(need * 2)}], ok=n > 0, problems=[] if n else ["no pawns"])
 
     @staticmethod
     def _act_shape(verb: str, b: dict) -> str:
@@ -480,14 +486,6 @@ class FakeBridge:
             ok = lambda x: isinstance(x, dict) and isinstance(x.get("item"), str) and x["item"] and pos(x.get("count"))
             if not isinstance(b.get("with"), str) or not b["with"] or not 1 <= len(lines) <= 12 or not all(ok(x) for x in lines):
                 return "with, and 1..12 buy/sell lines {item, count} required"
-        elif verb == "caravan":
-            op = b.get("op")
-            if op not in ("form", "send", "cancel"):
-                return "op form/send/cancel required"
-            if op == "form" and not (isinstance(b.get("pawns"), list) and 1 <= len(b["pawns"]) <= 6 and all(pos(i) for i in b["pawns"]) and b.get("to")):
-                return "form needs pawns (1..6 ids) and to"
-            if op != "form" and not b.get("caravan"):
-                return "send and cancel need caravan"
         elif verb == "draft":
             ids = b.get("pawns")
             if not isinstance(ids, list) or not 1 <= len(ids) <= 30 or not all(pos(i) for i in ids) or not isinstance(b.get("drafted"), bool):
@@ -532,6 +530,17 @@ class FakeBridge:
     def _act_apply(self, verb: str, b: dict) -> tuple[str, str]:
         """The settings checks of /act/time and a short success note. (refusal, note)."""
         st = self.viv_settings
+        self._walk = {}
+        if verb == "trade" and str(b.get("with", ""))[:1] in ("P", "S"):          # a walking trade: the negotiator walks there, the deal runs later
+            if self.trade_pending:
+                return f"a trade is already under way: {self.trade_pending['negotiator']} is walking to {self.trade_pending['to']}", ""
+            t = (self.digest or {}).get("trade") or {}
+            who = next((x.get("name") for x in t.get("traders") or [] if x.get("id") == b["with"]), b["with"])
+            neg = (t.get("negotiator") or {}).get("name") or "A colonist"
+            to = "the comms console" if b["with"][:1] == "S" else who            # as the mod: orbital at the console, a visitor in person
+            self.trade_pending = {"negotiator": neg, "to": to, "with": b["with"]}
+            self._walk = {"status": "walking", "negotiator": neg, "to": to}
+            return "", f"{neg} is walking to {to} to trade" + (f" with {who}" if to != who else "")
         if verb == "squad" and b.get("op") == "undraft" and isinstance(self.combat, dict) and self.combat.get("active") \
                 and any(not t.get("dormant") and t.get("dist", 99) <= 30 for t in self.combat.get("threats") or []):
             return "enemies are still within 30 cells of home; the squad stays drafted", ""    # as the mod
@@ -576,7 +585,7 @@ class FakeBridge:
                  "letter": lambda: f"letter {b['letter']}: {b['choice']}",
                  "draft": lambda: ("drafted" if b["drafted"] else "undrafted") + f" {len(b['pawns'])} pawn(s)",
                  "order": lambda: f"{b['order']} order for pawn {b['pawn']}"}
-        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
+        for vb in ("room", "build", "zone", "designate", "bill", "squad", "defend", "trade", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care"):      # phase 2-4 hands: accepted as sent; a test sets act_refuse[verb] to refuse
             notes[vb] = lambda vb=vb: vb + ": " + ", ".join(f"{k} {x}" for k, x in b.items() if k != "why")
         return "", notes[verb]()
 

@@ -268,8 +268,16 @@ namespace RimWorldLLM.Bridge
             if (plan.OnOk != null) plan.OnOk(v);
             if (plan.OnResult != null) plan.OnResult(v, r);
             string note = r.Note ?? "";
-            v.Actions.Add(verb, note, c.State.Tick, "narrator", why);
-            ChatFeed.Action(v.Chat, c.State.Tick, note, why);
+            if (r.Pending)
+            {
+                // nothing has happened yet (a colonist is on the way): no greentext, no action; a short note line instead
+                if (note.Length > 0) v.Chat.Add(ChatKinds.Note, ChatFeed.Shorten(note, 160), c.State.Tick);
+            }
+            else
+            {
+                v.Actions.Add(verb, note, c.State.Tick, "narrator", why);
+                ChatFeed.Action(v.Chat, c.State.Tick, note, why);
+            }
             var body = new JObject { ["done"] = note };
             if (r.Marks != null && r.Marks.Count > 0)
             {

@@ -22,6 +22,8 @@ namespace RimWorldLLM.Bridge
         public string With;
         public List<DealLine> Buy = new List<DealLine>();
         public List<DealLine> Sell = new List<DealLine>();
+        /// <summary>Walking trades: the colonist who walked (thingIDNumber); 0 = the best negotiator.</summary>
+        public int Negotiator;
     }
 
     public sealed class CaravanArgs

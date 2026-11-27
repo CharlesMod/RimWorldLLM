@@ -75,6 +75,7 @@
   "traders_ready": "int, traders in TRADERS that can trade now (digest trade block)",
   "trade_needs": "int, entries in the trade block's needs",
   "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block",
+  "quest_offer_cannot": "bool, an open quest offer (digest quests, state offer) whose can is false (for instance it needs a caravan); filled from the quests block",
   "loose_unstorable": "int, loose piles that no stockpile accepts or has room for (not forbidden)",
   "stuck_no_material": "int, groups of blueprints/frames waiting on a material",
   "stuck_no_builder": "bool, blueprints exist but no one can build (construction off or incapable)",
@@ -125,7 +126,6 @@
   "W-vwinter": "https://rimworldwiki.com/wiki/Volcanic_winter",
   "W-blight": "https://rimworldwiki.com/wiki/Blight",
   "W-trade": "https://rimworldwiki.com/wiki/Trade",
-  "W-caravan": "https://rimworldwiki.com/wiki/Caravan",
   "W-quests": "https://rimworldwiki.com/wiki/Quests",
   "W-prisoner": "https://rimworldwiki.com/wiki/Prisoner",
   "W-taming": "https://rimworldwiki.com/wiki/Taming",
@@ -926,13 +926,13 @@
    ]
   },
   {
-   "id": "growth.caravan_safety",
+   "id": "growth.quest_decline",
    "category": "economy",
-   "condition": "true",
-   "action": "Caravans: send 2-3 pawns plus pack animals, food days >= travel time x2 + 3, keep >= 2 fighters, a doctor and a cook at home; pemmican or survival meals for long trips.",
-   "priority": 4,
+   "condition": "quest_offer_cannot == true",
+   "action": "A quest offer says can't (it needs a caravan, and caravans are off): decline it with choose; do not leave it open.",
+   "priority": 3,
    "sources": [
-    "W-caravan"
+    "W-quests"
    ]
   },
   {

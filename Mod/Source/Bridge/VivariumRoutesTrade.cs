@@ -18,6 +18,8 @@ namespace RimWorldLLM.Bridge
         public const int MaxDealLines = 12, MaxCaravanPawns = 6, MaxGoalLines = 12;
         const string TradeOff = "trading is off in the settings";
         const string CaravansOff = "caravans are off in the settings";
+        /// <summary>Caravans are off for the narrator: the routes refuse this unless the request says "script": true (a script or the player's UI).</summary>
+        public const string CaravansOffForNarrator = "caravans are off";
 
         static void RegisterTrade(ApiRouter router, Func<Vivarium> vivarium, Func<IVivariumHands> hands)
         {
@@ -43,6 +45,8 @@ namespace RimWorldLLM.Bridge
                 try { a = QueryCaravan(c); }
                 catch (ArgError e) { return Bad(e.Message); }
                 var v = vivarium();
+                string sq = c.Q("script");
+                if (!string.Equals(sq == null ? "" : sq.Trim(), "true", StringComparison.OrdinalIgnoreCase)) return ApiResult.Fail("refused", CaravansOffForNarrator);
                 if (!v.Settings.Caravans) return ApiResult.Fail("refused", CaravansOff);
                 var h = hands();
                 if (h == null) return NoGame();
@@ -153,6 +157,9 @@ namespace RimWorldLLM.Bridge
         {
             var a = new TradeArgs { With = Str(b, "with", 1, 40).ToUpperInvariant() };
             if (!TraderId.IsMatch(a.With)) throw new ArgError("with must be a trader id (P.., S.. or T<tile>)");
+            string why = "";
+            if (b["why"] != null && b["why"].Type == JTokenType.String) why = ChatFeed.CleanWhy((string)b["why"]);
+            string opId = VivJson.Str(b["op_id"]);
             a.Buy = DealLines(b, "buy");
             a.Sell = DealLines(b, "sell");
             if (a.Buy.Count + a.Sell.Count == 0) throw new ArgError("give at least one line in buy or sell");
@@ -167,22 +174,37 @@ namespace RimWorldLLM.Bridge
                     limits = v.Settings.Limits();
                     v.TradeDay.Roll(tick);
                     if (v.TradeDay.DealsLeft(limits) <= 0) return HandResult.No("the narrator has made its " + limits.DealsPerDay + " deals for today");
+                    if (v.TradeWalk != null && a.With[0] != 'T') return HandResult.No("a trade is already under way: " + v.TradeWalk.Walking);
                     return null;
                 },
                 Run = h =>
                 {
                     var v = vivarium();
-                    var r = h.Trade(a, limits ?? v.Settings.Limits(), v.TradeDay);
-                    if (r != null && r.Ok)
-                    {
-                        var x = r.Extra ?? (r.Extra = new JObject());
-                        int spent = VivJson.Int(x["spent"]), got = VivJson.Int(x["got"]);
-                        v.TradeDay.Charge(spent, got, x["value"] != null ? VivJson.Int(x["value"]) : -1);
-                        x["today"] = v.TradeDay.ToJson(limits ?? v.Settings.Limits());
-                    }
-                    return r;
+                    var lim = limits ?? v.Settings.Limits();
+                    if (a.With[0] == 'T') return RunTrade(v, h, a, lim, null);
+                    PendingTrade p; string cannot;
+                    var s = h.TradeStart(a, lim, v.TradeDay, out p, out cannot);
+                    if (s == null)
+                        return RunTrade(v, h, a, lim, string.IsNullOrEmpty(cannot) ? null : cannot);   // no reason = the hand does not walk
+                    if (!s.Ok || p == null) return s;
+                    p.Why = why; p.OpId = opId;
+                    v.TradeWalk = p;
+                    s.Pending = true;
+                    return s;
                 }
             };
+        }
+
+        /// <summary>The instant trade: the hand runs it now and the day is charged. `radio` (a reason a walk was not possible) goes on the note.</summary>
+        static HandResult RunTrade(Vivarium v, IVivariumHands h, TradeArgs a, TradeLimits lim, string radio)
+        {
+            var r = h.Trade(a, lim, v.TradeDay);
+            if (r != null && r.Ok)
+            {
+                TradeWalk.ChargeDay(v, r, lim);
+                if (radio != null) r.Note = (r.Note ?? "") + " (traded over the radio: " + radio + ")";
+            }
+            return r;
         }
 
         // ---------------------------------------------------------------- /act/caravan
@@ -190,6 +212,7 @@ namespace RimWorldLLM.Bridge
         {
             var a = new CaravanArgs { Op = OneOf(b, "op", CaravanOps) };
             a.PlayerAsked = OptBool(b, "player_asked") ?? false;
+            bool script = OptBool(b, "script") ?? false;
             if (a.Op == "form")
             {
                 a.Pawns = IdList(b, "pawns", MaxCaravanPawns);
@@ -213,6 +236,7 @@ namespace RimWorldLLM.Bridge
                 GateAt = (v, tick) =>
                 {
                     tickAt = tick;
+                    if (!script) return HandResult.No(CaravansOffForNarrator);
                     if (!v.Settings.Caravans) return HandResult.No(CaravansOff);
                     if (a.PlayerAsked && !PlayerAskedRecently(v, tick))
                         return HandResult.No("player_asked is set but the player has said nothing in the chat this past hour");

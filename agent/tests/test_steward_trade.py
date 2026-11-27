@@ -1,4 +1,4 @@
-"""The steward's trade and caravan tools (steward_trade.py): presence by digest, bodies, errors, look tools, advisor mode,
+"""The steward's trade tools (steward_trade.py; caravans are off): presence by digest, bodies, errors, look tools, advisor mode,
 the digest's trade lines and cap, the prompt text, the tool-section budget, the grammar."""
 import copy
 import json
@@ -88,32 +88,34 @@ def test_no_trade_block_no_trade_tools():
 def test_trader_digest_has_trade_tools_and_acting_split():
     s = session(TRADER)
     assert {"trade_offer", "trade"} <= {t.name for t in s.tools}
-    assert "caravan" not in {t.name for t in s.tools}                     # no settlement, quest or caravan: nowhere to go
     assert "trade" in s.acting and "trade_offer" not in s.acting
     assert choices(s, "trade", "with") == ["P5521"]
 
 
 def test_orbital_trader_and_settlement_digest():
     assert choices(session(ORBITAL), "trade", "with") == ["S31"]
-    s = session(SETTLE)
-    names = {t.name for t in s.tools}
-    assert "caravan" in names and "caravan_plan" in names and "trade" not in names      # no trader, no sitting caravan
-    assert choices(s, "caravan", "to") == ["none", "T4321"]
-    assert choices(s, "caravan", "quest") == ["none", "Q77"]
-    assert {"caravan"} == s.acting & {"caravan", "caravan_plan"}
+    names = {t.name for t in session(SETTLE).tools}
+    assert not {"trade", "trade_offer", "caravan", "caravan_plan"} & names           # no trader on the map, and caravans are gone
 
 
-def test_a_caravan_on_a_settlement_makes_it_a_trade_partner():
-    s = session(at_settlement())
-    assert choices(s, "trade", "with") == ["T4321"]
-    assert choices(s, "caravan", "to") == ["none", "T4321", "home"]
-    assert choices(s, "caravan", "caravan") == ["none", "C88"]
+def test_no_digest_offers_a_caravan_tool():
+    for d in (SAMPLE, TRADER, ORBITAL, SETTLE, at_settlement(), merged("trader", "settlement"), big_digest()):
+        for adv in (False, True):
+            s = session(d, advisor=adv)
+            assert not {t.name for t in s.tools} & {"caravan", "caravan_plan"} and not {"caravan"} & s.acting
 
 
-def test_offers_are_not_quest_targets():
-    d = copy.deepcopy(SETTLE)
-    d["quests"][0]["state"] = "offer"
-    assert "quest" not in {p.name for p in tool(session(d), "caravan").params}
+def test_a_caravan_at_a_settlement_is_no_trade_partner():
+    assert "trade" not in {t.name for t in session(at_settlement()).tools}          # T-tile trades need a caravan, which is off
+
+
+def test_the_narrator_caravan_route_is_refused(fb):
+    async def go():
+        br = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", "tok", RimWorldAdapter().protocol)
+        with pytest.raises(Exception, match="caravans are off"):
+            await br.act("caravan", {"op": "form", "pawns": [101], "to": "T4321"})
+        assert not fb.act_log
+    run(go())
 
 
 # ---- bodies
@@ -156,69 +158,42 @@ def test_trade_with_a_trader_that_cannot_trade_is_explained(fb):
     assert "no comms console" in r.result["error"] and not fb.act_log
 
 
-def test_caravan_form_maps_names_and_quest(fb):
-    s = live(fb, SETTLE)
-    r = do(s, "caravan", op="form", pawns="Ana, bram", quest="Q77", goods="cloth x20", purpose="deliver", why="since the quest pays")
-    assert r.ok
-    assert fb.act_log[-1] == ("caravan", {"op": "form", "pawns": [101, 102], "to": "Q77", "goods": [{"item": "cloth", "count": 20}],
-                                          "purpose": "deliver", "why": "since the quest pays"})
-    do(s, "caravan", op="form", pawns="Cy", to="T4321")
-    assert fb.act_log[-1][1] == {"op": "form", "pawns": [103], "to": "T4321"}
-
-
-def test_caravan_send_and_cancel(fb):
-    s = live(fb, at_settlement())
-    do(s, "caravan", op="send", caravan="C88", to="home")
-    assert fb.act_log[-1] == ("caravan", {"op": "send", "caravan": "C88", "to": "home"})
-    do(s, "caravan", op="cancel", caravan="C88")
-    assert fb.act_log[-1] == ("caravan", {"op": "cancel", "caravan": "C88"})
-
-
-def test_caravan_errors(fb):
-    s = live(fb, at_settlement())
-    n = len(fb.act_log)
-    assert "no colonist named Zed" in do(s, "caravan", op="form", pawns="Ana, Zed", to="T4321").result["error"]
-    assert "1 to 6" in do(s, "caravan", op="form", to="T4321").result["error"]
-    assert "needs to" in do(s, "caravan", op="form", pawns="Ana").result["error"]
-    assert "needs to" in do(s, "caravan", op="form", pawns="Ana", to="home").result["error"]
-    assert "needs caravan" in do(s, "caravan", op="cancel").result["error"]
-    assert "send needs to" in do(s, "caravan", op="send", caravan="C88").result["error"]
-    assert "give a count" in do(s, "caravan", op="form", pawns="Ana", to="T4321", goods="cloth").result["error"]
-    assert len(fb.act_log) == n
-
-
-def test_quest_that_cannot_be_worked_is_refused_with_its_reason(fb):
-    d = copy.deepcopy(SETTLE)
-    d["quests"][0].update(can=False, why_not="too dangerous for the colony")
-    r = do(live(fb, d), "caravan", op="form", pawns="Ana", quest="Q77")
-    assert "too dangerous" in r.result["error"] and not fb.act_log
-
-
 def test_refusal_passes_through(fb):
     s = live(fb, TRADER)
     fb.act_refuse["trade"] = "can't sell medicine: the colony keeps 10"
     r = do(s, "trade", **{"with": "P5521"}, sell="herbal medicine x5")
     assert r.result == {"refused": "can't sell medicine: the colony keeps 10"} and not r.ok
-    s = live(fb, SETTLE)
-    fb.act_refuse["caravan"] = "needs combat (not yet)"
-    assert do(s, "caravan", op="form", pawns="Ana", quest="Q77").result == {"refused": "needs combat (not yet)"}
 
 
 def test_act_extra_fields_reach_the_model(fb):
     s = live(fb, TRADER)
     fb.act_extra["trade"] = {"spent": 300, "got": 200, "net": -100}
     r = do(s, "trade", **{"with": "P5521"}, buy="steel x10")
-    assert r.result["spent"] == 300 and r.result["done"].startswith("trade:")
+    assert r.result["spent"] == 300 and r.result["status"] == "walking" and "Ana is walking to Bulk goods trader Tomas to trade" == r.result["done"]
 
 
-def test_unknown_animal_names_only_with_an_animals_list(fb):
-    d = copy.deepcopy(SETTLE)
-    assert "animals" not in {p.name for p in tool(session(d), "caravan").params}
-    d["animals"] = [{"id": 9001, "name": "Bessie"}]
-    s = live(fb, d)
-    do(s, "caravan", op="form", pawns="Ana", to="T4321", animals="Bessie")
-    assert fb.act_log[-1][1]["animals"] == [9001]
-    assert "no animal named Rex" in do(s, "caravan", op="form", pawns="Ana", to="T4321", animals="Rex").result["error"]
+def test_a_trade_with_a_trader_walks_and_a_second_is_refused_until_it_ends(fb):
+    s = live(fb, TRADER)
+    r = do(s, "trade", **{"with": "P5521"}, buy="steel x10")
+    assert r.ok and r.result["status"] == "walking" and r.result["negotiator"] == "Ana" and r.result["to"] == "Bulk goods trader Tomas"
+    assert r.note == "Ana is walking to Bulk goods trader Tomas to trade"
+    again = do(s, "trade", **{"with": "P5521"}, sell="cloth x10")
+    assert not again.ok and "a trade is already under way" in again.result["refused"]
+    assert len(fb.act_log) == 1
+    assert fb.trade_pending == {"negotiator": "Ana", "to": "Bulk goods trader Tomas", "with": "P5521"}
+    fb.trade_pending = None
+    assert do(s, "trade", **{"with": "P5521"}, sell="cloth x10").ok
+
+
+def test_the_fake_digest_shows_the_pending_trade_and_vivarium_lists_traders(fb):
+    async def go():
+        fb.digest = copy.deepcopy(TRADER)
+        br = BridgeClient(httpx.AsyncClient(transport=fb.transport), "http://fake", "tok", RimWorldAdapter().protocol)
+        assert (await br.vivarium())["traders"] == [{"id": "P5521", "kind": "caravan", "name": "Bulk goods trader Tomas"}]
+        assert (await br.digest())["trade"]["pending"] is None
+        await br.act("trade", {"with": "P5521", "buy": [{"item": "steel", "count": 5}], "sell": []})
+        assert (await br.digest())["trade"]["pending"]["negotiator"] == "Ana"
+    run(go())
 
 
 # ---- the look tools
@@ -232,17 +207,6 @@ def test_look_tools_render_and_are_not_acting(fb):
     assert fb.looks == [("/trade/offer", {"with": "P5521"})]
 
 
-def test_caravan_plan_look(fb):
-    s = live(fb, SETTLE)
-    r = do(s, "caravan_plan", pawns="Ana, Bram", quest="Q77", goods="cloth x20")
-    assert not r.ok and "ok" in r.result["result"] and "9.2" in r.result["result"]
-    path, q = fb.looks[-1]
-    assert path == "/caravan/plan" and q == {"pawns": "101,102", "to": "Q77", "goods": "cloth:20"}
-    assert not fb.act_log
-    assert "needs pawns" in do(s, "caravan_plan", to="T4321").result["error"]
-    assert "no colonist" in do(s, "caravan_plan", pawns="Zed", to="T4321").result["error"]
-
-
 def test_look_game_error_is_a_tool_error(fb):
     s = live(fb, TRADER)
     fb.digest = {}                                           # the fake now knows no trader
@@ -250,17 +214,10 @@ def test_look_game_error_is_a_tool_error(fb):
     assert "error" in r.result and not r.ok
 
 
-def test_plan_problems_render():
-    from rimworldllm_agent.games.rimworld.steward_trade import render_plan
-    t = render_plan({"days": 3.1, "food_need": 9.2, "food_days": 4.0, "mass": 260, "capacity": 210, "ok": False,
-                     "problems": ["too heavy: 260/210 kg", "food for 4.0 days, needs 9.2"]})
-    assert "NOT OK: too heavy" in t and "3.1 days" in t
-
-
 # ---- advisor mode
-def test_advisor_one_task_counts_trade_and_caravan():
-    s = session(at_settlement(), advisor=True)
-    assert {"trade", "caravan"} <= s.acting and not ({"trade_offer", "caravan_plan"} & s.acting)
+def test_advisor_one_task_counts_trade():
+    s = session(TRADER, advisor=True)
+    assert {"trade"} <= s.acting and "trade_offer" not in s.acting
 
 
 def test_advisor_note_no_longer_names_trade():
@@ -280,16 +237,24 @@ def test_trader_digest_lines():
     assert "SETTLEMENTS" not in text and "CARAVANS" not in text and "QUESTS" not in text
 
 
-def test_settlement_caravan_and_quest_lines():
+def test_quest_lines_have_no_caravans_or_settlements_block():
     d = at_settlement()
-    d["quests"][0]["can"], d["quests"][0]["why_not"] = False, "food for 4.0 days, needs 9.2"
+    d["quests"][0]["can"], d["quests"][0]["why_not"] = False, "needs a caravan (caravans are off)"
     text = sd.render_digest(d)
-    assert "SETTLEMENTS: T4321 Rivermouth (Hill Union, neutral, goodwill 12), 3.1 days, outlander base" in text
-    assert "- C88 Caravan Ana: Ana, Bram + 1 animals, at Rivermouth -> home, 2.4 days left, food 6.5 days, mass 120/210" in text
-    assert "can trade here: T4321 (yours)" in text
+    assert "SETTLEMENTS" not in text and "Rivermouth (Hill Union" not in text
+    assert "CARAVANS" not in text and "Caravan Ana" not in text
     assert ("- Q77 [active] delivery: 20 cloth to Rivermouth, reward 600 silver, expires in 240 h, 3.1 days away, "
-            "CANNOT: food for 4.0 days, needs 9.2") in text
+            "can't: needs a caravan (caravans are off)") in text
+    assert "CANNOT:" not in text and "decline one that can't" in text
     assert "- Q77" in sd.render_digest(SETTLE) and ", can" in sd.render_digest(SETTLE)
+
+
+def test_a_pending_trade_is_shown_in_the_trade_line():
+    d = copy.deepcopy(TRADER)
+    d["trade"]["pending"] = {"negotiator": "Ana", "to": "the comms console", "with": "Bulk goods trader Tomas"}
+    assert "a trade is under way: Ana is walking to the comms console to trade with Bulk goods trader Tomas" in sd.render_digest(d)
+    d["trade"]["pending"] = None
+    assert "under way" not in sd.render_digest(d)
 
 
 def test_cant_trade_trader_is_marked():
@@ -326,7 +291,7 @@ def big_digest():
     big["needs"] = [f"component-like need number {i} (4 left, cannot make them)" for i in range(8)]
     big["never_sell"] = ["weapons and apparel in use", "medicine below 10", "food below 10 days", "forbidden items", "jade"] * 2
     d["trade"] = big
-    d["caravans"] = [dict(CARAVAN, id=f"C{i}") for i in range(4)]
+    d["caravans"] = [dict(CARAVAN, id=f"C{i}") for i in range(4)]            # an old mod may still send them: never rendered
     d["quests"] = [{"id": f"Q{i}", "name": "Trade request: 20 cloth", "state": "active", "kind": "delivery", "what": "bring 20 cloth to Rivermouth " * 3,
                     "reward": "600 silver and a long reward text", "expires_h": 240, "days": 3.1, "danger": "low", "can": True} for i in range(6)]
     return d
@@ -369,6 +334,19 @@ def test_quest_offer_fact_and_rule():
     assert any(r[2] == "growth.quest_accept" or "growth.quest_accept" in str(r) for r in fired_rules(f))
 
 
+def test_quest_that_cannot_is_declined_by_a_rule():
+    d = copy.deepcopy(SETTLE)
+    d["quests"][0].update(state="offer", can=False, why_not="needs a caravan (caravans are off)")
+    f = derive_facts(d)
+    assert f["quest_offer_cannot"] is True and f["quest_offer_can"] is False
+    f.update(food_days=12, colonists_downed=0, colonists_sick=0)
+    ids = [str(r) for r in fired_rules(f)]
+    assert any("growth.quest_decline" in r for r in ids) and not any("growth.quest_accept" in r for r in ids)
+    assert not any("caravan_safety" in r for r in ids)
+    d["quests"][0]["state"] = "active"
+    assert derive_facts(d)["quest_offer_cannot"] is False
+
+
 def test_trader_facts_fire_the_trade_rule():
     f = derive_facts(copy.deepcopy(TRADER))
     assert f["traders_ready"] == 1 and f["trade_needs"] >= 1
@@ -381,10 +359,11 @@ def test_trader_facts_fire_the_trade_rule():
 def test_prompt_text_is_amended_not_appended():
     kit = StewardKit()
     sys_ = kit.system_prompt(False)
-    assert "trade_offer, trade, caravan_plan and caravan" in sys_
-    assert "likewise trade and caravans" not in sys_ and "(trade, caravans, combat stances)" not in sys_
+    assert "trade_offer and trade" in sys_ and "Caravans are off" in sys_ and "declined with choose" in sys_
+    assert "caravan_plan" not in sys_ and "likewise trade and caravans" not in sys_
     strat = kit.default_strategy()
-    assert "## Trade, caravans, quests" in strat and "500 silver" in strat and "trade_offer before every trade" in strat
+    assert "caravan_plan" not in strat and "Caravans:" not in strat and "trade, caravans" not in strat
+    assert "## Trade and quests" in strat and "declined with choose" in strat and "500 silver" in strat and "trade_offer before every trade" in strat
     assert len(strat.encode()) <= 12288
 
 
@@ -393,24 +372,19 @@ def test_tool_section_budget():
     d["build"] = BUILD
     d["trade"]["traders"] = TRADER["trade"]["traders"]
     s = session(d)
-    assert {"trade_offer", "trade", "caravan_plan", "caravan", "build", "bill"} <= {t.name for t in s.tools}
+    assert {"trade_offer", "trade", "build", "bill"} <= {t.name for t in s.tools}
     n = len(tl.render_tools(s.tools))
     assert n < 11000, n
-    assert len(tl.render_tools(session(TRADER).tools)) < len(tl.render_tools(s.tools))
+    assert len(tl.render_tools(session(TRADER).tools)) <= n                  # (no caravan tools any more: the trade tools add little)
 
 
 # ---- grammar and signatures
 def test_signatures_and_grammar():
-    s = session(at_settlement())
+    s = session(TRADER)
     assert tool(s, "trade").signature() == "trade(with, buy?, sell?, why?)"
     assert tool(s, "trade_offer").signature() == "trade_offer(with)"
-    assert tool(s, "caravan").signature() == "caravan(op, pawns?, to?, quest?, goods?, purpose?, caravan?, why?)"
-    assert tool(s, "caravan_plan").signature() == "caravan_plan(pawns?, to?, quest?, goods?)"
     g = tl.build_grammar(s.tools)
-    assert "trade_offer" in g and '\\"buy\\":' in g and '\\"quest\\":' in g and g.startswith("root ::=")
-    full = {"op": "form", "pawns": "Ana", "to": "none", "quest": "Q77", "goods": "none", "purpose": "none", "caravan": "none", "why": "since"}
-    assert tool(s, "caravan").check_args(full, False)[1] is None                  # grammar: every parameter written
-    assert tool(s, "caravan").check_args({"op": "cancel", "caravan": "C88"}, False)[1] is None   # json/native: omitted
+    assert "trade_offer" in g and '\\"buy\\":' in g and "caravan" not in g and g.startswith("root ::=")
 
 
 # ---- whole cycles (scripted model)

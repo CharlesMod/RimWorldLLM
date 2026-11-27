@@ -17,6 +17,9 @@ namespace RimWorldLLM.Bridge
         /// <summary>Phase 2: what the hand put into the world (blueprints, designations, zones, bills), for the
         /// per-cycle caps and the player's undo. Null or empty for hands that place nothing.</summary>
         public List<NarratorMark> Marks;
+        /// <summary>Walking trades: ok, but nothing has happened yet (a colonist is on the way). The Act pipeline posts no greentext
+        /// line and logs no action; the line comes when the deal runs.</summary>
+        public bool Pending;
 
         public static HandResult Done(string note, JObject extra = null) { return new HandResult { Ok = true, Note = note, Extra = extra }; }
         public static HandResult No(string reason, string what = null) { return new HandResult { Ok = false, Reason = reason, What = what }; }
@@ -80,6 +83,17 @@ namespace RimWorldLLM.Bridge
         /// <summary>POST /act/trade: runs DealPlanner.Plan against the live offers, then executes. Extra: spent, got, net (and value, optional).
         /// The route charges `day` (already rolled to this tick) from spent/got and adds `today`.</summary>
         HandResult Trade(TradeArgs a, TradeLimits limits, TradeDay day);
+        /// <summary>POST /act/trade with a P.. or S.. trader: checks the deal now (DealPlanner, nothing executed), picks the negotiator and
+        /// gives a forced Goto (orbital: the comms console's interaction cell; visiting: a cell next to the trader). Ok result: Pending set,
+        /// Note "Ana is walking to the comms console to trade with the exotic goods trader", Extra status/negotiator/to, and `p` filled in
+        /// (the route stores it). A refusal is a plain No. When no walk is possible (no path, negotiator downed...) returns null with
+        /// `cannotWalk` set to a short reason (null result and no reason: this hand does not walk), and the route runs the instant trade.</summary>
+        HandResult TradeStart(TradeArgs a, TradeLimits limits, TradeDay day, out PendingTrade p, out string cannotWalk);
+        /// <summary>The ticker's look at a pending trade (game thread): the trader, the negotiator, the way, and whether they arrived.
+        /// Re-targets the Goto when the trader pawn has moved.</summary>
+        WalkObs TradeObserve(PendingTrade p);
+        /// <summary>Gives the negotiator the Goto again (the job was interrupted).</summary>
+        void TradeReissue(PendingTrade p);
         /// <summary>GET /caravan/plan: CaravanPlanner's answer for the form args, no action. {"refused": ...} on a refusal.</summary>
         JObject CaravanPlan(CaravanArgs a, TradeLimits limits);
         /// <summary>POST /act/caravan form | send | cancel. Form success Extra must hold `caravan` (the key the digest lists), which the route
