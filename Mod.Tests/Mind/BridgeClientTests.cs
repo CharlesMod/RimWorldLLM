@@ -245,7 +245,7 @@ namespace RimWorldLLM.Tests.Mind
         public async Task ClientBodiesChatStatusAndStreamId()
         {
             var t = new Rec();
-            var b = new BridgeClient(t, ProtocolNames.RimWorld);
+            var b = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             await b.PostChatStatusAsync("narrator", "thinking", "s1");
             Assert.Equal("POST", t.Last.Method); Assert.Equal("/chat/status", t.Last.Path);
             Assert.Equal(new[] { "who", "state", "stream_id", "op_id" }, t.Body.Properties().Select(p => p.Name).ToArray());
