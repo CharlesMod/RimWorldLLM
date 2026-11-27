@@ -58,6 +58,11 @@ namespace RimWorldLLM
         public bool watchMode = false;
         public int watchPlayerPauseSec = 20;         // the player touching the camera pauses the director this long
         public bool watchCaptions = true;            // one short 'Camera: ...' chat line per shot of interest
+        public bool watchSelectFollowed = false;     // select the followed pawn (opens the inspect pane, so off by default)
+        public bool watchZoom = true;                // zoom per shot (close for meals, wide for raids); the player's zoom comes back on exit
+        public int watchPace = 1;                    // 0 calm, 1 normal, 2 lively: holds and the no-repeat window
+        public bool watchSceneMeals = true, watchSceneRecreation = true, watchSceneWork = true, watchSceneNight = true,
+            watchSceneMedical = true, watchSceneChildren = true, watchSceneRomance = true;   // everyday scenes by group
 
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
@@ -106,6 +111,7 @@ namespace RimWorldLLM
         // Vivarium (the narrator plays).
         public bool narratorMayPauseForEmergencies = true;
         public bool narratorControlsSpeed = false;
+        public bool narratorSlowsForCombat = true;
         public float stewardHeartbeatHours = 6f;
         public bool narratorAnswerDialogs = true;
         public int narratorDialogTimeoutS = 90;
@@ -177,6 +183,16 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref watchMode, "watchMode", false);
             Scribe_Values.Look(ref watchPlayerPauseSec, "watchPlayerPauseSec", 20);
             Scribe_Values.Look(ref watchCaptions, "watchCaptions", true);
+            Scribe_Values.Look(ref watchSelectFollowed, "watchSelectFollowed", false);
+            Scribe_Values.Look(ref watchZoom, "watchZoom", true);
+            Scribe_Values.Look(ref watchPace, "watchPace", 1);
+            Scribe_Values.Look(ref watchSceneMeals, "watchSceneMeals", true);
+            Scribe_Values.Look(ref watchSceneRecreation, "watchSceneRecreation", true);
+            Scribe_Values.Look(ref watchSceneWork, "watchSceneWork", true);
+            Scribe_Values.Look(ref watchSceneNight, "watchSceneNight", true);
+            Scribe_Values.Look(ref watchSceneMedical, "watchSceneMedical", true);
+            Scribe_Values.Look(ref watchSceneChildren, "watchSceneChildren", true);
+            Scribe_Values.Look(ref watchSceneRomance, "watchSceneRomance", true);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);
@@ -220,6 +236,7 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref interactionIdle, "interactionIdle", Bridge.InteractionPolicy.DefaultIdle);
             Scribe_Values.Look(ref narratorMayPauseForEmergencies, "narratorMayPauseForEmergencies", true);
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
+            Scribe_Values.Look(ref narratorSlowsForCombat, "narratorSlowsForCombat", true);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
             Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);
             Scribe_Values.Look(ref narratorDialogTimeoutS, "narratorDialogTimeoutS", 90);

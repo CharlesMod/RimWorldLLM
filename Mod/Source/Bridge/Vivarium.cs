@@ -85,6 +85,20 @@ namespace RimWorldLLM.Bridge
         /// <summary>POST /act/caravan form | send | cancel. Form success Extra must hold `caravan` (the key the digest lists), which the route
         /// stores in Vivarium.CaravanPlans with purpose, to and the quest id (when to is Q..).</summary>
         HandResult Caravan(CaravanArgs a, int maxPawns);
+        // ---- phase 3: combat and defense (docs/VIVARIUM.md "Phase 3"). The CombatState holds the squad (the hand updates it)
+        // and the last raid side; orders place nothing; defenses return blueprint marks like phase 2.
+
+        /// <summary>GET /combat: threats, fighters, others, downed, fires, defenses in words, positions. "active" false when quiet.</summary>
+        JObject Combat(CombatState state);
+        /// <summary>A squad order: draft, move (to a named position the hand finds), hold, fire_at_will, focus, retreat, rescue,
+        /// extinguish, flee, undraft.</summary>
+        HandResult Squad(SquadArgs a, CombatState state);
+        /// <summary>Turrets, sandbags, barricades, a killbox, traps or a wall segment, as blueprints within the cycle caps.</summary>
+        HandResult Defend(DefendArgs a, BuildBudget left, CombatState state);
+        /// <summary>The fight's speed rule. restore false: set speed (1) and return Extra "before" (the speed it was, 1..4); refuses
+        /// when paused or already at 1x. restore true: put speed (the remembered one, 2..4) back, refusing when the game is not at 1x (the
+        /// player changed it).</summary>
+        HandResult CombatSpeed(int speed, bool restore);
     }
 
 }

@@ -29,7 +29,7 @@ namespace RimWorldLLM.Bridge
                 return d == null ? NoGame() : ApiResult.Success(d);
             });
 
-            router.Add("POST", "/act/time", true, c => Act(c, vivarium, hands, "time", Time));
+            router.Add("POST", "/act/time", true, c => Act(c, vivarium, hands, "time", b => Time(b, vivarium)));
             router.Add("POST", "/act/work", true, c => Act(c, vivarium, hands, "work", Work));
             router.Add("POST", "/act/schedule", true, c => Act(c, vivarium, hands, "schedule", Schedule));
             router.Add("POST", "/act/policy", true, c => Act(c, vivarium, hands, "policy", Policy));
@@ -46,6 +46,7 @@ namespace RimWorldLLM.Bridge
             router.Add("POST", "/act/choose", true, c => Choose(c, vivarium, hands));
             RegisterBuild(router, vivarium, hands);
             RegisterTrade(router, vivarium, hands);
+            RegisterCombat(router, vivarium, hands);
         }
 
         static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }
@@ -216,6 +217,7 @@ namespace RimWorldLLM.Bridge
             public Func<IVivariumHands, HandResult> Run;
             public Func<IVivariumHands, BuildBudget, HandResult> RunLeft; // phase 2: gets what the cycle caps still allow
             public Action<Vivarium> OnOk;
+            public Action<Vivarium, HandResult> OnResult;               // phase 3: like OnOk, with the hand's result (the combat speed memory)
             public Func<string> What;                                   // plain English of what is attempted, from the parsed args ("pause the game")
         }
         delegate Plan Parser(JObject body);
@@ -263,6 +265,7 @@ namespace RimWorldLLM.Bridge
                 return ApiResult.Fail("refused", reason);
             }
             if (plan.OnOk != null) plan.OnOk(v);
+            if (plan.OnResult != null) plan.OnResult(v, r);
             string note = r.Note ?? "";
             v.Actions.Add(verb, note, c.State.Tick, "narrator", why);
             ChatFeed.Action(v.Chat, c.State.Tick, note, why);
@@ -280,11 +283,15 @@ namespace RimWorldLLM.Bridge
             return ApiResult.Success(body);
         }
 
-        static Plan Time(JObject b)
+        static Plan Time(JObject b, Func<Vivarium> vivarium)
         {
             bool? pause = OptBool(b, "pause");
             int? speed = OptInt(b, "speed", 1, 4);
             bool emergency = OptBool(b, "emergency") ?? false;
+            bool combat = OptBool(b, "combat") ?? false;
+            bool restore = OptBool(b, "restore") ?? false;
+            if (combat) return CombatTime(pause, speed, restore, vivarium);
+            if (restore) throw new ArgError("restore goes with combat: true");
             if (pause == null && speed == null) throw new ArgError("give pause and/or speed");
             return new Plan
             {
@@ -307,6 +314,36 @@ namespace RimWorldLLM.Bridge
                 {
                     if (pause == true) v.PausedByNarrator = true;
                     else if (pause == false) v.PausedByNarrator = false;
+                    if (speed != null) v.Combat.SpeedBefore = 0;   // an explicit speed replaces the fight's memory
+                }
+            };
+        }
+
+        /// <summary>The fight's speed rule: combat + speed 1 slows to normal speed (setting slow_for_combat, or controls_speed) and
+        /// remembers the speed before; combat + restore puts it back (only if the narrator slowed it and the game is still at 1x).</summary>
+        static Plan CombatTime(bool? pause, int? speed, bool restore, Func<Vivarium> vivarium)
+        {
+            if (pause != null) throw new ArgError("combat: true takes speed 1 or restore, not pause");
+            if (restore && speed != null) throw new ArgError("give speed 1 or restore, not both");
+            if (!restore && speed != 1) throw new ArgError("combat: true only slows to speed 1 (or restore: true puts the speed back)");
+            if (restore)
+                return new Plan
+                {
+                    Gate = v => v.Combat.SpeedBefore > 0 ? null : HandResult.No("the narrator did not slow the game for a fight"),
+                    What = () => "put the speed back after the fight",
+                    Run = h => h.CombatSpeed(vivarium().Combat.SpeedBefore, true),
+                    OnOk = v => v.Combat.SpeedBefore = 0
+                };
+            return new Plan
+            {
+                Gate = v => v.Settings.SlowForCombat || v.Settings.ControlsSpeed ? null
+                    : HandResult.No("the player has not let the narrator slow the game for fights"),
+                What = () => "slow the game to normal speed for the fight",
+                Run = h => h.CombatSpeed(1, false),
+                OnResult = (v, r) =>
+                {
+                    int before = r.Extra != null ? VivJson.Int(r.Extra["before"]) : 0;
+                    if (before >= 2 && before <= 4 && v.Combat.SpeedBefore == 0) v.Combat.SpeedBefore = before;
                 }
             };
         }

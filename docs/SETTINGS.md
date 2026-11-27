@@ -66,6 +66,7 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `evInjury` ... `evGatherings` (17) | true | P | Which event kinds get lines; each now has a tooltip | Events -> Colonists |
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
+| `narratorSlowsForCombat` | true | P | "Narrator plays" group: when a fight starts the narrator sets normal speed and puts the player's speed back after (unless the player changed it); works without "controls the speed" | new (vivarium 3) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
 | `narratorAutosave` | true | P | "Narrator plays" group: while Narrator plays and the game's own autosave is off, the mod keeps rotating autosaves `RWL-Narrator-1..K` | new (unattended) |
 | `narratorAutosaveDays` | 1 | P | Rotating autosave: every N in-game days (0.25-7, in quarter days) | new (unattended) |
@@ -96,6 +97,10 @@ Options > Controls. The three settings above reach the agent on `GET /vivarium` 
 | `showThoughts`, `thoughtOpacity`, `thoughtPerPawnSec`, `thoughtGlobalSec` | true, 0.6, 120, 20 | P | Inner-thought clouds (comic style) |
 | `directorCameraAllowed`, `directorCameraOnAtStart`, `directorPanSpeed` | true, false, 2.5 | P | Director camera |
 | `watchMode`, `watchCaptions`, `watchPlayerPauseSec` | false, true, 20 | P | Watch mode (camera director for unattended play); `watchMode` is a mod setting, not per game |
+| `watchZoom` | true | P | Watch mode zooms per shot (close for meals, deathbeds, art; mid for work; wide for raids, battles, ship parts) inside the player's zoom limits; the player's zoom comes back when watch mode turns off |
+| `watchSelectFollowed` | false | P | Select the pawn a follow shot is on (opens the inspect pane, hence off); never drafts or changes anything else |
+| `watchPace` | 1 | P | 0 calm, 1 normal, 2 lively: shot holds (follow 20/15/10 s, scenes 15/11/8 s, events x1.25/1/0.8) and the no-repeat window (5/4/2.5 min) |
+| `watchSceneMeals`, `watchSceneRecreation`, `watchSceneWork`, `watchSceneNight`, `watchSceneMedical`, `watchSceneChildren`, `watchSceneRomance` | all true | P | Everyday scene groups for quiet stretches (work also covers prisoner talks and taming) |
 | `shareFooter` | true | P | Footer on shared images (was under Talk) |
 
 ### Content
@@ -155,6 +160,8 @@ Agent config file / defaults (core/config.py):
 |---|---|---|
 | `steward` | true | The vivarium steward. It also stays off by itself against a mod without `/vivarium`. |
 | `steward_min_gap_real_s` | 20 | Least real seconds between two steward cycles that are not chat (heartbeat, events). Chat ignores it. |
+| `steward_combat_gap_game_s` | 5 | In a fight: least game seconds between two combat turns (60 ticks each). |
+| `steward_combat_gap_real_s` | 4 | In a fight: least real seconds after the last combat turn ended. |
 | `steward_strategy_path` | "" | A strategy playbook file for the steward prompt; "" = the shipped `games/rimworld/strategy/steward_strategy.md`. The env var `RIMWORLDLLM_STEWARD_STRATEGY` wins over it. A missing or empty chosen file leaves the section out. |
 | `steward_strategy_max_bytes` | 12288 | The strategy section is cut on a line at this size. |
 

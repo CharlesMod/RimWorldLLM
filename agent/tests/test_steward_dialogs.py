@@ -129,3 +129,29 @@ def test_dialog_try_runs_one_cycle_on_samples(tmp_path, monkeypatch, capsys):
     assert rc == 0
     assert "CYCLE: dialog" in out and "TOOL choose" in out and "DIALOGS STILL OPEN: none" in out
     assert "OPEN DIALOGS" in out
+
+
+def test_growth_render_and_tool():
+    d = {"dialogs": sample("dialogs_growth.json")}
+    line = [l for l in render_digest(d).splitlines() if "L5120" in l][0]
+    assert "child: Mia, 7" in line and "skills: Shooting 2*" in line
+    assert "pick 2 passion(s) of: Shooting, Melee, Artistic" in line
+    assert "Bookworm (Reads for fun; learns faster from books.)" in line and "Tough (Takes 25% less damage.)" in line
+    assert "options: 0" not in line
+    from rimworldllm_agent.games.rimworld.steward_tools import Session
+    s = Session(d, None, False)
+    spec = next(t for t in s.tools if t.name == "choose")
+    assert {"passions", "trait"} <= {p.name for p in spec.params}
+    assert s._verb_body("choose", {"dialog": "L5120", "passions": "Shooting, melee", "trait": "Tough"}) == \
+        ("choose", {"dialog": "L5120", "passions": ["Shooting", "melee"], "trait": "Tough"})
+    with pytest.raises(ValueError):
+        s._verb_body("choose", {"dialog": "L5120", "trait": "Tough"})
+    with pytest.raises(ValueError):
+        s._verb_body("choose", {"dialog": "L5120", "passions": "Melee"})
+    assert s._verb_body("choose", {"dialog": "L5120", "option": "0"}) == ("choose", {"dialog": "L5120", "option": 0})   # first choices still allowed
+
+
+def test_growth_prompt_line():
+    from rimworldllm_agent.games.rimworld import steward_tools
+    txt = (Path(steward_tools.__file__).parent / "steward_system.txt").read_text()
+    assert "growth moment" in txt and "personality" in txt

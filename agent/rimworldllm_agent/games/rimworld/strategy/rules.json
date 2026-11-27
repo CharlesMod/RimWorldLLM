@@ -8,8 +8,8 @@
  "digest_fields": {
   "day": "int, days since landing",
   "season": "string: spring|summer|fall|winter (local hemisphere)",
-  "days_to_winter": "int, est. days until outdoor temp stays below 0C (0 if already, 999 if never)",
-  "days_to_growing": "int, est. days until outdoor temp stays above ~6C again (0 if growing now, 999 if never)",
+  "days_to_winter": "float, est. days until outdoor temp stays below 0C (omitted if never cold)",
+  "days_to_growing": "float, est. days until outdoor temp is above ~6C again (only present when it is too cold now)",
   "biome": "string, e.g. temperate_forest, boreal_forest, tundra, ice_sheet, sea_ice, arid_shrubland, desert, extreme_desert, tropical_rainforest, tropical_swamp",
   "temp_c": "float, current outdoor temperature C",
   "temp_min_room_c": "float, coldest occupied bedroom C",
@@ -65,7 +65,16 @@
   "components": "int",
   "silver": "int",
   "dlc": "list of strings: royalty|ideology|biotech|anomaly|odyssey",
-  "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block"
+  "quest_offer_can": "bool, an open quest offer (digest quests, state offer) whose can is true; filled from the digest's quests block",
+  "loose_unstorable": "int, loose piles that no stockpile accepts or has room for (not forbidden)",
+  "stuck_no_material": "int, groups of blueprints/frames waiting on a material",
+  "stuck_no_builder": "bool, blueprints exist but no one can build (construction off or incapable)",
+  "bills_stuck": "int, active bills that cannot run (no power, no worker, no ingredients)",
+  "crops_ready": "int, grow cells harvestable now",
+  "huntable": "int, wild meat animals on the map that are not hostile",
+  "food_rot_soon": "int, food stacks rotting within a day",
+  "bleed_out_hours": "float, hours until the nearest colonist bleeds out (omitted if none)",
+  "infections_losing": "int, colonists whose infection is winning the race against immunity"
  },
  "sources": {
   "W-quick": "https://rimworldwiki.com/wiki/Quickstart_Guides",
@@ -125,7 +134,7 @@
    "id": "food.emergency",
    "category": "food",
    "condition": "food_days < 3",
-   "action": "Food emergency: harvest any mature crops now, hunt safe game (not boomalopes/boomrats/predators), butcher surplus animals, cook simple meals only (or nutrient paste), stop taming and capturing, release unneeded prisoners, buy food from any trader.",
+   "action": "Food emergency: harvest any mature crops now (FOOD line: cells ready), hunt safe game (FOOD line: game, hunters) (not boomalopes/boomrats/predators), butcher surplus animals, cook simple meals only (or nutrient paste), stop taming and capturing, release unneeded prisoners, buy food from any trader.",
    "priority": 1,
    "sources": [
     "W-sat",
@@ -160,9 +169,52 @@
    "id": "food.last_harvest",
    "category": "food",
    "condition": "days_to_winter <= 3 and days_to_winter > 0",
-   "action": "Harvest every mature or nearly mature crop now; sow nothing new outdoors.",
+   "action": "Harvest every mature or nearly mature crop now (the FOOD line says how many cells are ready); sow nothing new outdoors.",
    "priority": 1,
    "sources": [
+    "W-plants"
+   ]
+  },
+  {
+   "id": "food.harvest_before_starving",
+   "category": "food",
+   "condition": "crops_ready > 0 and food_days < 5",
+   "action": "Mature crops are ready while food runs low: Growing/Plant cutting priority 1 for the best growers and harvest those cells first, before anything else.",
+   "priority": 1,
+   "sources": [
+    "W-plants",
+    "W-starve"
+   ]
+  },
+  {
+   "id": "food.hunt_before_starving",
+   "category": "food",
+   "condition": "huntable > 0 and food_days < 5",
+   "action": "Wild game is on the map and food is low: set Hunting priority 1 for a capable shooter (armed, not a violence-incapable person) and designate hunt on safe animals; the FOOD line lists game and hunters.",
+   "priority": 2,
+   "sources": [
+    "W-food",
+    "W-starve"
+   ]
+  },
+  {
+   "id": "food.rot_soon",
+   "category": "food",
+   "condition": "food_rot_soon > 0",
+   "action": "Food is about to rot: cook the raw food or eat it first, move it into the freezer or a roofed cool room, and haul loose food into storage now.",
+   "priority": 2,
+   "sources": [
+    "W-food"
+   ]
+  },
+  {
+   "id": "winter.coming",
+   "category": "temperature",
+   "condition": "days_to_winter > 3 and days_to_winter <= 14",
+   "action": "Winter in under 14 days (DEADLINES): finish roofs, walls and heaters, stock firewood or fuel, make parkas, and harvest or bank food before crops die.",
+   "priority": 2,
+   "sources": [
+    "W-temp",
     "W-plants"
    ]
   },
@@ -307,8 +359,8 @@
   {
    "id": "health.bleeding",
    "category": "health",
-   "condition": "colonists_bleeding > 0 or colonists_downed > 0",
-   "action": "Rescue downed colonists to medical beds and tend the bleeding first; Doctor and Patient priority 1; use industrial medicine for heavy bleeding.",
+   "condition": "colonists_bleeding > 0 or colonists_downed > 0 or bleed_out_hours < 48",
+   "action": "Rescue downed colonists to medical beds and tend the bleeding first; Doctor and Patient priority 1; use industrial medicine for heavy bleeding. The DEADLINES line gives hours to bleed out: the nearest one is tended first, then bed rest.",
    "priority": 1,
    "sources": [
     "W-med",
@@ -320,6 +372,17 @@
    "category": "health",
    "condition": "colonists_sick > 0",
    "action": "Disease: sick colonists to bed rest; best doctor tends each time it is due with industrial medicine; keep the hospital clean; plague can kill in ~1.5 days untreated.",
+   "priority": 1,
+   "sources": [
+    "W-disease",
+    "W-med"
+   ]
+  },
+  {
+   "id": "health.infection_losing",
+   "category": "health",
+   "condition": "infections_losing > 0",
+   "action": "An infection is outrunning immunity (DEADLINES: losing the race): best doctor tends it now, bed rest in a hospital bed, and use medicine on it.",
    "priority": 1,
    "sources": [
     "W-disease",
@@ -814,6 +877,46 @@
    "priority": 4,
    "sources": [
     "W-caravan"
+   ]
+  },
+  {
+   "id": "build.loose_no_stockpile",
+   "category": "building",
+   "condition": "loose_unstorable > 0",
+   "action": "Loose items with no space: no stockpile accepts them or has room (LOOSE line says no stockpile takes it or stockpiles full). Make space first: widen an existing stockpile (allow the item, or enlarge it), and make a new zone only if none can be widened; then haul. Where the LOOSE line has no such note there is space: just haul. Do not mine more of what already lies loose.",
+   "priority": 2,
+   "sources": [
+    "W-work"
+   ]
+  },
+  {
+   "id": "build.stuck_no_material",
+   "category": "building",
+   "condition": "stuck_no_material > 0",
+   "action": "Work is stuck waiting on a material (STUCK line): get the material (haul loose piles, unforbid it, mine or buy it) instead of reordering priorities or placing more blueprints.",
+   "priority": 2,
+   "sources": [
+    "W-work"
+   ]
+  },
+  {
+   "id": "build.stuck_no_builder",
+   "category": "building",
+   "condition": "stuck_no_builder == true",
+   "action": "Blueprints wait but no one can build: enable Construction at priority 1-2 for a capable colonist (read each person's can't reason), do not queue more blueprints.",
+   "priority": 2,
+   "sources": [
+    "W-work"
+   ]
+  },
+  {
+   "id": "work.bills_stuck",
+   "category": "work",
+   "condition": "bills_stuck > 0",
+   "action": "A bill cannot run (STUCK line: no power, no worker or no ingredients): fix that reason (power, enable the work type, stock or unforbid ingredients) rather than adding bills.",
+   "priority": 3,
+   "sources": [
+    "W-work"
    ]
   },
   {

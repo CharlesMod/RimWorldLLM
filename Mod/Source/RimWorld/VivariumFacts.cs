@@ -43,6 +43,9 @@ namespace RimWorldLLM
             catch (Exception e) { if (logged.Add("colonists_list")) Log.Warning("[RimWorldLLM] digest facts colonists failed: " + e.Message); }
             if (cols != null) Colonists(o, map, cols);
 
+            F(o, "colonists_children", () => map.mapPawns.FreeColonistsSpawned.Count(VivariumStuck.IsChild));
+            if (cols != null) F(o, "colonists_idle", () => cols.Count(VivariumStuck.IsIdle));
+            Stuck(o, map);
             F(o, "prisoners", () => map.mapPawns.PrisonersOfColonySpawnedCount);
             F(o, "animals", () => map.mapPawns.SpawnedColonyAnimals.Count);
             Beds(o, map);
@@ -51,6 +54,9 @@ namespace RimWorldLLM
             F(o, "events", () => Events(map));
             F(o, "fires", () => Fires(map));
             Power(o, map);
+            try { VivariumFood.AddFacts(o, map); } catch (Exception e) { if (logged.Add("food_facts")) Log.Warning("[RimWorldLLM] digest food facts failed: " + e.Message); }
+            try { VivariumExtras.AddFacts(o, map); } catch (Exception e) { if (logged.Add("extras_facts")) Log.Warning("[RimWorldLLM] digest extras facts failed: " + e.Message); }
+            try { VivariumDeadlines.AddFacts(o, map); } catch (Exception e) { if (logged.Add("deadline_facts")) Log.Warning("[RimWorldLLM] digest deadline facts failed: " + e.Message); }
 
             var rc = map.resourceCounter;
             F(o, "medicine_total", () => rc.GetCount(ThingDefOf.MedicineHerbal) + rc.GetCount(ThingDefOf.MedicineIndustrial) + rc.GetCount(ThingDefOf.MedicineUltratech));
@@ -97,6 +103,23 @@ namespace RimWorldLLM
                 if (h.def.makesSickThought || (h.def.tendable && h.def.isBad && !h.def.chronic && h.def.lethalSeverity > 0f)) return true;
             }
             return false;
+        }
+
+        static void Stuck(JObject o, Map map)
+        {
+            F(o, "blueprints_stuck", () => VivariumStuck.Stuck(map).BlueprintsStuck);
+            F(o, "stuck_no_material", () => VivariumStuck.Stuck(map).NoMaterialGroups);
+            F(o, "stuck_no_builder", () => VivariumStuck.Stuck(map).NoBuilder);
+            F(o, "bills_stuck", () => VivariumStuck.Stuck(map).BillsStuck);
+            F(o, "loose_unstorable", () => LoosePilesWhere(map, s => s == "none" || s == "full"));
+            F(o, "loose_far", () => LoosePilesWhere(map, s => s == "far"));
+        }
+
+        static JToken LoosePilesWhere(Map map, Func<string, bool> pred)
+        {
+            var home = VivariumBuildView.Home(map);
+            if (home == null) return null;
+            return VivariumStuck.LoosePiles(map, home).Count(p => !p.Forbidden && p.Store != null && pred(p.Store));
         }
 
         static void Colonists(JObject o, Map map, List<Pawn> cols)

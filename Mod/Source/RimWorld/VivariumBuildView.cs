@@ -33,7 +33,8 @@ namespace RimWorldLLM
                 o["rooms"] = new JArray(rooms.OrderByDescending(r => r.Imp).Take(MaxRooms).Select(r => new JObject
                 {
                     ["id"] = r.Id, ["role"] = r.Role, ["label"] = r.Label, ["w"] = r.W, ["h"] = r.H, ["cells"] = r.Cells,
-                    ["impressiveness"] = (int)Math.Round(r.Imp), ["bed"] = r.Bed, ["door"] = r.Door, ["roofed"] = r.Roofed, ["x"] = r.X, ["z"] = r.Z
+                    ["impressiveness"] = (int)Math.Round(r.Imp), ["bed"] = r.Bed, ["door"] = r.Door, ["roofed"] = r.Roofed, ["x"] = r.X, ["z"] = r.Z,
+                    ["temp_c"] = r.TempC, ["mountain"] = r.Mountain, ["dirty"] = r.Dirty
                 }));
 
             Part(o, "missing", () => new JArray(Missing(map, rooms)));
@@ -52,11 +53,14 @@ namespace RimWorldLLM
             public int Id, W, H, Cells, X, Z;
             public string Role, Label;
             public float Imp;
-            public bool Bed, Door, Roofed, Bedroom;
+            public bool Bed, Door, Roofed, Bedroom, Mountain, Dirty;
+            public int TempC;
             public HashSet<Pawn> Sleepers = new HashSet<Pawn>();
         }
 
-        static int[] Home(Map map)
+        internal static int[] HomeOf(Map map) { try { return Home(map); } catch (Exception) { return null; } }
+
+        internal static int[] Home(Map map)
         {
             var pts = new List<int[]>();
             foreach (var b in map.listerBuildings.allBuildingsColonist)
@@ -99,6 +103,14 @@ namespace RimWorldLLM
                     X = mid.x, Z = mid.z, Imp = r.GetStat(RoomStatDefOf.Impressiveness), Roofed = r.OpenRoofCount == 0,
                     Bedroom = r.Role == RoomRoleDefOf.Bedroom || r.Role == RoomRoleDefOf.Barracks
                 };
+                try
+                {
+                    info.TempC = (int)Math.Round(r.Temperature);
+                    info.Dirty = NarratorExtras.IsDirty(r.GetStat(RoomStatDefOf.Cleanliness));
+                    int look = 0;
+                    foreach (var c in cells) { if (++look > 12) break; var roof = map.roofGrid.RoofAt(c); if (roof != null && roof.isThickRoof) { info.Mountain = true; break; } }
+                }
+                catch (Exception e) { if (logged.Add("room_extras")) Log.Warning("[RimWorldLLM] digest room extras failed: " + e.Message); }
                 foreach (var t in r.ContainedAndAdjacentThings)
                     if (t is Building_Door) { info.Door = true; break; }
                 foreach (var bed in r.ContainedBeds)
@@ -259,9 +271,11 @@ namespace RimWorldLLM
 
         static JToken Loose(Map map, int[] home)
         {
-            return new JArray(BuildView.GroupLoose(VivariumLoose.Get(map).Items, home[0], home[1]).Select(p => new JObject
+            return new JArray(VivariumStuck.LoosePiles(map, home).Take(BuildView.MaxPiles).Select(p =>
             {
-                ["label"] = p.Label, ["count"] = p.Count, ["dist"] = p.Dist, ["dir"] = p.Dir, ["forbidden"] = p.Forbidden
+                var o = new JObject { ["label"] = p.Label, ["count"] = p.Count, ["dist"] = p.Dist, ["dir"] = p.Dir, ["forbidden"] = p.Forbidden };
+                if (p.Store != null) o["store"] = p.Store;
+                return o;
             }));
         }
 

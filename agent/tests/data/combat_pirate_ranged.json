@@ -1,0 +1,137 @@
+{
+ "active": true,
+ "home": {
+  "x": 120,
+  "z": 98
+ },
+ "positions": [
+  "cover",
+  "chokepoint",
+  "door",
+  "wall_n",
+  "wall_e",
+  "wall_s",
+  "wall_w",
+  "home",
+  "inside"
+ ],
+ "tick": 611250,
+ "threats": [
+  {
+   "id": 9201,
+   "faction": "Pirates of Ix",
+   "kind": "ranged",
+   "count": 5,
+   "where": "north-east, 38 cells from home",
+   "dist": 38,
+   "heading": "toward home",
+   "labels": [
+    "4 pirate gunners",
+    "1 pirate grenadier"
+   ],
+   "ids": [
+    9201,
+    9202,
+    9203,
+    9204,
+    9205
+   ]
+  },
+  {
+   "id": 9210,
+   "faction": "Pirates of Ix",
+   "kind": "ranged",
+   "count": 1,
+   "where": "north, 52 cells from home",
+   "dist": 52,
+   "heading": "holding",
+   "labels": [
+    "1 pirate sniper"
+   ],
+   "ids": [
+    9210
+   ]
+  }
+ ],
+ "fighters": [
+  {
+   "id": 102,
+   "name": "Bram",
+   "drafted": true,
+   "health": "ok",
+   "weapon": "assault rifle",
+   "range": 31,
+   "cover": "behind a wall",
+   "job": "attacking pirate gunner",
+   "where": "north, 12 cells from home",
+   "mood": "minor"
+  },
+  {
+   "id": 103,
+   "name": "Cy",
+   "drafted": true,
+   "health": "ok",
+   "weapon": "bolt-action rifle",
+   "range": 33,
+   "cover": "behind sandbags",
+   "job": "standing",
+   "where": "north-east, 10 cells from home"
+  },
+  {
+   "id": 104,
+   "name": "Dara",
+   "drafted": true,
+   "health": "hurt",
+   "weapon": "revolver",
+   "range": 18,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  },
+  {
+   "id": 105,
+   "name": "Eli",
+   "drafted": false,
+   "health": "ok",
+   "weapon": "hunting shotgun",
+   "range": 20,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  }
+ ],
+ "others": [
+  {
+   "id": 101,
+   "name": "Ana",
+   "why": "no violence",
+   "safe": true
+  }
+ ],
+ "downed": {
+  "colonists": [],
+  "enemies": 0
+ },
+ "fires": {
+  "count": 1,
+  "home": 1,
+  "where": "north"
+ },
+ "defenses": "2 turrets (2 powered); 14 sandbags; base walled with 2 doors; chokepoint: north gap, 2 wide",
+ "squad": {
+  "members": [
+   102,
+   103,
+   104
+  ],
+  "stance": "fire_at_will",
+  "focus": 0,
+  "retreat": {
+   "x": 118,
+   "z": 96
+  }
+ },
+ "speed_rule": {
+  "slowed": false
+ }
+}
