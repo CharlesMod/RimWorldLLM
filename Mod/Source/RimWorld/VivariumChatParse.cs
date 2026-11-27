@@ -20,6 +20,21 @@ namespace RimWorldLLM
             return name.Length > 0;
         }
 
+        /// <summary>"/undo" or "/undo 3": the player takes back the narrator's last n placing actions (n 1..20, default 1;
+        /// a word after it counts as 1). False for any other text.</summary>
+        public static bool TryUndo(string text, out int n)
+        {
+            n = 0;
+            if (text == null) return false;
+            text = text.Trim();
+            if (!text.StartsWith("/undo", StringComparison.OrdinalIgnoreCase)) return false;
+            string rest = text.Substring(5);
+            if (rest.Length > 0 && !char.IsWhiteSpace(rest[0])) return false;   // "/undone" is not the command
+            int v;
+            n = int.TryParse(rest.Trim(), out v) ? Math.Max(1, Math.Min(20, v)) : 1;
+            return true;
+        }
+
         /// <summary>Index of the colonist a typed name means: exact (case-insensitive) first, else the only prefix match; -1 when none or ambiguous.</summary>
         public static int Match(string typed, IList<string> names)
         {

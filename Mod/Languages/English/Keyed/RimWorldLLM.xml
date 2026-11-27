@@ -482,6 +482,9 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_NoteOff>Narrator plays: off</RWL_Viv_NoteOff>
   <RWL_Viv_ChatHint>Talk to the narrator, or @Name to talk to a colonist (Enter sends, Esc closes)</RWL_Viv_ChatHint>
   <RWL_Viv_NoColonist>No colonist named {0}.</RWL_Viv_NoColonist>
+  <RWL_Viv_UndoNone>Nothing undone: {0}.</RWL_Viv_UndoNone>
+  <RWL_Viv_Undo>Undo the narrator's last build</RWL_Viv_Undo>
+  <RWL_Viv_UndoTip>Takes back the narrator's last placing action: its blueprints and frames are cancelled, its designations, zones and bills removed. Finished buildings stay. In the chat, type /undo or /undo 3.</RWL_Viv_UndoTip>
   <RWL_Viv_LinePlayer>You: {0}</RWL_Viv_LinePlayer>
   <RWL_Viv_LinePlayerTo>You → {0}: {1}</RWL_Viv_LinePlayerTo>
   <RWL_Viv_LineNarrator>Narrator: {0}</RWL_Viv_LineNarrator>

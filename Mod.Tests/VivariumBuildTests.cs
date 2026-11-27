@@ -432,5 +432,22 @@ namespace RimWorldLLM.Tests
             Assert.Equal("a door", BuildPure.Count(1, "door", "doors"));
             Assert.Equal("3 doors", BuildPure.Count(3, "door", "doors"));
         }
+
+        [Theory]
+        [InlineData("/undo", true, 1)]
+        [InlineData("  /UNDO 3 ", true, 3)]
+        [InlineData("/undo 99", true, 20)]
+        [InlineData("/undo 0", true, 1)]
+        [InlineData("/undo please", true, 1)]
+        [InlineData("/undone", false, 0)]
+        [InlineData("undo that", false, 0)]
+        [InlineData("@Ana /undo", false, 0)]
+        [InlineData(null, false, 0)]
+        public void ChatUndoCommand(string text, bool isUndo, int n)
+        {
+            int got;
+            Assert.Equal(isUndo, RimWorldLLM.ChatParse.TryUndo(text, out got));
+            Assert.Equal(n, got);
+        }
     }
 }

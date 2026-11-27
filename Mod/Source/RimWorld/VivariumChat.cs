@@ -193,6 +193,8 @@ namespace RimWorldLLM
             if (text.Length == 0) return;
             var chat = VivariumGame.State.Chat;
             int tick = VivariumGame.NowTick;
+            int undo;
+            if (ChatParse.TryUndo(text, out undo)) { UndoNarrator(undo); return; }
             string name, rest;
             if (ChatParse.TryAt(text, out name, out rest))
             {
@@ -206,7 +208,18 @@ namespace RimWorldLLM
             chat.Add("player", text, tick);
         }
 
-        static Pawn FindColonist(string name)
+        /// <summary>The player's undo (chat "/undo [n]" and the settings button): takes back the narrator's last n placing
+        /// actions (blueprints, designations, zones, bills) and says what happened in the chat. Game thread.</summary>
+        public static void UndoNarrator(int n)
+        {
+            if (Current.Game == null) return;
+            var v = VivariumGame.State;
+            int tick = VivariumGame.NowTick;
+            var r = VivariumRoutes.UndoLast(v, new VivariumHands(), n, tick, "player");
+            v.Chat.Add("note", r.Ok ? r.Note : UiUtil.T("RWL_Viv_UndoNone", r.Reason), tick);
+        }
+
+                static Pawn FindColonist(string name)
         {
             var map = Find.CurrentMap;
             if (map == null) return null;
