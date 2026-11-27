@@ -127,11 +127,12 @@ namespace RimWorldLLM.Mind
         public bool Preempt(string reason = "window_wanted")
         {
             if (!Active()) return false;
-            if (Lease != null)
+            var lease = Lease;                                    // the job's own continuation can clear it from another thread
+            if (lease != null)
             {
-                Lease.Preempted = true;
-                Leases.Release(Lease, "preempted");
-                Dropped.Add((Lease.ActorId, "idle_preempted:" + Kind));
+                lease.Preempted = true;
+                Leases.Release(lease, "preempted");
+                Dropped.Add((lease.ActorId, "idle_preempted:" + Kind));
             }
             else Dropped.Add((-1, "idle_preempted:" + Kind));
             Leases.NarratorBusy = Kind == "chronicle" ? false : Leases.NarratorBusy;

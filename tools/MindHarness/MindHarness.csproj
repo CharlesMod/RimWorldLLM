@@ -29,6 +29,7 @@
         <Compile Include="../../Mod.Tests/Mind/Fakes/FakeBridge.cs" />
         <Compile Include="../../Mod.Tests/Mind/Fakes/FakeLlm.cs" />
         <Compile Include="../../Mod.Tests/Mind/Harness/Replay.cs" />
+        <Compile Include="../../Mod.Tests/Mind/Harness/Recorders.cs" />
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/rules.json" LogicalName="RimWorldLLM.Mind.rules.json" />

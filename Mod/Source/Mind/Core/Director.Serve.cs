@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind.Py;
@@ -322,6 +323,7 @@ namespace RimWorldLLM.Mind
         public async Task<bool> SayAsync(int aid, Spoken sp, int? listener, int? expires, string conv = null, string talkId = null,
                                          bool combat = false, JObject ev = null, string vanillaRef = null, bool minor = false)
         {
+            Probes.Say?.Invoke(aid, ev);
             if (AgeGate.RefuseIntent(sp.Intent, Romantic(), minor || IsMinor((int?)aid) || IsMinor(listener)))
             {
                 Gate.RefusedIntents += 1;                       // last guard before the write
@@ -597,7 +599,7 @@ namespace RimWorldLLM.Mind
             while (wait > 0 && !ls.Any(l => l.Preempted))
             {
                 double step = Math.Min(wait, 0.25);
-                await Task.Delay(TimeSpan.FromSeconds(step));
+                await _delay(step, CancellationToken.None);
                 if (!Bridge.Env.Paused) wait -= step;          // a pause is not waiting time: the line is still on screen
                 foreach (Lease l in ls) Leases.Touch(l, Now());
             }
@@ -664,6 +666,7 @@ namespace RimWorldLLM.Mind
         /// and the memory is written either way.</summary>
         public async Task FinishConversationAsync(Conversation conv, IDictionary<int, Lease> leases)
         {
+            Probes.Finish?.Invoke(conv);
             long now = Bridge.Env.Game;
             bool fast = Now().Rate >= Cfg.FastSummaryRate;
             foreach (int me in new[] { conv.A, conv.B })

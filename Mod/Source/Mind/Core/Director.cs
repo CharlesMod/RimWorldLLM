@@ -110,7 +110,17 @@ namespace RimWorldLLM.Mind
         public List<PieceStats> CreativeLog { get; } = new List<PieceStats>();
         private double _cfgAt = double.NegativeInfinity;
         private (string Name, ILlmClient From, ILlmClient Routed)? _aimLlmCache;
-        private readonly ConcurrentExclusiveSchedulerPair _pair = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Default, 1);
+        private readonly ConcurrentExclusiveSchedulerPair _pair;
+        private readonly Func<double, CancellationToken, Task> _delay;
+
+        /// <summary>Test-and-harness probes (the speed simulation reads these; the mod never sets them).</summary>
+        public sealed class DirectorProbes
+        {
+            public Action<int, JObject> Say;                   // SayAsync: actor, the event the line answers (may be null)
+            public Action<Conversation> Finish;                // FinishConversationAsync
+            public Action<IList<JObject>> Ingested;            // right after IngestAsync of a poll
+        }
+        public DirectorProbes Probes = new DirectorProbes();
         private readonly CreativeView _creative;
         private readonly GroundView _ground;
 
@@ -119,8 +129,11 @@ namespace RimWorldLLM.Mind
 
         /// <param name="streaming">hand the steward a BridgeChatLive (POST /chat/status and /chat/partial).</param>
         public Director(MindConfig cfg, IBridge bridge, ILlmClient llm, IGameAdapter adapter, IEventSource events = null,
-                        Func<double> clock = null, PyRandom rng = null, bool streaming = false)
+                        Func<double> clock = null, PyRandom rng = null, bool streaming = false,
+                        TaskScheduler underlying = null, Func<double, CancellationToken, Task> delay = null)
         {
+            _pair = new ConcurrentExclusiveSchedulerPair(underlying ?? TaskScheduler.Default, 1);   // the speed simulation runs the loop on a virtual-time scheduler
+            _delay = delay ?? ((s, ct) => Task.Delay(TimeSpan.FromSeconds(s), ct));
             Cfg = cfg; Bridge = bridge; Llm = llm; Adapter = adapter;
             _clock = clock ?? (() => System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency);
             Rng = rng ?? new PyRandom(7);
@@ -403,6 +416,7 @@ namespace RimWorldLLM.Mind
                 catch (BridgeError e) { LlmLog.Warning("rimworldllm", "config refresh failed: " + e.Message); }
             }
             await IngestAsync(events);
+            Probes.Ingested?.Invoke(events);
             await TakeTalkAsync();
             await Steward.StepAsync();                         // one GET /vivarium when idle; may start a cycle that owns slot 0
             Idle.PreemptIfWanted();                            // idle work yields to actor windows at once
@@ -427,7 +441,7 @@ namespace RimWorldLLM.Mind
                     {
                         if (e.Code != "no_game" && e.Code != "unreachable") throw;
                         LlmLog.Info("rimworldllm", "waiting for a world (" + e.Code + ")");
-                        try { await Task.Delay(TimeSpan.FromSeconds(waitS), stop); } catch (OperationCanceledException) { return; }
+                        try { await _delay(waitS, stop); } catch (OperationCanceledException) { return; }
                     }
                 }
                 if (stop.IsCancellationRequested) return;
@@ -435,7 +449,7 @@ namespace RimWorldLLM.Mind
                 {
                     try { await StepCore(); }
                     catch (BridgeError e) { LlmLog.Warning("rimworldllm", "bridge: " + e.Message); }
-                    try { await Task.Delay(TimeSpan.FromSeconds(PollDelay()), stop); } catch (OperationCanceledException) { return; }
+                    try { await _delay(PollDelay(), stop); } catch (OperationCanceledException) { return; }
                 }
             });
         }
