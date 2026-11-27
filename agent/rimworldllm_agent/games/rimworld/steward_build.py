@@ -77,6 +77,7 @@ class BuildKit:
         self.stuff = _words(s.get("stuff") if isinstance(s, dict) else s for s in b.get("stuff") or [])
         self.plants = _words(b.get("plants"))
         self.ores = _words(o.get("ore") if isinstance(o, dict) else o for o in b.get("ores") or [])
+        self.presets = PRESETS + (["waste"] if isinstance(digest.get("bio"), dict) else [])   # waste: a wastepack-only stockpile (Biotech)
         self.tools = self._tools() if self.has else []
         self.names = {t.name for t in self.tools}
 
@@ -101,7 +102,7 @@ class BuildKit:
         zp = [Param("kind", "enum", "grow: a field; stockpile: storage; dump: junk", choices=zk)]
         if self.plants:
             zp.append(_opt("plant", "grow: the crop", self.plants))
-        zp += [_opt("preset", "stockpile: what it takes", PRESETS), _opt("size", "how big", SIZES)]
+        zp += [_opt("preset", "stockpile: what it takes", self.presets), _opt("size", "how big", SIZES)]
         if self.rooms:
             zp.append(self._rooms_param("stockpile: inside this room"))
         out.append(ToolSpec("zone", "Mark a growing zone, stockpile or dump; the planner picks the cells.", zp + [_WHY]))
