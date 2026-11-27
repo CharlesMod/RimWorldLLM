@@ -389,3 +389,58 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## Unattended play: stability and restart
+For long sessions with nobody at the keyboard. Pure logic is under `Mod/Source/Bridge/` (tests `CapsTests`,
+`UnattendedStabilityTests`, `ChatPanelCacheTests`, `SoakTests`); game bodies are in `VivariumStability.cs`.
+
+**Rotating autosave.** If the game's own autosave is on (`Prefs.AutosaveIntervalDays`) the mod does nothing. If it
+is off while Narrator plays, every `narratorAutosaveDays` in-game days it saves `RWL-Narrator-1..K`
+(`narratorAutosaveKeep`), filling free slots then overwriting the oldest. Only names matching `RWL-Narrator-<1..20>`
+are ever written; other saves are never deleted. It saves on the game thread through a long event, and holds
+while a long event is running, saving is disabled, or a window prevents saving. An open raid holds it softly (at
+most half a day past due).
+
+**Caps.**
+
+| Log / book | Cap |
+|---|---|
+| ChatLog | 600 lines x 500 chars |
+| ActionLog | 500 |
+| NarratorLedger | 50 |
+| Ledger (open facts) | 120, plus age prune of raid (4 days) and weather (6 days) |
+| MindBook records | 400 (LRU); 20 thoughts, 7 diaries per pawn; blob <= 32 KiB |
+| ChronicleBook | 120 (lore 12) |
+| ArtBook | 200 |
+| AvoidTable | 256 |
+| EventRing | 2000 |
+| ConversationLog | 500 |
+| TextDesk | queue 40; per-kind stores 3000/1000/2000/600/300; tried 20000 (export 5000) |
+| FirstCues.Seen | 5000 |
+| ColonyEvents.Quests | 500 |
+| TextHook.Applied | 20000 |
+| ChatLive | 64 ended ids; streams time out at 90 s |
+| Panel row cache | 200 rows; cache <= 1200 |
+
+Left unbounded on purpose: small warning-dedupe sets (facts, digest, build view) and the meal detector's room keys.
+The soak test drives 20 game days over every cap in about 2 s and asserts the caps, a vivarium JSON under 1.5 MB
+and a text-desk export under 3 MB.
+
+**Panel.** Text and height are cached per entry, the layout and chip rects are cached, lists are reused, and the
+live snapshot is read only when a `ChatLive` version changes (`ChatPanelRows`, `ChatLayoutCache`). The `camera`
+kind draws dim blue-grey and the `comment` kind narrator gold italic.
+
+**Colony lost.** Detected from the game-ending flag, or three polls with no free colonist and no carrying caravan
+(after tick 2500). `colony_lost` (severity 1.0) is published once. The setting "When the colony is lost":
+- ask (default): a dialog, New colony on this world / New world / Stop.
+- auto: a chat note, after 20 s the same-world path; if the vanilla wanderers dialog is unanswered for 180 s, save
+  the lost world and start a new one.
+- off: nothing.
+Leaving a world always saves it first as `<colony>-lost-<n>` (a name never reused; a failed save cancels the
+leave). No save is ever deleted. A static `RestartHandoff` survives the scene change: Narrator plays stays on and
+the chronicle gets a "story continues" entry. A new world uses the vanilla quick-start path from a
+`MainMenuDrawer.Init` postfix.
+
+Not run in a game yet: detection, dialog, save naming, quick-start world, handoff and the long-event autosave are
+compile-checked only (see PLAYTEST section D).
+

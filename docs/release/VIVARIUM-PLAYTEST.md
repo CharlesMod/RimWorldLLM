@@ -160,3 +160,24 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
+
+## D. Unattended play: stability and restart
+Needs the mod; the agent is optional except where noted. Switch Narrator plays on.
+
+28. **Chat kinds.** `POST /chat` with who=comment and a camera-kind line: the comment shows gold italic, the camera
+    line dim blue-grey, both under the Story filter.
+29. **Panel cost.** Leave the panel open at 3x speed for a game day with a chat stream going: no stutter, no
+    growing frame time. Scroll and resize still feel immediate.
+30. **Rotating autosave.** Options: game autosave off. Run 3 game days (days slider 1, keep 3): saves
+    `RWL-Narrator-1..3` appear, then the oldest is overwritten. Your own saves are untouched. No save starts
+    during a long event, an open dialog, or in the middle of a raid (a raid holds it at most half a day).
+31. **Game autosave on.** The mod does not save at all (the game handles it).
+32. **Colony lost, ask.** Let everyone die (or use a dev kill). One `colony_lost` event; the dialog offers New
+    colony on this world, New world, Stop. Vanilla's own game-over window may also show; either is fine.
+33. **Same world.** Pick it: the vanilla wanderers dialog opens; accept it. A chronicle entry "story continues" and
+    the chat carry on; Narrator plays is still on. Nothing was deleted.
+34. **New world.** Pick it: the lost world is saved as `<colony>-lost-<n>` first (never overwriting), then the
+    quick-start world loads; Narrator plays is on, the chronicle has the "story continues" entry.
+35. **Auto.** Setting auto: a chat note, 20 s later the same-world dialog opens. Leave it: after 3 minutes the lost
+    world is saved and a new world starts. Off: nothing happens.
+36. **Save failed.** If the lost-world save is refused (disabled saving), the leave is cancelled with a chat note.
