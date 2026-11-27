@@ -114,8 +114,6 @@ namespace RimWorldLLM.Tests
                 Assert.Equal("gemma4-rp", r.Value.Model);
                 Assert.Null(r.Value.Progress);
                 Assert.Equal(41.5, r.Value.TokS);
-                Assert.Equal("running", r.Value.Agent.Phase);
-                Assert.Equal(1, r.Value.Agent.Restarts);
                 Assert.True(r.Value.Parents[0].Alive);
                 Assert.Empty(r.Value.Errors);
             }

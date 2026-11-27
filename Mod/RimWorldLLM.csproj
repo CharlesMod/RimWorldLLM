@@ -40,9 +40,8 @@
             <DeployDefs Include="$(ProjectDir)Defs/**/*" />
             <DeployLanguages Include="$(ProjectDir)Languages/**/*" />
             <DeployTextures Include="$(ProjectDir)Textures/**/*" />
-            <!-- Engine binaries (easyEngine build.sh -> $(EasyEngineDir)/dist/<os>-<arch>/; EasyEngineDir defaults to a sibling checkout ../easyEngine) and the agent wheel (agent/build-wheel.sh -> agent/dist/*.whl). Missing dist folders just copy nothing. -->
+            <!-- Engine binaries (easyEngine build.sh -> $(EasyEngineDir)/dist/<os>-<arch>/; EasyEngineDir defaults to a sibling checkout ../easyEngine). Missing dist folders just copy nothing. -->
             <DeployEngine Include="$(EasyEngineDir)/dist/**/*" Exclude="$(EasyEngineDir)/dist/SHA256SUMS" />
-            <DeployWheel Include="$(ProjectDir)../agent/dist/*.whl" />
             <DeployAssemblies Include="$(ProjectDir)$(GameVersion)/**/*" Exclude="$(ProjectDir)$(GameVersion)/**/*.pdb;$(ProjectDir)$(GameVersion)/**/0Harmony*" />
         </ItemGroup>
         <RemoveDir Directories="$(DeployPath)" />
@@ -52,7 +51,6 @@
         <Copy SourceFiles="@(DeployTextures)" DestinationFiles="@(DeployTextures->'$(DeployPath)Textures/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployTextures)' != '' " />
         <Copy SourceFiles="@(DeployAssemblies)" DestinationFiles="@(DeployAssemblies->'$(DeployPath)$(GameVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
         <Copy SourceFiles="@(DeployEngine)" DestinationFiles="@(DeployEngine->'$(DeployPath)Engine/%(RecursiveDir)%(Filename)%(Extension)')" Condition=" '@(DeployEngine)' != '' " />
-        <Copy SourceFiles="@(DeployWheel)" DestinationFiles="@(DeployWheel->'$(DeployPath)Engine/agent/%(Filename)%(Extension)')" Condition=" '@(DeployWheel)' != '' " />
         <Message Text="--- RimWorldLLM deployed to $(DeployPath) ---" Importance="high" />
     </Target>
 

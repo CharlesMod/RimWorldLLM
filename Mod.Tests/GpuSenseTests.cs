@@ -119,13 +119,13 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void ProfileCarriesHostPidAndAdapter()
         {
-            var j = EngineLauncher.BuildProfile("/c/b.json", null, 777, new HostAdapterInfo("Intel(R) Iris(R) Xe Graphics", 0x8086, 128));
+            var j = EngineLauncher.BuildProfile(777, new HostAdapterInfo("Intel(R) Iris(R) Xe Graphics", 0x8086, 128));
             Assert.Equal(777, (int)j["host_pid"]);
             Assert.Equal(0x8086, (int)j["host_adapter"]["vendor_id"]);
             Assert.Equal("Intel(R) Iris(R) Xe Graphics", (string)j["host_adapter"]["name"]);
             Assert.Equal(128, (int)j["host_adapter"]["memory_mib"]);
             Assert.Equal(1500, (int)j["game_reserve_mib"]);
-            var bare = EngineLauncher.BuildProfile("/c/b.json", null);
+            var bare = EngineLauncher.BuildProfile();
             Assert.Null(bare["host_pid"]);
             Assert.Null(bare["host_adapter"]);
         }
@@ -321,18 +321,6 @@ namespace RimWorldLLM.Tests
                 Assert.True(File.Exists(Path.Combine(outside, "a.db")));
                 Assert.True(File.Exists(Path.Combine(outside, "logs", "l.txt")));
             }
-        }
-
-        [Fact]
-        public void RemovalFinishedWaitsForJobAndAgent()
-        {
-            Assert.False(AgentDataDir.RemovalFinished("removing", "stopped", true, 9000));
-            Assert.False(AgentDataDir.RemovalFinished("not_installed", "stopped", false, 1000));   // job may not have started
-            Assert.True(AgentDataDir.RemovalFinished("not_installed", "stopped", false, 3500));
-            Assert.True(AgentDataDir.RemovalFinished("not_installed", "not_installed", true, 100));
-            Assert.True(AgentDataDir.RemovalFinished("not_installed", null, true, 100));
-            Assert.False(AgentDataDir.RemovalFinished("not_installed", "running", true, 100));
-            Assert.False(AgentDataDir.RemovalFinished("not_installed", "restarting", true, 100));
         }
     }
 }
