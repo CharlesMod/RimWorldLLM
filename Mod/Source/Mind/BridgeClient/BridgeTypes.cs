@@ -134,6 +134,8 @@ namespace RimWorldLLM.Mind
         Task<JObject> TextFillAsync(string id, string text, string title = null, string opId = null);
         Task<JObject> VivariumAsync();
         Task<JObject> DigestAsync();
+        /// <summary>GET /combat: the combat view (threats, fighters, others, downed, fires, defenses, positions, squad, speed); "active" false when quiet.</summary>
+        Task<JObject> CombatAsync();
         /// <summary>GET /dialogs: the choice windows and letters open now ({"dialogs": [...], "timeout_s": N}).</summary>
         Task<JObject> DialogsAsync();
         Task<JObject> ChatSinceAsync(int seq);

@@ -55,6 +55,23 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>The envelope's game speed (core/bridge.py _speed): a body field of the same name that is not a number (a view's own
+        /// "speed" block) keeps the last one; absent means 1.</summary>
+        int Speed(JToken raw)
+        {
+            if (raw != null && (raw.Type == JTokenType.Integer || raw.Type == JTokenType.Float || raw.Type == JTokenType.String))
+            {
+                if (raw.Type == JTokenType.Integer) return (int)raw.Value<long>();
+                if (raw.Type == JTokenType.Float) { double f = raw.Value<double>(); if (!double.IsNaN(f) && !double.IsInfinity(f)) return (int)Math.Truncate(f); }
+                else
+                {
+                    int v;
+                    if (int.TryParse(raw.Value<string>().Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out v)) return v;
+                }
+            }
+            return raw != null && raw.Type != JTokenType.Null ? Env.Speed : 1;
+        }
+
         void Absorb(JObject body)
         {
             var p = Protocol;
@@ -65,7 +82,7 @@ namespace RimWorldLLM.Mind
                 Game = ToInt(body[p.TimeField], 0),
                 Epoch = ToInt(body[p.EpochField], 0),
                 Paused = BridgeJson.Truthy(body["paused"], false),
-                Speed = ToInt(body["speed"], 1)
+                Speed = Speed(body["speed"])
             };
             _epochSeen = Env.Epoch;
             if (old.HasValue && old.Value != Env.Epoch) EpochChanged = true;
@@ -205,6 +222,8 @@ namespace RimWorldLLM.Mind
         // ---- vivarium (docs/BRIDGE-API.md "Vivarium routes"; an older mod answers 404) ----
         public Task<JObject> VivariumAsync() { return Req("GET", "/vivarium"); }
         public Task<JObject> DigestAsync() { return Req("GET", "/digest"); }
+        /// <summary>GET /combat: the combat view (threats, fighters, others, downed, fires, defenses, positions, squad, speed); "active" false when quiet.</summary>
+        public Task<JObject> CombatAsync() { return Req("GET", "/combat"); }
         /// <summary>GET /dialogs: the choice windows and letters open now ({"dialogs": [...], "timeout_s": N}).</summary>
         public Task<JObject> DialogsAsync() { return Req("GET", "/dialogs"); }
         public Task<JObject> ChatSinceAsync(int seq) { return Req("GET", "/chat", null, true, Q("since", seq)); }

@@ -178,6 +178,10 @@ namespace RimWorldLLM.Mind
         public bool Steward { get; set; } = true;
         /// <summary>least real seconds between two steward cycles that are not chat (chat ignores it)</summary>
         public double StewardMinGapRealS { get; set; } = 20.0;
+        /// <summary>a fight: least game seconds between two combat turns</summary>
+        public double StewardCombatGapGameS { get; set; } = 5.0;
+        /// <summary>a fight: least real seconds after the last turn ended</summary>
+        public double StewardCombatGapRealS { get; set; } = 4.0;
         /// <summary>a strategy playbook file for the steward prompt; env RIMWORLDLLM_STEWARD_STRATEGY wins; "" = the shipped one</summary>
         public string StewardStrategyPath { get; set; } = "";
         public int StewardStrategyMaxBytes { get; set; } = 12288;
@@ -372,6 +376,8 @@ namespace RimWorldLLM.Mind
             o["chronicle_enabled"] = new JValue(ChronicleEnabled);
             o["steward"] = new JValue(Steward);
             o["steward_min_gap_real_s"] = new JValue(StewardMinGapRealS);
+            o["steward_combat_gap_game_s"] = new JValue(StewardCombatGapGameS);
+            o["steward_combat_gap_real_s"] = new JValue(StewardCombatGapRealS);
             o["steward_strategy_path"] = new JValue(StewardStrategyPath);
             o["steward_strategy_max_bytes"] = new JValue(StewardStrategyMaxBytes);
             o["art_enabled"] = new JValue(ArtEnabled);
@@ -499,6 +505,8 @@ namespace RimWorldLLM.Mind
                 case "chronicle_enabled": ChronicleEnabled = ConfigCoerce.Bool(v, "chronicle_enabled"); break;
                 case "steward": Steward = ConfigCoerce.Bool(v, "steward"); break;
                 case "steward_min_gap_real_s": StewardMinGapRealS = ConfigCoerce.Float(v, "steward_min_gap_real_s"); break;
+                case "steward_combat_gap_game_s": StewardCombatGapGameS = ConfigCoerce.Float(v, "steward_combat_gap_game_s"); break;
+                case "steward_combat_gap_real_s": StewardCombatGapRealS = ConfigCoerce.Float(v, "steward_combat_gap_real_s"); break;
                 case "steward_strategy_path": StewardStrategyPath = ConfigCoerce.Str(v, "steward_strategy_path"); break;
                 case "steward_strategy_max_bytes": StewardStrategyMaxBytes = ConfigCoerce.Int(v, "steward_strategy_max_bytes"); break;
                 case "art_enabled": ArtEnabled = ConfigCoerce.Bool(v, "art_enabled"); break;

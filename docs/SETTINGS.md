@@ -256,6 +256,8 @@ in the file to change either.
 | `chronicle_enabled` | true | file |  |
 | `steward` | true | file | the vivarium steward (steward.py); it stays off against a mod without /vivarium |
 | `steward_min_gap_real_s` | 20.0 | file | least real seconds between two steward cycles that are not chat (chat ignores it) |
+| `steward_combat_gap_game_s` | 5.0 | file | a fight: least game seconds between two combat turns |
+| `steward_combat_gap_real_s` | 4.0 | file | a fight: least real seconds after the last turn ended |
 | `steward_strategy_path` | "" | file | a strategy playbook file for the steward prompt; env RIMWORLDLLM_STEWARD_STRATEGY wins; "" = the shipped one |
 | `steward_strategy_max_bytes` | 12288 | file |  |
 | `art_enabled` | true | mod (`artDescriptions`) | LLM art descriptions (art.py); also needs the mod's art_descriptions |
