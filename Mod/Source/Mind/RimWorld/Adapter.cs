@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind.Py;
@@ -32,10 +33,21 @@ namespace RimWorldLLM.Mind.RimWorld
         /// <summary>Vanilla interactions that are an argument a bystander may react to (core/bystanders).</summary>
         public static readonly HashSet<string> ArgumentInteractions = new HashSet<string> { "Insult", "Slight" };
         // What the game's own interactions are, in words the line prompt can use, so the line fits (an insult reads as an insult).
+        // A chitchat names no topic of its own: describe the situation (a passing exchange), never the word. The marker phrase
+        // is how DropsMeta later recognises a thought or line whose scene was only that.
+        private const string Passing = "passing exchange";
+        private const string PassingKind = "a passing exchange about whatever is around (the work, the food, the weather, the latest event)";
+        private static readonly Regex ChitchatSummary = new Regex(@"^(?<a>.+?) -> (?<b>.+?): Chitchat\.?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex MetaTalk = new Regex(
+            @"chit[\s-]?chat|small[\s-]?talk|\bidle (talk|chatter|chat)\b|\b(all|this|that|enough|more|so much|too much|such)\s+(the\s+)?" +
+            @"(talk|talking|chatter|chatting|yapping|yakking|gossip|jabber|prattle|blather)\b|" +
+            @"\b(stop|quit|cut|enough|tired of|sick of)\b[^.!?]{0,20}\b(talking|chatting|chatter|yapping)\b|\bwhy (does|do|is) everyone (talk|chat)",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        internal const string NoMetaRule = "Don't remark on the conversation or the act of talking itself; react to the people and what's happening.";
         private static readonly Dictionary<string, string> InteractionKind = new Dictionary<string, string>
         {
             { "Insult", "an insult" }, { "Slight", "a cutting remark that slights them" }, { "KindWords", "kind words" },
-            { "Chitchat", "idle small talk" }, { "DeepTalk", "a deep, personal conversation" },
+            { "Chitchat", PassingKind }, { "DeepTalk", "a deep, personal conversation" },
             { "RomanceAttempt", "a romantic advance" }, { "MarriageProposal", "a marriage proposal" }, { "Breakup", "ending their relationship" },
             { "ConvertIdeoAttempt", "an attempt to win them over to a belief" }, { "Reassure", "reassurance" }, { "Counsel", "counsel" },
         };
@@ -188,6 +200,9 @@ namespace RimWorldLLM.Mind.RimWorld
         public override string FirstPerson(JObject ev, int actorId)
         {
             string summary = PyStr.Strip(Js.StrOr(ev, "summary", ""));
+            var m = Js.StrOr(ev, "type", null) == "social" ? ChitchatSummary.Match(summary) : null;
+            if (m != null && m.Success)                       // the game's label names the interaction, not what was said
+                summary = m.Groups["a"].Value + " and " + m.Groups["b"].Value + " had a " + Passing + " about whatever was around: the work, the food, the weather.";
             var roles = new Dictionary<int, string>();
             foreach (var a in Js.ItemsGet(ev, "actors")) roles[Js.Int(a["id"])] = Js.StrOr(a, "role", "");
             string role;
@@ -291,8 +306,20 @@ namespace RimWorldLLM.Mind.RimWorld
             return "=== REQUEST ===\n" +
                    speaker + " has just done something to " + listener + ": it is " + kind + "." + s + "\n" +
                    "Write " + speaker + "'s one line of speech to " + listener + " that goes with it. It must read as " + kind + " " +
-                   "and stay on the same subject the log names. One line only.";
+                   "and stay on the same subject the log names. " + NoMetaRule + " One line only.";
         }
+
+        /// <summary>True for a thought or line that is only meta-talk about chatting ("I wish people would cut this chitchat")
+        /// when its scene (memory or trigger texts in context) was a passing chitchat. Any other scene keeps it.</summary>
+        public override bool DropsMeta(string text, IEnumerable<string> context)
+        {
+            if (!MetaTalk.IsMatch(text ?? "")) return false;
+            if (context == null) return false;
+            return context.Any(c => (c ?? "").ToLowerInvariant().Contains(Passing));
+        }
+
+        /// <summary>The idle text filler core/idle runs last: fn(host, slot) -> texts stored.</summary>
+        public override Func<ITextFillHost, int, Task<int>> IdleFill() { return TextFill.FillOnceAsync; }
 
         // ---- ongoing concerns and grudges (core/concerns, core/grudges)
         public override List<JObject> ConcernBirths(JObject ev, IList<int> holders, Func<int, int, bool> loved) { return ConcernRules.Births(ev, holders, loved); }

@@ -184,6 +184,18 @@ namespace RimWorldLLM.Mind
             return Req("POST", "/art", WriteBody(new JObject { ["thing"] = thing, ["text"] = text }, null, opId));
         }
 
+        public Task<JObject> TextQueueAsync(int n = 4)
+        {
+            return Req("GET", "/text/queue", null, true, Q("n", n));
+        }
+
+        public Task<JObject> TextFillAsync(string id, string text, string title = null, string opId = null)
+        {
+            var body = new JObject { ["id"] = id, ["text"] = text };
+            if (title != null) body["title"] = title;
+            return Req("POST", "/text/fill", WriteBody(body, null, opId));
+        }
+
         public async Task<List<JObject>> GetChronicleAsync(int sinceDay = 0)
         {
             var b = await Req("GET", "/chronicle", null, true, Q("since_day", sinceDay)).ConfigureAwait(false);

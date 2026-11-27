@@ -140,8 +140,6 @@ namespace RimWorldLLM.Mind.ToolLoop
             return await t.ConfigureAwait(false);
         }
 
-        private static string SeenKey(string tool, JObject values) => tool + PyJson.Compact(values, true, true);
-
         private sealed class Item
         {
             public LoopAction Action; public string Note; public JObject Values;
@@ -330,7 +328,7 @@ namespace RimWorldLLM.Mind.ToolLoop
                         catch (Exception e) { msg = "the check failed (" + PyNames.Of(e) + ")"; }
                         if (!string.IsNullOrEmpty(msg)) return (new List<Item>(), msg, false);
                     }
-                    string key = SeenKey(spec.Name, values);
+                    string key = spec.CallKey(values);
                     if (seen.Contains(key) || batchSeen.Contains(key)) return (new List<Item>(), spec.Name + " with these arguments was already done", false);
                     batchSeen.Add(key);
                     outp.Add(new Item { Action = new LoopAction("call", spec.Name, s.Args as JObject ?? new JObject()), Note = note, Values = values });
@@ -358,7 +356,7 @@ namespace RimWorldLLM.Mind.ToolLoop
                     ex.Error = Fault("", e);
                     ex.Result = "error: " + ex.Error;
                 }
-                seen.Add(SeenKey(a.Tool, it.Values));
+                seen.Add(byName[a.Tool].CallKey(it.Values));
                 res.Executed.Add(ex);
                 doneCalls.Add((a, ex));
             }

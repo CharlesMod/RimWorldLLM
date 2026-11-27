@@ -36,14 +36,16 @@ namespace RimWorldLLM.Mind.ToolLoop
         public Scale Scale;
         public List<string> Choices;
         public bool Required = true;
+        /// <summary>commentary (a reason, say): two calls that differ only here are the same call</summary>
+        public bool SameCall;
 
         private static readonly Regex IntText = new Regex(@"\A\s*-?\d+\s*\z", RegexOptions.CultureInvariant);
 
         public Param(string name, string kind = "text", string description = "", int maxLen = 200, int minLen = 1, long? lo = null, long? hi = null,
-                     Scale scale = null, IEnumerable<string> choices = null, bool required = true)
+                     Scale scale = null, IEnumerable<string> choices = null, bool required = true, bool sameCall = false)
         {
             Name = name; Kind = kind; Description = description; MaxLen = maxLen; MinLen = minLen; Lo = lo; Hi = hi; Scale = scale;
-            Choices = choices?.ToList(); Required = required;
+            Choices = choices?.ToList(); Required = required; SameCall = sameCall;
             if (Kind != "text" && Kind != "int" && Kind != "scale" && Kind != "enum") throw new PyValueError("bad param kind " + Kind);
             if (Kind == "scale" && Scale == null) throw new PyValueError("scale param needs a Scale");
             if (Kind == "enum" && (Choices == null || Choices.Count == 0)) throw new PyValueError("enum param needs choices");
@@ -177,6 +179,19 @@ namespace RimWorldLLM.Mind.ToolLoop
             ResultScales = resultScales ?? new Dictionary<string, Scale>();
             EndsTurn = endsTurn;
             if (!NameRe.IsMatch(Name)) throw new PyValueError("bad tool name " + Name);
+        }
+
+        /// <summary>What makes two calls the same call (the repeat rule): the values, without the commentary params.</summary>
+        public string CallKey(JObject values)
+        {
+            var kept = new JObject();
+            foreach (var kv in values)
+            {
+                var p = Params.FirstOrDefault(x => x.Name == kv.Key);
+                if (p != null && p.SameCall) continue;
+                kept[kv.Key] = kv.Value;
+            }
+            return Name + PyJson.Compact(kept, true, true);
         }
 
         public string Signature()

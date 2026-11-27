@@ -184,6 +184,8 @@ namespace RimWorldLLM.Mind
         /// <summary>LLM art descriptions (core/art.py); also needs the mod's art_descriptions</summary>
         public bool ArtEnabled { get; set; } = true;
         public int ArtMaxTokens { get; set; } = 110;
+        /// <summary>per-instance texts (the game's text queue; adapter.idle_fill); also needs the mod's text_fill not False</summary>
+        public bool TextFill { get; set; } = true;
         /// <summary>also POST /chronicle (contract: the mod saves the chronicle with the game)</summary>
         public bool ChronicleBridge { get; set; } = true;
         public int ChronicleMaxTokens { get; set; } = 220;
@@ -367,6 +369,7 @@ namespace RimWorldLLM.Mind
             o["steward_strategy_max_bytes"] = new JValue(StewardStrategyMaxBytes);
             o["art_enabled"] = new JValue(ArtEnabled);
             o["art_max_tokens"] = new JValue(ArtMaxTokens);
+            o["text_fill"] = new JValue(TextFill);
             o["chronicle_bridge"] = new JValue(ChronicleBridge);
             o["chronicle_max_tokens"] = new JValue(ChronicleMaxTokens);
             o["recap_enabled"] = new JValue(RecapEnabled);
@@ -489,6 +492,7 @@ namespace RimWorldLLM.Mind
                 case "steward_strategy_max_bytes": StewardStrategyMaxBytes = ConfigCoerce.Int(v, "steward_strategy_max_bytes"); break;
                 case "art_enabled": ArtEnabled = ConfigCoerce.Bool(v, "art_enabled"); break;
                 case "art_max_tokens": ArtMaxTokens = ConfigCoerce.Int(v, "art_max_tokens"); break;
+                case "text_fill": TextFill = ConfigCoerce.Bool(v, "text_fill"); break;
                 case "chronicle_bridge": ChronicleBridge = ConfigCoerce.Bool(v, "chronicle_bridge"); break;
                 case "chronicle_max_tokens": ChronicleMaxTokens = ConfigCoerce.Int(v, "chronicle_max_tokens"); break;
                 case "recap_enabled": RecapEnabled = ConfigCoerce.Bool(v, "recap_enabled"); break;

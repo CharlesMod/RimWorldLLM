@@ -128,6 +128,10 @@ namespace RimWorldLLM.Mind
         Task<List<JObject>> GetChronicleAsync(int sinceDay = 0);
         Task<JObject> RecapAsync(int epoch, IList<string> lines, string opId = null);
         Task<JObject> ArtAsync(int thing, string text, string opId = null);
+        /// <summary>GET /text/queue?n=N -> {"pending": N, "items": [...]}, most important first. An older mod answers 404.</summary>
+        Task<JObject> TextQueueAsync(int n = 4);
+        /// <summary>POST /text/fill {op_id, id, text, title?} -> {"stored": true}. unknown_id: the item is gone or filled.</summary>
+        Task<JObject> TextFillAsync(string id, string text, string title = null, string opId = null);
         Task<JObject> VivariumAsync();
         Task<JObject> DigestAsync();
         Task<JObject> ChatSinceAsync(int seq);

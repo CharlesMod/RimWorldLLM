@@ -106,6 +106,10 @@ namespace RimWorldLLM.Mind.Fakes
         public bool ArtSupported = true;
         public List<JObject> ArtLog = new List<JObject>();
         public HashSet<int> ArtThings = new HashSet<int> { 500 };   // artworks that exist (a destroyed one answers conflict)
+        public bool TextSupported;                  // GET /text/queue and POST /text/fill; off by default (an older mod: 404, so the art idle job keeps running); a test turns it on
+        public List<JObject> TextItems = new List<JObject>();       // the queue (already sorted); a filled item leaves it
+        public List<JObject> TextFillLog = new List<JObject>();     // POST /text/fill bodies accepted
+        public int TextPendingExtra;                // added to "pending" beyond the items held
         public List<JObject> TalkQueue = new List<JObject>();
         public Dictionary<string, JObject> SeenOps = new Dictionary<string, JObject>();
         public HashSet<int> SayConflictFor = new HashSet<int>();
@@ -364,6 +368,25 @@ namespace RimWorldLLM.Mind.Fakes
                 RecapLog.Add(body);
                 SeenOps[body.Value<string>("op_id")] = new JObject();
                 return Ok(("shown", true));
+            }
+            if (path == "/text/queue" && method == "GET" && TextSupported)
+            {
+                string ns = Qstr(req, "n");
+                int n = ns == null ? 4 : int.Parse(ns, CultureInfo.InvariantCulture);
+                return Ok(("pending", TextItems.Count + TextPendingExtra), ("items", new JArray(TextItems.Take(n))));
+            }
+            if (path == "/text/fill" && method == "POST" && TextSupported)
+            {
+                var item = TextItems.FirstOrDefault(i => JToken.DeepEquals(i["id"], body["id"]));
+                if (item == null) return Err(409, "unknown_id", "no item " + PyStr(body["id"]));
+                string text = body["text"] == null ? "" : PyStr(body["text"]).Trim();
+                var fields = item["fields"] as JArray;
+                if (text.Length == 0 || (body["title"] != null && !(fields != null && fields.Any(f => (string)f == "title"))))
+                    return Err(400, "bad_text", "text required; title only when fields has it");
+                TextItems.Remove(item);
+                TextFillLog.Add(body);
+                SeenOps[body.Value<string>("op_id")] = new JObject();
+                return Ok(("stored", true));
             }
             if (path == "/art" && method == "POST" && ArtSupported)
             {

@@ -16,6 +16,7 @@ namespace RimWorldLLM.Mind.RimWorld
             "SPEECH RULES\n" +
             "- Output exactly one line of speech, spoken aloud, in first person. No narration, no stage directions, no quotation marks, no asterisks, no name prefix.\n" +
             "- Short: usually 6 to 25 words, never more than 35. Plain words. No flowery language, no stock phrases, no summing up the situation, no lecture.\n" +
+            "- Don't remark on the conversation or the act of talking itself; react to the people and what's happening.\n" +
             "- Do not repeat what was just said. React to the latest turn or the trigger, and move it forward.\n" +
             "- Do not be polite or positive when the colonist is suffering. Stay in voice: use the colonist's own register and habits, not a generic one.\n" +
             "\n" +

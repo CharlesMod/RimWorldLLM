@@ -211,6 +211,20 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public void ACommentaryParamDoesNotMakeARepeatANewCall()
+        {
+            var ts = new List<ToolSpec>
+            {
+                new ToolSpec("count", "A number.", new[] { new Param("n", "int", lo: 1, hi: 5), new Param("why", maxLen: 40, required: false, sameCall: true) }),
+                new ToolSpec("do_nothing", "Nothing."),
+            };
+            var f = new FakeBackend(Call("count", A("n", 2), A("why", "since one")), Call("count", A("n", 2), A("why", "since two")), Call("count", A("n", 3), A("why", "since one")));
+            var (r, rec) = Go(f, o: x => x.MaxSteps = 6, tools: ts);
+            Assert.Equal(new[] { 2, 3 }, rec.Calls.Select(c => (int)c.values["n"]).ToArray());      // the second n=2 is the same call with another reason: refused
+            Assert.Contains(r.Failures, x => x.Contains("already"));
+        }
+
+        [Fact]
         public void FallbackAfterActionsIsOptIn()
         {
             var f = new FakeBackend(Call("say", A("line", "Hi.")), "garbage");

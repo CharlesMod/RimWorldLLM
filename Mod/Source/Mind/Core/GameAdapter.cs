@@ -118,6 +118,10 @@ namespace RimWorldLLM.Mind
         /// <summary>The game's own interaction between two actors, when the mod asked for words for it; else null.</summary>
         JObject VanillaSocial(JObject ev);
         string VanillaRequest(JObject info, string speaker, string listener);
+        /// <summary>A generated line that only remarks on the talking itself (context: the scene's texts).</summary>
+        bool DropsMeta(string text, IEnumerable<string> context);
+        /// <summary>The idle text filler (Python getattr(adapter, "idle_fill", None)): null when the game has none.</summary>
+        Func<ITextFillHost, int, Task<int>> IdleFill();
 
         // ---- ongoing concerns and grudges
         List<JObject> ConcernBirths(JObject ev, IList<int> holders, Func<int, int, bool> loved);
@@ -224,6 +228,8 @@ namespace RimWorldLLM.Mind
         public virtual JObject GatherInfo(JObject ev) { return null; }
         public virtual JObject VanillaSocial(JObject ev) { return null; }
         public virtual string VanillaRequest(JObject info, string speaker, string listener) { throw new NotSupportedException(); }
+        public virtual bool DropsMeta(string text, IEnumerable<string> context) { return false; }
+        public virtual Func<ITextFillHost, int, Task<int>> IdleFill() { return null; }
 
         public virtual List<JObject> ConcernBirths(JObject ev, IList<int> holders, Func<int, int, bool> loved) { return new List<JObject>(); }
         public virtual List<(string Key, string Text)> ConcernResolutions(JObject ev) { return new List<(string, string)>(); }
