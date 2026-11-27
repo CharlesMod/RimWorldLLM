@@ -2,7 +2,7 @@
 
 The first in-game run of "Narrator plays" (docs/VIVARIUM.md). Everything here has only been compiled against the
 1.7 reference assemblies and tested against fakes, so this run is the first real check. Use a throwaway colony
-(a mid-game save with 4-6 colonists is ideal). Keep the agent log open (`agent.log`), and when a step fails note the
+(a mid-game save with 4-6 colonists is ideal). Keep the log open (RimWorld `Player.log`, lines mentioning RimWorldLLM; `calls.jsonl` in the mind's data folder has every model call), and when a step fails note the
 step number, what you saw, and any red error in the dev log.
 
 Bridge calls below can be made with curl: the port and token are in `<RimWorld config>/RimWorldLLM/bridge.json`.
@@ -107,7 +107,7 @@ curl -s -H "Authorization: Bearer $T" -X POST $B/act/time -d '{"op_id":"x1","pau
     Chat "build a freezer": it says it can't build yet and recommends how.
 12a. **"Narrator is thinking…".** Send a chat line: within a second the panel's last line reads "Narrator is
     thinking" with animated dots, and it is replaced by the narrator's answer (or vanishes if the cycle ends with
-    no line). Kill the agent mid-cycle: the thinking line disappears by itself within 90 s. By hand:
+    no line). Stop the model endpoint mid-cycle (the mind runs in the mod, so there is no separate agent to kill): the thinking line disappears by itself within 90 s. By hand:
     `curl ... -X POST $B/chat/status -d '{"op_id":"t1","who":"narrator","state":"thinking","stream_id":"s1","progress":0.4}'`
     shows "… 40%" with a thin bar; then `$B/chat/partial -d '{"op_id":"t2","stream_id":"s1","text":"The wind"}'`
     shows the text streaming; `$B/chat -d '{"op_id":"t3","who":"narrator","text":"The wind is rising.","stream_id":"s1"}'`
@@ -305,7 +305,7 @@ Save first so each step can be retried.
     Royalty/Biotech mechs) a mech raid, one per save. Watch the chat: a "combat started" look drafts and places the
     squad, then short combat turns every few game seconds (orders only, no chatter), then a "combat over" look that
     undrafts, rescues and gets back to work. Check: wounded pulled back, nobody meleeing a centipede, non-fighters
-    indoors, no orders repeated over and over, and roughly how long each combat turn takes (the agent log's
+    indoors, no orders repeated over and over, and roughly how long each combat turn takes (the log's
     `elapsed_s`; the live check measured 4-6 s).
 
 ## I. The narrator's view: reasons, food, clocks
@@ -336,7 +336,7 @@ Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field,
 57. **Size.** With all of the above at once, the agent's log shows the rendered digest under 6000 chars, and the
     narrator's turn still fits its time.
 
-Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
+Report back: the step numbers that failed, the log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
 
 
@@ -351,7 +351,7 @@ Needs: a colony with a comms console (Microelectronics) and power, some surplus 
 59. **Offer.** `GET /trade/offer?with=P<id>`: prices close to the trade window's (open it yourself after, then close it
     without trading). Worn apparel and the colonists' weapons never appear in `sells`.
 60. **Trade turn on arrival.** When the trader arrives (or the ship comes in range) the narrator takes one short trade
-    turn within a few seconds: the agent log shows "trade" as the wake, `trade_offer` then one `trade`. It happens once
+    turn within a few seconds: the log shows "trade" as the wake, `trade_offer` then one `trade`. It happens once
     per visit (not again for the same trader), not during a fight, and not when food is under 3 days (the routine turn
     deals with food first).
 61. **Walking trade, orbital.** After the narrator's `trade` with `S<id>`: a short chat note "Ana is walking to the comms
@@ -409,5 +409,5 @@ scene; switch it off before the narrator plays).
 73. **Size.** A colony with mechs, genes and children at once: the rendered digest stays under 6000 chars and the turn
     still fits its time.
 
-Report back: the step numbers that failed, the agent log around them, and how the fights felt (too passive, too
+Report back: the step numbers that failed, the log around them, and how the fights felt (too passive, too
 twitchy, sensible?).

@@ -63,8 +63,8 @@ agent. The wire details of the new routes are also in `docs/BRIDGE-API.md`; the 
   reports prefill progress) while the prompt is processed, then the narrator's text streaming in,
   replaced by the final line. An `@Name` reply can show "Ana is thinking…" the same way. A status with
   no update for 90 s goes by itself. Routes `POST /chat/status` and `POST /chat/partial`, and the
-  in-process API below; the contract is in BRIDGE-API.md. Today the Python steward posts `thinking`
-  when its model call starts and `idle` when it ends (no token streaming); the C# mind streams.
+  in-process API below; the contract is in BRIDGE-API.md. The C# mind (it was the Python steward until 2026-11-27) posts `thinking`
+  when its model call starts and `idle` when it ends and streams tokens.
 - Messages go to the narrator. `@Name text` goes to a colonist through the existing talk path
   (TalkQueue → agent → `POST /say`), and the colonist's answer shows in the scrollback too.
 - Chat history is saved with the game (the last 600 lines).
@@ -152,7 +152,7 @@ what the colony UI shows). The steward says when it can't do something.
 | Vivarium state (playing flag, settings mirror, chat log, goals board, action log), the routes, argument checking | `Mod/Source/Bridge/Vivarium*.cs` (Verse-free, tested in Mod.Tests) |
 | The hands' game bodies, the digest builder | `Mod/Source/RimWorld/VivariumHands.cs`, `VivariumDigest.cs` (thin Verse code behind `IVivariumHands`) |
 | Switch, chat bar, scrollback, Goals page, save, new events | `Mod/Source/RimWorld/Vivarium*.cs`, `MainTabWindow_RWLLog.cs`, `RimWorldLLMGameComponent.cs` |
-| Steward loop, tools, prompt, digest renderer, slot-0 ownership | `agent/rimworldllm_agent/core/steward.py`, `core/steward_tools.py`, `games/rimworld/steward_*.txt`, `core/lease.py`, `core/idle.py`, `core/director.py` |
+| Steward loop, tools, prompt, digest renderer, slot-0 ownership | `Mod/Source/Mind/Core/Steward.cs`, `RimWorld/StewardTools.cs`, `RimWorld/Resources/steward_*.txt`, `Core/Lease.cs`, `Core/Idle.cs`, `Core/Director*.cs` |
 
 ### Routes (summary; full shapes in BRIDGE-API.md)
 | Route | Game? | What |
@@ -213,7 +213,7 @@ wake at once; plain letters only feed the next cycle).
 
 ### Steward prompt
 The system prompt is built from files shipped in `games/rimworld/`:
-1. `steward_system.txt` — role, rules (no cheats, the player's speed, honesty, advisor mode), how to use
+1. `steward_system.txt` (in `RimWorld/Resources/`) — role, rules (no cheats, the player's speed, honesty, advisor mode), how to use
    the tools and the goals board, and the chat-line style.
 2. **Strategy section** — `steward_strategy.txt`, the compact playbook. It can be replaced without code
    changes: the agent reads `RIMWORLDLLM_STEWARD_STRATEGY` (or config `steward_strategy_path`) first,
@@ -243,27 +243,27 @@ The user turn carries why it woke (chat text, events), the goals board, and the 
 - `VivariumEvents.cs`: the `letter` and `alert` events.
 - Settings: the "Narrator plays" group in the Colonists tab (docs/SETTINGS.md).
 
-**Agent (Python).**
-- `core/steward.py`: the loop. One `GET /vivarium` per director step when idle. Wakes: chat (at once, playing or
+**Mind (C#, `Mod/Source/Mind`).**
+- `Core/Steward.cs`: the loop. One `GET /vivarium` per director step when idle. Wakes: chat (at once, playing or
   not, paused or not), urgent events (raid_start, mental_break, death, critical/fire/starvation/rescue alerts, a
   letter with choices; playing and unpaused), the heartbeat (`heartbeat_hours` of game time since the last cycle;
   playing and unpaused), and once after its own emergency pause. Non-chat cycles keep 20 real seconds apart. One
   cycle at a time. Against a mod without `/vivarium` it switches itself off.
-- A cycle: `GET /digest` + `GET /goals` → system prompt (`steward_system.txt` + the strategy section + the tool
+- A cycle: `GET /digest` + `GET /goals` → system prompt (`steward_system.txt` (in `RimWorld/Resources/`) + the strategy section + the tool
   protocol) and user turn (why it woke, playbook alerts, settings, the goals board, the rendered digest, ~6 KB cap)
   → the tool loop on slot 0 (8 steps, 120 s, 60 s a step) → at most 3 chat notes ("→ …", the bridge's own words),
   the final line as a `narrator` chat line ("done" posts nothing), one `PUT /goals` with the board edits and one
   log line (only if it acted). Advisor mode (not playing): one acting tool call at most.
-- Slot 0: while a cycle runs `LeaseManager.narrator_owner = "steward"`; a running chronicle/art job is
+- Slot 0: while a cycle runs `LeaseManager.NarratorOwner = "steward"`; a running chronicle/art job is
   preempted, narrator cover and new lore wait, the load recap waits for the cycle to end.
-- `games/rimworld/steward_tools.py` (the game tools: names → ids from the digest, wrong names come back to the
-  model as errors), `steward_digest.py` (the renderer), `steward_rules.py` (the playbook rules), `steward_try.py`
-  (one cycle against a recorded digest, for live checks: `python -m rimworldllm_agent.games.rimworld.steward_try
-  --digest agent/tests/data/steward_digest_sample.json --chat "..." --playing --llm-url http://host:port/v1`).
+- `RimWorld/StewardTools.cs` (the game tools: names → ids from the digest, wrong names come back to the
+  model as errors), `StewardDigest.cs` (the renderer), `StewardRules.cs` (the playbook rules), and the harness command
+  `steward-try` (`tools/MindHarness/StewardTry.cs`: one cycle against a recorded digest, for live checks:
+  `dotnet run --project tools/MindHarness -- steward-try --digest Mod.Tests/Mind/Data/steward_digest_sample.json --chat "..." --playing --llm-url http://host:port/v1`).
 - `letter`/`alert` events are silent for the director (no speech, memory or chronicle).
 
-**The strategy playbook.** `games/rimworld/strategy/steward_strategy.md` is the compact playbook (written by the
-strategy research task; full reference outside the repo) and `strategy/rules.json` holds 66 if-then rules over
+**The strategy playbook.** `RimWorld/Resources/steward_strategy.md` is the compact playbook (written by the
+strategy research task; full reference outside the repo) and `RimWorld/Resources/rules.json` holds 66 if-then rules over
 the digest `facts`. The agent evaluates the rules each cycle with a whitelisted AST walker (no `eval`), and the
 ones that fire (all priority-1, at most 8 in all, ~1.5 KB) go into the user turn as "PLAYBOOK ALERTS". Always-on
 rules are left out (the playbook text covers them). A rule naming a research project the game does not define
@@ -274,7 +274,7 @@ point `RIMWORLDLLM_STEWARD_STRATEGY` (or `steward_strategy_path`) at another fil
 The steward is told to recommend those to the player instead of pretending.
 
 **Live check (2026-11-27, poe P40, the keeper's 26B `gemma4-rp-maxxed-Q3_K_XL`, 3 slots × 32k, grammar
-protocol, `steward_try` on `agent/tests/data/steward_digest_sample.json`).** System prompt ≈ 4.6k tokens
+protocol, `steward-try` on `steward_digest_sample.json` (now `Mod.Tests/Mind/Data/`)).** System prompt ≈ 4.6k tokens
 (steward rules + playbook 3.5k, tools ≈ 1.1k), rendered digest 0.8k tokens. A chat cycle ("we're low on food, keep
 two cooks") took 14 s: a short-term goal, a plan, Eli's Cooking set to 1, one note and a line. A heartbeat took 11 s:
 a bed for Eli, research Batteries, two notes, a line. In advisor mode a question about the quest got advice only
@@ -297,7 +297,7 @@ the kitchen", "a potato field"); C# planners pick the cells. Everything it place
 - `Mod/Source/RimWorld/VivariumBuildHands.cs`: the game bodies (`IVivariumHands.Designate/Build/Room/Zone/Area/Bill/
   Benches/Undo`), the buildable-site finder.
 - `Mod/Source/RimWorld/VivariumBuildView.cs`: the digest's `build` block.
-- Agent: `games/rimworld/steward_build.py` (the `build`, `zone`, `designate`, `bill` tools), the digest renderer's
+- Mind: `RimWorld/StewardBuild.cs` (the `build`, `zone`, `designate`, `bill` tools), the digest renderer's
   BUILD lines, the playbook's build order in the steward prompt.
 
 ### Routes (POST bodies also take `op_id` and the optional `why`, as every `/act/*`)
@@ -370,14 +370,14 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   `VivariumBuildHelpersTests.cs`), the digest build view (`VivariumBuildView.cs`, pure `BuildView.cs`, tests
   `BuildViewTests.cs`), the chat's `/undo [n]` and the settings button. The game bodies are compile-checked against
   the 1.7 reference assemblies only; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section C) is their first run.
-- Agent: `steward_build.py` (tests `test_steward_build.py`), the BUILD lines in `steward_digest.py`, the build order
-  in `strategy/steward_strategy.md`, the amended `food.no_freezer` rule. The steward gets no deconstruct or cancel
+- Mind: `StewardBuild.cs` (tests `Mod.Tests/Mind/StewardBuildTests.cs`), the BUILD lines in `StewardDigest.cs`, the build order
+  in `steward_strategy.md`, the amended `food.no_freezer` rule. The steward gets no deconstruct or cancel
   (tearing down is the player's call); `player_asked` exists for scripts and later phases.
 - Not yet: furnishing a planned room in the same turn (it has no id until built), power layout (conduits,
   generators placement), temperature control beyond one cooler, trade, caravans.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
-2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge).** System prompt about 24 k chars
+2 slots x 32k, q4_0 KV, grammar protocol, `steward-try` against a fake bridge).** System prompt about 24 k chars
 (tools 7.7 k of it, a third being the `why` description repeated on 13 tools); a cycle took about 20 s.
 - Day 2, nothing built (3 colonists, sleeping spots): a goal, a plan, then a medium wood barracks, a bed, a stove,
   a small food stockpile (and once a research bench): the playbook's order.
@@ -414,8 +414,8 @@ focus fire, pulls the wounded back and sends someone to carry the downed between
   is in `VivariumRoutes.Time`. Tests: `Mod.Tests/VivariumCombatTests.cs`.
 - `Mod/Source/RimWorld/VivariumCombatHands.cs`: the game bodies (map → grid, the view, positions, orders as vanilla
   jobs, defenses as blueprints) and `VivariumCombatTicker` (every 250 game ticks from the GameComponent).
-- Agent: `games/rimworld/steward_combat.py` (`squad`, `defend`, the COMBAT text), `steward_combat.txt` (the combat
-  turn's prompt), the combat cadence and speed rule in `core/steward.py`, playbook lines in `steward_strategy.md`.
+- Mind: `RimWorld/StewardCombat.cs` (`squad`, `defend`, the COMBAT text), `steward_combat.txt` (the combat
+  turn's prompt), the combat cadence and speed rule in `Core/Steward.cs`, playbook lines in `steward_strategy.md`.
 
 ### Seeing the fight: `GET /combat` and the digest's `combat` block
 ```json
@@ -509,14 +509,14 @@ the player changed it, it stays). An explicit speed from the narrator clears the
   clear.
 
 ### Phase 3 status
-- Built and tested: the routes, state, speed rule and save (Mod.Tests 778 in all), the pure helpers, the agent's
-  tools, cadence and prompt (agent pytest 1074 + 1 skipped). The game bodies are compile-checked against the 1.7
+- Built and tested: the routes, state, speed rule and save (Mod.Tests 778 in all), the pure helpers, the mind's
+  tools, cadence and prompt (at the time, 1074 Python agent tests + 1 skipped; those tests are now ported to Mod.Tests/Mind). The game bodies are compile-checked against the 1.7
   reference assemblies and reviewed; the playtest (docs/release/VIVARIUM-PLAYTEST.md, section H) is their first run.
 - Not yet: mortars and EMP, caravan/ambush fights, armor and weapon management, tactical micro beyond the
   controller (kiting, grenade avoidance), raids on other maps.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`,
-2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against a fake bridge on recorded fights).**
+2 slots x 32k, q4_0 KV, grammar protocol, `steward-try` against a fake bridge on recorded fights).**
 Combat turns: about 1.4k tokens, 3.7 to 5.7 s each.
 - Tribal melee raid from the west (walled base, west and north doors): draft the four fighters, `squad move at
   chokepoint` ("hold the west door against the melee raiders"), both runs.
@@ -579,9 +579,9 @@ tab") are listed as disabled ("only opens a window").
 **The model's answer.** The steward's prompt tells it to answer open dialogs with `choose` (dialog id, option number or label;
 for naming a short fitting name in `text`, `faction | settlement` for two names), to accept people who ask to join when the
 colony can feed them and decline ransoms and quests it cannot judge. Chosen text is clipped to the field's maximum, and a name
-the dialog rejects comes back as a refusal the model reads. `dialog_try` (`python -m rimworldllm_agent.games.rimworld.dialog_try
---dialogs agent/tests/data/dialogs_refugee.json [--paused] --llm-url ...`) runs one steward cycle against recorded
-`GET /dialogs` bodies (samples for refugee, ransom, quest offer, colony naming are in `agent/tests/data/`).
+the dialog rejects comes back as a refusal the model reads. The Python `dialog_try` ran one steward cycle against recorded `GET /dialogs` bodies; the C# harness has no dialogs
+option in `steward-try` yet, so the recorded bodies (refugee, ransom, quest offer, colony naming, growth; in
+`Mod.Tests/Mind/Data/dialogs_*.json`) are exercised by `Mod.Tests/Mind/StewardDialogsTests.cs` against a fake LLM.
 
 **Known limits.** The roles of a letter's options are fixed by position (`DialogKinds.RolesFor`), because the labels are
 translated: if vanilla's order differs the default picks the wrong one (check 27 in VIVARIUM-PLAYTEST.md). The growth moment
@@ -590,7 +590,7 @@ takes the first choices only (no model choice yet). The pawn who accepts a quest
 means ask); auto mode handles it by itself.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
-32k, q4_0 KV, grammar protocol, `dialog_try --paused` on the four samples).** Each cycle answered its dialog with `choose`
+32k, q4_0 KV, grammar protocol, the Python `dialog_try --paused` on the four samples).** Each cycle answered its dialog with `choose`
 as its first act, then went on with the colony: the refugee accepted ("since we need more hands"), the ransom refused
 (option 1, "since we can't afford it"), the hosting quest declined ("since we have a food emergency"), and the naming
 dialog got both names. Fixed from it: with the fallback name shown, the model copied it ("Ashford"); a naming dialog's
@@ -774,8 +774,8 @@ compile-checked only (see PLAYTEST section D).
 ## Unattended play: documentary voice
 While the narrator plays, it also keeps a nature-documentary voice: one dry, warm sentence at a big moment, and one
 recap sentence per finished game day. They arrive as chat lines `who: "comment"` (POST /chat; the mod shows them in the
-Story filter group). Agent module `core/commentary.py` (small, with a clear contract for a C# port), the RimWorld
-moment table in `games/rimworld/moments.py`, tests `tests/test_commentary.py`.
+Story filter group). Mind module `Core/Commentary.cs` (small, with a clear contract), the RimWorld
+moment table in `RimWorld/Moments.cs`, tests `Mod.Tests/Mind/CommentaryTests.cs`.
 - **Moments and weights** (0..1; under 0.4 nothing is said): colony_lost 1.0, death 0.95, raid_start 0.9, ship_part 0.8,
   birth 0.75, wedding (gathering kind wedding) 0.7, legendary masterwork 0.7, mental_break 0.6, social fight (state
   SocialFighting) 0.5, masterwork 0.5, funeral 0.5, quest accepted / joiner (a `letter` or `dialog` whose text says so)
@@ -798,16 +798,16 @@ moment table in `games/rimworld/moments.py`, tests `tests/test_commentary.py`.
   dropped); a dropped line is spent, not retried. A mod that refuses `who: "comment"` (400/404) is not asked again.
 - **narrator_cover** (the old "all windows busy" one-liner) is untouched: it still fills `narrator_lines`, which nothing
   reads. Commentary does not use it.
-- **Try it.** `python -m rimworldllm_agent.games.rimworld.comment_try --events agent/tests/data/comment_events_sample.json
-  [--llm-url http://host:port/v1]` prints the line per recorded moment and the day recap (FakeLLM without --llm-url).
+- **Try it.** `dotnet run --project tools/MindHarness -- comment-try --events Mod.Tests/Mind/Data/comment_events_sample.json
+  [--llm-url http://host:port/v1]` prints the line per recorded moment and the day recap (FakeLlm without --llm-url).
 - Config: `commentary` (true), `commentary_min_gap_real_s` (180), `commentary_min_gap_game` (15000), `commentary_recap` (true).
 
-**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL`, `comment_try` on the sample, three runs).**
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL`, `comment-try` on the sample, three runs).**
 One documentary sentence per moment, in register: "From the eastern scrub, a marauding band of pirates emerges to test the
 resilience of the small, stranded colony."; "The arrival of little Wren marks a sudden, fragile new beginning for Ana and
 her weary band of survivors."; recap "Amidst the violence of a pirate raid and the loss of Bram, Ana welcomes baby Wren and
 marries Cy, who celebrates their union with a masterwork longsword." The tend event is ignored as designed. One wedding
-line of 21 was dropped by the sanitizer (now printed as `(dropped: reason)` by `comment_try`). Lines run 20-30 words; a
+line of 21 was dropped by the sanitizer (now printed as `(dropped: reason)` by `comment-try`). Lines run 20-30 words; a
 shorter cap is a tuning choice for the keeper.
 ## The narrator's view: reasons, food, clocks (2026-11-27)
 The digest now says *why*, not just *what*: the audit and every field are in docs/NARRATOR-VIEW.md. The design rule
@@ -835,7 +835,7 @@ find the cells.
   playtest (docs/release/VIVARIUM-PLAYTEST.md, section I) is its first run in game.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
-`custom/use`, 2 slots x 32k, q4_0 KV, `steward_try` against a fake bridge).** The digest had three problems in it:
+`custom/use`, 2 slots x 32k, q4_0 KV, `steward-try` against a fake bridge).** The digest had three problems in it:
 loose steel that no stockpile takes, 12 wall blueprints with no builder (Construction off), and Cy with no
 manipulation. Dara was idle.
 - Playing, two cycles: both times Construction went to Dara at priority 1 ("walls are waiting to be built"), never
@@ -860,9 +860,9 @@ block, the steward gets no Biotech tool or strategy notes, and the routes refuse
   hand (op_id, `why`, greentext, 409 refusals, the action log).
 - `Mod/Source/RimWorld/VivariumBioView.cs`: the digest's `bio` block. `Mod/Source/RimWorld/VivariumBioHands.cs`: the game
   bodies. The `waste` stockpile preset lives in the phase 2 zone hand (`VivariumBuildHands.cs`).
-- Agent: `games/rimworld/steward_bio.py` (tools `mechs`, `genes`, `children`), the BIO lines in `steward_digest.py`,
-  four playbook rules in `strategy/rules.json` (`bio.baby_hungry`, `bio.hemogen_low`, `bio.bandwidth_idle`,
-  `bio.pollution_growing`, from facts derived in `steward_rules.py`), and `strategy/steward_biotech.md`, added to the
+- Mind: `RimWorld/StewardBio.cs` (tools `mechs`, `genes`, `children`), the BIO lines in `StewardDigest.cs`,
+  four playbook rules in `rules.json` (`bio.baby_hungry`, `bio.hemogen_low`, `bio.bandwidth_idle`,
+  `bio.pollution_growing`, from facts derived in `StewardRules.cs`), and `steward_biotech.md`, added to the
   strategy section only when the digest has a `bio` block (so other games pay nothing for it and the main strategy file
   stays under its 12 KB cap).
 
@@ -929,7 +929,7 @@ text when all are offered (about 0.7..0.9 k for one).
 - The pollution trend lives in memory: a loaded game starts "steady" and needs a game day to compare.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma4-rp-maxxed-Q3_K_XL` through easy-engine `custom/use`, 2 slots x
-32k, q4_0 KV, `steward_try --playing` on the four `bio_*` samples).** Prompt about 8.5 k tokens (system about 29 k chars
+32k, q4_0 KV, `steward-try --playing` on the four `bio_*` samples).** Prompt about 8.5 k tokens (system about 29 k chars
 with the Biotech notes and tools), a cycle 11..30 s. With the samples' food emergency left in, the model spent its turns on
 food and the freezer (sensible) and only the hungry baby got Biotech care, so the live digests were made calm (12 food
 days, nothing missing in BUILD) to see the Biotech choices:
@@ -968,7 +968,7 @@ first and refuse with a reason.
 - `Mod/Source/RimWorld/VivariumTradeHands.cs`: the game bodies (`IVivariumHands.TradeOffer/Trade/CaravanPlan/Caravan`),
   `VivariumTradeView.cs`: the digest's `trade`, `caravans` and `quests` blocks; `VivariumCaravanWatch.cs`: gives a
   formed narrator caravan its arrival action and notes arrivals (run from the game component, every 120 ticks).
-- Agent: `games/rimworld/steward_trade.py` (`TradeKit`: the `trade_offer` and `trade` tools; the caravan tools were removed in the follow-up),
+- Mind: `RimWorld/StewardTrade.cs` (`TradeKit`: the `trade_offer` and `trade` tools; the caravan tools were removed in the follow-up),
   the digest renderer's TRADE / TRADERS / SETTLEMENTS / CARAVANS / QUESTS lines, the playbook's trade lines.
 
 ### Digest blocks (each fails alone, logged once, like `build`)
@@ -1089,10 +1089,10 @@ drugs; buy components early; keep a silver reserve (500); trade first in a turn 
   `VivariumQuestUtil.cs`, `VivariumTradeView.cs` (digest blocks, plus `trade.animals`: tame pack animals, at most 8),
   `VivariumCaravanWatch.cs` (every 120 ticks: re-keys a plan from the forming lord to the formed caravan, restores a
   site's arrival action, notes a settlement arrival once in the chat, drops plans whose caravan is gone).
-- Agent: `steward_trade.py` (`TradeKit`), the look-tool path in `Session.run` (`trade_offer`, `caravan_plan` are not
+- Mind: `StewardTrade.cs` (`TradeKit`), the look-tool path in `Session.Run` (`trade_offer`, `caravan_plan` are not
   actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
   `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
-  reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
+  reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `Mod.Tests/Mind/StewardTradeTests.cs`.
 - Decisions (superseded where the follow-up below says so: trades walk, caravans are off): a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
   caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
   fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
@@ -1103,7 +1103,7 @@ drugs; buy components early; keep a silver reserve (500); trade first in a turn 
   prisoners or animals, buying from settlements without a caravan there.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
-`custom/use`, 2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against the fake bridge on the three trade
+`custom/use`, 2 slots x 32k, q4_0 KV, grammar protocol, `steward-try` against the fake bridge on the three trade
 samples, also with food raised to 14 days).** System prompt about 29k chars (user turn about 5k); a cycle took
 16-28 s.
 - Visiting bulk trader, heartbeat (three runs): `trade_offer` first, then one deal: buy herbal medicine x20 and
@@ -1126,7 +1126,7 @@ The keeper's call on the phase 4 recommendations: make trades walk (the ant-farm
 a trader arrives instead of raising the routine step budget, and "dont do caravans at all".
 
 **Caravans off.** The narrator never forms, sends or plans caravans. The agent has no `caravan_plan`/`caravan` tools,
-no caravan lines in `steward_system.txt` or the strategy, no `growth.caravan_safety` rule, and the digest renderer shows
+no caravan lines in `steward_system.txt` (in `RimWorld/Resources/`) or the strategy, no `growth.caravan_safety` rule, and the digest renderer shows
 neither CARAVANS nor SETTLEMENTS (settlements only mattered for caravans). The mod keeps the caravan routes, hands, plans
 and watch for scripts and a possible return, but `POST /act/caravan` and `GET /caravan/plan` refuse "caravans are off"
 unless the request says `"script": true` (`?script=true`); with it the old checks apply, `narratorCaravans` included.
@@ -1161,7 +1161,7 @@ comms console"). `T<tile>` trades stay instant.
   negotiator, caption "Camera: Ana trades with the bulk goods trader" (`ScenePawn.TradeWith`).
 
 **Trade turn on arrival.** `GET /vivarium` lists `traders` (`{id, kind, name}` that can trade now, polled every 250
-ticks by `VivariumTradeView.PollTraders` with the digest's own code). The steward (`core/steward.py`) wakes "trade" when
+ticks by `VivariumTradeView.PollTraders` with the digest's own code). The steward (`Core/Steward.cs`) wakes "trade" when
 an id is not yet in `trade_seen` (cleared with the save epoch): after chat, dialogs, urgent events and the real-time gap,
 before the heartbeat; never in a fight, paused or in advisor mode. All listed ids are marked seen when the turn starts
 (once per visit, whatever it does), and a trade turn does not move the heartbeat clock. The turn reads `GET /digest`
@@ -1169,11 +1169,11 @@ and is skipped (logged) when a fight is on, food is under 3 days (`FOOD_CRITICAL
 threshold) or a critical starvation alert is up. Otherwise: `steward_trade.txt` (~1.1 KB) plus the tool list, a user
 turn with THE TRADE first (ARRIVED, TRADE, NEEDS, STOCK, NEVER SELL, TRADERS), then FOOD and the plan; tools
 `trade_offer`, `trade`, `note`, `do_nothing`; `TRADE_STEPS` 4, `TRADE_BUDGET_S` 60, `TRADE_STEP_TIMEOUT_S` 30,
-`TRADE_MAX_TOKENS` 300, `TRADE_FINAL_MAX` 120. The routine turn's step budget is unchanged (8). `steward_try
---trade-turn --digest ...` runs one against the fake bridge.
+`TRADE_MAX_TOKENS` 300, `TRADE_FINAL_MAX` 120. The routine turn's step budget is unchanged (8). `steward-try
+--trade-turn --digest ...` (the harness command) runs one against the fake bridge.
 
 **Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine main
-`custom/use`, 2 x 32k, q4_0 KV, `steward_try --trade-turn`).** Prompt about 3.6k chars (~900 tokens: system 2.8k with
+`custom/use`, 2 x 32k, q4_0 KV, `steward-try --trade-turn`).** Prompt about 3.6k chars (~900 tokens: system 2.8k with
 the tools, user 0.8k), a turn took about 7 s. Orbital exotic trader `S31` (the recorded sample, food raised to 12 days),
 three runs: `trade_offer S31`, then one `trade`: buy components x20, glitterworld medicine x4, advanced components x6,
 sell cloth x40 and the gold sculptures, "since we need components and medicine", then done. Visiting bulk trader

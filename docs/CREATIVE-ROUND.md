@@ -30,7 +30,7 @@ paired, within-judge numbers are used for keep/drop.
 
 ## Method
 
-1. **Rich soak fixture** (`bench/soak/fixture_rich.py`, `soak.py --fixture rich`, the new default; `--fixture classic`
+1. **Rich soak fixture** (`bench/soak/fixture_rich.py`, Python: needs the pinned Python commit, see `bench/README.md`, `soak.py --fixture rich`, the new default; `--fixture classic`
    reproduces the old runs): 9 pawns with distinct trait sets and 2-3 tales each, a 14-year-old, a 71-year-old who dies of
    age, a married couple, a couple who marry in the script, rivals (opinions -55/-60) who fight, siblings (one is killed in
    a raid), three ideoligions, named raiders (three factions with leaders), 8 distinct art events a day with RimWorld-style
@@ -114,7 +114,7 @@ copy two or three RulePack art/tale texts from a RimWorld install (Core/Defs/Rul
 
 ### 7. Aim temperature
 Engine game profiles `aim3` / `aim5` (temperature 0.3 / 0.5, top_k 64, top_p 0.95; applied header confirmed
-`aim3;enforce`), routed to the aim-carrying intent pass only (`aim_sampler`, `core/sampler_route.py`), 8 scenes x 8 reps:
+`aim3;enforce`), routed to the aim-carrying intent pass only (`aim_sampler`, `Mod/Source/Mind/Llm/SamplerRoute.cs`), 8 scenes x 8 reps:
 
 | | greedy | 0.3 | 0.5 |
 |---|---|---|---|
@@ -143,7 +143,7 @@ The subtext rotation already gives distinct aims under greedy; temperature adds 
 
 Art judged 2.88-3.04 across four judges (below 3.0 on average): `art_small` defaults to False, so art descriptions are off
 on models whose id contains e2b or e4b (`small_model_patterns`), or while the engine serves a starter model. The agent reads
-the serving model from the engine's status (`core/model_tier.py`, every 60 s, off the line path). Clouds judged 3.0-3.1 with
+the serving model from the engine's status (`Mod/Source/Mind/Llm/ModelTier.cs`, every 60 s, off the line path). Clouds judged 3.0-3.1 with
 the aim tension: `inner_cloud_small` stays True. Both are config fields the player or keeper can flip.
 
 **Update 2026-11-26:** the keeper turned art back on for small models: `art_small` now defaults to True.

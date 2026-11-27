@@ -188,7 +188,7 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 - [docs/SPEC.md](docs/SPEC.md), [docs/SPEED.md](docs/SPEED.md),
   [docs/MODEL-BENCH.md](docs/MODEL-BENCH.md), [docs/E4B-PASS.md](docs/E4B-PASS.md),
   [docs/CREATIVE-ROUND.md](docs/CREATIVE-ROUND.md): design, speed and quality measurements.
-- [agent/README.md](agent/README.md): the old Python agent (no longer shipped; the mind now runs in the mod).
+- [docs/CSHARP-MIND.md](docs/CSHARP-MIND.md): the mind (the agent), which runs inside the mod as C# (`Mod/Source/Mind`).
 - Release: `scripts/package-release.sh`, [docs/release/](docs/release/).
 
 ## License
@@ -196,4 +196,4 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 MIT, copyright (c) 2026 Charleszard. See [LICENSE](LICENSE). The engine
 ([easyEngine](https://github.com/CharlesMod/easyEngine)) is MIT too. The downloaded models carry
 their own terms (Apache 2.0 with the [Gemma terms of use](https://ai.google.dev/gemma/docs/gemma_4_license)),
-and llama.cpp and uv have their own licenses. The models are not made or endorsed by Google.
+and llama.cpp has its own license. The models are not made or endorsed by Google.

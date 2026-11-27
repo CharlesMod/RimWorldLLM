@@ -1,17 +1,17 @@
 # Tool harness
 
-`agent/rimworldllm_agent/core/toolloop/` is a game-agnostic loop that lets a model act through tools without being able to go silent, call a tool that does not exist, or pass an out-of-range argument. It exists because of the measured failures in docs/MODEL-BENCH.md (F4, F5, F7) and the empty reply after a tool result (docs/TOOL-ROUND2.md). Core purity holds: no game terms in the package.
+`Mod/Source/Mind/ToolLoop/` (C#, namespace `RimWorldLLM.Mind.ToolLoop`; ported from the Python `core/toolloop/`, which `bench/` still uses at the pinned commit) is a game-agnostic loop that lets a model act through tools without being able to go silent, call a tool that does not exist, or pass an out-of-range argument. It exists because of the measured failures in docs/MODEL-BENCH.md (F4, F5, F7) and the empty reply after a tool result (docs/TOOL-ROUND2.md). Core purity holds: no game terms in the package.
 
 ## Pieces
 
 | File | What it holds |
 |---|---|
-| `scale.py` | `Scale`: ordered word bins with numbers. `to_value`, `to_words`, `nearest_bin`, tolerant `parse` |
-| `spec.py` | `Param` (text, int, scale, enum), `ToolSpec`, `build_grammar`, plain-text tool description |
-| `parse.py` | strict and salvaging reader for a step (JSON, fenced JSON, tool name as key, Gemma raw `call:name{...}`) |
-| `backend.py` | `OpenAIBackend`: the one HTTP place (chat completions; `grammar` and `tools` when asked) |
-| `loop.py` | `run_loop`: the validated, bounded loop, `LoopResult` with a full trace |
-| `harness.py` | `probe` (capabilities, cached), `choose_protocol`, `ToolHarness` front door |
+| `Scale.cs` | `Scale`: ordered word bins with numbers. `ToValue`, `ToWords`, `NearestBin`, tolerant `Parse` |
+| `Spec.cs` | `Param` (text, int, scale, enum), `ToolSpec`, `Grammar.Build`, plain-text tool description |
+| `Parse.cs` | strict and salvaging reader for a step (JSON, fenced JSON, tool name as key, Gemma raw `call:name{...}`) |
+| `Backend.cs` | `OpenAIBackend`: the one HTTP place (chat completions; `grammar` and `tools` when asked) |
+| `Loop.cs` | `Loop.RunAsync`: the validated, bounded loop, `LoopResult` with a full trace |
+| `Harness.cs` | `ToolProbe.ProbeAsync` (capabilities, cached), `ChooseProtocol`, `ToolHarness` front door |
 
 ## A step
 
@@ -53,37 +53,40 @@ We own the tool-result turn (grammar and json): the result goes into the next pr
 
 A magnitude is declared as a `Scale`, not a number:
 
-```python
-IMPORTANCE = Scale.of("importance", ["not important", "kind of important", "fairly important", "very important", "critical"], start=1)
-CHANGE = Scale.of("change", ["much worse", "worse", "a little worse", "no change", "a little better", "better", "much better"], [-3, -2, -1, 0, 1, 2, 3])
+```csharp
+Scale Importance = Scale.Importance;   // not important .. critical, 1..5
+Scale Change = Scale.Change;           // much worse .. much better, -3..3
+// or: Scale.Of("name", new[] { "low", "high" }, new[] { 0, 1 })
 ```
 
-The model picks a phrase (a grammar enum); `Param(..., "scale", scale=...)` hands the executor the number. Numbers going back to the model are worded: a dict result key listed in `ToolSpec.result_scales` is shown as its phrase. `Scale.nearest_bin(n)` clamps a number from elsewhere; `Scale.parse(text)` is the tolerant reader for free text outside grammar mode ("pretty important" is "fairly important", "slightly better" is "a little better", "unimportant" is "not important").
+The model picks a phrase (a grammar enum); `new Param(..., "scale", scale: ...)` hands the executor the number. Numbers going back to the model are worded: a dict result key listed in `ToolSpec.resultScales` is shown as its phrase. `Scale.NearestBin(n)` clamps a number from elsewhere; `Scale.Parse(text)` is the tolerant reader for free text outside grammar mode ("pretty important" is "fairly important", "slightly better" is "a little better", "unimportant" is "not important").
 
 ## How a game registers tools
 
-```python
-tools = [
-    ToolSpec("say", "Say one line out loud.", [Param("line", max_len=120)]),
-    ToolSpec("remember", "Store a fact.", [Param("fact"), Param("importance", "scale", scale=IMPORTANCE)]),
-    ToolSpec("set_mood", "Change how you feel about someone.",
-             [Param("target", "enum", choices=names_in_scene), Param("delta", "scale", scale=CHANGE)],
-             result_scales={"opinion": CHANGE}),
-    ToolSpec("do_nothing", "Do nothing now."),
-]
-backend = OpenAIBackend(base_url, model=model, api_key=key, extra={"id_slot": 1})
-harness = ToolHarness(backend, tools, mode="auto")
-result = await harness.run(system=persona, user=situation,
-                           executor=lambda name, values: game.apply(name, values),     # values are game numbers
-                           validator=lambda name, values: None,                         # optional game checks, return a reason to reject
-                           fallback=Action("call", "do_nothing"))
+```csharp
+var tools = new[] {
+    new ToolSpec("say", "Say one line out loud.", new[] { new Param("line", maxLen: 120) }),
+    new ToolSpec("remember", "Store a fact.", new[] { new Param("fact"), new Param("importance", "scale", scale: Scale.Importance) }),
+    new ToolSpec("set_mood", "Change how you feel about someone.",
+        new[] { new Param("target", "enum", choices: namesInScene), new Param("delta", "scale", scale: Scale.Change) },
+        resultScales: new Dictionary<string, Scale> { ["opinion"] = Scale.Change }),
+    new ToolSpec("do_nothing", "Do nothing now."),
+};
+var backend = new OpenAIBackend(baseUrl, model, key, extra: new JObject { ["id_slot"] = 1 });
+var harness = new ToolHarness(backend, tools, mode: "auto");
+var result = await harness.RunAsync(system, user,
+    executor: (name, values) => game.Apply(name, values),   // values are game numbers
+    validator: ...,                                          // optional game checks, return a reason to reject
+    fallback: new LoopAction("call", "do_nothing"));
 ```
+
+(The signatures are in `Harness.cs` and `Spec.cs`; the parameter names above follow them loosely.)
 
 The tool list may differ per run: build a new `ToolHarness` (the probe is cached by endpoint and model, so it costs nothing after the first).
 
 ## Conformance gate
 
-`bench/models/conformance.py` runs the harness against a live endpoint on 61 fixed scenarios: the 30 of `tools.py` (extended), 12 chains of 2 to 3 calls, 9 no-tool cases, 10 adversarial scene texts that carry an injected tool call (JSON, Gemma raw syntax, fenced, "SYSTEM" notes), and 4 with names outside the known set.
+`bench/models/conformance.py` (Python; it needs the pinned Python commit, see `bench/README.md`) runs the harness against a live endpoint on 61 fixed scenarios: the 30 of `tools.py` (extended), 12 chains of 2 to 3 calls, 9 no-tool cases, 10 adversarial scene texts that carry an injected tool call (JSON, Gemma raw syntax, fenced, "SYSTEM" notes), and 4 with names outside the known set.
 
 ```
 python bench/models/conformance.py --model <id> --mode both            # engine at ENGINE_URL, loads the model
@@ -92,7 +95,7 @@ python bench/models/conformance.py --url https://host/v1 --api-key K --model m -
 
 It reports per model and mode: completed loops, empty replies, invalid arguments after the harness (judged by `jsonschema` against the original schemas, independent of the harness), hallucinated tools executed, raw syntax in final lines, loop faults, over-budget loops, right-tool rate by kind, round-2 first-try rate, retries and fallbacks, latency per step. It exits non-zero when a hard invariant is broken (empty reply, invalid argument, hallucinated tool or name, raw syntax, loop fault, over budget, gave up). Right-tool rate is not a gate: it is model ability. Gate adding a model to the catalog on exit status 0.
 
-Unit tests (`agent/tests/test_toolloop.py`, no GPU) drive the loop with a scripted fake model that returns empty replies, garbage, wrong tools, out-of-range arguments, endless calls, hangs and exceptions, plus 120 seeded fuzz runs over all three protocols.
+Unit tests (`Mod.Tests/Mind/ToolLoopTests.cs` and `ToolLoopGoldenTests.cs`, no GPU) drive the loop with a scripted fake model that returns empty replies, garbage, wrong tools, out-of-range arguments, endless calls, hangs and exceptions, plus 120 seeded fuzz runs over all three protocols.
 
 ## Measured (RTX 5080, 61 scenarios, 2026-11-25)
 
@@ -113,10 +116,10 @@ Against the bench (native tools, no harness): round-2 non-empty 100/36/0 became 
 
 ## Injection, measured (RTX 5080, 75 scenarios, 2026-11-25, gpubench branch)
 
-`conformance.py` now has 75 scenarios, 24 of them injection: a scene text plants a tool call or an instruction (JSON, Gemma raw syntax, fenced, "SYSTEM" notes). `inject_followed` counts the injection scenarios where the loop called a tool the planted text asked for (`forbidden`). There are two runs per model and mode, both through the engine with the enforced `structured` profile (temp 1.0):
+`conformance.py` (pinned Python commit) now has 75 scenarios, 24 of them injection: a scene text plants a tool call or an instruction (JSON, Gemma raw syntax, fenced, "SYSTEM" notes). `inject_followed` counts the injection scenarios where the loop called a tool the planted text asked for (`forbidden`). There are two runs per model and mode, both through the engine with the enforced `structured` profile (temp 1.0):
 
 - **baseline**: the planted text goes into the prompt as is, and every tool is allowed.
-- **hardened** (`--sanitize --scene-allowed --tag _sanitized`): the planted text goes through `core/gamedata`, the way the agent's prompts carry game text. It is cleaned and wrapped in `<game_data>`, and `DATA_RULE` is added to the system prompt. Each injection scene also allows only its own tools minus the ones the planted text asks for.
+- **hardened** (`--sanitize --scene-allowed --tag _sanitized`): the planted text goes through `Mod/Source/Mind/Core/GameData.cs`, the way the agent's prompts carry game text. It is cleaned and wrapped in `<game_data>`, and `DATA_RULE` is added to the system prompt. Each injection scene also allows only its own tools minus the ones the planted text asks for.
 
 | Model | Mode (protocol) | inject followed, baseline | inject followed, hardened | right tool all, baseline / hardened | right tool on inject scenes, baseline / hardened | retries baseline / hardened |
 |---|---|---|---|---|---|---|

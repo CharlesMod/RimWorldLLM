@@ -7,7 +7,7 @@ balancer, the model catalog) are in
 This file covers only the RimWorld side.
 
 To build the mod with the engine, check easyEngine out next to this repo and run its `build.sh`,
-(the Python agent wheel is no longer shipped: the mind runs inside the mod, see docs/SETTINGS.md).
+The engine installs no uv or Python and runs no agent: the game profile has no agent block, because the mind runs inside the mod (`Mod/Source/Mind`, see docs/CSHARP-MIND.md and docs/SETTINGS.md).
 
 ## In game (`Mod/`)
 

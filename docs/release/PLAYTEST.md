@@ -13,7 +13,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
   Note the time on your clock so the line can be found in the logs.
 - Save the logs at the end of the session (before the next game start rotates them):
   - RimWorld `Player.log` (Linux `~/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log`).
-  - `engine.log`, `llama-server.log`, `agent.log` from the engine folder's `logs/`
+  - `engine.log`, `llama-server.log` from the engine folder's `logs/`
     (Linux `~/.local/share/easy-engine/logs/`).
   - `calls.jsonl` from `~/.local/share/rimworldllm-agent/` (every model call, with timings).
 - Write down the machine: OS, card and its memory, RAM, free disk, and the model and slots the settings line shows.
@@ -23,7 +23,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 ## A. Install and first start
 
 1. **Zip layout.** Unzip `RimWorldLLM-2.1.0-beta.zip` into `Mods/`. Look for `Mods/RimWorldLLM/About/About.xml`,
-   `1.7/Assemblies/`, `Engine/<os>-<arch>/easy-engine`, `Engine/agent/*.whl`. Report any extra top folder.
+   `1.7/Assemblies/`, `Engine/<os>-<arch>/easy-engine` (no `Engine/agent/` wheel: the mind runs inside the mod). Report any extra top folder.
 2. **Mod list.** RimWorldLLM shows "2.1.0", author Charleszard, the new description (no Tailscale or bridge text), and a
    Harmony dependency warning if Harmony is missing.
 3. **Clean start.** The main menu loads with no red errors mentioning RimWorldLLM in the log (open the dev log).
@@ -39,7 +39,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 7. **Time to first line.** Note the time from Install to the first spoken bubble. Target: a few minutes on a decent link.
 8. **Starter notice and tier read (open).** While the starter serves: the "small starter model" message once, the status
    line with the download progress, and the starter flagged in Settings, Model. Check the agent switches its
-   small-model settings for the starter (agent.log: the serving model read as starter, every 60 s).
+   small-model settings for the starter (the mind re-reads the serving model from the engine status every 60 s; see Player.log).
 9. **Starter speech.** Lines are short and in character; no label leaks ("[calm]", "Intent:"), no meta text.
 
 ## C. Swap to the full model
@@ -83,7 +83,7 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
     happened.
 28. **Art on real tales (open).** Finish a sculpture with a tale on it (from a raid or a death). The written description
     describes the depicted scene, names the right colonists, lists no "memories" or "data". Check on E4B (art is on for
-    small models since 2026-11-26) and on the 26B. Also check the mod sends `data.material` and `data.tale` (agent.log
+    small models since 2026-11-26) and on the 26B. Also check the mod sends `data.material` and `data.tale` (Player.log
     or calls.jsonl show the material and the tale summary).
 29. **Recap.** Save, quit to menu, load: a "previously on" recap leads with the big events (a death, a raid).
 
@@ -219,12 +219,12 @@ W1. **GPU detection.** The setup window names the NVIDIA card and its memory (nv
     or Intel card, falls back to Vulkan with the right memory figure.
 W2. **llama.cpp CUDA download.** The CUDA 12.4 build plus its cudart zip (CUDA 13.5 on RTX 50-series) download, unpack,
     and pass the smoke test; the model runs on the GPU (llama-server.log shows CUDA and layers offloaded).
-W3. **uv and the agent.** uv downloads, creates the Python 3.12 environment, installs the wheel, and the agent starts
-    (agent.log). Note where the agent's own folder lands (expected `%LOCALAPPDATA%\rimworldllm-agent`).
+W3. **The mind's data folder.** The in-mod mind starts without any download beyond llama.cpp and the model. Note where
+    its own folder lands (expected `%LOCALAPPDATA%\rimworldllm-agent`).
 W4. **Engine with the game.** easy-engine.exe starts hidden (no console window) with the game and exits when the game
     exits or is killed from Task Manager.
 W5. **Paths with spaces.** A Windows user name with a space, and RimWorld installed under a path with spaces
     (`C:\Program Files (x86)\Steam\...`): install, start and the agent all work.
 W6. **Defender and SmartScreen.** Note every prompt: SmartScreen on first start, Defender scanning or quarantining
-    easy-engine.exe, llama-server.exe or uv.exe, a firewall prompt (there should be none: everything listens on
+    easy-engine.exe or llama-server.exe, a firewall prompt (there should be none: everything listens on
     127.0.0.1). Screenshot each prompt's exact wording for the Nexus page.

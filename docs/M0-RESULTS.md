@@ -1,3 +1,5 @@
+*Historical: the agent measured here was the Python agent, last commit 36515840a97cbbbf576ffdfd782d0726f07b7443; the mind is now C# (docs/CSHARP-MIND.md).*
+
 # Milestone 0 results: measurements for RimWorldLLM 2
 
 Run 2026-11-24 on the sprinter's RTX 5080. Harness: `bench/m0/` (README there has the rerun recipe). Raw data: `bench/m0/results/` (`summary.md` has every table in full).

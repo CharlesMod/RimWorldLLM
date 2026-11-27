@@ -62,12 +62,11 @@ Measured: the 26B writes about 105 tokens per second per conversation on an RTX 
 [list]
 [*][b]One model[/b], sized to your card, from [b]Hugging Face[/b] (cmod/gemma4-rp-maxxed-GGUF 10.0 GB, cmod/gemma4-e4b-rp-GGUF 3.65 GB, or unsloth/gemma-4-E2B-it-GGUF 3.1 GB).
 [*][b]llama.cpp[/b], which runs the model, from its [b]official GitHub releases[/b] (ggml-org/llama.cpp, build b12680). NVIDIA (CUDA): about 0.8 GB download, 2 GB on disk. AMD/Intel (Vulkan) or Mac: under 0.1 GB.
-[*][b]uv[/b] (from astral-sh/uv's GitHub releases) and Python 3.12 with two small packages, for the mod's helper program: about 0.2 GB on disk.
 [/list]
 Every download is checked against a fixed SHA-256 and resumes if interrupted. With an NVIDIA card expect about 12 GB on disk for the 26B (about 16 GB at the peak, while the starter is still there), or about 6 GB for E4B RP.
 
 [size=4][b]About the executable in this mod[/b][/size]
-The zip contains a small program, [b]easy-engine[/b] ([font=Courier New]Engine/<os>-<arch>/easy-engine[/font], [font=Courier New]easy-engine.exe[/font] on Windows), plus the helper as a Python wheel ([font=Courier New]Engine/agent/rimworldllm_agent-*.whl[/font]). easy-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases and uv from uv's, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
+The zip contains a small program, [b]easy-engine[/b] ([font=Courier New]Engine/<os>-<arch>/easy-engine[/font], [font=Courier New]easy-engine.exe[/font] on Windows). The mod's own mind (the part that keeps colonists' memories and writes their lines) runs inside the mod and needs no extra program. easy-engine is built from the public [url=https://github.com/CharlesMod/easyEngine]easyEngine[/url] source; the zip's [font=Courier New]BUILD[/font] file names the exact commit, and [font=Courier New]SHA256SUMS[/font] lists every file's checksum. It downloads llama.cpp from llama.cpp's own GitHub releases, and the models from Hugging Face. It is not code-signed yet, so Windows SmartScreen or a virus scanner may warn about it: that is because it is a new, unsigned program that downloads files, not because it does anything hidden. You can read or build it yourself.
 
 [size=4][b]Where it lives and how to remove it[/b][/size]
 [list]
@@ -75,7 +74,7 @@ The zip contains a small program, [b]easy-engine[/b] ([font=Courier New]Engine/<
 [*]Linux: [font=Courier New]~/.local/share/easy-engine[/font]
 [*]macOS: [font=Courier New]~/Library/Application Support/EasyEngine[/font]
 [/list]
-The helper keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\rimworldllm-agent[/font] on Windows and [font=Courier New]~/.local/share/rimworldllm-agent[/font] elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, [b]Remove downloaded files[/b] (tick the box to delete the helper's memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those two folders by hand.
+The mod keeps colonists' memories and a log in [font=Courier New]%LOCALAPPDATA%\rimworldllm-agent[/font] on Windows and [font=Courier New]~/.local/share/rimworldllm-agent[/font] elsewhere. To remove everything: Mod settings, RimWorldLLM, Storage, [b]Remove downloaded files[/b] (tick the box to delete the memory and logs too), then delete or unsubscribe the mod. Or quit RimWorld and delete those folders by hand.
 
 [size=4][b]Already run your own model server?[/b][/size]
 Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatible URL. Nothing is downloaded.
@@ -98,7 +97,7 @@ Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatibl
 [size=4][b]Install[/b][/size]
 [list=1]
 [*]Install Harmony.
-[*]Had a test build called HermesVoice? Delete the old [font=Courier New]Mods/HermesVoice[/font] folder first; your settings and the helper's memory carry over.
+[*]Had a test build called HermesVoice? Delete the old [font=Courier New]Mods/HermesVoice[/font] folder first; your settings and the colonists' memory carry over.
 [*]Unzip [font=Courier New]RimWorldLLM-2.1.0-beta.zip[/font] into RimWorld's [font=Courier New]Mods[/font] folder, so you get [font=Courier New]Mods/RimWorldLLM/About/About.xml[/font].
 [*]Enable Harmony, then RimWorldLLM below it, and restart.
 [*]Load a game and click [b]Set up[/b] on the letter.
@@ -114,11 +113,11 @@ Choose [b]My own endpoint[/b] in the mod settings and enter any OpenAI-compatibl
 [/list]
 
 [size=4][b]Reporting a problem[/b][/size]
-Please post your OS, graphics card and memory, the model shown in the settings, what happened, and the logs: RimWorld's Player.log (the lines mentioning RimWorldLLM) and engine.log, llama-server.log and agent.log from the engine folder's logs subfolder. The [url=https://github.com/CharlesMod/RimWorldLLM#troubleshooting]README[/url] lists where they are. Bugs here or on [url=https://github.com/CharlesMod/RimWorldLLM/issues]GitHub issues[/url].
+Please post your OS, graphics card and memory, the model shown in the settings, what happened, and the logs: RimWorld's Player.log (the lines mentioning RimWorldLLM) and engine.log and llama-server.log from the engine folder's logs subfolder. The [url=https://github.com/CharlesMod/RimWorldLLM#troubleshooting]README[/url] lists where they are. Bugs here or on [url=https://github.com/CharlesMod/RimWorldLLM/issues]GitHub issues[/url].
 
 [size=4][b]Source and license[/b][/size]
 [list]
 [*]Mod: [url=https://github.com/CharlesMod/RimWorldLLM]github.com/CharlesMod/RimWorldLLM[/url]
 [*]Engine: [url=https://github.com/CharlesMod/easyEngine]github.com/CharlesMod/easyEngine[/url]
 [/list]
-The mod and the engine are MIT licensed, copyright (c) 2026 Charleszard. The downloaded models carry their own terms (Apache 2.0 with the [url=https://ai.google.dev/gemma/docs/gemma_4_license]Gemma terms of use[/url]; not made or endorsed by Google), and llama.cpp and uv have their own licenses. Third-party notices are in the zip's Licenses folder.
+The mod and the engine are MIT licensed, copyright (c) 2026 Charleszard. The downloaded models carry their own terms (Apache 2.0 with the [url=https://ai.google.dev/gemma/docs/gemma_4_license]Gemma terms of use[/url]; not made or endorsed by Google), and llama.cpp has its own license. Third-party notices are in the zip's Licenses folder.

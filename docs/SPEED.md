@@ -28,7 +28,7 @@ real seconds (what the machine and the player's eyes can do).
 
 | Where | Unit | Dual clock | Speed 2 / 3 / 4 (after this work) |
 |---|---|---|---|
-| Request expiry by class (`core/lease.py`) | game units + real cap | yes (new) | urgent 600 units, floor 3 s; reactive 3000 units, floor 6 s; social/ambient 1200 units, floor 4 s; real caps 5/60/20/20 s on the play clock |
+| Request expiry by class (`Mod/Source/Mind/Core/Lease.cs`) | game units + real cap | yes (new) | urgent 600 units, floor 3 s; reactive 3000 units, floor 6 s; social/ambient 1200 units, floor 4 s; real caps 5/60/20/20 s on the play clock |
 | Voice budget | real, play clock | real by design | 5 lines a minute at every speed, x0.5 at 4x |
 | Queue | count | n/a | bounded at 16; weakest evicted, duplicates (actor, kind, listener) merged keeping max severity |
 | Quotas per pair and per actor per day | game day | game | a game day is 5 min of play at 3x; the budget keeps the real rate bounded. Pair quota counts a talk once, not per line; none for the game's own interactions; ambient may use 0.75 of an actor's daily quota so consequential lines are never starved |
@@ -38,7 +38,7 @@ real seconds (what the machine and the player's eyes can do).
 | `expires_tick` on the wire | game ticks | via deadline | deadline plus 0.5 s of slack |
 | Vanilla-interaction attach window (mod `PendingTable`, agent `react`) | game ticks + real | yes (new) | within `attachWindowMinutes` (417 ticks) OR `attachRealFloorSec` (5 s), whichever is longer; the mod sends `window_real_s` and the agent uses the same floor |
 | Idle work (reflection, diary, chronicle) | game day | starving floor | due work that waited 0.25 game day runs beside chatter and yields only to reactive, urgent or player work; retry back-off on the play clock. Falls with speed per real minute but stays at one a pawn a day or better |
-| Map thought job `_thought` (`core/idle.py`) | real | real | one per pawn per `thought_every_real_s` (420 s), the same at every speed |
+| Map thought job `_thought` (`Mod/Source/Mind/Core/Idle.cs`) | real | real | one per pawn per `thought_every_real_s` (420 s), the same at every speed |
 | Shout gap `shout_gap_real_s` (`Director._delivery`) | real (raw clock) | real | 45 s per speaker, speed independent. It also runs through a pause, which only makes a shout slightly more likely right after one |
 | Thought cloud pacing (mod `ThoughtPacing`) | real seconds as ticks at the current speed | yes (new) | per-pawn 120 s and global 20 s are `seconds x max(60, ticks per real second)`, so 20 s of watching at every speed (they were 10, 3.3 and 1.3 s). A waiting cloud is stale after `max(600 ticks, 10 s)` |
 | `EventGate` cooldowns (injury 30 s, social 60 s, tend 20 s, mental 10 s, thought 10 s) | game ticks | game only | shorten to a third / sixth / fifteenth in real time. They only cut events (never memory); the push cap and the agent's queue bound what follows. Left as is; see "Wanted elsewhere" |
@@ -50,13 +50,13 @@ real seconds (what the machine and the player's eyes can do).
 
 ## Simulation
 
-`agent/rimworldllm_agent/games/rimworld/speedsim.py` runs the real `Director` against a modelled game on a virtual
-asyncio clock (a 25 minute run takes a second). The model has four pawns, three slots with the measured latencies, a
+`tools/MindHarness/SpeedSim.cs` runs the real `Director` against a modelled game on a virtual
+clock (a single-thread scheduler whose clock jumps to the next timer) (a 25 minute run takes a second). The model has four pawns, three slots with the measured latencies, a
 bridge with frame-bound latency, a ring that trims at 2000 and a model of the mod's attach table and cloud pacing. A
 synthetic colony day: 40 thoughts, 6 level-ups, 22 of the game's own interactions (every fourth a high-tier one), 8
 conversations, 8 injuries with tends, a mental break and a 40-event raid inside 1,080 ticks.
-`PYTHONPATH=agent python -m rimworldllm_agent.games.rimworld.speedsim 5` prints the table.
-`agent/tests/test_speed_sim.py` holds the bounds as tests: per speed (nothing lost, bounded queue, late share, memory,
+`dotnet run --project tools/MindHarness -- speedsim --all` prints the table (`--speed N` for one speed, `--seed N`, `--floor S`).
+`Mod.Tests/Mind/SpeedSimTests.cs` holds the bounds as tests: per speed (nothing lost, bounded queue, late share, memory,
 effects), speed 3 voiced about like speed 1, the raid at 3x, a schedule of pauses and speed changes, the attach share,
 a social-fight chain, the cloud gaps.
 
