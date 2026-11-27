@@ -170,7 +170,7 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     return out
 
 
-def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
+def _render(d: dict, lv: dict, bl: dict | None = None, combat: bool = True) -> str:
     bl = bl or _BUILD[0]
     out = ["DATE: " + _date(d)]
     fd = d.get("food_days")
@@ -202,7 +202,7 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
                                         (f" ({gd.clean(b['owner'], 'name')})" if b.get("owner") else " (free)") for b in beds))
     al = (d.get("alerts") or [])[:lv["alerts"]]
     out.append("ALERTS: " + ("; ".join(gd.clean(a.get("label", ""), "label") + (" [CRITICAL]" if a.get("critical") else "") for a in al) or "none"))
-    if view_active(d.get("combat")):                    # never shrunk away: the combat block only loses detail (steward_combat.render_combat)
+    if combat and view_active(d.get("combat")):                    # never shrunk away: the combat block only loses detail (steward_combat.render_combat)
         out.append(render_combat(d["combat"], lv["combat"]))
     th = d.get("threats") or []
     out.append("THREATS: " + ("; ".join(f"{t.get('count', '?')} {gd.clean(t.get('label', ''), 'label')}" + ("" if t.get("hostile", True) else " (not hostile)") for t in th[:6]) or "none"))
@@ -243,4 +243,8 @@ def render_digest(d: dict, cap: int = CAP) -> str:
         text = _render(d, _LEVELS[base], _BUILD[bld])
         if len(text) <= cap:
             return text
+    if view_active(d.get("combat")):                   # the cut takes the tail of the rest, never the fight
+        fight = render_combat(d["combat"], DIGEST_CAPS[-1])
+        rest = _render(d, _LEVELS[-1], _BUILD[-1], combat=False)
+        return rest[:max(cap - len(fight) - 40, 0)].rsplit("\n", 1)[0] + "\n" + fight + "\n(digest cut: too long)"
     return text[:cap - 40].rsplit("\n", 1)[0] + "\n(digest cut: too long)"

@@ -68,7 +68,7 @@ def _ci(options, wanted: str) -> str | None:
 class Session:
     """One cycle's game tools, built from one digest."""
 
-    def __init__(self, digest: dict, bridge, advisor: bool):
+    def __init__(self, digest: dict, bridge, advisor: bool, after_fight: bool = False):
         self.d, self.bridge, self.advisor = digest, bridge, advisor
         self.pawns = pawn_names(digest)                      # cleaned name -> id
         self.roles = {gd.name(p.get("name")): p.get("role", "colonist") for p in digest.get("pawns") or []}
@@ -79,7 +79,7 @@ class Session:
         self.policies = {k: [str(x) for x in v] for k, v in (digest.get("policies") or {}).items() if isinstance(v, list)}
         self.research = [r for r in (digest.get("research") or {}).get("available") or [] if isinstance(r, dict)]
         self.build = BuildKit(digest)                        # the builder tools exist only when the digest has a build block
-        self.combat = CombatKit(digest.get("combat"), self.pawns, self.build)   # squad needs a combat view; defend also a build block
+        self.combat = CombatKit(digest.get("combat"), self.pawns, self.build, after_fight)   # squad needs a combat view; defend also a build block
         self.tools = self._tools() + self.build.tools + self.combat.tools
         self.acting = {t.name for t in self.tools if t.name in ACTING or t.name in self.build.names or t.name in self.combat.names}
 
@@ -272,8 +272,8 @@ class StewardKit:
     def render_digest(self, digest: dict) -> str:
         return render_digest(digest)
 
-    def session(self, digest: dict, bridge, advisor: bool) -> Session:
-        return Session(digest, bridge, advisor)
+    def session(self, digest: dict, bridge, advisor: bool, after_fight: bool = False) -> Session:
+        return Session(digest, bridge, advisor, after_fight)
 
     def combat_session(self, view: dict, bridge) -> Session:
         """The tools of a combat turn: built from the combat view alone (the colonists in it), no digest."""

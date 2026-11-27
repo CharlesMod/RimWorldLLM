@@ -1,0 +1,118 @@
+{
+ "active": true,
+ "home": {
+  "x": 120,
+  "z": 98
+ },
+ "positions": [
+  "cover",
+  "chokepoint",
+  "door",
+  "wall_n",
+  "wall_e",
+  "wall_s",
+  "wall_w",
+  "home",
+  "inside"
+ ],
+ "tick": 523400,
+ "threats": [
+  {
+   "id": 9101,
+   "faction": "Tribe of the Red Hand",
+   "kind": "melee",
+   "count": 8,
+   "where": "west, 41 cells from home",
+   "dist": 41,
+   "heading": "toward home",
+   "labels": [
+    "5 tribal warriors",
+    "2 tribal berserkers",
+    "1 tribal chief"
+   ],
+   "ids": [
+    9101,
+    9102,
+    9103,
+    9104,
+    9105,
+    9106,
+    9107,
+    9108
+   ]
+  }
+ ],
+ "fighters": [
+  {
+   "id": 102,
+   "name": "Bram",
+   "drafted": false,
+   "health": "ok",
+   "weapon": "bolt-action rifle",
+   "range": 33,
+   "cover": "behind a wall",
+   "job": "standing",
+   "where": "at home"
+  },
+  {
+   "id": 103,
+   "name": "Cy",
+   "drafted": false,
+   "health": "ok",
+   "weapon": "hunting shotgun",
+   "range": 20,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  },
+  {
+   "id": 104,
+   "name": "Dara",
+   "drafted": false,
+   "health": "hurt",
+   "weapon": "club",
+   "range": 1,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  },
+  {
+   "id": 105,
+   "name": "Eli",
+   "drafted": false,
+   "health": "ok",
+   "weapon": "short bow",
+   "range": 25,
+   "cover": "in the open",
+   "job": "standing",
+   "where": "at home"
+  }
+ ],
+ "others": [
+  {
+   "id": 101,
+   "name": "Ana",
+   "why": "no violence",
+   "safe": true
+  }
+ ],
+ "downed": {
+  "colonists": [],
+  "enemies": 0
+ },
+ "fires": {
+  "count": 0,
+  "home": 0,
+  "where": ""
+ },
+ "defenses": "base walled with 2 doors (north, west); chokepoint: west door, 1 wide; no turrets, no traps",
+ "squad": {
+  "members": [],
+  "stance": "fire_at_will",
+  "focus": 0
+ },
+ "speed_rule": {
+  "slowed": true,
+  "before": 3
+ }
+}

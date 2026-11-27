@@ -361,7 +361,7 @@ class Steward:
             if snote:
                 log.info("steward: %s", snote)
         system = kit.system_prompt(advisor) + ("\n\n" + STRATEGY_HEADING + "\n" + strategy if strategy else "") + "\n\n" + gd.DATA_RULE
-        session = kit.session(digest, d.bridge, advisor)
+        session = kit.session(digest, d.bridge, advisor, after_fight=True) if reason == "combat over" else kit.session(digest, d.bridge, advisor)
         tools = session.tools + board_tools(board, advisor)
         allowed = {x.name for x in session.tools} | {"note", "add_order", "do_nothing"} if advisor else {x.name for x in tools}
         alerts = ""

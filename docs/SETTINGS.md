@@ -147,6 +147,8 @@ Agent config file / defaults (core/config.py):
 |---|---|---|
 | `steward` | true | The vivarium steward. It also stays off by itself against a mod without `/vivarium`. |
 | `steward_min_gap_real_s` | 20 | Least real seconds between two steward cycles that are not chat (heartbeat, events). Chat ignores it. |
+| `steward_combat_gap_game_s` | 5 | In a fight: least game seconds between two combat turns (60 ticks each). |
+| `steward_combat_gap_real_s` | 4 | In a fight: least real seconds after the last combat turn ended. |
 | `steward_strategy_path` | "" | A strategy playbook file for the steward prompt; "" = the shipped `games/rimworld/strategy/steward_strategy.md`. The env var `RIMWORLDLLM_STEWARD_STRATEGY` wins over it. A missing or empty chosen file leaves the section out. |
 | `steward_strategy_max_bytes` | 12288 | The strategy section is cut on a line at this size. |
 

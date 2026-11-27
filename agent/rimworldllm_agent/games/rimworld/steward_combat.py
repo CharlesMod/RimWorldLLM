@@ -5,7 +5,7 @@ and threats in words ("Ana", "the pirates", "group 9012"); the ids come from the
 digest's ``combat`` block). Positions are the view's own words (``cover``, ``chokepoint``, ``door``...): the mod's
 CoverFinder picks the cells, so the model never gives coordinates.
 
-``squad`` exists only while a combat view is present; ``defend`` also when the digest has a build block.
+``squad`` exists only while a combat view is present (and in the "combat over" cycle, for undraft and rescue); ``defend`` also when the digest has a build block.
 Optional parameters follow the builder tools: an optional enum carries ``none``, an optional number 0 (the grammar
 protocol writes every parameter, so unused ones are tolerated, never an error).
 
@@ -31,7 +31,7 @@ AT_DEFEND = ["chokepoint", "entrance"]
 POSITIONS = ["cover", "chokepoint", "door", "wall_n", "wall_e", "wall_s", "wall_w", "home", "inside"]   # when a view lists none
 COUNT_MAX = {"turret": 4, "traps": 8}
 LENGTH_KINDS = ("sandbags", "barricade", "wall")
-_UNUSED = {"", NONE, "n/a", "0", "nobody", "no one"}
+_UNUSED = {"", NONE, "n/a", "0"}
 _SQUAD_WORDS = {"squad", "all", "everyone", "everybody", "fighters", "the squad"}
 _FILLER = {"the", "a", "an", "those", "these", "them", "group", "groups", "threat", "threats", "enemy", "enemies", "of", "all", "pawn", "id", "attackers"}
 
@@ -67,8 +67,9 @@ def view_active(view: object) -> bool:
 class CombatKit:
     """The combat tools for one combat view (and the digest's build block, for ``defend``) and the body of each call."""
 
-    def __init__(self, view: dict | None, pawns: dict[str, int] | None = None, build=None):
+    def __init__(self, view: dict | None, pawns: dict[str, int] | None = None, build=None, after_fight: bool = False):
         self.view = view if view_active(view) else None
+        self.after_fight = after_fight and self.view is None      # the "combat over" cycle: squad stays for undraft and rescue
         self.pawns = dict(pawns or {})
         self.build = build if getattr(build, "has", False) else None
         v = self.view or {}
@@ -88,7 +89,7 @@ class CombatKit:
     # ---- the tools ------------------------------------------------------------------
     def _tools(self) -> list[ToolSpec]:
         out: list[ToolSpec] = []
-        if self.view:
+        if self.view or self.after_fight:
             ps = [Param("op", "enum", "what to do: draft the fighters, move or retreat them to a position, hold (stand and fire, no chasing) or fire_at_will, "
                         "focus a threat, rescue the downed, extinguish fires, flee (non-fighters indoors), undraft", choices=OPS),
                   Param("pawns", "text", "names separated by commas, or squad (the current squad; for draft: every fighter)", max_len=160, required=False),
@@ -100,7 +101,7 @@ class CombatKit:
                    Param("below", "int", "retreat: wounded fall back under this health percent (10 to 90), 0 if unused", lo=0, hi=90, required=False), _WHY]
             out.append(ToolSpec("squad", "Order the fighters in a fight: draft, move to cover or a door, hold, focus a threat, retreat the wounded, "
                                 "rescue the downed, put out fires, send non-fighters indoors, undraft.", ps))
-        if self.view or self.build:
+        if self.view or self.build or self.after_fight:
             ds = [Param("kind", "enum", "killbox is a kill zone at the main entrance", choices=KINDS),
                   Param("side", "enum", "threat (the enemy side) or n/e/s/w", choices=[NONE] + SIDES, required=False),
                   Param("at", "enum", "instead of side", choices=[NONE] + AT_DEFEND, required=False),
@@ -243,15 +244,16 @@ def _fighter(f: dict, detail: int) -> str:
 
 
 def _render(view: dict, lv: dict) -> list[str]:
-    out = ["COMBAT: fight under way" + (f" (game speed was {view['speed']['before']}x, slowed for the fight)"
-                                         if isinstance(view.get("speed"), dict) and view["speed"].get("slowed") and view["speed"].get("before") else "")]
+    # the contract names the block "speed", which the envelope's own "speed" (a number) shadows on the wire: take either key
+    sp = next((x for x in (view.get("speed_rule"), view.get("speed")) if isinstance(x, dict)), {})
+    out = ["COMBAT: fight under way" + (f" (game speed was {sp['before']}x, slowed for the fight)" if sp.get("slowed") and sp.get("before") else "")]
     names: dict[int, str] = {}
     for key in ("fighters", "others"):
         for f in view.get(key) or []:
             if isinstance(f, dict) and _int(f.get("id")):
                 names[_int(f["id"])] = gd.name(f.get("name"))
     th = [g for g in view.get("threats") or [] if isinstance(g, dict)]
-    out.append("THREATS" + (" (nearest first)" if len(th) > 1 else "") + ": " + ("none in sight" if not th else ""))
+    out.append("THREATS" + (" (nearest first)" if len(th) > 1 else "") + ":" + (" none in sight" if not th else ""))
     for g in th[:lv["threats"]]:
         labels = [_w(x, 28) for x in (g.get("labels") or [])[:lv["labels"]]]
         out.append(f"- #{_int(g.get('id')) or '?'} {g.get('count', '?')} {_w(g.get('kind'), 14)}, {_w(g.get('faction') or 'wild', 24)}, "
@@ -259,7 +261,7 @@ def _render(view: dict, lv: dict) -> list[str]:
     if len(th) > lv["threats"]:
         out.append(f"- and {len(th) - lv['threats']} more groups")
     fs = [f for f in view.get("fighters") or [] if isinstance(f, dict)]
-    out.append("FIGHTERS: " + ("none able to fight" if not fs else ""))
+    out.append("FIGHTERS:" + (" none able to fight" if not fs else ""))
     out.extend(_fighter(f, lv["detail"]) for f in fs[:lv["fighters"]])
     if len(fs) > lv["fighters"]:
         out.append(f"- and {len(fs) - lv['fighters']} more: " + ", ".join(gd.name(f.get("name")) for f in fs[lv["fighters"]:lv["fighters"] + 6]))
