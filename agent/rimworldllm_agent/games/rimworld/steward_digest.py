@@ -21,10 +21,10 @@ _LEVELS = [
 # the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
 # plants, ores. The last step keeps just BUILD/missing and a short ROOMS.
 _BUILD = [
-    dict(rooms=12, benches=8, bills=5, recipes=8, zones=10, can_build=40, stuff=8, plants=10, ores=6),
-    dict(rooms=8, benches=5, bills=3, recipes=4, zones=6, can_build=20, stuff=6, plants=6, ores=4),
-    dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2),
-    dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0),
+    dict(rooms=12, benches=8, bills=5, recipes=8, zones=10, can_build=40, stuff=8, plants=10, ores=6, loose=6),
+    dict(rooms=8, benches=5, bills=3, recipes=4, zones=6, can_build=20, stuff=6, plants=6, ores=4, loose=4),
+    dict(rooms=5, benches=3, bills=2, recipes=0, zones=4, can_build=0, stuff=4, plants=0, ores=2, loose=2),
+    dict(rooms=3, benches=0, bills=0, recipes=0, zones=0, can_build=0, stuff=0, plants=0, ores=0, loose=0),
 ]
 # (base level, build level): the build block shrinks all the way before the rest loses detail
 _STEPS = [(0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (3, 3)]
@@ -165,7 +165,24 @@ def _build_lines(b: dict, bl: dict, counts: str) -> list[str]:
     ores = [o for o in (b.get("ores") or [])[:bl["ores"]] if isinstance(o, dict)]
     if ores:
         out.append("ORES: " + "; ".join(f"{gd.clean(o.get('ore', ''), 'label')} {_num(o.get('cells'))} cells {_num(o.get('dist'))} away" for o in ores))
+    piles = [p for p in (b.get("loose") or [])[:bl["loose"]] if isinstance(p, dict)]
+    if piles:
+        out.append("LOOSE: " + "; ".join(_pile(p) for p in piles))
     return out
+
+
+def _pile(p: dict) -> str:
+    where = f"{_num(p.get('dist'))} cells" + (f" {gd.clean(p['dir'], 'label')}" if p.get("dir") else "")
+    return f"{gd.clean(p.get('label', ''), 'label')} {_num(p.get('count'))} {where}" + (" (forbidden)" if p.get("forbidden") else "")
+
+
+def _res_entry(r: dict) -> str:
+    def pos(k):
+        v = r.get(k)
+        return isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0
+
+    extra = ([f"+{_num(r['loose'])} loose"] if pos("loose") else []) + ([f"{_num(r['forbidden'])} forbidden"] if pos("forbidden") else [])
+    return f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}" + (f" ({', '.join(extra)})" if extra else "")
 
 
 def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
@@ -178,7 +195,7 @@ def _render(d: dict, lv: dict, bl: dict | None = None) -> str:
     if res:
         cats: dict[str, list[str]] = {}
         for r in res:
-            cats.setdefault(gd.clean(r.get("category", "other"), "label"), []).append(f"{gd.clean(r.get('label', ''), 'label')} {r.get('count', '?')}")
+            cats.setdefault(gd.clean(r.get("category", "other"), "label"), []).append(_res_entry(r))
         out.append("RESOURCES: " + "; ".join(f"{c}: {', '.join(v)}" for c, v in cats.items()))
     pawns = d.get("pawns") or []
     scheds = [p.get("schedule") for p in pawns if p.get("schedule")]

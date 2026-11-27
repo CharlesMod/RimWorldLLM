@@ -226,8 +226,9 @@ def load_rules() -> tuple:
 def _resource(res: list, label: str) -> int | None:
     tot, seen = 0, False
     for r in res:
-        if isinstance(r, dict) and str(r.get("label", "")).strip().lower() == label and _num(r.get("count")):
-            tot += int(r["count"])
+        if isinstance(r, dict) and str(r.get("label", "")).strip().lower() == label and (_num(r.get("count")) or _num(r.get("loose"))):
+            # stored plus loose (forbidden piles are the player's call and stay out)
+            tot += int(r["count"] if _num(r.get("count")) else 0) + int(r["loose"] if _num(r.get("loose")) else 0)
             seen = True
     return tot if seen else None
 
