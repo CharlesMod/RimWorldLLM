@@ -414,3 +414,14 @@ find the cells.
   starving; act on deadlines.
 - All of it is compile-checked against the 1.7 reference assemblies and unit-tested in the pure helpers; the
   playtest (docs/release/VIVARIUM-PLAYTEST.md, section D) is its first run in game.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
+`custom/use`, 2 slots x 32k, q4_0 KV, `steward_try` against a fake bridge).** The digest had three problems in it:
+loose steel that no stockpile takes, 12 wall blueprints with no builder (Construction off), and Cy with no
+manipulation. Dara was idle.
+- Playing, two cycles: both times Construction went to Dara at priority 1 ("walls are waiting to be built"), never
+  to Cy. Both times the narrator hauled the loose piles, and in one cycle it also made a stockpile ("loose steel
+  needs a place to go"). It never mined. It added a table and a research bench from `missing`.
+- Advisor, asked "put Cy on construction": "I can't do that; Cy has no manipulation and is incapable of
+  construction."
+- The system prompt was 25.1k chars. Outputs are in ~/.local/share/rimworld-hermes-engine/xlate/live/.
