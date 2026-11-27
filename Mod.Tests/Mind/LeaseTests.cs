@@ -6,19 +6,9 @@ namespace RimWorldLLM.Tests.Mind
 {
     public class LeaseTests
     {
-        // The RimWorld adapter's priority (games/rimworld/adapter.py _EVENT_CLASS); the adapter itself is another worker's.
-        static Cls ClassOf(string t)
-        {
-            switch (t)
-            {
-                case "player_talk": return Cls.Player;
-                case "death": case "mental_break": case "raid_start": return Cls.Urgent;
-                case "injury": case "tend": case "first_cue": return Cls.Reactive;
-                case "social": return Cls.Social;
-                case "letter": case "alert": return Cls.Idle;
-                default: return Cls.Ambient;
-            }
-        }
+        // the real RimWorld adapter's priority table (test_lease: class_of = RimWorldAdapter().priority)
+        static readonly RimWorldLLM.Mind.RimWorld.RimWorldAdapter AD = new RimWorldLLM.Mind.RimWorld.RimWorldAdapter();
+        static Cls ClassOf(string t) { return AD.Priority(t); }
 
         static LeaseManager Mgr(int actorPerDay = 12, int pairPerDay = 4, long minGapGame = 1500, double minGapRealS = 20.0)
         {
