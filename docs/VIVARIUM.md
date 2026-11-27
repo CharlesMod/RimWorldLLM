@@ -971,3 +971,47 @@ Four tools when the digest has a `trade` block: `trade_offer` (with: look at pri
 buy, sell as "item xN, item xN"), `caravan_plan` (not an action), `caravan` (op form|send|cancel, pawns as names, to,
 quest, goods, purpose). The prompt's playbook lines: sell surplus art, textiles and drugs; buy components early;
 keep a silver reserve (500); never strip the base's defense for a caravan; take quests only when `can` is true.
+
+### Phase 4 status (what is built)
+- Mod, Verse-free and unit-tested: `VivariumTrade.cs` (deal planner, never-sell rules, day caps), `VivariumCaravan.cs`
+  (caravan planner, who may go, quest kind and feasibility, caravan plans), `TradeView.cs` (needs),
+  `VivariumTradeKeys.cs` (id parsing, food kinds), `NeverSellList.cs`; routes in `VivariumRoutesTrade.cs`. Tests:
+  `VivariumTradeTests`, `VivariumTradeRoutesTests`, `VivariumTradeKeysTests`, `NeverSellListTests`.
+- Mod, game bodies (compile-checked against the 1.7 reference assemblies only; the playtest, section J, is their first
+  run): `VivariumTradeHands.cs` (offer and trade through `TradeSession`/`TradeDeal`; worn, wielded and forbidden
+  things are taken off the colony side; pawns and animals are never traded), `VivariumCaravanHands.cs` (plan, form via
+  `CaravanFormingUtility.StartFormingCaravan`, send via the path follower, cancel), `VivariumTradeUtil.cs`,
+  `VivariumQuestUtil.cs`, `VivariumTradeView.cs` (digest blocks, plus `trade.animals`: tame pack animals, at most 8),
+  `VivariumCaravanWatch.cs` (every 120 ticks: re-keys a plan from the forming lord to the formed caravan, restores a
+  site's arrival action, notes a settlement arrival once in the chat, drops plans whose caravan is gone).
+- Agent: `steward_trade.py` (`TradeKit`), the look-tool path in `Session.run` (`trade_offer`, `caravan_plan` are not
+  actions and do not count in advisor mode), the digest lines (they shrink after BUILD and before the base detail),
+  `growth.trade` amended to fire when a trader is here (`traders_ready`, `trade_needs` facts), `growth.quest_accept`
+  reads `quest_offer_can`, the strategy section "Trade, caravans, quests". Tests: `test_steward_trade.py`.
+- Decisions: a trade executes at once (no trade window, the negotiator does not walk to the comms console); a
+  caravan to a settlement gets no arrival action, so it stops on the tile and the steward trades with `T<tile>`;
+  fights at quest sites are refused ("needs combat (not yet)"): the phase 3 squad works on the home map only; the
+  best doctor (not only the only one) stays home unless the player asks; ship needs in `trade.needs` are approximated
+  from the costs of a computer core, a reactor and one engine, shown only after ShipBasics.
+- Not yet: caravans to quest sites returning home on their own (the steward sends them), fulfilling a trade request
+  on arrival (the caravan arrives with the goods; the player or a later hand clicks the request), gifts, selling
+  prisoners or animals, buying from settlements without a caravan there.
+
+**Live check (2026-11-27, poe P40 GPU 0, the 26B `gemma-4-26B-A4B-it-abl-UD-Q3_K_XL` through easy-engine
+`custom/use`, 2 slots x 32k, q4_0 KV, grammar protocol, `steward_try` against the fake bridge on the three trade
+samples, also with food raised to 14 days).** System prompt about 29k chars (user turn about 5k); a cycle took
+16-28 s.
+- Visiting bulk trader, heartbeat (three runs): `trade_offer` first, then one deal: buy herbal medicine x20 and
+  components x6-10, sell cloth x300, the jade sculpture and the smokeleaf joints, "since we need components and
+  medicine"; then the build work.
+- Orbital exotic trader, chat "get what we need": `trade_offer S31`, then buy components x20 and glitterworld
+  medicine x4, sell cloth and the gold sculptures. On heartbeats the build list (freezer, table, research bench) took
+  the step budget first; with the amended `growth.trade` alert it looked at the offer in its last step.
+- Settlement 3.1 days away with an accepted delivery quest, chat "let's do the Rivermouth cloth delivery":
+  `caravan_plan` (3.1 days, food need 9.2, packs pemmican 18, 60/105 kg, ok), then `caravan form` with Ana, Bram and
+  Eli, cloth x20, to Q77, purpose quest. Advisor "should we send a caravan to Rivermouth?": advice only (the 600
+  silver reward is worth it, the cloth is surplus), no action.
+- With food at 2.4 days (the samples as recorded) it left the caravan alone and fixed food first.
+- Fixed from it: `growth.trade` only fired above 1500 silver; it now fires when a trader can trade and NEEDS has
+  entries; the strategy says to trade first in a turn because traders leave. Seen, not fixed (phase 2): the model
+  keeps trying a cooler for a freezer that is only planned (refused with the reason each time).

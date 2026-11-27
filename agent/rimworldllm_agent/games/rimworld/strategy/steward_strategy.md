@@ -146,9 +146,9 @@ Act when food_days < 3, or < 5 and falling.
 - **Endings** (ship; Royal Ascent [Royalty]; Archonexus [Ideology]; Void Awakening [Anomaly]; Mechhive [Odyssey]): start only with 15+ food days, a strong killzone, medicine and 6+ fighters.
 
 ## Trade, caravans, quests
-- Sell surplus art, textiles, drugs (STOCK); buy components, medicine, then plasteel/advanced components for the ship (NEEDS). Keep 500 silver.
-- trade_offer before every trade; a trade is final.
-- Caravans: 2-3 pawns + pack animals, food days x2 + 3; never strip the base's defense.
+- Sell surplus art, textiles, drugs; buy components, medicine, then plasteel/advanced components (NEEDS). Keep 500 silver.
+- Traders leave: trade first in a turn; trade_offer before every trade (final).
+- Caravans: 2-3 pawns + pack animals, food days x2 + 3; never strip the defense.
 - Take quests only when QUESTS says can; no fights at quest sites yet.
 
 ## Reading the digest's new lines

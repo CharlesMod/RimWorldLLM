@@ -369,6 +369,14 @@ def test_quest_offer_fact_and_rule():
     assert any(r[2] == "growth.quest_accept" or "growth.quest_accept" in str(r) for r in fired_rules(f))
 
 
+def test_trader_facts_fire_the_trade_rule():
+    f = derive_facts(copy.deepcopy(TRADER))
+    assert f["traders_ready"] == 1 and f["trade_needs"] >= 1
+    assert any("growth.trade" in str(r) for r in fired_rules(f))
+    f = derive_facts(copy.deepcopy(SETTLE))           # no trader on the map: quiet
+    assert f["traders_ready"] == 0
+    assert not any("growth.trade" in str(r) for r in fired_rules(f))
+
 # ---- prompt text and budget
 def test_prompt_text_is_amended_not_appended():
     kit = StewardKit()
