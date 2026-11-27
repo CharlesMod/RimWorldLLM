@@ -86,8 +86,12 @@ namespace RimWorldLLM.Mind.Py
         }
 
         /// <summary>random.random(): float in [0, 1) with 53 bits.</summary>
+        /// <summary>Test hook (a Python test subclasses random.Random and overrides random()): when set, Random() returns this.</summary>
+        public Func<double> RandomOverride;
+
         public virtual double Random()
         {
+            if (RandomOverride != null) return RandomOverride();
             uint a = GenRand32() >> 5, b = GenRand32() >> 6;
             return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
         }

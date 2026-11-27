@@ -27,12 +27,12 @@ C#: `Mod.Tests/Mind/GroupPureTests.cs` 25 rows (keys, rolls, trigger/request/tem
 payload round trip), expected values captured from the Python with `~/.local/share/rimworld-hermes-engine/csmind/director-group/gen_group.py`.
 test_group.py ported: `test_cap_by_speed_and_ceremony_floor`, `test_plan_order_and_no_repeat_in_a_row`.
 
-Deferred (need the Director / `world` fixture; 17 tests):
-- scene flow through step/drain with FakeBridge+FakeLLM: test_meal_scene_rotates_windows_and_block_f_carries_every_turn, test_each_participant_keeps_one_memory,
-  test_speed_caps_meal_turns_and_4x_has_no_meal_scene, test_story_pick_uses_chronicle_people_and_is_not_repeated, test_meal_opener_retells_the_story_in_the_prompt,
-  test_speech_leader_then_listeners, test_budget_is_spent_per_line, test_scene_ends_when_the_others_are_apart.
-- ceremonies and age gate (Director._prepare/_say, creative flags, bridge age lookups): test_funeral_lead_eulogy_with_token_cap_and_old_event_is_silent,
-  test_funeral_event_still_reacts_when_gatherings_are_off (Director.ingest + owns_funeral), test_wedding_adults_say_vows_in_order,
-  test_wedding_with_a_minor_or_unknown_age_has_no_scene, test_wedding_minor_guest_does_not_speak_and_no_missing_couple, test_minor_at_a_meal_carries_the_minor_rule.
-- switches and preemption (Director settings, leases): test_switches_off_means_no_scene_and_no_memory, test_gathering_end_stops_a_scene_and_urgent_work_preempts,
-  test_urgent_work_preempts_the_scene.
+All 17 world tests are ported in `Mod.Tests/Mind/ConversationWorldTests.cs` (same names in PascalCase: `MealSceneRotatesWindowsAndBlockFCarriesEveryTurn`,
+`EachParticipantKeepsOneMemory`, `SpeedCapsMealTurnsAnd4xHasNoMealScene`, `StoryPickUsesChroniclePeopleAndIsNotRepeated`, `MealOpenerRetellsTheStoryInThePrompt`,
+`FuneralLeadEulogyWithTokenCapAndOldEventIsSilent`, `FuneralEventStillReactsWhenGatheringsAreOff`, `WeddingAdultsSayVowsInOrder`,
+`WeddingWithAMinorOrUnknownAgeHasNoScene`, `WeddingMinorGuestDoesNotSpeakAndNoMissingCouple`, `MinorAtAMealCarriesTheMinorRule`, `SpeechLeaderThenListeners`,
+`SwitchesOffMeansNoSceneAndNoMemory`, `GatheringEndStopsASceneAndUrgentWorkPreempts`, `BudgetIsSpentPerLine`, `SceneEndsWhenTheOthersAreApart`,
+`UrgentWorkPreemptsTheScene`). Nothing from test_group.py is deferred.
+Port notes: `bridge_cfg = {...}` becomes `D.BridgeCfg["events"] = ...` (the dict is mutated, not replaced); the preemption test sets `Preempted` in
+`World.Hook.Before` (before the first model call returns) instead of wrapping `complete` to set it after; a `conv` JValue holding a null string has JSON type String, so the
+tests treat null/empty alike.
