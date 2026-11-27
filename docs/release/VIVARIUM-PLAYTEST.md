@@ -193,7 +193,7 @@ first: timeout 15 s in the mod settings (Narrator plays group).
 
 1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
    (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
-2. With watch mode on and nothing happening, the camera drifts to a colonist about every 25 s (no chat line).
+2. With watch mode on and nothing happening, the camera cycles everyday scenes and colonists (section E2 below).
 3. Dev mode: fire a raid; within a second the camera cuts to the raiders, chat gets "Camera: a raid arrives from the <side>".
 4. Start a fight, a mental break and a social fight (dev tools) one after another: shots follow, the chat does not flood
    (at most one camera line per 12 s). The same colonist is not shown again and again while others have events.
@@ -202,6 +202,31 @@ first: timeout 15 s in the mod settings (Narrator plays group).
 7. Biotech: a birth gives "Camera: X gives birth" and a `birth` event on GET /events. Without Biotech: no errors in the log.
 8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
 9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).
+
+### E2. Screen director (follows, scenes, battles, zoom, threads)
+Watch mode on, default settings, normal pace. Play at 1x, then repeat 3, 4 and 7 at 3x.
+1. **Follow smoothness.** A follow shot (the filler colonist, or a thread): the camera keeps the pawn near the centre
+   as they walk. It does not twitch when they take a step or turn, eases in and out (no sudden starts or stops), and
+   never swings past them. Nothing makes you queasy. Report any shake or lurch and the speed it happened at.
+2. **Dinner scene.** At a mealtime with 2+ colonists eating in one room: within a few seconds of the last shot ending,
+   a close shot frames the table and the chat says "Camera: dinner in the <room>: <names>" (breakfast or lunch by the
+   clock). Others to watch for: recreation together, two working side by side, a doctor tending, someone alone and
+   awake at night ("can't sleep"), a child playing or learning, partners together, a prisoner chat, taming.
+3. **Battle stays framed.** Dev raid next to colonists (or draft them toward it): once they are within about 28 cells
+   of each other the view widens to show both sides, centred between them, and stays on the fight for as long as it
+   lasts, with "Camera: the fight begins". Down a colonist: a short close-up ("Camera: X is down"), then back to the
+   fight. When it ends: a closing shot, "Camera: the raiders flee" or "are beaten".
+4. **Zoom feels right.** Meals and deaths close, work middle, raids and battles wide; never past your own zoom limits.
+   Zoom yourself: the director pauses; turn watch mode off (button, key or settings): your zoom comes back.
+5. **Threads return to a pawn.** Kill a colonist with family or a friend (dev): in the next quiet stretches the camera
+   comes back to them ("Camera: Bram, after losing Ana", after the funeral "Camera: Bram, after the funeral"). Same for
+   a recruit ("newly arrived") and a colonist after a mental break ("after the break").
+6. **Pacing.** The same scene or pawn does not come back within about 4 minutes unless something urgent happens; at
+   most one camera line per 12 s. Try pace calm and lively in settings: shots get longer/shorter.
+7. **No stutter at 3x.** Frame rate with watch mode on and off at 3x in a busy colony: no visible hitch every few
+   seconds (scene and battle scans).
+8. **Settings.** Each scene group off removes that kind; "select the pawn the camera follows" selects without drafting.
+Report: anything that felt jerky, scenes that were wrong or missing, captions that read badly.
 
 ## F. Unattended play: stability and restart
 Needs the mod; the agent is optional except where noted. Switch Narrator plays on.

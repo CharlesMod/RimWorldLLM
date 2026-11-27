@@ -96,6 +96,10 @@ Options > Controls. The three settings above reach the agent on `GET /vivarium` 
 | `showThoughts`, `thoughtOpacity`, `thoughtPerPawnSec`, `thoughtGlobalSec` | true, 0.6, 120, 20 | P | Inner-thought clouds (comic style) |
 | `directorCameraAllowed`, `directorCameraOnAtStart`, `directorPanSpeed` | true, false, 2.5 | P | Director camera |
 | `watchMode`, `watchCaptions`, `watchPlayerPauseSec` | false, true, 20 | P | Watch mode (camera director for unattended play); `watchMode` is a mod setting, not per game |
+| `watchZoom` | true | P | Watch mode zooms per shot (close for meals, deathbeds, art; mid for work; wide for raids, battles, ship parts) inside the player's zoom limits; the player's zoom comes back when watch mode turns off |
+| `watchSelectFollowed` | false | P | Select the pawn a follow shot is on (opens the inspect pane, hence off); never drafts or changes anything else |
+| `watchPace` | 1 | P | 0 calm, 1 normal, 2 lively: shot holds (follow 20/15/10 s, scenes 15/11/8 s, events x1.25/1/0.8) and the no-repeat window (5/4/2.5 min) |
+| `watchSceneMeals`, `watchSceneRecreation`, `watchSceneWork`, `watchSceneNight`, `watchSceneMedical`, `watchSceneChildren`, `watchSceneRomance` | all true | P | Everyday scene groups for quiet stretches (work also covers prisoner talks and taming) |
 | `shareFooter` | true | P | Footer on shared images (was under Talk) |
 
 ### Content

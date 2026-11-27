@@ -464,7 +464,8 @@ cycles ended without a final chat line.
 ## Unattended play: camera director
 
 Watch mode makes the game watchable like an ant farm: the camera cuts between what is happening and says what it
-is showing. Camera only: it never selects, drafts, opens windows or changes the time speed.
+is showing. Camera only: it never drafts, opens windows or changes the time speed, and selects the followed pawn
+only with `watchSelectFollowed` on.
 
 **Controls.** A camera button in the play-settings row beside the "Narrator plays" eye
 (`Patch_NarratorSwitch`, icon `Textures/RimWorldLLM/UI/RWL_WatchMode.png`, made by
@@ -481,9 +482,9 @@ Game side: `Mod/Source/RimWorld/WatchCamera.cs` (feeds, steering through `Direct
 **Scoring.** Interest = kind weight x (0.5 + event severity, clamped 0.5..1.5) x 0.5^(age / 20 s), expiring after
 60 s. Variety: the same subject (pawn, or place for place events) shown in the last 90 s counts x0.25, the same kind
 in the last 30 s x0.6. Below 0.8 the director stays put. A shot has a dwell (12 s for raid, death, birth, wedding,
-funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise; 6 s for filler). Urgent kinds (raid,
-death, mental break) may cut in after 3 s when they score 1.3x the current shot. A filler "wander" shot (a colonist,
-rotating) is offered every 25 s when nothing is pending.
+funeral; 8 s for ship part, mental break, social fight, combat; 7 s otherwise, at normal pace). Urgent kinds (raid,
+death, mental break) may cut in after 3 s when they score 1.3x the current shot; any event may cut into a scene or
+filler shot after 3 s. Quiet stretches cycle everyday scenes, story threads and filler (next section).
 
 | Event | Kind | Weight | Sample caption |
 |---|---|---|---|
@@ -503,6 +504,76 @@ rotating) is offered every 25 s when nothing is pending.
 
 **Captions.** Each new shot of interest writes one chat line of kind `camera` (Story filter group): at most one per
 12 s (4 s for urgent kinds), never the same text twice within 90 s, none for filler shots.
+
+### Screen director: follows, scenes, battles, zoom, threads
+
+Built on the scorer above (same dwell/caption rules for events). Pure code in `Mod/Source/Bridge/`:
+`DirectorScenes.cs` (`SceneFinder`), `DirectorFraming.cs` (`DirectorZoom`, `FollowCam`, `BattleFrame`,
+`BattleDirector`), `DirectorPacing.cs` (`DirectorPacing`, `RepeatGuard`, `StoryThreads`); tests
+`Mod.Tests/ScreenDirectorTests.cs`. Game side stays in `WatchCamera.cs` (snapshots, hostile scan, thread polls) and
+`DirectorCamera.Place`/`Cut` (direct camera moves that the "player moved it" check knows about). No Harmony patch on
+input; the camera is moved with `CameraDriver.SetRootPosAndSize` and `JumpToCurrentMapLoc`, zoom limits come from
+`CameraDriver.config.sizeRange`.
+
+**Follow shots.** One pawn kept centred: a dead zone with hysteresis (starts moving when the pawn is 3 cells off
+centre, settles within 0.5) and a critically damped spring (0.45 s), so small steps never shake the view and motion
+eases in and out; more than 70 cells away is a cut. A new shot keeps the spring's speed (a glide, not a stop-start).
+The shot ends at its hold, when the pawn despawns or leaves the map, or when the player touches the camera. Setting
+`watchSelectFollowed` (default off) selects the followed pawn, without sound, drafting or anything else.
+
+**Everyday scenes.** In quiet stretches (the shot is over), every 3 s at most, the director is offered the current
+scenes from a light snapshot of colonists and prisoners (job, joy kind, work type, job target, room, awake/in bed,
+age, partners), the strongest story-thread pawn, and one colonist as filler. Events always win: the best event that
+clears the minimum score beats any scene, and an event may cut into a scene or filler after 3 s. A pawn shows in one
+scene at a time (strongest kind first). Offers merge by scene key, variety for scenes is by scene key, not place.
+
+| Scene kind | Group setting | Weight | Shot | Zoom | Sample caption |
+|---|---|---|---|---|---|
+| `scene_medical`: a doctor on `TendPatient` | medical | 3.5 | group | close | Camera: Ana tends to Bram |
+| `scene_meal`: 2+ eating in one room (or within 8 cells outdoors) | meals | 3.0 | group | close | Camera: dinner in the barracks: Ana, Bram and Cy |
+| `scene_romance`: partners within 6 cells, same room, both 18+, awake, not in bed or lovin | romance | 2.6 | group | close | Camera: Ana and Bram spend time together |
+| `scene_child`: a child playing or learning (2+ together: one group) | children | 2.6 | follow/group | close | Camera: Tess has a lesson / Tess is playing |
+| `scene_recreation`: 2+ adults on joy jobs together | recreation | 2.5 | group | close | Camera: a board game in the rec room: Ana and Bram |
+| `scene_prisoner`: a warden job on a prisoner | work | 2.4 | group | close | Camera: Ana talks with the prisoner Vik |
+| `scene_taming`: `Tame`/`Train` | work | 2.2 | follow | mid | Camera: Bram tames the muffalo |
+| `scene_night`: awake 23:00-04:59, nobody else awake within 10 cells | night | 2.0 | follow | mid | Camera: Dara can't sleep / Dara works through the night |
+| `scene_work`: 2+ within 10 cells on field, kitchen, construction, workshop or mining work | work | 1.8 | group | mid | Camera: Cy and Dara work the fields |
+| `thread`: a story-thread pawn | | 2.5 | follow | mid | Camera: Bram, after the funeral |
+| `wander`: filler colonist | | 1 | follow | mid | none |
+
+Severity for group scenes is 0.5 + 0.25 per pawn (two pawns = 1.0, clamped 0.5..1.5). Group shots centre on the box of
+the members' current positions and widen the zoom to fit them. Meal words follow the local hour (breakfast 5-10,
+lunch 11-14, dinner 17-22, else "a meal").
+
+**Battle framing.** Once a second, when the map has hostile targets: active hostile pawns
+(`GenHostility.IsActiveThreatToPlayer`) and standing colonists. Engaged = within 28 cells of the other side. The
+frame centres on the front line (midpoint of the two sides' centroids), and the size fits the box of every engaged
+fighter (x1.2 + 3 cells), clamped to 16..55 and the player's limits. While anyone is engaged the fight is held (no
+other shots); the only cut-away is a 4 s close-up of a colonist who goes down (at most one per 8 s, "Camera: Cy is
+down"). After 8 s with nobody engaged a 6 s closing shot: "Camera: the raiders flee" (hostiles left), "... are
+beaten" (none left), "no one is left standing" (no colonist standing); "the animals"/"the mechanoids" when all
+hostiles are. The start says "Camera: the fight begins". Battle captions share the caption limit (urgent gap).
+
+**Zoom.** Close 13, mid 22, wide 36 (root size), widened to fit groups, clamped to the player's own zoom range, eased
+by a spring (0.8 s). Close: meals, medical, romance, children, prisoners, recreation, death, birth, art, masterwork,
+funeral, wedding, breaks, downed. Wide: raid, battle, closing shot, ship part. Mid: the rest. `watchZoom` off leaves
+the zoom alone. The player's zoom is remembered when watch mode turns on (and whenever they zoom themselves) and set
+back when it turns off, by the button, the key or the settings window.
+
+**Story threads.** A thread makes a pawn score higher (x3 at the start, falling linearly to x1) for a few in-game
+hours, on every kind (events, scenes, thread shots), and quiet stretches offer a `thread` shot of them. Starts: a
+death (colonists related to the victim or with opinion 30+: "after losing Ana", 8 h; the funeral ending relabels it
+"after the funeral" and restarts it), a breakup (`social` event with interaction `Breakup`, adults only, 6 h), a new
+colonist (6 h, "newly arrived"), a mental break ending (4 h, "after the break"), a child turning 7, 10 or 13 under
+Biotech (4 h, "growing up"). At most 8 threads.
+
+**Pacing** (`watchPace`). Holds: follow and thread 20/15/10 s (calm/normal/lively), scenes 15/11/8 s, events their
+dwell x1.25/1/0.8, battles as long as they last. No-repeat: the same pawn (pawn shots) or scene (scene key) is not
+shown again within 5/4/2.5 minutes unless the kind is urgent (raid, death, mental break); filler is exempt and keeps
+the soft variety factor. The caption limit (12 s, 4 s urgent, no same text within 90 s) covers every caption.
+
+**Cost.** Per frame only the spring math and one pawn position; scene snapshots only when a shot is over (every 3 s
+at most), the hostile scan once a second (skipped when the map has no hostile targets), thread polls every 2 s.
 
 **New events** (published through `EventBus`, so the agent sees them): `birth` (Biotech only, guarded by
 `ModsConfig.BiotechActive`), `masterwork`, `ship_part`. Details in BRIDGE-API.md.
