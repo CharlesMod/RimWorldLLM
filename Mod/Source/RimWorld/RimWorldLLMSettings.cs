@@ -27,6 +27,12 @@ namespace RimWorldLLM
 
         // Where the agent's LLM comes from: "local" (the RimWorldLLM engine, default) or "own" (the fields above).
         public string llmSource = "local";
+        // Pairing with an easyEngine on another machine (docs/SETTINGS.md "Finding and pairing an engine"). Pairing only
+        // fills llmBaseUrl / llmModel / llmApiKey above (the token is the key); these remember which engine that was.
+        // llmEngineId: the engine_id the own endpoint was filled from ("" for a typed endpoint).
+        public string llmEngineId = "";
+        // pairedEngines: JSON list of {engine_id, token, client_id, name, address} (Bridge.PairStore). Never logged.
+        public string pairedEngines = "";
         // Launch or attach the local engine when the game starts.
         public bool engineAutoStart = true;
         // The player answered the first-run "set up a local model" prompt with Set up or My own endpoint.
@@ -161,6 +167,8 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref llmSource, "llmSource", "");
             if (Scribe.mode == LoadSaveMode.PostLoadInit && string.IsNullOrEmpty(llmSource))
                 llmSource = string.IsNullOrWhiteSpace(llmBaseUrl) ? "local" : "own";
+            Scribe_Values.Look(ref llmEngineId, "llmEngineId", "");
+            Scribe_Values.Look(ref pairedEngines, "pairedEngines", "");
             Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
             Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
             Scribe_Values.Look(ref hideFallbackWarning, "hideFallbackWarning", false);

@@ -128,6 +128,43 @@
   <RWL_Conn_LlmKey>API key</RWL_Conn_LlmKey>
   <RWL_Conn_KeyNone>(none)</RWL_Conn_KeyNone>
   <RWL_Conn_KeyNote>The key is stored in the mod settings and in bridge.json, which only your user account can read. It is never sent through the bridge API.</RWL_Conn_KeyNote>
+  <RWL_Pair_Title>easyEngine on another computer</RWL_Pair_Title>
+  <RWL_Pair_Find>Find engines on my network</RWL_Pair_Find>
+  <RWL_Pair_Finding>Looking on the network...</RWL_Pair_Finding>
+  <RWL_Pair_FindTip>Looks for easyEngine on this network (a few seconds). Pick one to connect: you compare a code and press Allow on the engine's computer. Nothing to type.</RWL_Pair_FindTip>
+  <RWL_Pair_NoneFound>No engine answered on this network. Is easyEngine running there and open to the network? You can also type its address below.</RWL_Pair_NoneFound>
+  <RWL_Pair_Typed>Or its address:</RWL_Pair_Typed>
+  <RWL_Pair_TypedTip>The engine computer's name or IP address, with :port if it is not 47480 (for example 192.168.1.20 or den-pc:47480).</RWL_Pair_TypedTip>
+  <RWL_Pair_Look>Look</RWL_Pair_Look>
+  <RWL_Pair_Looking>Asking that address...</RWL_Pair_Looking>
+  <RWL_Pair_NoEngineAt>No easyEngine answered at {0}.</RWL_Pair_NoEngineAt>
+  <RWL_Pair_Row>{0}: {1}, {2} ({3})</RWL_Pair_Row>
+  <RWL_Pair_RowSilent>{0} ({1}): did not answer</RWL_Pair_RowSilent>
+  <RWL_Pair_HaveToken>[paired]</RWL_Pair_HaveToken>
+  <RWL_Pair_Connect>Connect</RWL_Pair_Connect>
+  <RWL_Pair_Use>Use</RWL_Pair_Use>
+  <RWL_Pair_Reconnect>Check again</RWL_Pair_Reconnect>
+  <RWL_Pair_Asking>Asking {0} to pair...</RWL_Pair_Asking>
+  <RWL_Pair_CodeIntro>Pairing with {0}. This code is on its screen too:</RWL_Pair_CodeIntro>
+  <RWL_Pair_CodeCompare>Compare with the code on the engine's screen and press Allow there.</RWL_Pair_CodeCompare>
+  <RWL_Pair_Reconnecting>Lost the connection to the engine; trying again...</RWL_Pair_Reconnecting>
+  <RWL_Pair_Cancel>Cancel</RWL_Pair_Cancel>
+  <RWL_Pair_Close>Close</RWL_Pair_Close>
+  <RWL_Pair_TryAgain>Try again</RWL_Pair_TryAgain>
+  <RWL_Pair_Denied>Denied on the engine ({0}).</RWL_Pair_Denied>
+  <RWL_Pair_Gone>The request ended on {0} (the engine restarted, or another request from this computer replaced it).</RWL_Pair_Gone>
+  <RWL_Pair_NotAnEngine>{0} did not answer as an easyEngine. For another server, fill in the fields below by hand.</RWL_Pair_NotAnEngine>
+  <RWL_Pair_NoPairing>{0} needs a key but does not offer pairing. Paste the key it gives (easy-engine token) below.</RWL_Pair_NoPairing>
+  <RWL_Pair_Unreachable>Nothing answered at {0}.</RWL_Pair_Unreachable>
+  <RWL_Pair_Failed>Pairing with {0} failed ({1}).</RWL_Pair_Failed>
+  <RWL_Pair_StatusTyped>Endpoint typed by hand (not a paired engine).</RWL_Pair_StatusTyped>
+  <RWL_Pair_StatusChecking>Checking {0}...</RWL_Pair_StatusChecking>
+  <RWL_Pair_StatusPaired>Paired with {0} at {1}.</RWL_Pair_StatusPaired>
+  <RWL_Pair_StatusOpen>Connected to {0} at {1} (no pairing needed).</RWL_Pair_StatusOpen>
+  <RWL_Pair_StatusPairAgain>{0} does not accept this game's key. Pair again.</RWL_Pair_StatusPairAgain>
+  <RWL_Pair_StatusRevoked>{0} revoked this game's key. Pair again.</RWL_Pair_StatusRevoked>
+  <RWL_Pair_PairAgain>Pair again</RWL_Pair_PairAgain>
+  <RWL_Pair_MsgPairAgain>RimWorldLLM: the engine no longer accepts this game. Pair again in the mod settings (Model).</RWL_Pair_MsgPairAgain>
   <RWL_Test_Button>Test</RWL_Test_Button>
   <RWL_Test_Running>Testing...</RWL_Test_Running>
   <RWL_Test_NotRun>Not tested yet.</RWL_Test_NotRun>
@@ -142,6 +179,9 @@
   <RWL_Probe_BadUrl>That is not a usable http or https URL.</RWL_Probe_BadUrl>
   <RWL_Probe_NothingListening>Nothing is listening there. Check the host, port and that the server is running.</RWL_Probe_NothingListening>
   <RWL_Probe_KeyRejected>The server rejected the API key.</RWL_Probe_KeyRejected>
+  <RWL_Probe_TokenRequired>The engine needs this game to be paired with it. Use "Find engines on my network" above and connect.</RWL_Probe_TokenRequired>
+  <RWL_Probe_TokenInvalid>The engine does not know this key (another engine at this address, or its keys were replaced). Pair again.</RWL_Probe_TokenInvalid>
+  <RWL_Probe_TokenRevoked>The engine revoked this game's key. Pair again.</RWL_Probe_TokenRevoked>
   <RWL_Probe_WrongBase>Wrong base URL: no /models there. Did you mean {0}?</RWL_Probe_WrongBase>
   <RWL_Probe_ModelNotFound>The server has no model called "{0}".</RWL_Probe_ModelNotFound>
   <RWL_Probe_Tls>TLS error: the certificate is not trusted, or the server is not speaking https.</RWL_Probe_Tls>

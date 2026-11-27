@@ -119,6 +119,17 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 38. **Own endpoint.** Switch to My own endpoint with a llama.cpp or LM Studio URL; Test works; lines keep coming; the
     local engine stops serving the model.
 
+38a. **Pair the Mac with sprinter (once sprinter's engine has pairing).** Until sprinter's easy-engine-remote runs an
+    easyEngine build with pairing (main 6334b21 or newer), keep the manual path (URL `http://sprinter:47480/v1`, the
+    master token as the key). After the upgrade: on the Mac, My own endpoint, **Find engines on my network**. Sprinter
+    should be listed (name, model, phase, address); over the tailnet mDNS does not cross, so type `sprinter:47480` in
+    **Or its address** and press Look instead. Press **Connect**: a big code shows on the Mac. On sprinter, compare it
+    with the code in the tray or setup page (or run `easy-engine pair`) and Allow. The Mac says "Paired with sprinter
+    at ...", the URL, model and key fields are filled, and Test is green. Lines keep coming.
+38b. **Pair again.** On sprinter, `easy-engine token --list`, then `easy-engine token --revoke <id>` for "RimWorld on
+    <the Mac>". Restart the game on the Mac (or press Test): the status line says the key was revoked, with **Pair
+    again**; pairing again works, and no token is in Player.log.
+
 ## I. Quit, restart, uninstall
 
 39. **Quit.** Quit RimWorld: easy-engine, llama-server and the agent all exit within a few seconds (check the process
