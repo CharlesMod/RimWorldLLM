@@ -552,7 +552,7 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill" }, verb) < 0)
                     return null;
                 string bad = ActShape(verb, body);
                 if (bad.Length > 0) return Err(400, "bad_request", bad);
@@ -725,6 +725,9 @@ namespace RimWorldLLM.Mind.Fakes
                 case "letter": note = "letter " + PyStr(b["letter"]) + ": " + PyStr(b["choice"]); break;
                 case "draft": note = (b.Value<bool>("drafted") ? "drafted" : "undrafted") + " " + ((JArray)b["pawns"]).Count + " pawn(s)"; break;
                 case "order": note = PyStr(b["order"]) + " order for pawn " + PyStr(b["pawn"]); break;
+                case "room": case "build": case "zone": case "designate": case "bill":     // phase 2 hands: accepted as sent
+                    note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + PyStr(p.Value)));
+                    break;
             }
             return "";
         }

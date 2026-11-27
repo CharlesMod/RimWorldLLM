@@ -149,6 +149,26 @@ namespace RimWorldLLM.Mind.RimWorld
             new Level(1, 6, 3, 4, 60, 3),
         };
 
+        private sealed class BuildLevel
+        {
+            public int Rooms, Benches, Bills, Recipes, Zones, CanBuild, Stuff, Plants, Ores;
+            public BuildLevel(int rooms, int benches, int bills, int recipes, int zones, int canBuild, int stuff, int plants, int ores)
+            { Rooms = rooms; Benches = benches; Bills = bills; Recipes = recipes; Zones = zones; CanBuild = canBuild; Stuff = stuff; Plants = plants; Ores = ores; }
+        }
+
+        // the build block's detail (it shrinks first): rooms, benches, bills per bench, recipes per bench, zones, can_build, stuff,
+        // plants, ores. The last step keeps just BUILD/missing and a short ROOMS.
+        private static readonly BuildLevel[] BuildLevels =
+        {
+            new BuildLevel(12, 8, 5, 8, 10, 40, 8, 10, 6),
+            new BuildLevel(8, 5, 3, 4, 6, 20, 6, 6, 4),
+            new BuildLevel(5, 3, 2, 0, 4, 0, 4, 0, 2),
+            new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0),
+        };
+
+        // (base level, build level): the build block shrinks all the way before the rest loses detail
+        private static readonly int[][] Steps = { new[] { 0, 0 }, new[] { 0, 1 }, new[] { 0, 2 }, new[] { 0, 3 }, new[] { 1, 3 }, new[] { 2, 3 }, new[] { 3, 3 } };
+
         /// <summary>Cleaned display name -> pawn id, for the colonists and slaves the digest lists (the first one wins a
         /// duplicate). Insertion order is the digest's order.</summary>
         public static Dictionary<string, int> PawnNames(JObject digest)
@@ -275,7 +295,94 @@ namespace RimWorldLLM.Mind.RimWorld
             return s != null && s.Type == JTokenType.String ? (string)s : "";
         }
 
-        private static string Render(JObject d, Level lv)
+        // ---- the build block (vivarium phase 2) ----------------------------------------------
+        /// <summary>gd.clean(x, "label"): a missing or null value is "", anything else goes through Python's str().</summary>
+        private static string CleanLabel(JToken t)
+            => GameData.Clean(t == null || t.Type == JTokenType.Null || t.Type == JTokenType.Undefined ? "" : (t.Type == JTokenType.String ? (string)t : PyJson.Str(t)), "label");
+
+        private static string Num(JToken v)
+        {
+            if (v != null && (v.Type == JTokenType.Integer || v.Type == JTokenType.Float)) return DigestJson.G6(v);
+            string c = CleanLabel(v);
+            return c.Length > 0 ? c : "?";
+        }
+
+        private static List<string> Words(JToken items, int n)
+        {
+            var l = items is JArray a ? DigestJson.Take(a.ToList(), n) : new List<JToken>();
+            return l.Select(CleanLabel).Where(w => w.Length > 0).ToList();
+        }
+
+        private static List<JObject> Objs(JToken items, int n)
+            => items is JArray a ? DigestJson.Take(a.ToList(), n).OfType<JObject>().ToList() : new List<JObject>();
+
+        private static string RoomLine(JObject r)
+        {
+            string role = CleanLabel(DigestJson.G(r, "role"));
+            string label = CleanLabel(DigestJson.G(r, "label"));
+            if (label.Length == 0) label = role;
+            var bits = new List<string>
+            {
+                "#" + Num(DigestJson.G(r, "id")) + " " + label
+                    + (role.Length > 0 && !label.ToLowerInvariant().Contains(role.ToLowerInvariant()) ? " (" + role + ")" : ""),
+                Num(DigestJson.G(r, "w")) + "x" + Num(DigestJson.G(r, "h")),
+            };
+            if (DigestJson.G(r, "impressiveness") != null) bits.Add("imp " + Num(DigestJson.G(r, "impressiveness")));
+            foreach (var k in new[] { "bed", "door", "roofed" })
+                if (DigestJson.Truthy(DigestJson.G(r, k))) bits.Add(k);
+            return string.Join(" ", bits);
+        }
+
+        /// <summary>The BUILD block lines; counts is the old one-line room counts, merged into the ROOMS line.</summary>
+        private static List<string> BuildLines(JObject b, BuildLevel bl, string counts)
+        {
+            var outl = new List<string>();
+            var home = DigestJson.G(b, "home") as JObject;
+            string head = "BUILD: " + (home != null && home.Count > 0
+                ? "home (" + Num(DigestJson.G(home, "x")) + "," + Num(DigestJson.G(home, "z")) + ")" : "home unknown");
+            var miss = Words(DigestJson.G(b, "missing"), 8);
+            head += "; missing: " + (miss.Count > 0 ? string.Join(", ", miss) : "nothing");
+            outl.Add(head);
+            var rooms = Objs(DigestJson.G(b, "rooms"), bl.Rooms);
+            if (rooms.Count > 0)
+                outl.Add("ROOMS" + (counts.Length > 0 ? " (" + counts + ")" : "") + ": " + string.Join("; ", rooms.Select(RoomLine)));
+            foreach (var x in Objs(DigestJson.G(b, "benches"), bl.Benches))
+            {
+                string line = "BENCH: #" + Num(DigestJson.G(x, "id")) + " " + CleanLabel(DigestJson.G(x, "label"));
+                if (DigestJson.Truthy(DigestJson.G(x, "room"))) line += " (" + CleanLabel(DigestJson.G(x, "room")) + ")";
+                var bills = Words(DigestJson.G(x, "bills"), bl.Bills);
+                var recipes = Words(DigestJson.G(x, "recipes"), bl.Recipes);
+                line += ": bills " + (bills.Count > 0 ? string.Join(", ", bills) : "none");
+                if (recipes.Count > 0) line += "; recipes " + string.Join(", ", recipes);
+                outl.Add(line);
+            }
+            var zones = Objs(DigestJson.G(b, "zones"), bl.Zones);
+            if (zones.Count > 0)
+            {
+                var zs = new List<string>();
+                foreach (var z in zones)
+                {
+                    string kind = CleanLabel(DigestJson.G(z, "kind"));
+                    JToken pl = DigestJson.G(z, "plant"), pr = DigestJson.G(z, "preset");
+                    string what = CleanLabel(DigestJson.Truthy(pl) ? pl : DigestJson.Truthy(pr) ? pr : null);
+                    zs.Add(("#" + Num(DigestJson.G(z, "id")) + " " + kind + " " + what + " " + Num(DigestJson.G(z, "cells")) + " cells").Replace("  ", " "));
+                }
+                outl.Add("ZONES: " + string.Join("; ", zs));
+            }
+            var cb = Words(DigestJson.G(b, "can_build"), bl.CanBuild);
+            if (cb.Count > 0) outl.Add("CAN BUILD: " + string.Join(", ", cb));
+            var pls = Words(DigestJson.G(b, "plants"), bl.Plants);
+            if (pls.Count > 0) outl.Add("PLANTS: " + string.Join(", ", pls));
+            var stuff = Objs(DigestJson.G(b, "stuff"), bl.Stuff);
+            if (stuff.Count > 0)
+                outl.Add("STUFF: " + string.Join(", ", stuff.Select(s => CleanLabel(DigestJson.G(s, "stuff")) + " " + Num(DigestJson.G(s, "count")))));
+            var ores = Objs(DigestJson.G(b, "ores"), bl.Ores);
+            if (ores.Count > 0)
+                outl.Add("ORES: " + string.Join("; ", ores.Select(o => CleanLabel(DigestJson.G(o, "ore")) + " " + Num(DigestJson.G(o, "cells")) + " cells " + Num(DigestJson.G(o, "dist")) + " away")));
+            return outl;
+        }
+
+        private static string Render(JObject d, Level lv, BuildLevel bl)
         {
             var outl = new List<string> { "DATE: " + Date(d) };
             JToken fd = DigestJson.G(d, "food_days");
@@ -369,9 +476,18 @@ namespace RimWorldLLM.Mind.RimWorld
                 rsText += "; available: " + string.Join(", ", avail.Select(a => GameData.Clean(DigestJson.G(a, "label") ?? "", "label") + " (" + DigestJson.Str(a, "cost", "?") + ")"));
             outl.Add(rsText);
             var rm = DigestJson.G(d, "rooms") as JObject;
-            if (rm != null && rm.Count > 0)
-                outl.Add("ROOMS: " + string.Join(", ", rm.Properties().Select(kv =>
-                    kv.Name + " " + (kv.Value.Type == JTokenType.Boolean ? ((bool)kv.Value ? "yes" : "no") : PyJson.Str(kv.Value)))));
+            string counts = rm != null && rm.Count > 0
+                ? string.Join(", ", rm.Properties().Select(kv =>
+                    kv.Name + " " + (kv.Value.Type == JTokenType.Boolean ? ((bool)kv.Value ? "yes" : "no") : PyJson.Str(kv.Value))))
+                : "";
+            var bd = DigestJson.G(d, "build") as JObject;
+            var built = bd != null && bd.Count > 0 ? BuildLines(bd, bl, counts) : new List<string>();
+            if (built.Count > 0)
+            {
+                if (!built.Any(l => l.StartsWith("ROOMS", StringComparison.Ordinal)) && counts.Length > 0) built.Insert(1, "ROOMS: " + counts);
+                outl.AddRange(built);
+            }
+            else if (counts.Length > 0) outl.Add("ROOMS: " + counts);
             JToken pw = DigestJson.G(d, "power");
             if (DigestJson.Truthy(pw))
                 outl.Add("POWER: produced " + DigestJson.Str(pw, "produced", "0") + ", used " + DigestJson.Str(pw, "used", "0") + ", stored " + DigestJson.Str(pw, "stored", "0"));
@@ -384,9 +500,9 @@ namespace RimWorldLLM.Mind.RimWorld
         public static string RenderDigest(JObject digest, int cap = Cap)
         {
             string text = "";
-            foreach (var lv in Levels)
+            foreach (var st in Steps)
             {
-                text = Render(digest ?? new JObject(), lv);
+                text = Render(digest ?? new JObject(), Levels[st[0]], BuildLevels[st[1]]);
                 if (PyStr.Len(text) <= cap) return text;
             }
             string cut = PyStr.Head(text, Math.Max(0, cap - 40));

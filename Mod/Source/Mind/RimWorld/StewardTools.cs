@@ -46,6 +46,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly List<JObject> Research;
         public readonly List<ToolSpec> Tools;
         public readonly HashSet<string> Acting;
+        /// <summary>The builder tools; they exist only when the digest has a build block.</summary>
+        public readonly BuildKit Build;
 
         public StewardSession(JObject digest, IBridge bridge, bool advisor)
         {
@@ -68,8 +70,9 @@ namespace RimWorldLLM.Mind.RimWorld
                 foreach (var kv in pol.Properties())
                     if (kv.Value is JArray arr) Policies[kv.Name] = arr.Select(x => PyJson.Str(x)).ToList();
             Research = DigestJson.Items(DigestJson.G(DigestJson.G(Digest, "research"), "available")).OfType<JObject>().ToList();
-            Tools = BuildTools();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n)), StringComparer.Ordinal);
+            Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
+            Tools = BuildTools().Concat(Build.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n)), StringComparer.Ordinal);
         }
 
         // ---- the tool list for this digest ----------------------------------------------
@@ -302,7 +305,9 @@ namespace RimWorldLLM.Mind.RimWorld
                         }
                         return ("order", new JObject { ["pawn"] = pid, ["order"] = "hold", ["hold"] = S(v, "hold") == "yes" });
                     }
-                default: throw new PyValueError("unknown tool " + tool);
+                default:
+                    if (Build.Names.Contains(tool)) return Build.Body(tool, v);
+                    throw new PyValueError("unknown tool " + tool);
             }
         }
     }
@@ -331,7 +336,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public const string AdvisorNote =
             "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
             + "player's message explicitly asks for, and do at most one task (one action tool call); then say plainly what you did. "
-            + "If they ask for something you cannot do yet (building, zones, bills, trade, caravans), say you cannot yet. If they only "
+            + "If they ask for something you cannot do yet (trade, caravans, anything with no tool listed), say you cannot yet. If they only "
             + "ask or talk, just answer. A question (\"should we take the quest?\", \"what do you think about...?\") is not a request: "
             + "answer it with your advice and do not act. Act only on a plain instruction such as \"put Ana on cooking\". "
             + "Do not change the goals board except to record a standing order they ask for.";
