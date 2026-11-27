@@ -263,7 +263,7 @@ namespace HermesVoice
                 c = r.Light == ProbeLight.Green ? Green : (r.Light == ProbeLight.Amber ? Amber : Red);
                 msg = ProbeMessage(r);
                 // The probe found a base URL that works: keep it.
-                if (!string.IsNullOrEmpty(r.EffectiveBase) && r.EffectiveBase != (s.llmBaseUrl ?? "").Trim() && r.Light != ProbeLight.Red && r.Code != ProbeCode.Loading)
+                if (!string.IsNullOrEmpty(r.EffectiveBase) && r.EffectiveBase != (s.llmBaseUrl ?? "").Trim() && r.Light != ProbeLight.Red && r.Code != ProbeCode.Loading && r.Code != ProbeCode.Paused)
                 { s.llmBaseUrl = r.EffectiveBase; HermesBridge.RefreshLlm(); }
             }
             Widgets.DrawBoxSolid(new Rect(row.x + 130f, row.y + 6f, 16f, 16f), c);

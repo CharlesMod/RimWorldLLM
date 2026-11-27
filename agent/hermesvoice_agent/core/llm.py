@@ -13,6 +13,7 @@ Both log prompt_n, cache_n, prompt_ms, predicted_ms and raw/effective prefill vi
 from __future__ import annotations
 
 import json
+import logging
 import re
 import time
 from dataclasses import dataclass
@@ -33,6 +34,63 @@ class LLMError(Exception):
     def __init__(self, cause: str, status: int = 0):
         super().__init__(cause)
         self.cause, self.status = cause, status
+
+
+class LLMAway(LLMError):
+    """The engine answered 503 code "yielded": the model server machine is running a game. Not a fault."""
+    def __init__(self, message: str, retry_after: float = 5.0):
+        super().__init__("yielded", 503)
+        self.message, self.retry_after = message, retry_after
+
+
+log = logging.getLogger("hermesvoice")
+AWAY_CAP_S = 30.0
+
+
+def parse_yielded(status: int, body: bytes | str, retry_after_header: str | None) -> tuple[str, float] | None:
+    """(message, retry_after seconds) when this is the engine's "yielded" 503 (string code), else None.
+    A plain 503 has a numeric code (loading) and is not away."""
+    if status != 503:
+        return None
+    try:
+        d = json.loads(body)
+        e = d.get("error") if isinstance(d, dict) else None
+        if not isinstance(e, dict) or e.get("code") != "yielded":
+            return None
+        msg = str(e.get("message") or "paused")
+    except (ValueError, TypeError):
+        return None
+    try:
+        ra = float(retry_after_header) if retry_after_header is not None else 5.0
+    except ValueError:
+        ra = 5.0
+    return msg, min(max(ra, 0.0), AWAY_CAP_S)
+
+
+class AwayGate:
+    """Back-off after a "yielded" answer: until ``until`` calls are refused without touching the network.
+    One quiet log line when the model goes away and one when it is back."""
+    def __init__(self):
+        self.until = 0.0
+        self.away = False
+        self.message = ""
+
+    def check(self) -> None:
+        if self.until and time.monotonic() < self.until:
+            raise LLMAway(self.message, self.until - time.monotonic())
+
+    def went_away(self, message: str, retry_after: float) -> None:
+        self.until = time.monotonic() + retry_after
+        self.message = message
+        if not self.away:
+            self.away = True
+            log.info("model paused on the server: %s; retrying in %ds", message, round(retry_after))
+
+    def ok(self) -> None:
+        self.until = 0.0
+        if self.away:
+            self.away = False
+            log.info("model is back on the server")
 
 
 @dataclass
@@ -133,6 +191,7 @@ class HttpLLM:
         self.http = client or httpx.AsyncClient(timeout=cfg.timeout_s)
         self.base = normalise_base(cfg.base_url)
         self._engine: bool | None = cfg.engine
+        self.gate = AwayGate()
 
     async def aclose(self):
         await self.http.aclose()
@@ -158,6 +217,7 @@ class HttpLLM:
                        grammar: str | None = None, temperature: float | None = None,
                        actor: int | None = None, json_schema: dict | None = None) -> Completion:
         stop = ["\n"] if stop is None else stop
+        self.gate.check()                      # backing off after "yielded": no request, no calllog record
         t0 = time.perf_counter()
         st = CallStats(kind=kind, slot=slot, actor=actor)
         try:
@@ -174,6 +234,7 @@ class HttpLLM:
                 r = await self.http.post(self.base.removesuffix("/v1") + "/completion",
                                          json=body, headers={**self._headers(), **sh})
                 data = self._ok(r)
+                self.gate.ok()
                 text = data.get("content", "")
                 tim = data.get("timings", {})
             else:
@@ -195,6 +256,7 @@ class HttpLLM:
                 r = await self.http.post(self.base + "/chat/completions", json=body,
                                          headers={**self._headers(), **sh})
                 data = self._ok(r)
+                self.gate.ok()
                 text = data["choices"][0]["message"].get("content") or ""
                 tim = data.get("timings", {})
                 if not tim and "usage" in data:
@@ -206,6 +268,8 @@ class HttpLLM:
             self.calllog.record(st)
             raise LLMError(f"server unreachable ({type(e).__name__})") from e
         except LLMError as e:
+            if isinstance(e, LLMAway):
+                self.gate.went_away(e.message, e.retry_after)
             st.ok, st.error = False, e.cause
             st.wall_s = time.perf_counter() - t0
             self.calllog.record(st)
@@ -222,6 +286,9 @@ class HttpLLM:
 
     @staticmethod
     def _ok(r: httpx.Response) -> dict:
+        y = parse_yielded(r.status_code, r.content, r.headers.get("Retry-After"))
+        if y:
+            raise LLMAway(*y)
         if r.status_code >= 400:
             raise LLMError(f"HTTP {r.status_code}", r.status_code)
         try:

@@ -18,7 +18,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Iterable, Union
 
-from .backend import Backend, BackendError, Reply
+from .backend import Backend, BackendAway, BackendError, Reply
 from .parse import RawStep, parse_text
 from .spec import ToolSpec, build_grammar, has_raw_syntax, render_system, PROTOCOL
 
@@ -161,6 +161,8 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                         timeout=min(step_timeout_s, remaining) + 1.0)
                 except asyncio.TimeoutError:
                     tr.kind, tr.error = "timeout", "the model took too long"
+                except BackendAway as e:
+                    tr.kind, tr.error = "away", str(e)      # the model is paused on the server: not a model fault
                 except BackendError as e:
                     tr.kind, tr.error = "backend_error", str(e)
                 except Exception as e:                       # a broken backend is still not the caller's problem
@@ -180,6 +182,9 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                     break
                 fail_reason = tr.error
                 res.failures.append(f"step {steps_done} attempt {attempt}: {tr.error}")
+                if tr.kind == "away":
+                    reason = "away"                         # retrying would only be refused again
+                    break
                 attempt += 1
                 step_msgs = list(hist) + [
                     {"role": "assistant", "content": (reply.text if reply and reply.text.strip() else "(no reply)")[:600]},
@@ -187,7 +192,7 @@ async def run_loop(backend: Backend, tools: list[ToolSpec], *, system: str, user
                 if closing and protocol != "grammar":
                     step_msgs.append({"role": "user", "content": "Remember: no more tool calls now."})
             if accepted is None:
-                if reason != "time_budget":
+                if reason not in ("time_budget", "away"):
                     reason = "repeat" if "already" in fail_reason else "retries_exhausted"
                 break
             actions, implicit = accepted
