@@ -307,6 +307,14 @@ namespace RimWorldLLM.Mind.RimWorld
                 Fill("research_current", val);
                 if (cur == null && !f.ContainsKey("research_current")) f["research_current"] = null;
             }
+            if (G(digest, "trade") is JObject tr)
+            {
+                Fill("traders_ready", (long)(G(tr, "traders") as JArray ?? new JArray()).OfType<JObject>().Count(t => !t.TryGetValue("can_trade", out JToken ct) || PyJson.Truthy(ct)));
+                Fill("trade_needs", (long)(G(tr, "needs") as JArray ?? new JArray()).Count(n => PyJson.Truthy(n)));
+            }
+            if (G(digest, "quests") is JArray qs)
+                Fill("quest_offer_can", qs.OfType<JObject>().Any(q => G(q, "state") is JValue sv && sv.Type == JTokenType.String && (string)sv == "offer"
+                    && G(q, "can") is JValue cv && cv.Type == JTokenType.Boolean && (bool)cv));
             if (G(digest, "threats") is JArray th)
             {
                 BigInteger n = BigInteger.Zero;
