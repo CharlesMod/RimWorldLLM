@@ -127,6 +127,7 @@ namespace RimWorldLLM.Mind.Fakes
         public List<JObject> Chat = new List<JObject>();   // entries, oldest first (cap 300)
         public int ChatSeq;
         public List<JObject> ChatStatus = new List<JObject>();     // POST /chat/status bodies (minus op_id), in order
+        public List<JObject> ChatPartials = new List<JObject>();     // POST /chat/partial bodies (minus op_id), in order
         public List<string> ChatStreams = new List<string>();      // stream_id of each POST /chat, in order (null when absent)
         public bool ChatStatusEnabled = true;                      // false: answer 404 like an older mod
         public JObject GoalsBoard = J(@"{""rev"": 0, ""goals"": [], ""plan"": """", ""orders"": [], ""log"": []}");
@@ -523,6 +524,20 @@ namespace RimWorldLLM.Mind.Fakes
                 ChatStatus.Add(kept);
                 SeenOps[body.Value<string>("op_id")] = new JObject();
                 return Ok(("stream_id", sidTok.DeepClone()), ("state", state));
+            }
+            if (path == "/chat/partial" && method == "POST")
+            {
+                if (!ChatStatusEnabled) return Err(404, "not_found");
+                var psid = body["stream_id"]; var ptxt = body["text"];
+                if (psid == null || psid.Type != JTokenType.String
+                    || !System.Text.RegularExpressions.Regex.IsMatch((string)psid, @"\A[A-Za-z0-9_.:-]{1,64}\z"))
+                    return Err(400, "bad_request", "stream_id 1..64 of [A-Za-z0-9_.:-]");
+                if (ptxt == null || ptxt.Type != JTokenType.String || CpLen((string)ptxt) > 500)
+                    return Err(400, "bad_request", "text at most 500 chars");
+                var pk = (JObject)body.DeepClone(); pk.Remove("op_id");
+                ChatPartials.Add(pk);
+                SeenOps[body.Value<string>("op_id")] = new JObject();
+                return Ok(("stream_id", psid.DeepClone()), ("accepted", true));
             }
             if (path == "/goals") return Goals(method, body);
             if (path == "/actions" && method == "GET")

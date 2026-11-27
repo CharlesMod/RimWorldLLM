@@ -222,6 +222,12 @@ namespace RimWorldLLM.Mind
             return Req("POST", "/chat/status", WriteBody(body, null, opId));
         }
 
+        public Task<JObject> PostChatPartialAsync(string streamId, string text, string opId = null)
+        {
+            var body = new JObject { ["stream_id"] = streamId, ["text"] = text };
+            return Req("POST", "/chat/partial", WriteBody(body, null, opId));
+        }
+
         public Task<JObject> GoalsAsync() { return Req("GET", "/goals"); }
 
         public Task<JObject> PutGoalsAsync(int rev, JObject fields = null, string opId = null)
