@@ -1329,6 +1329,22 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
+        public async Task AnAnnouncedAddressThatDoesNotAnswerFallsBackToTheSourceAddress()
+        {
+            // Seen live: an engine bound to one address announced its LAN address too; the reply's source answered.
+            using (var f = new FakePairEngine(Route(r => HelloJson(Id1, true, true), r => Hold().Task)))
+            {
+                var m = new MdnsEngine { Id = Id1, Name = "den-pc", Api = 1, Port = f.Port, From = IPAddress.Loopback };
+                m.Addrs.Add(IPAddress.Parse("127.0.0.2"));   // loopback, but the fake listens on 127.0.0.1 only: refused at once
+                Assert.Equal(new[] { "http://127.0.0.2:" + f.Port, f.Root }, EngineFinder.RootsOf(m).ToArray());
+                var found = await EngineFinder.FindAsync(new PairStore(), null, Api(), (ms, ct) => Task.FromResult(new List<MdnsEngine> { m }));
+                var e = Assert.Single(found);
+                Assert.True(e.Answered);
+                Assert.Equal(f.Root, e.Root);
+            }
+        }
+
+        [Fact]
         public async Task FindAsyncAnswersWithTheHelloFields()
         {
             using (var f = new FakePairEngine(Route(r => HelloJson(Id1, true, true), r => Hold().Task)))

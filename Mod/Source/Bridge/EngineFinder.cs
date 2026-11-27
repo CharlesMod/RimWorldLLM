@@ -69,6 +69,35 @@ namespace RimWorldLLM.Bridge
             return EngineAddress.ToRoot(a);
         }
 
+        /// <summary>Every root worth trying for an engine, best first: IPv4 addresses, other IPv6, the packet's source, the SRV host.</summary>
+        public static List<string> RootsOf(MdnsEngine e)
+        {
+            var outList = new List<string>();
+            void Add(string hostPort) { var r = EngineAddress.ToRoot(hostPort); if (r != null && !outList.Contains(r)) outList.Add(r); }
+            if (e.Port <= 0) return outList;
+            string best = e.Address;
+            if (best.Length > 0) Add(best);
+            foreach (var a in e.Addrs)
+            {
+                if (a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) Add(a + ":" + e.Port);
+                else if (!a.IsIPv6LinkLocal) Add("[" + a + "]:" + e.Port);
+            }
+            if (e.From != null) Add((e.From.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ? "[" + e.From + "]" : e.From.ToString()) + ":" + e.Port);
+            if (e.Host.Length > 0) Add(e.Host.TrimEnd('.') + ":" + e.Port);
+            return outList;
+        }
+
+        /// <summary>Calls hello on each root of <paramref name="e"/> until one answers as that engine; (null, null) when none does.</summary>
+        public static async Task<(string root, EngineHello hello)> FirstAnswering(MdnsEngine e, PairingApi api, string token, CancellationToken ct)
+        {
+            foreach (var r in RootsOf(e))
+            {
+                var (h, _) = await api.HelloAsync(r, token, ct).ConfigureAwait(false);
+                if (h != null && h.IsEasyEngine && h.EngineId == e.Id) return (r, h);
+            }
+            return (null, null);
+        }
+
         public static async Task<string> DefaultRun(string path, string args, int timeoutMs)
         {
             try
@@ -112,14 +141,12 @@ namespace RimWorldLLM.Bridge
                 var f = new FoundEngine { EngineId = m.Id, Name = m.Name, Root = RootOf(m) ?? "" };
                 var pe = store != null ? store.Get(m.Id) : null;
                 f.HaveToken = pe != null && pe.HasToken;
-                if (f.Root.Length > 0)
+                var (root, h) = await FirstAnswering(m, api, null, ct).ConfigureAwait(false);
+                if (h != null)
                 {
-                    var (h, _) = await api.HelloAsync(f.Root, null, ct).ConfigureAwait(false);
-                    if (h != null && h.IsEasyEngine && h.EngineId == m.Id)
-                    {
-                        f.Answered = true; f.ModelName = h.ModelName; f.Phase = h.Phase; f.NeedsToken = h.TokenRequired;
-                        if (h.Name.Length > 0) f.Name = h.Name;
-                    }
+                    f.Root = root;
+                    f.Answered = true; f.ModelName = h.ModelName; f.Phase = h.Phase; f.NeedsToken = h.TokenRequired;
+                    if (h.Name.Length > 0) f.Name = h.Name;
                 }
                 return f;
             }).ToList();

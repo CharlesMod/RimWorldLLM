@@ -436,7 +436,7 @@ namespace RimWorldLLM.Bridge
 
         public void Start()
         {
-            lock (_lock) { if (_run != null) return; _run = Task.Run(() => RunAsync(false)); }
+            lock (_lock) { if (_run != null) return; SetPhase(PairPhase.Checking); _run = Task.Run(() => RunAsync(false)); }
         }
 
         /// <summary>After a 410 (Gone): ask once more. Further 410s end in Gone without the offer.</summary>
@@ -631,11 +631,10 @@ namespace RimWorldLLM.Bridge
                 List<MdnsEngine> seen = null;
                 try { seen = await browse(browseMs, ct).ConfigureAwait(false); } catch { }
                 var m = seen == null ? null : seen.FirstOrDefault(e => e.Id == (engineId ?? "").ToLowerInvariant());
-                if (m != null && m.Address.Length > 0)
+                if (m != null)
                 {
-                    string r2 = EngineAddress.ToRoot(m.Address);
-                    var (hh, _) = await api.HelloAsync(r2, token, ct).ConfigureAwait(false);
-                    if (hh != null && hh.IsEasyEngine && hh.EngineId == m.Id) { h = hh; root = r2; }
+                    var (r2, hh) = await EngineFinder.FirstAnswering(m, api, token, ct).ConfigureAwait(false);
+                    if (hh != null) { h = hh; root = r2; }
                 }
             }
             if (h == null) return res;
