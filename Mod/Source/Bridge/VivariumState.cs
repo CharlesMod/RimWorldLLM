@@ -32,11 +32,14 @@ namespace RimWorldLLM.Bridge
         /// <summary>Unattended play: answer open dialogs with the safe default after DialogTimeoutS real seconds, while Narrator plays is on.</summary>
         public bool AnswerDialogs = true;
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
+        /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
+        public bool Commentary = true;
         public JObject ToJson()
         {
             return new JObject
             {
                 ["answer_dialogs"] = AnswerDialogs,
+                ["commentary"] = Commentary,
                 ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,

@@ -78,6 +78,7 @@ namespace RimWorldLLM.Tests
             Assert.True((bool)r.Body["settings"]["may_pause_for_emergencies"]);
             Assert.False((bool)r.Body["settings"]["controls_speed"]);
             Assert.Equal(4.5, (double)r.Body["settings"]["heartbeat_hours"]);
+            Assert.True((bool)r.Body["settings"]["commentary"]);
         }
 
         // ------------------------------------------------------------ chat

@@ -111,6 +111,7 @@ namespace RimWorldLLM
             {
                 try
                 {
+                    if (w == VivariumStability.ChoiceWindow) continue;   // the colony-lost choice is the player's (or auto mode's)
                     var nt = w as Dialog_NodeTree;
                     if (nt != null) { AddNodeTree(nt, seen, handles); continue; }
                     var mb = w as Dialog_MessageBox;

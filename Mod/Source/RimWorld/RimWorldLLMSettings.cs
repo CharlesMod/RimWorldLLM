@@ -109,6 +109,7 @@ namespace RimWorldLLM
         public float stewardHeartbeatHours = 6f;
         public bool narratorAnswerDialogs = true;
         public int narratorDialogTimeoutS = 90;
+        public bool narratorCommentary = true;
         // Unattended play: the mod's own rotating autosave (only while the game's autosave is off) and what happens when the colony is lost.
         public bool narratorAutosave = true;
         public float narratorAutosaveDays = 1f;
@@ -213,6 +214,7 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
             Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);
             Scribe_Values.Look(ref narratorDialogTimeoutS, "narratorDialogTimeoutS", 90);
+            Scribe_Values.Look(ref narratorCommentary, "narratorCommentary", true);
             Scribe_Values.Look(ref narratorAutosave, "narratorAutosave", true);
             Scribe_Values.Look(ref narratorAutosaveDays, "narratorAutosaveDays", 1f);
             Scribe_Values.Look(ref narratorAutosaveKeep, "narratorAutosaveKeep", 5);

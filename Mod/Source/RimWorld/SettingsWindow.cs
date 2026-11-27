@@ -326,6 +326,7 @@ namespace RimWorldLLM
             float dlgT = s.narratorDialogTimeoutS;
             SliderRow(l, "RWL_Viv_DialogTimeout", s.narratorDialogTimeoutS, ref dlgT, 10f, 300f, "RWL_Viv_DialogTimeoutTip");
             s.narratorDialogTimeoutS = Mathf.RoundToInt(dlgT / 5f) * 5;
+            Check(l, "RWL_Viv_Commentary", ref s.narratorCommentary, "RWL_Viv_CommentaryTip");
             Check(l, "RWL_Viv_Autosave", ref s.narratorAutosave, "RWL_Viv_AutosaveTip");
             if (s.narratorAutosave)
             {

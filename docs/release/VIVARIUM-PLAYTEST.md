@@ -189,7 +189,7 @@ first: timeout 15 s in the mod settings (Narrator plays group).
 33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")
     stays open with no default; after three tries (none, when no option is enabled) one chat note says so. Nothing loops.
 
-## D. Unattended play: camera director (watch mode)
+## E. Unattended play: camera director (watch mode)
 
 1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
    (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
@@ -203,28 +203,28 @@ first: timeout 15 s in the mod settings (Narrator plays group).
 8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
 9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).
 
-## D. Unattended play: stability and restart
+## F. Unattended play: stability and restart
 Needs the mod; the agent is optional except where noted. Switch Narrator plays on.
 
-28. **Chat kinds.** `POST /chat` with who=comment and a camera-kind line: the comment shows gold italic, the camera
+34. **Chat kinds.** `POST /chat` with who=comment and a camera-kind line: the comment shows gold italic, the camera
     line dim blue-grey, both under the Story filter.
-29. **Panel cost.** Leave the panel open at 3x speed for a game day with a chat stream going: no stutter, no
+35. **Panel cost.** Leave the panel open at 3x speed for a game day with a chat stream going: no stutter, no
     growing frame time. Scroll and resize still feel immediate.
-30. **Rotating autosave.** Options: game autosave off. Run 3 game days (days slider 1, keep 3): saves
+36. **Rotating autosave.** Options: game autosave off. Run 3 game days (days slider 1, keep 3): saves
     `RWL-Narrator-1..3` appear, then the oldest is overwritten. Your own saves are untouched. No save starts
     during a long event, an open dialog, or in the middle of a raid (a raid holds it at most half a day).
-31. **Game autosave on.** The mod does not save at all (the game handles it).
-32. **Colony lost, ask.** Let everyone die (or use a dev kill). One `colony_lost` event; the dialog offers New
+37. **Game autosave on.** The mod does not save at all (the game handles it).
+38. **Colony lost, ask.** Let everyone die (or use a dev kill). One `colony_lost` event; the dialog offers New
     colony on this world, New world, Stop. Vanilla's own game-over window may also show; either is fine.
-33. **Same world.** Pick it: the vanilla wanderers dialog opens; accept it. A chronicle entry "story continues" and
+39. **Same world.** Pick it: the vanilla wanderers dialog opens; accept it. A chronicle entry "story continues" and
     the chat carry on; Narrator plays is still on. Nothing was deleted.
-34. **New world.** Pick it: the lost world is saved as `<colony>-lost-<n>` first (never overwriting), then the
+40. **New world.** Pick it: the lost world is saved as `<colony>-lost-<n>` first (never overwriting), then the
     quick-start world loads; Narrator plays is on, the chronicle has the "story continues" entry.
-35. **Auto.** Setting auto: a chat note, 20 s later the same-world dialog opens. Leave it: after 3 minutes the lost
+41. **Auto.** Setting auto: a chat note, 20 s later the same-world dialog opens. Leave it: after 3 minutes the lost
     world is saved and a new world starts. Off: nothing happens.
-36. **Save failed.** If the lost-world save is refused (disabled saving), the leave is cancelled with a chat note.
+42. **Save failed.** If the lost-world save is refused (disabled saving), the leave is cancelled with a chat note.
 
-## G. Documentary voice (agent with the 26B)
+## G. Unattended play: documentary voice (agent with the 26B)
 Needs the mod setting `narratorCommentary` (Colonists -> Narrator plays), on by default.
 1. **On.** Narrator plays on, setting on. A raid starts: within a minute one short wry line appears in the chat (Story
    group, "comment" kind), one sentence, no quotes, only names that exist. A death right after it: a second line once 30 s

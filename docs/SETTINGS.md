@@ -68,8 +68,8 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
 | `stewardHeartbeatHours` | 6 | P | "Narrator plays" group: how often the playing narrator looks over the colony on its own, in game hours (1-24) | new (vivarium) |
 | `narratorAutosave` | true | P | "Narrator plays" group: while Narrator plays and the game's own autosave is off, the mod keeps rotating autosaves `RWL-Narrator-1..K` | new (unattended) |
-| `narratorAutosaveDays` | 1 | P | Rotating autosave: every N in-game days (0.5-5) | new (unattended) |
-| `narratorAutosaveKeep` | 5 | P | Rotating autosave: how many to keep (2-20); the oldest is overwritten, saves the mod did not make are never touched | new (unattended) |
+| `narratorAutosaveDays` | 1 | P | Rotating autosave: every N in-game days (0.25-7, in quarter days) | new (unattended) |
+| `narratorAutosaveKeep` | 5 | P | Rotating autosave: how many to keep (1-20); the oldest is overwritten, saves the mod did not make are never touched | new (unattended) |
 | `narratorRestartMode` | 0 (ask) | P | "When the colony is lost": ask (dialog: new colony on this world / new world / stop), auto (same world if possible, else new world, after a delay), off | new (unattended) |
 | `narratorCommentary` | true | P | "Narrator plays" group: the narrator adds a short documentary line at big moments (raids, deaths, births, weddings, masterworks, ship parts) and a recap line each game day; mirrored as `settings.commentary` in GET /vivarium (the agent reads it with default true) | new (unattended: voice) |
 | `chatPanelShow` | true | U | "Narrator plays" group: the chat panel is always on screen | new (chat panel) |

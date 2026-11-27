@@ -23,6 +23,8 @@ namespace RimWorldLLM
         static readonly ColonyRestart _restart = new ColonyRestart();
         static int _lostPolls;
         static Window _choice;
+        /// <summary>The "colony lost" choice window while open: the dialog scanner leaves it alone (ask mode means the player decides).</summary>
+        internal static Window ChoiceWindow { get { return _choiceOpened ? _choice : null; } }
         static bool _choiceOpened;
         static string _pendingSaveName;
         static bool? _saveResult;

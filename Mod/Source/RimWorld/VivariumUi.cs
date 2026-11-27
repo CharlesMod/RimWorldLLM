@@ -38,6 +38,7 @@ namespace RimWorldLLM
             vs.HeartbeatHours = s.stewardHeartbeatHours;
             vs.AnswerDialogs = s.narratorAnswerDialogs;
             vs.DialogTimeoutS = Mathf.Clamp(s.narratorDialogTimeoutS, 10, 600);
+            vs.Commentary = s.narratorCommentary;
         }
 
         public static void OnGUIKey()
