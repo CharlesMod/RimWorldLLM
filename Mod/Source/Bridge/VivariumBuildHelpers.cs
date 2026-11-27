@@ -89,15 +89,12 @@ namespace RimWorldLLM.Bridge
             return d[a.Length, b.Length];
         }
 
-        /// <summary>Wall-adjacency score of an inside cell of a room: 2 against a wall (not diagonal), 0 in the open.
-        /// Cells beside the door cell score -1 so the door stays clear.</summary>
-        public static int WallScore(int x, int z, CellBox room, int doorX, int doorZ)
+        /// <summary>Preference of an inside cell for furniture: -1 next to a door (keep it clear), 2 against a wall
+        /// (it has impassable neighbours), 0 in the open.</summary>
+        public static int PlaceScore(int wallNeighbours, bool nearDoor)
         {
-            int ix0 = room.X + 1, ix1 = room.MaxX - 1, iz0 = room.Z + 1, iz1 = room.MaxZ - 1;
-            if (x < ix0 || x > ix1 || z < iz0 || z > iz1) return -1;
-            if (Math.Abs(x - doorX) + Math.Abs(z - doorZ) <= 1) return -1;
-            bool atWall = x == ix0 || x == ix1 || z == iz0 || z == iz1;
-            return atWall ? 2 : 0;
+            if (nearDoor) return -1;
+            return wallNeighbours > 0 ? 2 : 0;
         }
 
         /// <summary>Does a w x h footprint with its south-west cell at (x,z) lie inside the map?</summary>
@@ -240,6 +237,16 @@ namespace RimWorldLLM.Bridge
             for (int i = 0; i < defAndLabel.Count; i++) if (string.Equals(defAndLabel[i].Key, w, StringComparison.OrdinalIgnoreCase)) return i;
             for (int i = 0; i < defAndLabel.Count; i++) if (string.Equals(defAndLabel[i].Value, w, StringComparison.OrdinalIgnoreCase)) return i;
             return -1;
+        }
+
+        /// <summary>The number in a load id string ("Bill_Production_1234" gives 1234; 0 when there is none). Bill.loadID is private.</summary>
+        public static int LoadIdOf(string uniqueLoadId)
+        {
+            if (string.IsNullOrEmpty(uniqueLoadId)) return 0;
+            int i = uniqueLoadId.Length;
+            while (i > 0 && char.IsDigit(uniqueLoadId[i - 1])) i--;
+            int v;
+            return i < uniqueLoadId.Length && int.TryParse(uniqueLoadId.Substring(i), out v) ? v : 0;
         }
 
         /// <summary>Cell cap for a stockpile in a room: left cells and 200.</summary>

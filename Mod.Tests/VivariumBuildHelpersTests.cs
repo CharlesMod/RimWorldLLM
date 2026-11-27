@@ -63,13 +63,11 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
-        public void WallScorePrefersWallsAndKeepsDoorClear()
+        public void PlaceScorePrefersWallsAndKeepsDoorClear()
         {
-            var room = new CellBox(0, 0, 7, 7);               // inside 1..5
-            Assert.Equal(2, BuildHelpers.WallScore(1, 3, room, 3, 0));
-            Assert.Equal(0, BuildHelpers.WallScore(3, 3, room, 3, 0));
-            Assert.Equal(-1, BuildHelpers.WallScore(3, 1, room, 3, 0));   // next to door
-            Assert.Equal(-1, BuildHelpers.WallScore(0, 3, room, 3, 0));   // wall cell, not inside
+            Assert.Equal(2, BuildHelpers.PlaceScore(1, false));
+            Assert.Equal(0, BuildHelpers.PlaceScore(0, false));
+            Assert.Equal(-1, BuildHelpers.PlaceScore(3, true));
         }
 
         [Fact]
@@ -139,6 +137,9 @@ namespace RimWorldLLM.Tests
             Assert.Equal(0, BuildHelpers.FindByNameOrLabel(l, "cookmealsimple"));
             Assert.Equal(1, BuildHelpers.FindByNameOrLabel(l, "Make Pemmican".Replace("Make Pemmican", "make pemmican")));
             Assert.Equal(-1, BuildHelpers.FindByNameOrLabel(l, "nope"));
+            Assert.Equal(1234, BuildHelpers.LoadIdOf("Bill_Production_1234"));
+            Assert.Equal(0, BuildHelpers.LoadIdOf("Bill_x"));
+            Assert.Equal(0, BuildHelpers.LoadIdOf(null));
             Assert.Equal(200, BuildHelpers.StockpileCap(500));
             Assert.Equal(30, BuildHelpers.StockpileCap(30));
             Assert.Equal(0, BuildHelpers.StockpileCap(-4));
