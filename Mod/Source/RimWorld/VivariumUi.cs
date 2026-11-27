@@ -9,6 +9,7 @@ namespace RimWorldLLM
     public static class VivariumIcons
     {
         public static readonly Texture2D Narrator = ContentFinder<Texture2D>.Get("RimWorldLLM/UI/RWL_NarratorPlays", false) ?? BaseContent.BadTex;
+        public static readonly Texture2D Watch = ContentFinder<Texture2D>.Get("RimWorldLLM/UI/RWL_WatchMode", false) ?? BaseContent.BadTex;
     }
 
     /// <summary>The "Narrator plays" switch (play-settings row, key) and the per-frame push of the mod settings into the Vivarium.</summary>
@@ -55,6 +56,9 @@ namespace RimWorldLLM
             bool playing = VivariumGame.State.Playing;
             row.ToggleableIcon(ref playing, VivariumIcons.Narrator, UiUtil.T("RWL_Viv_SwitchTip"), SoundDefOf.Mouseover_ButtonToggle);
             if (playing != VivariumGame.State.Playing) VivariumSwitch.SetPlaying(playing, true);
+            bool watching = WatchCamera.Enabled;
+            row.ToggleableIcon(ref watching, VivariumIcons.Watch, UiUtil.T("RWL_Watch_Tip"), SoundDefOf.Mouseover_ButtonToggle);
+            if (watching != WatchCamera.Enabled) WatchCamera.SetEnabled(watching, true);
         }
     }
 }

@@ -54,6 +54,11 @@ namespace RimWorldLLM
         public bool directorCameraOnAtStart = false;  // following is intrusive: off until the player turns it on
         public float directorPanSpeed = 2.5f;         // how quickly the camera closes in on its subject (1/seconds)
 
+        // Watch mode (unattended play): the camera director cuts between events by itself. Setting, not per game.
+        public bool watchMode = false;
+        public int watchPlayerPauseSec = 20;         // the player touching the camera pauses the director this long
+        public bool watchCaptions = true;            // one short 'Camera: ...' chat line per shot of interest
+
         // Colony events (improve/events): master toggle + one per kind.
         public bool sendColonyEvents = true;
         public bool evInjury = true;
@@ -152,6 +157,9 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref directorCameraAllowed, "directorCameraAllowed", true);
             Scribe_Values.Look(ref directorCameraOnAtStart, "directorCameraOnAtStart", false);
             Scribe_Values.Look(ref directorPanSpeed, "directorPanSpeed", 2.5f);
+            Scribe_Values.Look(ref watchMode, "watchMode", false);
+            Scribe_Values.Look(ref watchPlayerPauseSec, "watchPlayerPauseSec", 20);
+            Scribe_Values.Look(ref watchCaptions, "watchCaptions", true);
             Scribe_Values.Look(ref sendColonyEvents, "sendColonyEvents", true);
             Scribe_Values.Look(ref evInjury, "evInjury", true);
             Scribe_Values.Look(ref evDeath, "evDeath", true);

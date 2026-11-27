@@ -19,7 +19,7 @@ namespace RimWorldLLM
         static Vector2 _scroll;
         static float _viewHeight = 600f;
         static bool _revealToken, _revealKey, _confirmRegen;
-        static string _portBuf, _speedBuf, _durBuf, _thoughtPawnBuf, _thoughtGlobalBuf;
+        static string _portBuf, _speedBuf, _durBuf, _thoughtPawnBuf, _thoughtGlobalBuf, _watchPauseBuf;
 
         static readonly Color Green = new Color(0.4f, 0.85f, 0.4f), Amber = new Color(0.95f, 0.75f, 0.25f), Red = new Color(0.9f, 0.3f, 0.3f);
 
@@ -398,6 +398,13 @@ namespace RimWorldLLM
             {
                 Check(l, "RWL_Camera_OnAtStart", ref s.directorCameraOnAtStart, "RWL_Camera_OnAtStartTip");
                 SliderRow(l, "RWL_Camera_PanSpeed", s.directorPanSpeed.ToString("0.0"), ref s.directorPanSpeed, 0.5f, 6f, "RWL_Tip_PanSpeed");
+            }
+            l.GapLine();
+            Check(l, "RWL_Watch_Mode", ref s.watchMode, "RWL_Watch_ModeTip");
+            if (s.watchMode)
+            {
+                Check(l, "RWL_Watch_Captions", ref s.watchCaptions, "RWL_Watch_CaptionsTip");
+                NumRow(l, "RWL_Watch_PauseSec", ref s.watchPlayerPauseSec, ref _watchPauseBuf, 3, 300, "RWL_Watch_PauseSecTip");
             }
             l.GapLine();
             Check(l, "RWL_Share_Footer", ref s.shareFooter, "RWL_Share_FooterTip");
