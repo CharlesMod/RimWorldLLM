@@ -34,6 +34,8 @@ namespace RimWorldLLM.Bridge
         public int DialogTimeoutS = DialogBook.DefaultTimeoutS;
         /// <summary>Unattended play: the narrator's documentary lines at big moments and a daily recap line (agent side).</summary>
         public bool Commentary = true;
+        /// <summary>Biotech: may the narrator implant xenogerms into colonists. Off until the player says so.</summary>
+        public bool MayImplantGenes = false;
         public JObject ToJson()
         {
             return new JObject
@@ -43,7 +45,8 @@ namespace RimWorldLLM.Bridge
                 ["dialog_timeout_s"] = DialogTimeoutS,
                 ["may_pause_for_emergencies"] = MayPauseForEmergencies,
                 ["controls_speed"] = ControlsSpeed,
-                ["heartbeat_hours"] = HeartbeatHours
+                ["heartbeat_hours"] = HeartbeatHours,
+                ["may_implant_genes"] = MayImplantGenes
             };
         }
     }

@@ -65,7 +65,7 @@ namespace RimWorldLLM.Bridge
     {
         public string Kind;
         public string Plant;       // grow: alias ("potatoes") or defName
-        public string Preset = "all"; // stockpile: food, meds, raw, all
+        public string Preset = "all"; // stockpile: food, meds, raw, all, waste (wastepacks only)
         public string Priority;    // low, normal, preferred, important, critical; null = leave
         public int W, H;           // 0 = from Size
         public string Size = "medium";
@@ -276,7 +276,7 @@ namespace RimWorldLLM.Bridge
 
         public static readonly string[] Purposes = { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec" };
         public static readonly string[] Sizes = { "small", "medium", "large" };
-        public static readonly string[] Presets = { "food", "meds", "raw", "all" };
+        public static readonly string[] Presets = { "food", "meds", "raw", "all", "waste" };
         public static readonly string[] Priorities = { "low", "normal", "preferred", "important", "critical" };
         public static readonly string[] DoorSides = { "n", "e", "s", "w", "auto" };
 
@@ -444,6 +444,24 @@ namespace RimWorldLLM.Bridge
             ["tool cabinet"] = new[] { "ToolCabinet" },
             ["vitals monitor"] = new[] { "VitalsMonitor" },
             ["grave"] = new[] { "Grave" },
+            // Biotech
+            ["mech gestator"] = new[] { "MechGestator" },
+            ["large mech gestator"] = new[] { "LargeMechGestator" },
+            ["mech recharger"] = new[] { "BasicRecharger", "StandardRecharger" },
+            ["basic recharger"] = new[] { "BasicRecharger" },
+            ["standard recharger"] = new[] { "StandardRecharger" },
+            ["school desk"] = new[] { "SchoolDesk" },
+            ["blackboard"] = new[] { "Blackboard" },
+            ["crib"] = new[] { "Crib" },
+            ["baby sleeping spot"] = new[] { "BabySleepingSpot" },
+            ["toy box"] = new[] { "ToyBox" },
+            ["gene bank"] = new[] { "GeneBank" },
+            ["gene assembler"] = new[] { "GeneAssembler" },
+            ["gene extractor"] = new[] { "GeneExtractor" },
+            ["growth vat"] = new[] { "GrowthVat" },
+            ["wastepack atomizer"] = new[] { "WastepackAtomizer" },
+            ["band node"] = new[] { "BandNode" },
+            ["deathrest casket"] = new[] { "DeathrestCasket" },
         };
 
         public static readonly Dictionary<string, string> StuffAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
