@@ -660,13 +660,19 @@ visitors, betray_visitors, ransom, choose_pawn, baby_to_child, growth_moment, qu
 naming. `disabled_reason` appears on a disabled option, `risk` (a few words) on a costly or destructive one. Naming
 dialogs have `fields` and no options. `default` is what the safe default would pick. `open_s` is real seconds open.
 The same list is the digest's `dialogs` array (omitted when none are open).
+A `growth_moment` (Biotech birthday letter) also carries `growth`: `{"child": "Mia", "age": "7", "skills": "Shooting 2*, Social 3",
+"traits": "Kind", "passions": ["Shooting", "Melee"], "max_passions": 2, "trait_choices": [{"label": "Tough", "description":
+"Takes 25% less damage."}]}`. Its one `option` (0) still means "take the first choices".
 
 `POST /act/choose` `{"dialog": "L4021", "option": 0 | "Accept the refugee" | "#0", "why": "since we have room"}` or, for
 naming, `{"dialog": "W3", "text": "Ferngrove"}` / `{"dialog": "W3", "text": {"faction": "The Lanterns", "settlement":
 "Ashford"}}`. Checks: `dialog` 1..64 chars; `option` an integer or a string, or `text` a string or an object of strings (each
 1..60 chars; cut to the field's max_len); at least one of them (`400`). Then the usual `/act/*` path: `409 refused` with a
 reason when the dialog is gone, the option is disabled or unknown, a choice dialog got `text` or a naming dialog got only
-an `option`, or the game refused. A success is an action (`choose`) and a greentext line. A name the dialog
+an `option`, or the game refused. A growth moment is answered with `{"dialog": "L5120", "passions": ["Shooting", "Melee"],
+"trait": "Tough", "why": "since she likes guns"}` (not with `option`: both is `400`): `passions` 1..`max_passions` distinct offered skill
+names, `trait` one offered label (case-insensitive); `409 refused` with the reason when too many, unknown, repeated or
+missing, or the dialog is not a growth moment. The timeout default is unchanged: the first passions and the first trait. A success is an action (`choose`) and a greentext line. A name the dialog
 rejects (too long, already taken) is refused with the reason.
 
 ### Event `dialog`

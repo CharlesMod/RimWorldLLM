@@ -1,0 +1,44 @@
+{
+ "dialogs": [
+  {
+   "id": "L5120",
+   "kind": "growth_moment",
+   "title": "Growth moment: Mia",
+   "text": "Mia is turning 7.",
+   "options": [
+    {
+     "index": 0,
+     "label": "Take the first passion and trait choices for Mia",
+     "disabled": false
+    }
+   ],
+   "fields": [],
+   "default": "Take the first passion and trait choices for Mia",
+   "timeout_s": 90,
+   "open_s": 3,
+   "pauses_game": false,
+   "growth": {
+    "child": "Mia",
+    "age": "7",
+    "skills": "Shooting 2*, Social 3",
+    "traits": "Kind, Night owl",
+    "passions": [
+     "Shooting",
+     "Melee",
+     "Artistic"
+    ],
+    "max_passions": 2,
+    "trait_choices": [
+     {
+      "label": "Bookworm",
+      "description": "Reads for fun; learns faster from books."
+     },
+     {
+      "label": "Tough",
+      "description": "Takes 25% less damage."
+     }
+    ]
+   }
+  }
+ ]
+}

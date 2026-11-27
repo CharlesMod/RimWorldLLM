@@ -16,9 +16,26 @@ namespace RimWorldLLM.Bridge
         static Plan ChoosePlan(JObject b, Func<Vivarium> vivarium)
         {
             string id = Str(b, "dialog", 1, 64);
-            JToken opt = b["option"], text = b["text"];
+            JToken opt = b["option"], text = b["text"], pas = b["passions"], tra = b["trait"];
+            bool hasGrowth = (pas != null && pas.Type != JTokenType.Null) || (tra != null && tra.Type != JTokenType.Null);
+            List<string> passions = null; string trait = null;
+            if (hasGrowth)
+            {
+                if (pas != null && pas.Type != JTokenType.Null)
+                {
+                    var arr = pas as JArray;
+                    if (arr == null || arr.Count > 8 || arr.Any(x => x.Type != JTokenType.String)) throw new ArgError("passions must be a list of skill names");
+                    passions = arr.Select(x => x.Value<string>()).ToList();
+                }
+                if (tra != null && tra.Type != JTokenType.Null)
+                {
+                    if (tra.Type != JTokenType.String || tra.Value<string>().Length > 80) throw new ArgError("trait must be a trait label");
+                    trait = tra.Value<string>();
+                }
+                if ((opt != null && opt.Type != JTokenType.Null) || (text != null && text.Type != JTokenType.Null)) throw new ArgError("give passions and trait, or option, not both");
+            }
             bool hasOpt = opt != null && opt.Type != JTokenType.Null, hasText = text != null && text.Type != JTokenType.Null;
-            if (!hasOpt && !hasText) throw new ArgError("give option (an index or a label) or text (a name)");
+            if (!hasGrowth && !hasOpt && !hasText) throw new ArgError("give option (an index or a label) or text (a name)");
             if (hasOpt && opt.Type != JTokenType.Integer && opt.Type != JTokenType.String) throw new ArgError("option must be an index or a label");
             Dictionary<string, string> texts = null;
             if (hasText)
@@ -35,6 +52,7 @@ namespace RimWorldLLM.Bridge
                 foreach (var t in texts.Values) if (t.Length < 1 || t.Length > 60) throw new ArgError("text must be 1..60 chars");
             }
             DialogRecord rec = null; int index = -1; string label = null;
+            Dictionary<string, string> picks = null;
             return new Plan
             {
                 What = () => "answer the dialog " + id,
@@ -42,6 +60,19 @@ namespace RimWorldLLM.Bridge
                 {
                     rec = v.Dialogs.Get(id);
                     if (rec == null) return HandResult.No("no open dialog " + id + " (maybe already answered)", "answer the dialog " + id);
+                    if (hasGrowth)
+                    {
+                        if (rec.Kind != DialogKinds.Growth || rec.Growth == null) return HandResult.No("\"" + rec.Title + "\" is not a growth moment: send option", "answer " + rec.Title);
+                        List<string> okP; string okT;
+                        var why = rec.Growth.Check(passions, trait, out okP, out okT);
+                        if (why != null) return HandResult.No(why, "answer " + rec.Title);
+                        index = 0;
+                        picks = new Dictionary<string, string>();
+                        if (okP.Count > 0) picks["passions"] = string.Join("|", okP);
+                        if (okT != null) picks["trait"] = okT;
+                        texts = picks;
+                        return null;
+                    }
                     if (rec.Kind == DialogKinds.Naming)
                     {
                         if (!hasText) return HandResult.No("\"" + rec.Title + "\" asks for a name: send text", "name " + rec.Title);

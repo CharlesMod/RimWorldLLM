@@ -122,7 +122,9 @@ class Session:
                                 "for two names write faction | settlement).",
                                 [Param("dialog", "enum", "the dialog's id", choices=list(self.dialogs)),
                                  Param("option", "text", "the option's number or label; leave empty for a naming dialog", max_len=120, required=False),
-                                 Param("text", "text", "naming dialogs only: the name", max_len=80, required=False), _WHY]))
+                                 Param("text", "text", "naming dialogs only: the name", max_len=80, required=False),
+                                 Param("passions", "text", "growth moments only: the skills to take passions in, separated by commas", max_len=120, required=False),
+                                 Param("trait", "text", "growth moments only: the trait's label", max_len=80, required=False), _WHY]))
         return out
 
     # ---- running a tool ---------------------------------------------------------------
@@ -151,6 +153,21 @@ class Session:
         body: dict = {"dialog": v["dialog"]}
         text, opt = str(v.get("text") or "").strip(), str(v.get("option") or "").strip()
         fields = [str(f.get("name")) for f in dlg.get("fields") or [] if f.get("name")]
+        g = dlg.get("growth") if isinstance(dlg.get("growth"), dict) else None
+        if g and not opt:                                   # a growth moment: pick passions and a trait from what is offered
+            offered = [str(x) for x in g.get("passions") or []]
+            traits = [str(t.get("label")) for t in g.get("trait_choices") or [] if isinstance(t, dict)]
+            picks = [x.strip() for x in str(v.get("passions") or "").split(",") if x.strip()]
+            trait = str(v.get("trait") or "").strip()
+            if offered and not picks:
+                raise ValueError("give passions (up to %d, comma separated) from: %s" % (int(g.get("max_passions") or 1), ", ".join(offered)))
+            if traits and not trait:
+                raise ValueError("give trait, one of: " + ", ".join(traits))
+            if picks:
+                body["passions"] = picks
+            if trait:
+                body["trait"] = trait
+            return body
         if fields:                                          # a naming dialog
             text = text or opt
             if not text:

@@ -183,7 +183,10 @@ first: timeout 15 s in the mod settings (Narrator plays group).
     example "Abandon colony" confirm via the caravan tab) with the agent off: after the timeout the Cancel button is
     pressed, not the destructive one.
 31. **Growth moment** (Biotech): a child turning 3, 7 or 10 gives a letter and a choice window. With the agent off, the
-    default takes the first passion(s) and the first trait; the child's skills and traits show it.
+    default takes the first passion(s) and the first trait; the child's skills and traits show it. With the agent on,
+    `GET /dialogs` shows `growth` (passions, how many, traits with descriptions, the child in brief) and
+    `POST /act/choose {dialog, passions:[..], trait, why}` sets exactly those; too many passions or an unknown trait
+    is refused with the reason and the child is unchanged.
 32. **Toggle.** Turn "Answer popups when the narrator plays" off: nothing is auto-answered; the model's `choose` still
     works. Turn Narrator plays off: nothing is auto-answered either.
 33. **A dialog the scanner cannot answer.** A letter with only "opens a window" options (disabled, "only opens a window")

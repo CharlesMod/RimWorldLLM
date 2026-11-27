@@ -83,6 +83,55 @@ namespace RimWorldLLM.Bridge
         public double OpenedReal;      // real seconds (modal windows pause the game, so game ticks cannot time them)
         public int Attempts;           // default answers tried and failed
         public bool IsLetter;          // a letter in the stack (does not pause the game)
+        public GrowthInfo Growth;      // growth moments only: the real choices, in words
+    }
+
+    /// <summary>A Biotech growth moment in words: who, what to pick. Verse-free.</summary>
+    public sealed class GrowthInfo
+    {
+        public string Child = "", Age = "", Skills = "", Traits = "";   // the child in brief
+        public int MaxPassions = 1;                                      // passions that may be picked
+        public List<string> Passions = new List<string>();               // offered skill names
+        public List<KeyValuePair<string, string>> TraitChoices = new List<KeyValuePair<string, string>>();   // label, short description
+
+        public JObject ToJson()
+        {
+            var tr = new JArray();
+            foreach (var t in TraitChoices) tr.Add(new JObject { ["label"] = t.Key, ["description"] = t.Value });
+            return new JObject
+            {
+                ["child"] = Child, ["age"] = Age, ["skills"] = Skills, ["traits"] = Traits,
+                ["passions"] = new JArray(Passions), ["max_passions"] = MaxPassions, ["trait_choices"] = tr
+            };
+        }
+
+        /// <summary>Validate a pick against what is offered; null when fine. Names match case-insensitively.</summary>
+        public string Check(IList<string> passions, string trait, out List<string> okPassions, out string okTrait)
+        {
+            okPassions = new List<string>(); okTrait = null;
+            if (Passions.Count > 0)
+            {
+                if (passions == null || passions.Count == 0) return "pick passions from: " + string.Join(", ", Passions) + " (up to " + MaxPassions + ")";
+                if (passions.Count > MaxPassions) return "too many passions: " + passions.Count + " given, at most " + MaxPassions;
+                foreach (var p in passions)
+                {
+                    var m = Passions.FirstOrDefault(x => string.Equals(x, (p ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+                    if (m == null) return "no passion " + p + "; offered: " + string.Join(", ", Passions);
+                    if (okPassions.Contains(m)) return "passion " + m + " given twice";
+                    okPassions.Add(m);
+                }
+            }
+            else if (passions != null && passions.Count > 0) return "no passions are offered";
+            if (TraitChoices.Count > 0)
+            {
+                if (string.IsNullOrWhiteSpace(trait)) return "pick a trait from: " + string.Join(", ", TraitChoices.Select(t => t.Key));
+                var m = TraitChoices.FirstOrDefault(x => string.Equals(x.Key, trait.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (m.Key == null) return "no trait " + trait + "; offered: " + string.Join(", ", TraitChoices.Select(t => t.Key));
+                okTrait = m.Key;
+            }
+            else if (!string.IsNullOrWhiteSpace(trait)) return "no traits are offered";
+            return null;
+        }
     }
 
     public sealed class DialogChoice
@@ -169,6 +218,12 @@ namespace RimWorldLLM.Bridge
         public static string Done(DialogRecord d, DialogChoice c)
         {
             if (d.Kind == DialogKinds.Naming) return "named " + Short(d.Title) + " " + string.Join(" and ", c.Texts.Values.Select(v => "\"" + v + "\""));
+            if (d.Kind == DialogKinds.Growth && c.Texts.Count > 0)
+            {
+                string pp, tt;
+                c.Texts.TryGetValue("passions", out pp); c.Texts.TryGetValue("trait", out tt);
+                return "picked passions " + (pp ?? "none").Replace("|", ", ") + " and trait " + (tt ?? "none") + " on \"" + Short(d.Title) + "\"";
+            }
             var o = d.Options.FirstOrDefault(x => x.Index == c.Option);
             return "chose \"" + (o != null ? o.Label : "#" + c.Option) + "\" on \"" + Short(d.Title) + "\"";
         }
@@ -286,7 +341,7 @@ namespace RimWorldLLM.Bridge
                 if (d.Kind == DialogKinds.Naming) defLabel = string.Join(" / ", def.Texts.Values);
                 else { var o = d.Options.FirstOrDefault(x => x.Index == def.Option); defLabel = o != null ? o.Label : null; }
             }
-            return new JObject
+            var j2 = new JObject
             {
                 ["id"] = d.Id, ["kind"] = d.Kind, ["title"] = d.Title, ["text"] = d.Text,
                 ["options"] = opts, ["fields"] = fields,
@@ -295,6 +350,8 @@ namespace RimWorldLLM.Bridge
                 ["open_s"] = (int)Math.Max(0, nowReal - d.OpenedReal),
                 ["pauses_game"] = !d.IsLetter
             };
+            if (d.Growth != null) j2["growth"] = d.Growth.ToJson();
+            return j2;
         }
 
         /// <summary>The `dialog` event data (shared contract).</summary>

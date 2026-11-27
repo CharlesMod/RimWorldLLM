@@ -426,7 +426,8 @@ class FakeBridge:
         elif verb == "choose":
             if not isinstance(b.get("dialog"), str) or not b["dialog"]:
                 return "dialog required"
-            if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)):
+            if not isinstance(b.get("option"), (int, str)) and not isinstance(b.get("text"), (str, dict)) \
+                    and not (isinstance(b.get("passions"), list) or isinstance(b.get("trait"), str)):
                 return "option or text required"
         elif verb == "draft":
             ids = b.get("pawns")
