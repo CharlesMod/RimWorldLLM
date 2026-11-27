@@ -18,10 +18,9 @@ Namespace `RimWorldLLM.Mind`, Verse-free, net10.0. Goldens generated from the ve
 Host-based tests use `Fakes/InnerHost.cs` (implements all three host interfaces; FakeBridge pawns Ana 1 Kind, Bram 2 Abrasive, Cy 3).
 
 ## Deferred Python tests (need the Director, IdleScheduler or full conversation/line prompt assembly; the next-wave Director owns them)
-- test_reflection (world): prefix bytes unchanged, idle window runs, interval/failure backoff, PUT /mind conflict tests (notes, voice).
-- test_concerns prefix tests (`_prepare`); raid_worriers (ConcernRules port, not this module).
-- test_wants: idle_window_schedules_wants_with_pacing, director_runs_a_wants_window_end_to_end; test_wants_wiring CLI tests.
-- test_grudges: "has come to apologise to" in line prompts, arrival-chat flow (partly covered via ReunionFor/NoteFor/OnConversationDone).
+- test_concerns: raid_worriers (ConcernRules port, not this module).
+- test_wants_wiring CLI tests (cli.py, not the Director).
+- Ported through the Director in `Mind/MindWorldTests.cs` (18 tests): concerns prefix pair, grudges arrival chat ("has come to apologise to" in the line prompts), wants idle window / end to end / bridge-config off / seek_out fields, gossip_chain director wiring, upkeep once per day, private memory hinted not quoted, adapter pins, all test_reflection world tests (prefix bytes, idle window + schema + save, interval/failure backoff, ungrounded bio, PUT /mind conflicts for notes and voice).
 
 ## World tests ported over the Director (Mod.Tests/Mind/InnerWorldTests.cs, helper w3)
 All with `World` (Director + FakeBridge + FakeLlm): test_bystanders (7 world tests), test_inner_monologue (14: line adds aim, second turn, prefix block D, solo aim x2, cloud x5, diary, idle thought, master-off x2),
