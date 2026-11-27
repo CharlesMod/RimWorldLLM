@@ -80,6 +80,9 @@ namespace RimWorldLLM
         public string effects = "normal";          // off | light | normal
         public float talkFrequency = 1f;
         public int pauseAmbientAtSpeed = 4;           // 4 = dev speed; ambient talk keeps going at 3x (the agent budgets it)
+        public bool textGen = true;                    // per-instance written texts (docs/TEXT-POOLS.md); also GET /config text_fill
+        public bool textArt = true, textGraves = true, textBooks = true, textSocial = true;
+        public bool textCombat = false;                // combat lines come fast; off unless the player wants them
         public bool artDescriptions = true;            // show the agent's art descriptions on the info card; also GET /config art_descriptions
         public bool wantsEnabled = true;               // pawns act on their wants (POST /social_action); also GET /config wants_enabled
         public bool recapOnLoad = true;                // "Previously on..." letter after loading a save; also GET /config recap
@@ -170,6 +173,12 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref evFirsts, "evFirsts", true);
             Scribe_Values.Look(ref evGatherings, "evGatherings", true);
             Scribe_Values.Look(ref artDescriptions, "artDescriptions", true);
+            Scribe_Values.Look(ref textGen, "textGen", true);
+            Scribe_Values.Look(ref textArt, "textArt", true);
+            Scribe_Values.Look(ref textGraves, "textGraves", true);
+            Scribe_Values.Look(ref textBooks, "textBooks", true);
+            Scribe_Values.Look(ref textSocial, "textSocial", true);
+            Scribe_Values.Look(ref textCombat, "textCombat", false);
             Scribe_Values.Look(ref effects, "effects", "normal");
             Scribe_Values.Look(ref talkFrequency, "talkFrequency", 1f);
             Scribe_Values.Look(ref pauseAmbientAtSpeed, "pauseAmbientAtSpeed", 4);

@@ -21,6 +21,7 @@ namespace RimWorldLLM.Bridge
         public readonly MindBook Minds = new MindBook();
         public readonly ChronicleBook Chronicle = new ChronicleBook();
         public readonly ArtBook Art = new ArtBook();
+        public readonly TextDesk Texts = new TextDesk();
         public readonly TalkQueue Talk = new TalkQueue();
         public readonly Vivarium Vivarium = new Vivarium();
         public readonly IGameAdapter Game;

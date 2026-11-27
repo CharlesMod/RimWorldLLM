@@ -60,6 +60,9 @@ reliable one on Windows, Linux and macOS, so the browser is in-game.
 | `dreamsEnabled` | true | P | Dreams (also needs the Sleep event) | Talk -> Colonists |
 | `recapOnLoad` | true | P | "Previously on..." recap when a save loads | Talk -> Colonists |
 | `artDescriptions` | true | P | Art descriptions (also needs the Art event) | Talk -> Colonists |
+| `textGen` | true | P | "Written flavour text" group: write text for single things (artworks, graves, books, log lines); also `GET /config` `text_fill` | new (texthook) |
+| `textArt`, `textGraves`, `textBooks`, `textSocial` | true | P | Per kind: art titles and descriptions, grave epitaphs, book titles and blurbs, social log lines | new (texthook) |
+| `textCombat` | false | P | Combat log lines (shots, misses, dodges, deflections; hits keep the game's text). Off by default: fights make many lines | new (texthook) |
 | `evInjury` ... `evGatherings` (17) | true | P | Which event kinds get lines; each now has a tooltip | Events -> Colonists |
 | `narratorMayPauseForEmergencies` | true | P | "Narrator plays" group: the narrator may pause the game for an emergency (and later unpause its own pause) | new (vivarium) |
 | `narratorControlsSpeed` | false | P | "Narrator plays" group: the narrator may pause, unpause and change the speed at will; off = the player's speed is respected | new (vivarium) |
@@ -97,6 +100,7 @@ The age gate is not a setting: a plain line on the tab says it is always on (age
 
 ### Storage (new tab, no saved settings)
 
+With a game loaded, the first line counts the written texts in this game per kind, stored and (+ waiting in the queue).
 Engine data folder, size per part (models, engine backends, runtime, downloads, logs), free space, Open folder, the model
 files with size and a Delete button (not for the one in use), and Remove downloaded files...: stops the engine, deletes the
 models, backends, runtime and downloads after a confirmation naming them and the space freed. The confirmation window also has a box, ticked by default, to delete the helper's memory and logs (its own folder, with the
@@ -129,7 +133,7 @@ the player's own GGUF file stay; the next Set up starts from scratch.
 
 The agent polls the mod's `GET /config` every 10 s. Fields and their readers: `effects` (idle.py, grudges.py),
 `events` (director.py, dreams.py, group.py, art.py), `talk_frequency` (idle.py, director.py, group.py),
-`wants_enabled`, `recap` / `recap_open` (recap.py, director.py), `adult_content` (adult.py; enforced in prompt.py and
+`wants_enabled`, `recap` / `recap_open` (recap.py, director.py), `text_fill` (idle.py: the text filler), `adult_content` (adult.py; enforced in prompt.py and
 sanitize.py), `dreams`, `art_descriptions`, `pause_ambient_at_speed` (director.py, lease.py).
 The vivarium keys (`vivarium_*`) are sent for tools and logs; the steward reads the same values from
 `GET /vivarium`. Sent but unread: `dlc` and the `llm` block (the agent takes its endpoint from bridge.json). Both kept: harmless,

@@ -63,6 +63,32 @@ namespace RimWorldLLM.Bridge
             return log.Add(ChatKinds.Art, head + sep + Shorten(description, room), tick, 0, artist);
         }
 
+        /// <summary>A per-instance text the text desk stored (art, grave, book) as a Story line; other kinds return null
+        /// (social and combat lines already show in the game's own logs). subject: the artist, or the dead for a grave.</summary>
+        public static ChatEntry Written(ChatLog log, int tick, string kind, string subject, string title, string text)
+        {
+            switch (kind)
+            {
+                case TextKinds.Art: return Art(log, tick, subject, title, text);
+                case TextKinds.Grave:
+                {
+                    subject = Squash(subject); text = Squash(text);
+                    if (text.Length == 0) return null;
+                    string head = subject.Length > 0 ? "Epitaph for " + subject : "Epitaph";
+                    return log.Add(ChatKinds.Art, head + ": " + Shorten(text, Math.Max(20, MaxArt - head.Length - 2)), tick, 0, subject);
+                }
+                case TextKinds.Book:
+                {
+                    title = Squash(title); text = Squash(text);
+                    if (title.Length == 0 && text.Length == 0) return null;
+                    string head = title.Length > 0 ? "Book: \"" + title + "\"" : "Book";
+                    if (text.Length == 0) return log.Add(ChatKinds.Art, Shorten(head, MaxArt), tick);
+                    return log.Add(ChatKinds.Art, head + ": " + Shorten(text, Math.Max(20, MaxArt - head.Length - 2)), tick);
+                }
+                default: return null;
+            }
+        }
+
         /// <summary>what = plain English, past tense ("moved a chair"); why optional. Text = what + ", since why".</summary>
         public static ChatEntry Action(ChatLog log, int tick, string what, string why)
         {

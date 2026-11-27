@@ -160,6 +160,36 @@ empty, or the thing is not an artwork is `bad_request`; a thing that is destroye
 off, the text is still stored but the card shows the game's own text; `GET /config` shows it as
 `art_descriptions`. An older mod without this route answers 404.
 
+### `GET /text/queue?n=<N>`
+Per-instance texts the game wants written (docs/TEXT-POOLS.md): one artwork, grave, book or log line each, queued when
+the thing was made (or first shown), with a context snapshot taken then. `n` is 1-8 (default 4; more is cut to 8;
+not a positive integer is `bad_request`). Reply:
+`{"pending": 17, "items": [{"id": "art:4211", "kind": "art", "prio": 3, "fields": ["title", "text"], "min_len": 40,
+"max_len": 500, "title_max": 60, "tokens": [], "about": "an artwork's title and the description ...", "example": "This
+sculpture depicts ...", "example_title": "Blood and Grain", "context": {"piece": "small sculpture", "quality":
+"excellent", "material": "marble", "tale_depicted": {...}, "maker": {"name": "Rook", "mood": "31%", "traits": [...],
+"artistic_skill": 11, ...}, "nearby": ["Mira"], "colony_now": {"date": "...", "weather": "foggy rain", "recent":
+[...]}}}]}`. Items come most important first (priority by kind: art, grave, book 3; social 1; combat 0; then oldest).
+`id` is opaque: echo it back. `fields` is `["text"]` or `["title", "text"]` (`title_max` and `example_title` only then).
+`tokens` are the `[TOKEN]`s the text may carry (`INITIATOR`, `RECIPIENT` for log lines; the game puts the names in when
+it shows the line); no other square brackets are allowed. `example` is the game's own text for this very instance (empty
+for graves: the game has none). `context` is free-form JSON (strings, numbers, lists, objects); `minor_involved: true`
+marks an item that involves someone under 18 (the text must be all-ages). Each listing counts as one hand-out: an item
+handed out three times without a fill leaves the queue, as does one older than two game days. Only switched-on kinds are
+listed. An older mod answers 404.
+
+### `POST /text/fill`
+`{"op_id": "...", "id": "art:4211", "text": "This marble sculpture ...", "title": "A Gastric Misfortune"}`. Stores the
+text for one queued item; from then on the game shows it for that instance (saved with the game). `title` only for kinds
+whose `fields` include it (optional there; without it the game's title stays). Validation: whitespace collapsed and
+wrapping quotes stripped; the text within `min_len`..`max_len` and the title within `title_max` characters; no `<`,
+`>`, `{`, `}`, `(*`, `(/`; square brackets only as the item's tokens. Reply `{"stored": true, "applied": true, "text":
+"...", "title": "..."}` (`text` and `title` as stored; `applied` false when the instance was not reachable now: the
+game puts it on when the instance is next shown). Errors: `id` or `text` missing is `bad_request`; an id not in the queue
+(never queued, expired, dropped, already filled, or its kind switched off) is `unknown_id` (409); a text that fails
+validation is `bad_text` (400) with `detail` naming the rule (`text: too_long`, `title: markup` ...). An older mod answers
+404.
+
 ### `POST /chronicle`
 `{"op_id": "...", "day": 12, "text": "The colony buried Bram without speeches.", "kind": "day"}`.
 One entry of the colony chronicle (the narrator's running history). `day` is an integer day index
@@ -266,12 +296,14 @@ appear only when that DLC is active.
 ### `GET /config`
 Settings the agent must honour:
 `{"effects": "normal"|"light"|"off", "events": {"injury": true, ...},
-"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "adult_content": false, "dreams": true, "art_descriptions": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
+"talk_frequency": 1.0, "wants_enabled": true, "recap": true, "recap_open": false, "adult_content": false, "dreams": true, "art_descriptions": true, "text_fill": true, "pause_ambient_at_speed": 4, "dlc": ["Ideology", "Biotech", ...],
 "llm": {"base_url": "http://host:4480/v1", "model": "gemma", "api_key_set": true}}`.
 `adult_content` (bool, default `false`) is the mod's "Adult content" setting. Off: the agent adds a fade-to-black
 rule to its system prompt and drops explicit sexual lines (reason `adult_off`). On: explicit content between adults
 is allowed. The agent's age gate is never relaxed by it. The agent reads it on every config refresh; a missing key
 means off.
+`text_fill` (bool) is the mod's "Write flavour text for single things" switch (and the mod switch itself): false means
+the agent's text filler stays idle. Missing (an older mod) means the agent decides from `GET /text/queue` alone.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never
 sent here; the agent reads it from `bridge.json` (Part 1, Connection).
 

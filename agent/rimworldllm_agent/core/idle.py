@@ -31,6 +31,10 @@ if TYPE_CHECKING:
 log = logging.getLogger("rimworldllm")
 
 MAX_DIARY_MEMORIES = 10
+# The text filler holds an ordinary actor window (Cls.IDLE, preemptible) under a pseudo actor id. Real minds use ids >= 0 and
+# -1 already means "the narrator" in the drop log, so -2 can never clash with a mind or another idle job's lease.
+TEXT_FILL_ACTOR = -2
+TEXT_FILL_GAP_S = 10.0
 
 
 class IdleRunner:
@@ -43,6 +47,7 @@ class IdleRunner:
         self.due_since: int | None = None
         self.thought_next: dict[int, float] = {}     # per actor: real time of the next map thought
         self.thought_last: dict[int, tuple[str, ...]] = {}   # memory ids the last thought drew on
+        self.text_next = 0.0                 # director clock: earliest next text-fill call
         self.log: list[dict] = []            # what idle work produced (reflections, diaries, chronicle entries)
 
     # ---- state ------------------------------------------------------------
@@ -60,7 +65,7 @@ class IdleRunner:
         # A pending art description counts: it expires after one day of the clock, so without this a busy world would let it
         # lapse unwritten. Starving only lets idle work run beside ambient talk; reactive and urgent still go first.
         return bool(self.due_reflection() or self.due_diary() or
-                    (art.enabled(d) and self._ok("art", -1) and d.art.pending(d.bridge.env.game, d.day)) or
+                    (art.enabled(d) and not d.text_queue_live and self._ok("art", -1) and d.art.pending(d.bridge.env.game, d.day)) or
                     (d.cfg.chronicle_enabled and d.chronicle.due(d.bridge.env.game // d.day) is not None
                      and self._ok("chronicle", -1)))
 
@@ -180,6 +185,40 @@ class IdleRunner:
         for aid in self.due_wants():
             if self._start_actor("wants", aid, self._wants(aid)):
                 return
+        self._start_text_fill()                       # the lowest job: texts for single things (core/idle.py _text_fill)
+
+    def text_fill_fn(self):
+        """The adapter's text filler (an optional ``idle_fill`` factory returning ``async fn(director, slot) -> int``),
+        or None while it is off: no adapter hook, cfg.text_fill False, or the game's text_fill setting False."""
+        d = self.d
+        make = getattr(d.adapter, "idle_fill", None)
+        if make is None or not d.cfg.text_fill or d.bridge_cfg.get("text_fill") is False:
+            return None
+        return make()
+
+    def _start_text_fill(self) -> bool:
+        d = self.d
+        fn = self.text_fill_fn()
+        if fn is None or not self._ok("textfill", TEXT_FILL_ACTOR) or d.clock() < self.text_next:
+            return False
+        # a call every ~10 s of the director clock at most; the filler lengthens the wait (404, empty queue)
+        self.text_next = d.clock() + TEXT_FILL_GAP_S
+        return self._start_actor("textfill", TEXT_FILL_ACTOR, self._text_fill(fn))
+
+    async def _text_fill(self, fn) -> None:
+        d = self.d
+        d.text_fill_wait_s = 0.0
+        self.lease.generating = True
+        try:
+            n = await fn(d, self.lease.slot)
+            self.text_next = max(self.text_next, d.clock() + d.text_fill_wait_s)
+            if n:
+                self.log.append({"kind": "textfill", "count": n, "game": d.bridge.env.game})
+        except LLMError:
+            self._fail("textfill", TEXT_FILL_ACTOR)
+        except Exception:
+            log.exception("text fill failed")
+            self._fail("textfill", TEXT_FILL_ACTOR)
 
     def due_wants(self) -> list[int]:
         """Wants with follow-through (core/wants.py), paced by the existing ambient pacing: off while no tool backend
@@ -376,7 +415,7 @@ class IdleRunner:
     def _start_art(self) -> bool:
         """An art description (core/art.py), on the narrator slot like the chronicle. The job leaves the queue only now."""
         d = self.d
-        if not art.enabled(d) or not self._ok("art", -1):
+        if not art.enabled(d) or d.text_queue_live or not self._ok("art", -1):
             return False
         job = d.art.take(d.bridge.env.game, d.day)
         if job is None:
