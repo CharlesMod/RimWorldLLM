@@ -43,6 +43,17 @@ namespace RimWorldLLM.Tests
             Assert.Equal(EndpointPairKind.Pair, EndpointPairing.Decide(Hello(), false, false));
         }
 
+        [Theory]
+        [InlineData("cat-26b", "cat-26b")]
+        [InlineData("", "m")]
+        public void AdoptTakesHelloModelIdElseKeepsTheTypedModel(string helloModelId, string expected)
+        {
+            var p = new EndpointProbe { Kind = EndpointPairKind.Adopt, Root = "http://h:47480", Hello = new EngineHello { EngineId = Id, ModelId = helloModelId } };
+            var fields = new EndpointFields { Source = "own", BaseUrl = "http://h:47480/v1", Model = "m", ApiKey = Master };
+            EndpointPairing.Adopt(fields, p, new PairStore());
+            Assert.Equal(expected, fields.Model);
+        }
+
         [Fact]
         public void NotAnEngineChangesNothing()
         {

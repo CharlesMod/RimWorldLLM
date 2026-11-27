@@ -70,7 +70,7 @@ namespace RimWorldLLM.Bridge
             return p;
         }
 
-        /// <summary>Adopt: keep the typed key, store it under the engine_id and set the id. URL and model stay as typed.</summary>
+        /// <summary>Adopt: keep the typed key, store it under the engine_id and set the id. URL stays as typed; the model too unless hello names one (model_id).</summary>
         public static void Adopt(EndpointFields f, EndpointProbe p, PairStore store)
         {
             if (f == null || p == null || p.Hello == null || p.Kind != EndpointPairKind.Adopt) return;
@@ -84,6 +84,7 @@ namespace RimWorldLLM.Bridge
             });
             f.Source = "own";
             f.EngineId = p.Hello.EngineId;
+            if (!string.IsNullOrEmpty(p.Hello.ModelId)) f.Model = p.Hello.ModelId;   // else the model stays as typed
         }
     }
 }

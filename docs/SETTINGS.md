@@ -63,8 +63,10 @@ For an easyEngine on another computer (the PC with the card): no URL or key to t
    Cancel withdraws the request. Denied on the engine ends it; a request the engine ended (it restarted, or a newer
    request from this computer replaced it) offers Try again once. A dropped connection is retried by itself.
 3. **Paired:** the token is stored per engine_id in `pairedEngines` and the endpoint fields are filled: `llmBaseUrl` =
-   the engine's address + `/v1`, `llmModel` = the model id the engine lists on `/v1/models` (its catalog id, which the
-   agent's model rules need; left as it was when the engine is still loading), `llmApiKey` = the token, and
+   the engine's address + `/v1`, `llmModel` = the `model_id` from hello (the selected model's catalog id; easyEngine
+   871f821 and newer, `""` when none is selected or the model is a custom file, absent on older engines) or, when that
+   is empty, the first model id the engine lists on `/v1/models` (its catalog id, which the agent's model rules need;
+   left as it was when the engine is still loading). The same rule applies at game start and when adopting a key, `llmApiKey` = the token, and
    `llmEngineId` = the engine. The token is sent as `Authorization: Bearer` from then on; it never appears in a log.
 4. **Staying connected:** at game start the paired engine is called at its last address with the token; if it moved, it
    is found again by engine_id over mDNS and the URL follows. A revoked or unknown token (also seen from a 401 with
@@ -81,7 +83,8 @@ For an easyEngine on another computer (the PC with the card): no URL or key to t
    `pairedEngines` under the engine_id and `llmEngineId` is set, with no pairing round. A master token may come back
    `paired:false` on hello, so an authenticated `GET /engine/v1/status` answering 200 counts as proof the key works.
    Otherwise the normal Connect flow runs (big code, Allow on the engine). The status line then reads "Paired with
-   <name> at host:port". The key is never logged or shown.
+   <name> at host:port". The key is never logged or shown. When hello carries a non-empty `model_id`, adopting also sets
+   `llmModel` from it; otherwise the typed model stays.
 
 The typed path is unchanged: any OpenAI-compatible server with a URL, model and key works as before; pairing only fills
 those fields.
