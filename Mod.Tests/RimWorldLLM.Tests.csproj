@@ -41,6 +41,10 @@
         <EmbeddedResource Include="Mind/Data/steward_golden.json" LogicalName="RimWorldLLM.Tests.steward_golden.json" />
         <EmbeddedResource Include="Mind/Data/steward_digest_sample.json" LogicalName="RimWorldLLM.Tests.steward_digest_sample.json" />
         <EmbeddedResource Include="Mind/Data/core_golden.json" LogicalName="RimWorldLLM.Tests.core_golden.json" />
+        <EmbeddedResource Include="Mind/Data/jobs-art-golden.json" LogicalName="RimWorldLLM.Tests.jobs-art-golden.json" />
+        <EmbeddedResource Include="Mind/Data/jobs-lore-golden.json" LogicalName="RimWorldLLM.Tests.jobs-lore-golden.json" />
+        <EmbeddedResource Include="Mind/Data/jobs-recap-golden.json" LogicalName="RimWorldLLM.Tests.jobs-recap-golden.json" />
+        <EmbeddedResource Include="Mind/Data/jobs-dreams-golden.json" LogicalName="RimWorldLLM.Tests.jobs-dreams-golden.json" />
     </ItemGroup>
 
 </Project>
