@@ -32,6 +32,8 @@ namespace RimWorldLLM.Bridge
     /// <summary>Open long-running facts (raids, quests, lodgers, prisoners, weather, funerals). Game thread only.</summary>
     public sealed class Ledger
     {
+        /// <summary>Most open facts kept; opening one more drops the oldest (a raid whose raiders never die, a hidden quest...).</summary>
+        public const int MaxOpen = 120;
         readonly List<LedgerEntry> _open = new List<LedgerEntry>();
         public int Counter; // saved by the game so ids stay unique across loads
 
@@ -62,7 +64,14 @@ namespace RimWorldLLM.Bridge
             };
             if (pawns != null) e.Pawns.AddRange(pawns);
             _open.Add(e);
+            while (_open.Count > MaxOpen) _open.RemoveAt(0);
             return e;
+        }
+
+        /// <summary>Closes entries (of one kind, or all) opened more than maxAgeTicks ago (stuck facts). Returns how many.</summary>
+        public int PruneOlderThan(int nowTick, int maxAgeTicks, string kind = null)
+        {
+            return _open.RemoveAll(e => (kind == null || e.Kind == kind) && nowTick - e.OpenedTick > maxAgeTicks);
         }
 
         public string NextId(string kind) { return kind + "-" + (++Counter); }
