@@ -53,6 +53,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly HashSet<string> CannotFight = new HashSet<string>(StringComparer.Ordinal);
         /// <summary>The combat tools (squad, defend): squad needs a combat view, defend also a build block.</summary>
         public readonly CombatKit Combat;
+        /// <summary>The trade tools (trade_offer, trade); they exist only when the digest has a trade block.</summary>
+        public readonly TradeKit Trade;
 
         public StewardSession(JObject digest, IBridge bridge, bool advisor, bool afterFight = false)
         {
@@ -81,13 +83,12 @@ namespace RimWorldLLM.Mind.RimWorld
                 if (p is JObject po && IncapableOfViolence(DigestJson.G(po, "incapable"))) CannotFight.Add(GameData.Name(DigestJson.G(po, "name")));
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
             Combat = new CombatKit(DigestJson.G(Digest, "combat"), Pawns, Build, afterFight);   // squad needs a combat view; defend also a build block
-            // SEAM (worker C, trade): the Python builds `self.trade = TradeKit(digest)` here and appends trade.tools after Combat.Tools;
-            // acting also includes trade.acting. Nothing of it is ported in this branch.
+            Trade = new TradeKit(Digest);                        // trade_offer, trade: only with a trade block
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n)), StringComparer.Ordinal);
+            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n)), StringComparer.Ordinal);
         }
 
         /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
@@ -170,7 +171,9 @@ namespace RimWorldLLM.Mind.RimWorld
                     {
                         new Param("dialog", "enum", "the dialog's id", choices: Dialogs.Keys.ToList()),
                         new Param("option", "text", "the option's number or label; leave empty for a naming dialog", maxLen: 120, required: false),
-                        new Param("text", "text", "naming dialogs only: the name", maxLen: 80, required: false), WhyParam,
+                        new Param("text", "text", "naming dialogs only: the name", maxLen: 80, required: false),
+                        new Param("passions", "text", "growth moments only: the skills to take passions in, separated by commas", maxLen: 120, required: false),
+                        new Param("trait", "text", "growth moments only: the trait's label", maxLen: 80, required: false), WhyParam,
                     }));
             return outl;
         }
@@ -182,6 +185,16 @@ namespace RimWorldLLM.Mind.RimWorld
         /// {"error": ...}; a refusal by the game as {"refused": ...}; a success as {"done": note, ...}.</summary>
         public async Task<Outcome> RunAsync(string tool, JObject v)
         {
+            if (Array.IndexOf(TradeKit.Looks, tool) >= 0)        // a look tool GETs a route and returns text; it is not an action
+            {
+                try { return new Outcome(new JObject { ["result"] = await Trade.LookAsync(tool, v, Bridge).ConfigureAwait(false) }); }
+                catch (PyValueError e) { return new Outcome(new JObject { ["error"] = e.Message }); }
+                catch (BridgeError e)
+                {
+                    if (e.Code == "refused") return new Outcome(new JObject { ["refused"] = e.Detail.Length > 0 ? e.Detail : e.Code });
+                    return new Outcome(new JObject { ["error"] = PyStr.Head((e.Code + ": " + e.Detail).Trim(':', ' '), 160) });
+                }
+            }
             string verb;
             JObject body;
             try { (verb, body) = Body(tool, v); }
@@ -219,6 +232,23 @@ namespace RimWorldLLM.Mind.RimWorld
             var body = new JObject { ["dialog"] = did };
             string text = Opt(v, "text"), opt = Opt(v, "option");
             var fields = DigestJson.Items(DigestJson.G(dlg, "fields")).Where(f => DigestJson.Truthy(DigestJson.G(f, "name"))).Select(f => PyJson.Str(DigestJson.G(f, "name"))).ToList();
+            var g = DigestJson.G(dlg, "growth") as JObject;
+            if (g != null && g.Count > 0 && opt.Length == 0)     // a growth moment: pick passions and a trait from what is offered
+            {
+                var offered = DigestJson.Items(DigestJson.G(g, "passions")).Select(x => PyJson.Str(x)).ToList();
+                var traits = DigestJson.Items(DigestJson.G(g, "trait_choices")).OfType<JObject>().Select(t => DigestJson.Str(t, "label", "None")).ToList();
+                var picks = (v.TryGetValue("passions", out JToken pt) && PyJson.Truthy(pt) ? PyJson.Str(pt) : "").Split(',').Select(x => PyStr.Strip(x)).Where(x => x.Length > 0).ToList();
+                string trait = Opt(v, "trait");
+                if (offered.Count > 0 && picks.Count == 0)
+                {
+                    JToken mp = DigestJson.G(g, "max_passions");
+                    throw new PyValueError("give passions (up to " + (DigestJson.Truthy(mp) ? DigestJson.PyInt(mp) : 1) + ", comma separated) from: " + string.Join(", ", offered));
+                }
+                if (traits.Count > 0 && trait.Length == 0) throw new PyValueError("give trait, one of: " + string.Join(", ", traits));
+                if (picks.Count > 0) body["passions"] = new JArray(picks.Cast<object>().ToArray());
+                if (trait.Length > 0) body["trait"] = trait;
+                return body;
+            }
             if (fields.Count > 0)                                // a naming dialog
             {
                 if (text.Length == 0) text = opt;
@@ -394,6 +424,7 @@ namespace RimWorldLLM.Mind.RimWorld
                 default:
                     if (Build.Names.Contains(tool)) return Build.Body(tool, v);
                     if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
+                    if (Trade.Acting.Contains(tool)) return Trade.Body(tool, v);
                     throw new PyValueError("unknown tool " + tool);
             }
         }

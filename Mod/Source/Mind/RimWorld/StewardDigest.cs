@@ -126,26 +126,6 @@ namespace RimWorldLLM.Mind.RimWorld
         }
     }
 
-    /// <summary>TODO(merge): the combat view text lives in worker A's StewardCombat (steward_combat.py: view_active, DIGEST_CAPS,
-    /// render_combat). Until that file is merged these are stand-ins so the digest compiles; the lead replaces the bodies with
-    /// StewardCombat.ViewActive / DigestCaps / RenderCombat(view, cap) (same signatures as the Python).</summary>
-    internal static class CombatSeam
-    {
-        public static readonly int[] DigestCaps = { 1500, 1000, 700, 450 };
-
-        /// <summary>isinstance(view, dict) and view.get("active") is not False and bool(view).</summary>
-        public static bool ViewActive(JToken view)
-        {
-            var o = view as JObject;
-            if (o == null || o.Count == 0) return false;
-            JToken a = o["active"];
-            return !(a != null && a.Type == JTokenType.Boolean && !(bool)a);
-        }
-
-        /// <summary>STAND-IN: StewardCombat.RenderCombat(view, cap).</summary>
-        public static string RenderCombat(JToken view, int cap) => "";
-    }
-
     public static class StewardDigest
     {
         public const int Cap = 6000;
@@ -168,10 +148,10 @@ namespace RimWorldLLM.Mind.RimWorld
         // combat = the character cap of the COMBAT lines (after ALERTS; the fight's DIGEST_CAPS)
         internal static readonly Level[] Levels =
         {
-            new Level(4, 25, 15, 20, 280, 10, 6, 6, 3, 3, 3, 3, 2, CombatSeam.DigestCaps[0]),
-            new Level(3, 16, 8, 12, 160, 8, 4, 6, 3, 3, 2, 3, 2, CombatSeam.DigestCaps[1]),
-            new Level(2, 10, 5, 8, 100, 5, 2, 4, 2, 2, 1, 2, 1, CombatSeam.DigestCaps[2]),
-            new Level(1, 6, 3, 4, 60, 3, 0, 3, 1, 1, 0, 1, 0, CombatSeam.DigestCaps[3]),
+            new Level(4, 25, 15, 20, 280, 10, 6, 6, 3, 3, 3, 3, 2, StewardCombat.DigestCaps[0]),
+            new Level(3, 16, 8, 12, 160, 8, 4, 6, 3, 3, 2, 3, 2, StewardCombat.DigestCaps[1]),
+            new Level(2, 10, 5, 8, 100, 5, 2, 4, 2, 2, 1, 2, 1, StewardCombat.DigestCaps[2]),
+            new Level(1, 6, 3, 4, 60, 3, 0, 3, 1, 1, 0, 1, 0, StewardCombat.DigestCaps[3]),
         };
 
         internal sealed class BuildLevel
@@ -824,8 +804,8 @@ namespace RimWorldLLM.Mind.RimWorld
             var al = DigestJson.Take(DigestJson.Items(DigestJson.G(d, "alerts")), lv.Alerts);
             string alText = string.Join("; ", al.Select(a => GameData.Clean(DigestJson.G(a, "label") ?? "", "label") + (DigestJson.Truthy(DigestJson.G(a, "critical")) ? " [CRITICAL]" : "")));
             outl.Add("ALERTS: " + (alText.Length > 0 ? alText : "none"));
-            if (combat && CombatSeam.ViewActive(DigestJson.G(d, "combat")))      // never shrunk away: the combat block only loses detail
-                outl.Add(CombatSeam.RenderCombat(DigestJson.G(d, "combat"), lv.Combat));
+            if (combat && CombatKit.ViewActive(DigestJson.G(d, "combat")))      // never shrunk away: the combat block only loses detail
+                outl.Add(StewardCombat.RenderCombat(DigestJson.G(d, "combat"), lv.Combat));
             var th = DigestJson.Take(DigestJson.Items(DigestJson.G(d, "threats")), 6);
             string thText = string.Join("; ", th.Select(t =>
                 DigestJson.Str(t, "count", "?") + " " + GameData.Clean(DigestJson.G(t, "label") ?? "", "label")
@@ -893,9 +873,9 @@ namespace RimWorldLLM.Mind.RimWorld
                 text = Render(digest, Levels[st[0]], BuildLevels[st[1]], TradeLevels[st[2]]);
                 if (PyStr.Len(text) <= cap) return text;
             }
-            if (CombatSeam.ViewActive(DigestJson.G(digest, "combat")))           // the cut takes the tail of the rest, never the fight
+            if (CombatKit.ViewActive(DigestJson.G(digest, "combat")))           // the cut takes the tail of the rest, never the fight
             {
-                string fight = CombatSeam.RenderCombat(DigestJson.G(digest, "combat"), CombatSeam.DigestCaps[CombatSeam.DigestCaps.Length - 1]);
+                string fight = StewardCombat.RenderCombat(DigestJson.G(digest, "combat"), StewardCombat.DigestCaps[StewardCombat.DigestCaps.Length - 1]);
                 string rest = Render(digest, Levels[Levels.Length - 1], BuildLevels[BuildLevels.Length - 1], TradeLevels[TradeLevels.Length - 1], combat: false);
                 string head = PyStr.Head(rest, Math.Max(cap - PyStr.Len(fight) - 40, 0));
                 int hn = head.LastIndexOf('\n');
