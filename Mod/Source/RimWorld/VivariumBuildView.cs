@@ -56,6 +56,8 @@ namespace RimWorldLLM
             public HashSet<Pawn> Sleepers = new HashSet<Pawn>();
         }
 
+        internal static int[] HomeOf(Map map) { try { return Home(map); } catch (Exception) { return null; } }
+
         static int[] Home(Map map)
         {
             var pts = new List<int[]>();
