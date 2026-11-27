@@ -199,6 +199,11 @@ class RimWorldAdapter:
         self.block_a = (_HERE / "block_a.txt").read_text()
         self.steward_kit = StewardKit()                # the vivarium steward's game side (core/steward.py)
 
+    def idle_fill(self):
+        """The idle text filler core/idle.py runs last: ``async fn(director, slot) -> int`` (texts stored)."""
+        from .textfill import fill_once
+        return fill_once
+
     async def replay(self, path: str, cfg: Any, llm: Any) -> list[dict]:
         from .replay import replay
         return await replay(path, cfg, llm)

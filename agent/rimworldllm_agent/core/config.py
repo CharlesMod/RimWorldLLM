@@ -139,6 +139,7 @@ class Config(BaseModel):
     steward_strategy_max_bytes: int = 12288
     art_enabled: bool = True           # LLM art descriptions (core/art.py); also needs the mod's art_descriptions
     art_max_tokens: int = 110
+    text_fill: bool = True             # per-instance texts (the game's text queue; adapter.idle_fill); also needs the mod's text_fill not False
     chronicle_bridge: bool = True      # also POST /chronicle (contract: the mod saves the chronicle with the game)
     chronicle_max_tokens: int = 220
     recap_enabled: bool = True         # "Previously on..." recap after a save load (core/recap.py; also the mod's recap setting)

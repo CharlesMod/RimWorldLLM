@@ -211,6 +211,17 @@ class BridgeClient:
         """Contract: POST /art {op_id, thing, text}; the mod shows the text on the artwork's info card."""
         return await self._req("POST", "/art", json_body=self._write_body({"thing": thing, "text": text}, None, op_id))
 
+    async def text_queue(self, n: int = 4) -> dict:
+        """Contract: GET /text/queue?n=N -> {"pending": N, "items": [...]}, most important first. An older mod answers 404."""
+        return await self._req("GET", "/text/queue", params={"n": n})
+
+    async def text_fill(self, id: str, text: str, title: str | None = None, op_id: str | None = None) -> dict:
+        """Contract: POST /text/fill {op_id, id, text, title?} -> {"stored": true}. unknown_id: the item is gone or filled."""
+        body: dict[str, Any] = {"id": id, "text": text}
+        if title is not None:
+            body["title"] = title
+        return await self._req("POST", "/text/fill", json_body=self._write_body(body, None, op_id))
+
     async def get_chronicle(self, since_day: int = 0) -> list[dict]:
         """Contract: GET /chronicle?since_day=N -> entries, oldest first (day, kind, text and the mod's receive time)."""
         b = await self._req("GET", "/chronicle", params={"since_day": since_day})

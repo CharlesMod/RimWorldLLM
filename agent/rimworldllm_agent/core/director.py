@@ -111,6 +111,8 @@ class Director:
         self.lore = lore.LoreBook(cfg.lore_max)     # shared lore cache (core/lore.py); the mod holds the save's copy
         self.reputations: dict[int, str] = {}       # what the group says about each actor (core/gossip.py)
         self.art = ArtQueue()                    # core/art.py
+        self.text_queue_live = False             # the game's text queue answered: it writes the art texts, so the art idle job stands down
+        self.text_fill_wait_s = 0.0              # set by the adapter's idle_fill: real seconds before the next call (backoff after 404 / empty)
         self.tier = ModelTier(cfg, clock)        # core/model_tier.py
         self.dream_book = DreamBook()
         self.concerns = ConcernEngine(self)        # core/concerns.py
