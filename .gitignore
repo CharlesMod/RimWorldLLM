@@ -5,19 +5,9 @@ Binaries/
 Mod/1.7/Assemblies/*.dll
 Mod/1.7/Assemblies/*.pdb
 Mod/1.7/Assemblies/*.deps.json
-__pycache__/
-*.pyc
-.venv/
 *.log
 .DS_Store
 Mod.Tests/bin/
 Mod.Tests/obj/
-agent/.venv/
-*.egg-info/
-__pycache__/
-.pytest_cache/
-agent/dist/
-agent/build/
-
 # release packaging output
 dist-release/
