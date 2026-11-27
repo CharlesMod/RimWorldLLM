@@ -293,6 +293,35 @@ namespace RimWorldLLM
         static readonly AccessTools.FieldRef<PlayLogEntry_Interaction, Pawn> Recipient = AccessTools.FieldRefAccess<PlayLogEntry_Interaction, Pawn>("recipient");
         static readonly AccessTools.FieldRef<PlayLogEntry_Interaction, List<RulePackDef>> Extra = AccessTools.FieldRefAccess<PlayLogEntry_Interaction, List<RulePackDef>>("extraSentencePacks");
         static readonly AccessTools.FieldRef<BattleLogEntry_MeleeCombat, RulePackDef> MeleeRule = AccessTools.FieldRefAccess<BattleLogEntry_MeleeCombat, RulePackDef>("ruleDef");
+        static readonly AccessTools.FieldRef<BattleLogEntry_MeleeCombat, Pawn> MeleeBy = AccessTools.FieldRefAccess<BattleLogEntry_MeleeCombat, Pawn>("initiator");
+        static readonly AccessTools.FieldRef<BattleLogEntry_MeleeCombat, Pawn> MeleeAt = AccessTools.FieldRefAccess<BattleLogEntry_MeleeCombat, Pawn>("recipientPawn");
+        static readonly AccessTools.FieldRef<BattleLogEntry_MeleeCombat, ThingDef> MeleeAtThing = AccessTools.FieldRefAccess<BattleLogEntry_MeleeCombat, ThingDef>("recipientThing");
+        static readonly AccessTools.FieldRef<BattleLogEntry_RangedFire, Pawn> ShotBy = AccessTools.FieldRefAccess<BattleLogEntry_RangedFire, Pawn>("initiatorPawn");
+        static readonly AccessTools.FieldRef<BattleLogEntry_RangedFire, ThingDef> ShotByThing = AccessTools.FieldRefAccess<BattleLogEntry_RangedFire, ThingDef>("initiatorThing");
+        static readonly AccessTools.FieldRef<BattleLogEntry_RangedFire, Pawn> ShotAt = AccessTools.FieldRefAccess<BattleLogEntry_RangedFire, Pawn>("recipientPawn");
+        static readonly AccessTools.FieldRef<BattleLogEntry_RangedFire, ThingDef> ShotAtThing = AccessTools.FieldRefAccess<BattleLogEntry_RangedFire, ThingDef>("recipientThing");
+        static readonly AccessTools.FieldRef<BattleLogEntry_RangedFire, ThingDef> ShotWeapon = AccessTools.FieldRefAccess<BattleLogEntry_RangedFire, ThingDef>("weaponDef");
+
+        /// <summary>The two sides of a combat line: (attacker pawn, attacker name, target pawn, target name).</summary>
+        static void Sides(LogEntry e, out Pawn a, out string an, out Pawn b, out string bn)
+        {
+            a = b = null; an = bn = null;
+            var shot = e as BattleLogEntry_RangedFire;
+            if (shot != null)
+            {
+                a = ShotBy(shot); b = ShotAt(shot);
+                an = a != null ? a.LabelShort : ShotByThing(shot) != null ? ShotByThing(shot).label : null;
+                bn = b != null ? b.LabelShort : ShotAtThing(shot) != null ? ShotAtThing(shot).label : null;
+                return;
+            }
+            var melee = e as BattleLogEntry_MeleeCombat;
+            if (melee != null)
+            {
+                a = MeleeBy(melee); b = MeleeAt(melee);
+                an = a != null ? a.LabelShort : null;
+                bn = b != null ? b.LabelShort : MeleeAtThing(melee) != null ? MeleeAtThing(melee).label : null;
+            }
+        }
 
         /// <summary>The log kind of an entry, or null when ours must not replace it: romance (age gate), entries whose game
         /// text carries an outcome sentence or wound detail, and anything else unknown.</summary>
@@ -322,9 +351,10 @@ namespace RimWorldLLM
                 if (Recipient(inter) != null) d["RECIPIENT"] = Recipient(inter).LabelShort;
                 return d;
             }
-            var c = e.GetConcerns().ToList();
-            if (c.Count > 0 && c[0] != null) d["INITIATOR"] = c[0].LabelShort;
-            if (c.Count > 1 && c[1] != null) d["RECIPIENT"] = c[1].LabelShort;
+            Pawn a, b; string an, bn;
+            Sides(e, out a, out an, out b, out bn);
+            if (an != null) d["INITIATOR"] = an;
+            if (bn != null) d["RECIPIENT"] = bn;
             return d;
         }
 
@@ -346,10 +376,14 @@ namespace RimWorldLLM
                 }
                 else
                 {
-                    var c = e.GetConcerns().ToList();
-                    a = c.Count > 0 ? c[0] as Pawn : null; b = c.Count > 1 ? c[1] as Pawn : null;
-                    o["attack"] = e.GetType().Name.Replace("BattleLogEntry_", "");
-                    if (c.Count > 1 && b == null && c[1] != null) o["target"] = c[1].LabelShort;
+                    string an, bn;
+                    Sides(e, out a, out an, out b, out bn);
+                    var melee = e as BattleLogEntry_MeleeCombat;
+                    o["attack"] = melee != null ? "melee, " + MeleeRule(melee).defName.Replace("Combat_", "").ToLowerInvariant() : "ranged shot";
+                    var shot = e as BattleLogEntry_RangedFire;
+                    if (shot != null && ShotWeapon(shot) != null) o["weapon"] = ShotWeapon(shot).label;
+                    if (a == null && an != null) o["attacker"] = an;
+                    if (b == null && bn != null) o["target"] = bn;
                 }
                 if (a != null) o["initiator"] = PawnInfo(a);
                 if (b != null) o["recipient"] = PawnInfo(b);
@@ -448,7 +482,7 @@ namespace RimWorldLLM
         [HarmonyPrefix]
         public static void Prefix(Pawn __instance, DamageInfo? dinfo, Hediff exactCulprit)
         {
-            TextHook.NoteDeath(__instance, dinfo, exactCulprit);
+            try { TextHook.NoteDeath(__instance, dinfo, exactCulprit); } catch (Exception) { }
         }
     }
 

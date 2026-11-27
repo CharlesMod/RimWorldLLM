@@ -24,7 +24,8 @@ namespace RimWorldLLM
             r.Add("GET", "/talk", true, Talk);
             RegisterWants(r);
             RegisterArt(r);
-            TextHook.Register(r);
+            try { TextHook.Register(r); }      // never let the text hooks take the other routes down
+            catch (Exception e) { Log.Error("[RimWorldLLM] written texts unavailable: " + e); }
         }
 
         static Pawn PawnArg(JObject body, string field, bool required, out ApiResult err)
