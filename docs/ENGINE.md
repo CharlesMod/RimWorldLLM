@@ -7,12 +7,11 @@ balancer, the model catalog) are in
 This file covers only the RimWorld side.
 
 To build the mod with the engine, check easyEngine out next to this repo and run its `build.sh`,
-then `agent/build-wheel.sh` here.
+The engine installs no uv or Python and runs no agent: the game profile has no agent block, because the mind runs inside the mod (`Mod/Source/Mind`, see docs/CSHARP-MIND.md and docs/SETTINGS.md).
 
 ## In game (`Mod/`)
 
-- The mod ships the binaries in `Engine/<os>-<arch>/easy-engine[.exe]` and the agent wheel
-  in `Engine/agent/`. `build.sh` in the easyEngine checkout cross-compiles them into `dist/<os>-<arch>/`; the csproj deploy target copies them from `$(EasyEngineDir)` (default `../easyEngine`, a sibling checkout).
+- The mod ships the binaries in `Engine/<os>-<arch>/easy-engine[.exe]`. `build.sh` in the easyEngine checkout cross-compiles them into `dist/<os>-<arch>/`; the csproj deploy target copies them from `$(EasyEngineDir)` (default `../easyEngine`, a sibling checkout).
 - `Mod/Source/Bridge/EngineLauncher.cs` and `EngineClient.cs` (no Verse references): pick the
   binary for the platform, set the exec bit on Unix, write the profile next to `bridge.json`,
   attach to a running engine or spawn one with `--parent-pid` (hidden window), and wrap the

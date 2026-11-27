@@ -88,11 +88,6 @@ namespace RimWorldLLM
                 l.Label(fbLine);
                 GUI.color = Color.white;
             }
-            if (st != null && st.Agent != null && !string.IsNullOrEmpty(st.Agent.Phase))
-            {
-                string am = string.IsNullOrEmpty(st.Agent.Message) ? "" : " - " + st.Agent.Message;
-                Dim(l, UiUtil.T("RWL_Setup_Agent", st.Agent.Phase, st.Agent.Restarts) + am);
-            }
             string swLine = EngineManager.SwitchLine();
             if (swLine != null) { GUI.color = EngineManager.ColorOf(EngineManager.Light.Amber); l.Label(swLine); GUI.color = Color.white; }
             if (st != null && st.Previous != null) SettingsWindow.PreviousOffer(l, st.Previous);

@@ -44,7 +44,7 @@ namespace RimWorldLLM
 
         static long Now { get { return Environment.TickCount64; } }
 
-        /// <summary>Base URL the agent and bridge.json use in local mode: the engine's port + /v1 (default port until discovery).</summary>
+        /// <summary>Base URL the mind and bridge.json use in local mode: the engine's port + /v1 (default port until discovery).</summary>
         public static string OpenAiBase
         {
             get
@@ -67,14 +67,14 @@ namespace RimWorldLLM
         public static void StartAtStartup()
         {
             var s = RimWorldLLMMod.Settings;
-            if (s == null || !s.engineAutoStart) return;
+            if (s == null || !s.engineAutoStart || !LocalSource) return;   // the player's own endpoint: no engine is launched or attached
             LaunchAsync();
         }
 
         /// <summary>Launch or attach the engine in the background (also the "retry" action).</summary>
         public static void LaunchAsync()
         {
-            if (_launching) return;
+            if (_launching || !LocalSource) return;
             string root = ModRoot();
             if (root == null) return;
             _launching = true;
@@ -118,25 +118,21 @@ namespace RimWorldLLM
             return st == null ? null : Bridge.GpuLine.Format(st.Gpu, (k, a) => UiUtil.T(k, a));
         }
 
-        /// <summary>Tells the engine whether to serve its own model (local) or the player's endpoint (external).</summary>
+        /// <summary>Tells a running engine to serve its own model (local source). Own-endpoint mode never talks to the engine: the mind calls the player's endpoint itself.</summary>
         public static Task PushSourceAsync()
         {
             var c = _client;
             var s = RimWorldLLMMod.Settings;
             if (c == null || s == null) return Task.CompletedTask;
-            var st = new EngineSettings();
-            if (s.llmSource == "own")
-            {
-                st.Mode = "external";
-                st.External = new EngineExternal { BaseUrl = (s.llmBaseUrl ?? "").Trim(), Model = (s.llmModel ?? "").Trim(), ApiKey = (s.llmApiKey ?? "").Trim() };
-            }
-            else st.Mode = "local";
-            return c.PutSettingsAsync(st);
+            if (s.llmSource == "own") return Task.CompletedTask;
+            return c.PutSettingsAsync(new EngineSettings { Mode = "local" });
         }
 
         /// <summary>Settings changed (source or own endpoint): push to the engine and rewrite bridge.json. Fire and forget.</summary>
         public static void SettingsChanged()
         {
+            var s = RimWorldLLMMod.Settings;
+            if (s != null && s.engineAutoStart && LocalSource && _client == null) LaunchAsync();   // switched back to the local engine
             Task.Run(async () =>
             {
                 try { await PushSourceAsync().ConfigureAwait(false); } catch { }
@@ -153,7 +149,7 @@ namespace RimWorldLLM
             _lastPollMs = now;
             if (_client == null)
             {
-                if (!_launching) Task.Run(DiscoverAsync);   // engine started elsewhere (setup page, CLI), or lost and back
+                if (!_launching && LocalSource) Task.Run(DiscoverAsync);   // engine started elsewhere (setup page, CLI), or lost and back
                 return;
             }
             Task.Run(FetchStatusAsync);
@@ -346,42 +342,36 @@ namespace RimWorldLLM
         public static void RemoveDownloads() { RemoveEverything(false); }
 
         static volatile string _removeNote;
-        /// <summary>What happened to the agent's memory and logs after the last "remove everything" (null when nothing to say).</summary>
+        /// <summary>What happened to the mind's memory and logs after the last "remove everything" (null when nothing to say).</summary>
         public static string RemoveNote { get { return _removeNote; } }
 
-        /// <summary>Removes the downloads and, when <paramref name="alsoMemory"/>, the agent's memory and logs once the engine has stopped the agent.</summary>
+        /// <summary>Removes the downloads and, when <paramref name="alsoMemory"/>, the mind's memory and logs (the mind is stopped first and started again after).</summary>
         public static void RemoveEverything(bool alsoMemory)
         {
             _removeNote = null;
             var plat = EnginePlatform.Detect();
             var where = AgentDataDir.ResolveHere(plat);
+            if (_customBusy) return;
+            if (_client == null)
+            {
+                // no engine (the player's own endpoint, or it is not running): there are no downloads to remove, but the memory can still go
+                if (alsoMemory) { MindHost.Hold(); Task.Run(() => RemoveAgentMemory(where, plat)); }
+                else _actionError = "engine not running";
+                return;
+            }
+            if (alsoMemory) MindHost.Hold();   // before anything else: the mind may be writing into the folder
             BusyAct(c => c.RemoveDownloadsAsync(), () =>
             {
                 _storage = null; RefreshStorage();
-                if (alsoMemory) Task.Run(() => RemoveAgentMemoryAfterJob(where, plat));
+                if (alsoMemory) Task.Run(() => RemoveAgentMemory(where, plat));
             });
         }
 
-        static async Task RemoveAgentMemoryAfterJob(AgentDataDir.Resolved where, EnginePlatform plat)
+        static async Task RemoveAgentMemory(AgentDataDir.Resolved where, EnginePlatform plat)
         {
             try
             {
-                var c = _client;
-                if (c == null) { _removeNote = UiUtil.T("RWL_Storage_MemorySkippedEngine"); return; }
-                var clock = Stopwatch.StartNew();
-                bool saw = false, ok = false;
-                while (clock.ElapsedMilliseconds < 120000)
-                {
-                    var r = await c.GetStatusAsync().ConfigureAwait(false);
-                    if (r.Ok && r.Value != null)
-                    {
-                        if (r.Value.Phase == "removing") saw = true;
-                        string ap = r.Value.Agent != null ? r.Value.Agent.Phase : null;
-                        if (AgentDataDir.RemovalFinished(r.Value.Phase, ap, saw, clock.ElapsedMilliseconds)) { ok = true; break; }
-                    }
-                    await Task.Delay(500).ConfigureAwait(false);
-                }
-                if (!ok) { _removeNote = UiUtil.T("RWL_Storage_MemorySkippedAgent"); return; }
+                await MindHost.StoppedAsync().ConfigureAwait(false);   // the mind has stopped writing before its folder goes
                 string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 var guard = new[] { home, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("XDG_DATA_HOME"),
                     Path.Combine(home, ".local", "share"), Path.Combine(home, "AppData", "Local"),
@@ -399,6 +389,7 @@ namespace RimWorldLLM
                 else { _removeNote = UiUtil.T("RWL_Storage_MemoryRefused", where.Path, d.Reason); Log.Warning("[RimWorldLLM] Agent memory not deleted: " + d.Reason); }
             }
             catch (Exception e) { _removeNote = UiUtil.T("RWL_Storage_MemoryRefused", where != null ? where.Path : "", e.Message); }
+            finally { MindHost.Release(); }   // the mind starts again when a game is loaded
         }
 
         /// <summary>The model name to show: the engine's human name, the custom file's name, or the model id.</summary>

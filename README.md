@@ -57,7 +57,6 @@ on an older Tesla P40.
 |---|---|---|
 | One model, sized to your card | Hugging Face (`cmod/gemma4-rp-maxxed-GGUF`, `cmod/gemma4-e4b-rp-GGUF`, `unsloth/gemma-4-E2B-it-GGUF`) | 3.1 to 10.0 GB |
 | llama.cpp (runs the model) | its official GitHub releases (`ggml-org/llama.cpp`, build b12680) | NVIDIA: about 0.8 GB download, 2 GB on disk. AMD/Intel (Vulkan) or Mac: under 0.1 GB |
-| uv and Python 3.12 (for the mod's helper program) | uv's GitHub releases; Python and two small packages through uv | about 0.2 GB on disk |
 
 Every download is checked against a fixed SHA-256 and resumes if interrupted. With an NVIDIA
 card expect about 12 GB on disk for the 26B (about 16 GB at the peak, while the starter is still
@@ -110,16 +109,15 @@ text or save a picture card to `SaveData/RimWorldLLM/Shares` in RimWorld's save-
 ## Privacy
 
 - Everything runs on your machine. No telemetry, no accounts, no cloud.
-- The only network traffic is the setup downloads listed above (Hugging Face, GitHub, and the
-  Python packages uv fetches).
+- The only network traffic is the setup downloads listed above (Hugging Face and GitHub).
 - The engine and the mod's bridge listen on `127.0.0.1` only.
-- The helper keeps the colonists' memories and a log of model calls on your disk (see below).
+- The mod keeps the colonists' memories and a log of model calls on your disk (see below).
 
 ## Uninstall
 
 One button removes everything RimWorldLLM stored except the mod itself and its settings: Options, Mod settings,
-RimWorldLLM, Storage, **Remove downloaded files...**. It stops the engine and the helper, deletes the models,
-llama.cpp and Python, and (the box is ticked by default) the helper's memory of your colonists and its logs. The
+RimWorldLLM, Storage, **Remove downloaded files...**. It stops the engine and the mind, deletes the models
+and llama.cpp, and (the box is ticked by default) the memory of your colonists and its logs. The
 engine keeps only its small log and state files. Your own GGUF file is never touched. Then unsubscribe from the mod,
 or delete `Mods/RimWorldLLM`.
 
@@ -182,7 +180,7 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 ## For developers
 
 - [docs/DEVELOPING.md](docs/DEVELOPING.md): how the mod works, building, the event list,
-  repository layout, running the agent by hand.
+  repository layout, an external agent over the HTTP bridge.
 - [docs/BRIDGE-API.md](docs/BRIDGE-API.md): the bridge protocol and RimWorld schema.
 - [docs/HOOK-API.md](docs/HOOK-API.md): the API for other mods.
 - [docs/ENGINE.md](docs/ENGINE.md): the local engine on the RimWorld side; the engine itself is
@@ -190,7 +188,7 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 - [docs/SPEC.md](docs/SPEC.md), [docs/SPEED.md](docs/SPEED.md),
   [docs/MODEL-BENCH.md](docs/MODEL-BENCH.md), [docs/E4B-PASS.md](docs/E4B-PASS.md),
   [docs/CREATIVE-ROUND.md](docs/CREATIVE-ROUND.md): design, speed and quality measurements.
-- [agent/README.md](agent/README.md): the Python agent.
+- [docs/CSHARP-MIND.md](docs/CSHARP-MIND.md): the mind (the agent), which runs inside the mod as C# (`Mod/Source/Mind`).
 - Release: `scripts/package-release.sh`, [docs/release/](docs/release/).
 
 ## License
@@ -198,4 +196,4 @@ Mods page. Logs do not contain account data, but they do contain your colonists'
 MIT, copyright (c) 2026 Charleszard. See [LICENSE](LICENSE). The engine
 ([easyEngine](https://github.com/CharlesMod/easyEngine)) is MIT too. The downloaded models carry
 their own terms (Apache 2.0 with the [Gemma terms of use](https://ai.google.dev/gemma/docs/gemma_4_license)),
-and llama.cpp and uv have their own licenses. The models are not made or endorsed by Google.
+and llama.cpp has its own license. The models are not made or endorsed by Google.

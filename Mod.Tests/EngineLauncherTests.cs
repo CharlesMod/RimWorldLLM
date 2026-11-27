@@ -64,7 +64,7 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void ProfileShape()
         {
-            var j = EngineLauncher.BuildProfile("/c/bridge.json", "/m/Engine/agent/a.whl");
+            var j = EngineLauncher.BuildProfile();
             Assert.Equal("RimWorld", (string)j["game"]);
             Assert.Equal(3, (int)j["slots"]);
             Assert.Equal(1, (int)j["min_slots"]);
@@ -72,31 +72,17 @@ namespace RimWorldLLM.Tests
             Assert.Equal(8192, (int)j["ctx_per_slot"]["floor"]);
             Assert.Equal(1500, (int)j["game_reserve_mib"]);
             Assert.Equal(84, (int)j["host_files_mib"]);   // calls.jsonl 4 x 20 MB + 4 MiB, counted in the engine's disk need
-            var a = j["agent"];
-            Assert.Equal("rimworldllm-agent", (string)a["id"]);
-            Assert.Equal("/m/Engine/agent/a.whl", (string)a["wheel"]);
-            Assert.Equal("3.12", (string)a["python"]);
-            Assert.Equal("run", (string)a["args"][0]);
-            Assert.Equal("/c/bridge.json", (string)a["env"]["RIMWORLDLLM_BRIDGE_JSON"]);
-            Assert.Equal("RIMWORLDLLM_LLM_URL", (string)a["llm_url_env"]);
         }
 
         [Fact]
-        public void ProfileWithoutWheelHasNoAgent()
+        public void ProfileHasNoAgentBlockAndNoPython()
         {
-            Assert.Null(EngineLauncher.BuildProfile("/c/bridge.json", null)["agent"]);
-        }
-
-        [Fact]
-        public void FindWheelPicksFileInEngineAgent()
-        {
-            using (var t = new Temp())
-            {
-                Assert.Null(EngineLauncher.FindWheel(t.Dir));
-                t.Touch("Engine", "agent", "rimworldllm_agent-0.1.0-py3-none-any.whl");
-                t.Touch("Engine", "agent", "notes.txt");
-                Assert.EndsWith("rimworldllm_agent-0.1.0-py3-none-any.whl", EngineLauncher.FindWheel(t.Dir));
-            }
+            // the mind runs inside the mod: the engine installs no Python and runs no agent
+            var j = EngineLauncher.BuildProfile(123, new HostAdapterInfo("GPU", 0x10de, 8192));
+            Assert.Null(j["agent"]);
+            Assert.DoesNotContain("python", j.ToString(Newtonsoft.Json.Formatting.None));
+            Assert.DoesNotContain("wheel", j.ToString(Newtonsoft.Json.Formatting.None));
+            Assert.DoesNotContain("llm_url_env", j.ToString(Newtonsoft.Json.Formatting.None));
         }
 
         [Fact]
@@ -159,7 +145,6 @@ namespace RimWorldLLM.Tests
             using (var f = new FakeEngine((m, p) => (200, "{\"phase\":\"not_installed\"}")))
             {
                 string bin = t.Touch("Engine", "linux-amd64", "easy-engine");
-                t.Touch("Engine", "agent", "a-0.1-py3-none-any.whl");
                 var s = new FakeStarter();
                 int polls = 0;
                 var r = await EngineLauncher.EnsureRunningAsync(Opts(t, s, () => Task.FromResult(++polls >= 3 ? f.Client : null)));
@@ -172,8 +157,8 @@ namespace RimWorldLLM.Tests
                 Assert.True(File.Exists(s.Args[2]));
                 Assert.Equal(Path.Combine(t.Dir, "cfg", "RimWorldLLM", "engine-profile.json"), s.Args[2]);
                 var prof = JObject.Parse(File.ReadAllText(s.Args[2]));
-                Assert.EndsWith("a-0.1-py3-none-any.whl", (string)prof["agent"]["wheel"]);
-                Assert.Equal(Path.Combine(t.Dir, "cfg", "RimWorldLLM", "bridge.json"), s.Env["RIMWORLDLLM_BRIDGE_JSON"]);
+                Assert.Null(prof["agent"]);
+                Assert.False(s.Env.ContainsKey("RIMWORLDLLM_BRIDGE_JSON"));
                 Assert.NotNull(r.Client);
             }
         }

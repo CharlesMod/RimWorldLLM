@@ -19,7 +19,6 @@ On first start the mod offers to set up a local model. Click "Set up": it checks
 What is downloaded
 - One AI model from Hugging Face, sized to your card (see below): 3.1 to 10.0 GB.
 - llama.cpp, the program that runs the model, from its official GitHub releases. For NVIDIA cards (CUDA) that is about 0.8 GB to download and 2 GB on disk; for AMD/Intel (Vulkan) or a Mac, under 0.1 GB.
-- uv and Python 3.12 for the mod's helper program: about 0.2 GB on disk.
 Disk space with an NVIDIA card: about 12 GB in all on a 16 GB card once setup is done (about 16 GB at the peak, while the starter and the full model are both on disk), about 6 GB with E4B RP.
 
 Where it lives and how to remove it
@@ -50,7 +49,7 @@ Compatibility
 Source code (MIT license)
 - Mod: https://github.com/CharlesMod/RimWorldLLM
 - Engine: https://github.com/CharlesMod/easyEngine
-The downloaded models carry their own terms (Apache 2.0 with the Gemma terms of use); llama.cpp and uv have their own licenses.</description>
+The downloaded models carry their own terms (Apache 2.0 with the Gemma terms of use); llama.cpp has its own license.</description>
 	<packageId>charleszard.rimworldllm</packageId>
 	<modVersion>2.1.0</modVersion>
 	<url>https://github.com/CharlesMod/RimWorldLLM</url>

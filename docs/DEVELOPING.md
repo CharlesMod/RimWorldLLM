@@ -65,26 +65,29 @@ Mod/
   Defs/                      thought and interaction defs used by the effects
   RimWorldLLM.csproj         build + deploy project
   Source/
+    Mind/                    the mind (namespace RimWorldLLM.Mind): Core/ Llm/ ToolLoop/ BridgeClient/ RimWorld/ Py/; runs in the mod, hosted by RimWorld/MindHost.cs
     Bridge/                  game-agnostic bridge: HTTP server, auth, envelope, op ids, event ring, minds, talk queue (no game references)
     RimWorld/                RimWorld side: snapshots, events, Harmony hooks, say/effects, settings, hook API
   Languages/English/Keyed/   all player-facing text
   Textures/RimWorldLLM/      speech bubble art (Textures/src/ holds its generator; not shipped)
   1.7/Assemblies/            build output
-Mod.Tests/                   xUnit tests for Bridge/ and the pure rules (not shipped); run `dotnet test Mod.Tests`
-agent/                       the Python agent (rimworldllm-agent wheel, shipped in Engine/agent/); see agent/README.md
-bench/                       model benches and soak tools (not shipped)
+Mod.Tests/                   xUnit tests for Bridge/, Mind/ and the pure rules (not shipped); run `dotnet test Mod.Tests` (there is no pytest)
+tools/MindHarness/           console harness for the mind (replay, speedsim, steward-try, comment-try; not shipped)
+bench/                       model benches and soak tools (not shipped; need the pinned Python commit, see bench/README.md)
 scripts/package-release.sh   builds and checks the release zip
 docs/                        BRIDGE-API, HOOK-API, ENGINE, SPEC, SPEED, MODEL-BENCH, E4B-PASS, CREATIVE-ROUND, release/
 ```
 
 With `EasyEngineDir` (default a sibling `../easyEngine` checkout) built, the deploy also copies the engine binaries to
-`Engine/<os>-<arch>/` and `agent/dist/*.whl` to `Engine/agent/` (run `agent/build-wheel.sh` first). Note the deploy copies
+`Engine/<os>-<arch>/`. Note the deploy copies
 all of `Textures/`, including `Textures/src/`; the release script ships only `Textures/RimWorldLLM/`.
 
-## Running the agent by hand (no local engine)
+## Running an external agent over the HTTP bridge (optional)
+
+The built-in mind uses the in-process door and needs none of this; the HTTP bridge stays opt-in for tools and other agents.
 
 1. Install the [Harmony](https://steamcommunity.com/workshop/file/filedetails/?id=2009463077) mod (v3, Steam Workshop) and this mod.
-2. Run the agent (`agent/README.md`) on your agent machine, or choose "My own endpoint" for just the LLM.
+2. Run your own agent on its machine. The mind runs in the mod, so "My own endpoint" needs no engine: it only points the in-mod mind at your LLM.
 3. In RimWorld settings, enable RimWorldLLM and set:
    - **Bridge port** / **bind address** - where the in-mod HTTP server listens
    - **Agent dial-out URL** - where the mod POSTs colony events

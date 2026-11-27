@@ -198,7 +198,7 @@ relations, and merges memories. It is the only time block C changes, with one ex
 ongoing concerns (at most two, born from game events or a reflection, resolved by events or a reflection, faded after
 a few days) show as one `Worries: ...` line in block C, so block C also changes when a concern is born or closes.
 The grudge and make-up loop (an insult starts avoid, cooldown, then one pawn walks over to apologise, make up or
-confront) is run by the agent from rules and calls `/social_action` directly; see `core/concerns.py` and `core/grudges.py`.
+confront) is run by the agent from rules and calls `/social_action` directly; see `Mod/Source/Mind/Core/Concerns.cs` and `Grudges.cs`.
 
 **Idle-time work**, lowest priority, dropped whenever a window is wanted: reflection, a daily
 first-person diary entry per pawn, the narrator's colony chronicle.

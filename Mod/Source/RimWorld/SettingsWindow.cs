@@ -129,6 +129,7 @@ namespace RimWorldLLM
         {
             Title(l, "RWL_Model_Title");
             Check(l, "RWL_Conn_Enabled", ref s.enabled, "RWL_Tip_Enabled");
+            MindLine(l);
             l.Gap(4f);
             l.Label(UiUtil.T("RWL_Eng_SourceLabel"));
             bool local = s.llmSource != "own";
@@ -226,18 +227,11 @@ namespace RimWorldLLM
             }
         }
 
-        static void AgentLine(Listing_Standard l)
+        static void MindLine(Listing_Standard l)
         {
-            double secs = RWLBridge.Runtime.Requests.SecondsSinceAgent(DateTime.UtcNow.Ticks);
-            string text;
-            Color col;
-            if (secs < 0) { text = UiUtil.T("RWL_Conn_AgentNever"); col = Color.gray; }
-            else
-            {
-                text = UiUtil.T("RWL_Conn_AgentLast", Ago(secs));
-                col = secs < 30 ? Green : (secs < 300 ? Amber : Color.gray);
-            }
-            GUI.color = col; l.Label(UiUtil.T("RWL_Conn_AgentLabel", text)); GUI.color = Color.white;
+            var st = MindHost.State;
+            Color col = st == MindState.Running ? Green : (st == MindState.Error ? Red : (st == MindState.WaitingForModel ? Amber : Color.gray));
+            GUI.color = col; l.Label(UiUtil.T("RWL_Mind_Label", MindHost.StatusLine())); GUI.color = Color.white;
         }
 
         public static string Ago(double secs)
@@ -599,7 +593,7 @@ namespace RimWorldLLM
             else { state = UiUtil.T("RWL_Conn_BridgeStopped"); col = Red; }
             GUI.color = col; l.Label(state); GUI.color = Color.white;
             if (!RWLBridge.IsRunning && !string.IsNullOrEmpty(RWLBridge.LastError)) { GUI.color = Red; l.Label(UiUtil.T("RWL_Conn_LastError", RWLBridge.LastError)); GUI.color = Color.white; }
-            AgentLine(l);
+            MindLine(l);
 
             l.Gap(4f);
             NumRow(l, "RWL_Conn_Port", ref s.bridgePort, ref _portBuf, 1, 65535, "RWL_Tip_Port");

@@ -1,9 +1,9 @@
 # The narrator's view of the game
 
 The steward (the narrator when it plays) never sees the map. It sees the digest: a JSON object the mod builds
-(`GET /digest`, `Mod/Source/RimWorld/VivariumDigest.cs`) that the agent renders into about 1k tokens of short lines
-(`agent/rimworldllm_agent/games/rimworld/steward_digest.py`), plus the playbook alerts that fire from its `facts`
-(`steward_rules.py`, `strategy/rules.json`).
+(`GET /digest`, `Mod/Source/RimWorld/VivariumDigest.cs`) that the mind renders into about 1k tokens of short lines
+(`Mod/Source/Mind/RimWorld/StewardDigest.cs`), plus the playbook alerts that fire from its `facts`
+(`StewardRules.cs`, `Mod/Source/Mind/RimWorld/Resources/rules.json`).
 
 **Design rule.** The model sees short summaries in words: counts, reasons, deadlines, and direction plus distance.
 It never sees coordinates or item lists. The hands find the exact cells.
@@ -58,7 +58,7 @@ fixed.
 | `temperature` | `OutdoorTemp` | raw; the digest key has no unit (facts `temp_c` does) | rendered "12C" already | - | fine |
 | `research.current.progress` | `ProgressPercent` 0..1 | raw | rendered as a percent already | - | fine |
 | `alerts[].alert` | alert class name | code name, not text | the renderer uses `label` only | - | fine |
-| `threats`, `raid_active`, `enemies_count` | hostile pawns | no raid/manhunter kind or size | owned by the combat worker (agent/viv3) | - | not ours |
+| `threats`, `raid_active`, `enemies_count` | hostile pawns | no raid/manhunter kind or size | owned by the combat worker (`StewardCombat.cs`) | - | not ours |
 | `power.*` vs facts `power_net_w` | `PowerOutput` | two different numbers, units unnamed | name the unit (W) in the render | P3 | open |
 | `colonists_without_bedroom` | owned bed role | counts barracks as no bedroom; `build.missing` counts it as shelter | align the two | P3 | open |
 | `doctors_capable` | `WorkTypeIsDisabled(Doctor)` | counts downed doctors | exclude downed | P3 | open |
@@ -68,7 +68,7 @@ fixed.
 
 ## What the narrator reads now
 
-From the sample digest (`agent/tests/data/steward_digest_sample.json`), new lines only:
+From the sample digest (`Mod.Tests/Mind/Data/steward_digest_sample.json`), new lines only:
 
 ```
 DEADLINES: Bram bleeds out in 6 h; raw potatoes rot in 19 h; winter (crops die) in 12 days
@@ -85,7 +85,7 @@ LOOSE: steel 450 14 cells NE (no stockpile takes it); wood 120 9 cells S (only f
 
 ## Budget
 
-Every new list has a cap in C# and a per-level cap in Python that shrinks as the digest is cut to fit the 6000-char cap:
+Every new list has a cap in C# and a per-level cap in the C# mind (`StewardDigest.cs`) that shrinks as the digest is cut to fit the 6000-char cap:
 - `stuck`: 6/4/2/0.
 - `deadlines`: 6/6/4/3.
 - rot and harvest: 3/3/2/1.
@@ -118,9 +118,9 @@ Each C# part is a pure helper in `Mod/Source/Bridge/`, unit-tested in `Mod.Tests
 | clocks | `NarratorClock.cs` | `VivariumDeadlines.cs` | `NarratorFoodTests.cs` |
 | extras | `NarratorExtras.cs` | `VivariumExtras.cs` | `NarratorFoodTests.cs` |
 
-On the agent side:
-- The render is in `steward_digest.py`.
-- The rules are in `strategy/rules.json`: `build.loose_no_stockpile`, `build.stuck_no_material`,
+On the mind side:
+- The render is in `StewardDigest.cs`.
+- The rules are in `Mod/Source/Mind/RimWorld/Resources/rules.json`: `build.loose_no_stockpile`, `build.stuck_no_material`,
   `build.stuck_no_builder`, `work.bills_stuck`, `food.harvest_before_starving`, `food.hunt_before_starving`,
   `food.rot_soon`, `winter.coming` and `health.infection_losing`, plus an amended `health.bleeding`.
 - The strategy section "Reading the digest's new lines" is in `strategy/steward_strategy.md`.

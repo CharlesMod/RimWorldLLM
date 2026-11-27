@@ -25,7 +25,9 @@ namespace RimWorldLLM.Bridge
         public readonly TalkQueue Talk = new TalkQueue();
         public readonly Vivarium Vivarium = new Vivarium();
         public readonly IGameAdapter Game;
-        public BridgeServer Server { get; private set; }
+        volatile BridgeServer _server;
+        bool _inProcess;
+        public BridgeServer Server { get { return _server; } private set { _server = value; } }
 
         public BridgeRuntime(IGameAdapter game, Func<double> nowSeconds)
         {
@@ -42,18 +44,41 @@ namespace RimWorldLLM.Bridge
         public int Port { get { return Server != null ? Server.Port : Const.DefaultPort; } }
         public string LastError { get { return Server != null ? Server.LastError : ""; } }
 
+        /// <summary>True once the in-process door was opened (EnableInProcess); it stays open across Start/Stop of the HTTP side.</summary>
+        public bool InProcessEnabled { get { return _inProcess; } }
+
+        /// <summary>
+        /// Opens the in-process door (the mind inside the mod submits requests without HTTP; see InProcessTransport).
+        /// Makes a listener-less server when none exists yet, so FrameUpdate pumps whether or not HTTP is on.
+        /// Start/Stop of the HTTP listener afterwards keep the door open. Call it once, from the game thread.
+        /// </summary>
+        public void EnableInProcess()
+        {
+            _inProcess = true;
+            if (Server == null) Server = NewServer(new BridgeOptions());
+            Server.EnableInProcess();
+        }
+
+        BridgeServer NewServer(BridgeOptions opt)
+        {
+            var s = new BridgeServer(opt, Router) { LogInfo = Game.Info, LogError = Game.Error };
+            s.SetState(Game.BuildState());
+            if (_inProcess) s.EnableInProcess();
+            return s;
+        }
+
         public bool Start(BridgeOptions opt)
         {
             Stop();
-            Server = new BridgeServer(opt, Router) { LogInfo = Game.Info, LogError = Game.Error };
-            Server.SetState(Game.BuildState());
+            Server = NewServer(opt);
             return Server.Start();
         }
 
+        /// <summary>Stops the HTTP listener. With the in-process door open, a listener-less server takes its place.</summary>
         public void Stop()
         {
             var s = Server;
-            Server = null;
+            Server = _inProcess ? NewServer(new BridgeOptions()) : null;   // swapped at once: the transport never sees a gap
             if (s != null) s.Stop();
         }
 

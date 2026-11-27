@@ -33,14 +33,6 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("vram_mib")] public int VramMib;
     }
 
-    public sealed class EngineAgent
-    {
-        [JsonProperty("phase")] public string Phase;
-        [JsonProperty("pid")] public int Pid;
-        [JsonProperty("restarts")] public int Restarts;
-        [JsonProperty("message")] public string Message;
-    }
-
     public sealed class EngineParent
     {
         [JsonProperty("pid")] public int Pid;
@@ -60,7 +52,6 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("shape")] public EngineShape Shape;
         [JsonProperty("server_url")] public string ServerUrl;
         [JsonProperty("tok_s")] public double? TokS;
-        [JsonProperty("agent")] public EngineAgent Agent;
         [JsonProperty("parents")] public List<EngineParent> Parents;
         [JsonProperty("errors")] public List<string> Errors;
         /// <summary>True when the selected local model is the catalog's fallback (the smallest one).</summary>

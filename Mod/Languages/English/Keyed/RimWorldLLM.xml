@@ -106,9 +106,12 @@
   <RWL_Conn_BridgeRunning>Bridge running on port {0}</RWL_Conn_BridgeRunning>
   <RWL_Conn_BridgeStopped>Bridge not running</RWL_Conn_BridgeStopped>
   <RWL_Conn_LastError>Last start error: {0}</RWL_Conn_LastError>
-  <RWL_Conn_AgentLabel>Agent: {0}</RWL_Conn_AgentLabel>
-  <RWL_Conn_AgentNever>no contact since the bridge started</RWL_Conn_AgentNever>
-  <RWL_Conn_AgentLast>last contact {0}</RWL_Conn_AgentLast>
+  <RWL_Mind_Label>Narrator and colonists: {0}</RWL_Mind_Label>
+  <RWL_Mind_Running>running</RWL_Mind_Running>
+  <RWL_Mind_WaitingGame>waiting for a game</RWL_Mind_WaitingGame>
+  <RWL_Mind_WaitingModel>waiting for the model</RWL_Mind_WaitingModel>
+  <RWL_Mind_Disabled>off (the mod is switched off)</RWL_Mind_Disabled>
+  <RWL_Mind_Error>error: {0}</RWL_Mind_Error>
   <RWL_Ago_Seconds>{0} s ago</RWL_Ago_Seconds>
   <RWL_Ago_Minutes>{0} min ago</RWL_Ago_Minutes>
   <RWL_Ago_Hours>{0} h ago</RWL_Ago_Hours>
@@ -120,9 +123,9 @@
   <RWL_Conn_Edit>Edit</RWL_Conn_Edit>
   <RWL_Conn_Regen>Regenerate</RWL_Conn_Regen>
   <RWL_Conn_RegenConfirm>Click to confirm</RWL_Conn_RegenConfirm>
-  <RWL_Conn_RegenWarn>This restarts the bridge with a new token. A running agent re-reads bridge.json; an agent on another machine needs the new token.</RWL_Conn_RegenWarn>
+  <RWL_Conn_RegenWarn>This restarts the bridge with a new token. An agent on another machine needs the new token. The mind inside the mod is not affected.</RWL_Conn_RegenWarn>
   <RWL_Conn_Restart>Restart bridge</RWL_Conn_Restart>
-  <RWL_Conn_EndpointHelp>The OpenAI-compatible LLM the agent talks to. Your endpoint is passed to the RimWorldLLM engine, which forwards the agent to it; the key is kept in bridge.json and the engine.</RWL_Conn_EndpointHelp>
+  <RWL_Conn_EndpointHelp>The OpenAI-compatible LLM the mod talks to directly. The RimWorldLLM engine is not started in this mode; the key is kept in this setting and in bridge.json.</RWL_Conn_EndpointHelp>
   <RWL_Conn_LlmUrl>Base URL (for example http://localhost:4480/v1)</RWL_Conn_LlmUrl>
   <RWL_Conn_LlmModel>Model</RWL_Conn_LlmModel>
   <RWL_Conn_LlmKey>API key</RWL_Conn_LlmKey>
@@ -221,7 +224,7 @@
   <RWL_Ev_Art>Finished artworks</RWL_Ev_Art>
   <RWL_Ev_Sleep>Falling asleep (feeds dreams)</RWL_Ev_Sleep>
   <RWL_Dreams_Enable>Dreams while colonists sleep</RWL_Dreams_Enable>
-  <RWL_Dreams_EnableTip>A sleeping colonist may get a short surreal dream cloud drawn from the day's memories and thoughts. Needs the agent. Turning this off also stops the falling-asleep events.</RWL_Dreams_EnableTip>
+  <RWL_Dreams_EnableTip>A sleeping colonist may get a short surreal dream cloud drawn from the day's memories and thoughts. Turning this off also stops the falling-asleep events.</RWL_Dreams_EnableTip>
   <RWL_Ev_Gatherings>Gatherings (meals, parties, weddings, rituals, speeches)</RWL_Ev_Gatherings>
   <RWL_Ev_Firsts>First-time sights (snow, eclipse, a corpse...)</RWL_Ev_Firsts>
   <RWL_Art_Enable>Show written art descriptions</RWL_Art_Enable>
@@ -282,7 +285,7 @@
   <RWL_Debug_Stopped>not running</RWL_Debug_Stopped>
   <RWL_Debug_Stores>Op-id store: {0} remembered. Event ring: {1} kept, last seq {2}. Talk queue: {3} waiting.</RWL_Debug_Stores>
   <RWL_Debug_TestLine>Send test line</RWL_Debug_TestLine>
-  <RWL_Debug_TestHelp>Queues a talk request for the pawn; the agent picks it up from GET /talk and answers with POST /say.</RWL_Debug_TestHelp>
+  <RWL_Debug_TestHelp>Queues a talk request for the pawn; the mind picks it up from GET /talk and answers with POST /say.</RWL_Debug_TestHelp>
   <RWL_Debug_PickPawn>Pick a colonist</RWL_Debug_PickPawn>
   <RWL_Debug_Send>Queue</RWL_Debug_Send>
   <RWL_Debug_Queued>Queued {0} for {1}.</RWL_Debug_Queued>
@@ -294,7 +297,7 @@
   <RWL_Debug_Events>Event ring tail (newest first)</RWL_Debug_Events>
   <RWL_Debug_EventRow>#{0}  tick {2}  {1}: {3}</RWL_Debug_EventRow>
   <RWL_Eng_AutoStart>Start the local engine with the game</RWL_Eng_AutoStart>
-  <RWL_Eng_AutoStartTip>Launches (or attaches to) the RimWorldLLM engine when RimWorld starts. It also runs the agent, and stops when the game exits.</RWL_Eng_AutoStartTip>
+  <RWL_Eng_AutoStartTip>Launches (or attaches to) the RimWorldLLM engine when RimWorld starts. It stops when the game exits.</RWL_Eng_AutoStartTip>
   <RWL_Eng_SourceLabel>LLM source</RWL_Eng_SourceLabel>
   <RWL_Eng_SourceLocal>Local engine (recommended)</RWL_Eng_SourceLocal>
   <RWL_Eng_SourceLocalTip>RimWorldLLM downloads and runs a model that fits your graphics card and memory.</RWL_Eng_SourceLocalTip>
@@ -355,7 +358,6 @@
   <RWL_Setup_Shape>Running now: {0} lines at once, {1} memory each, {2} expert layers on the processor, {3} cache, about {4} of graphics memory.</RWL_Setup_Shape>
   <RWL_Setup_OpenPage>Open setup page in browser</RWL_Setup_OpenPage>
   <RWL_Eng_TokS>{0} tok/s</RWL_Eng_TokS>
-  <RWL_Setup_Agent>Agent: {0} (restarts: {1})</RWL_Setup_Agent>
   <RWL_Fallback_DefaultNote>Smallest model: expect repeated lines and weaker understanding of what was said.</RWL_Fallback_DefaultNote>
   <RWL_Fallback_Badge>Fallback model</RWL_Fallback_Badge>
   <RWL_Fallback_RowWarning>Warning: this is the smallest model, kept only as a fallback. {0}</RWL_Fallback_RowWarning>
@@ -512,12 +514,10 @@ Use it anyway?</RWL_Fallback_ConfirmText>
 Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. Afterwards, Set up starts over from the beginning.</RWL_Storage_RemoveConfirm>
   <RWL_Storage_RemoveTitle>Remove everything RimWorldLLM stored</RWL_Storage_RemoveTitle>
   <RWL_Storage_RemoveMemory>Also delete RimWorldLLM's memory and logs ({0})</RWL_Storage_RemoveMemory>
-  <RWL_Tip_RemoveMemory>The agent's own folder: what colonists remember and its logs. Leave this off to keep them for a later reinstall.</RWL_Tip_RemoveMemory>
+  <RWL_Tip_RemoveMemory>The mind's own folder: what colonists remember and its logs (the mind pauses while it is deleted). Leave this off to keep them for a later reinstall.</RWL_Tip_RemoveMemory>
   <RWL_Storage_RemoveGo>Remove</RWL_Storage_RemoveGo>
   <RWL_Storage_MemoryDeleted>RimWorldLLM's memory and logs were deleted ({0}).</RWL_Storage_MemoryDeleted>
   <RWL_Storage_MemoryNone>RimWorldLLM had no memory or logs to delete.</RWL_Storage_MemoryNone>
-  <RWL_Storage_MemorySkippedAgent>RimWorldLLM's memory and logs were not deleted: the agent was still running. Try again once it has stopped.</RWL_Storage_MemorySkippedAgent>
-  <RWL_Storage_MemorySkippedEngine>RimWorldLLM's memory and logs were not deleted: the engine stopped answering.</RWL_Storage_MemorySkippedEngine>
   <RWL_Storage_MemoryRefused>RimWorldLLM's memory and logs in {0} were not deleted: {1}</RWL_Storage_MemoryRefused>
   <RWL_Gpu_HostAndModel>Game on {0} · {1}: {2} free for the model</RWL_Gpu_HostAndModel>
   <RWL_Gpu_ModelOnly>{0}: {1} free for the model</RWL_Gpu_ModelOnly>
@@ -527,7 +527,7 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Adv_OpenWarning>Anyone on your network can read colony state and make colonists speak. Set a shared token below, or bind to 127.0.0.1.</RWL_Adv_OpenWarning>
   <RWL_Tip_Port>The port the in-game bridge listens on. Change it only if another program already uses 9765.</RWL_Tip_Port>
   <RWL_Tip_Bind>127.0.0.1 keeps the bridge on this computer. Anything else opens it to your network.</RWL_Tip_Bind>
-  <RWL_Tip_Token>The password the agent uses to talk to the bridge. It is written to bridge.json for you.</RWL_Tip_Token>
+  <RWL_Tip_Token>The password an outside agent uses to talk to the bridge. It is written to bridge.json for you.</RWL_Tip_Token>
   <RWL_Tip_AgentUrl>If you run your own agent, the mod posts colony events to this address.</RWL_Tip_AgentUrl>
   <RWL_Tip_Push>Sends colony events to the agent address above. Events are always kept for the bridge.</RWL_Tip_Push>
   <RWL_Tip_Restart>Stops and starts the bridge again, for example after changing the port.</RWL_Tip_Restart>

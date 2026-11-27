@@ -1,7 +1,10 @@
 # RimWorldLLM bridge API v2 (contract)
 
-The contract between the mod (C#, in game) and the agent (Python, its own program). Both sides
-build against this file. A change to it goes in its own commit, and both sides update together.
+The contract between the mod (C#, in game) and the agent. The agent is the mod's own mind
+(`RimWorldLLM.Mind`, C#, in the same assembly; it was a separate Python program until 2026-11-27) and
+it speaks this contract in process, with no HTTP hop (see "In-process use" below). An external agent
+in any language can speak the same contract over the opt-in HTTP bridge. Both sides build against this
+file. A change to it goes in its own commit, and both sides update together.
 Background: `docs/SPEC.md` §3, §6, §8, §10.
 
 The file has two parts. **Part 1, the protocol,** is game-agnostic: connection, auth, envelope,
@@ -244,7 +247,7 @@ The pawn's mind blob, opaque to the mod, saved in the save file.
   `memories`, `relations`, `notes`); unknown keys are ignored.
 
 ### `POST /social_action`
-One small social move chosen by the agent's wants-with-follow-through window (agent/rimworldllm_agent/core/wants.py).
+One small social move chosen by the agent's wants-with-follow-through window (`Mod/Source/Mind/Core/Wants.cs`).
 Body: `{op_id, pawn, action: "seek_out"|"avoid", target: <pawn id>, topic?: <short text, <= 80 chars>}`.
 Reply `{ok: true, applied: true}` (plus `topic_dropped: true` when the topic was dropped, see below).
 
@@ -278,6 +281,33 @@ Talk requests waiting for the agent: player-typed lines, other mods' requests th
 hook API, and debug-window requests:
 `{"requests": [{"id": "...", "pawn": 1, "text": "...", "from": "player"}]}` (plus the envelope).
 A request is removed once the agent answers it with `POST /say` carrying `"talk_id"`.
+
+## In-process use (the mod's own mind)
+
+The mod's mind does not use HTTP. `BridgeRuntime.EnableInProcess()` opens a door on `BridgeServer` that takes the same
+requests an HTTP client would send, and the mind's `BridgeClient` (`Mod/Source/Mind/BridgeClient`) talks to it through an
+`InProcessTransport` (an `IBridgeTransport`). Everything in this file applies unchanged to it: the same routes, the same
+envelope, the same bodies.
+
+- **One queue.** `BridgeServer.SubmitAsync(method, path, query, body, ct)` puts an inbound request, with a
+  `TaskCompletionSource`, in the same `_pending` queue the HTTP threads feed. `Pump` (the per-frame drain on the game
+  thread, 2 ms budget) serves it through `ApiRouter.Handle` and `Envelope.Json` exactly as it serves an HTTP request, so
+  game-thread rules, `needs_game`, `op_id` dedup (`OpIdStore`) and `expires_at_real` expiry behave the same. The reply
+  continues on the thread pool, never on the game thread.
+- **No token.** An in-process request is trusted: no `Authorization` check, and it is logged in `Requests` as
+  authenticated. The in-flight cap of 16 applies to HTTP only.
+- **Refusals the door adds** (as the same envelope a handler would return): `413 too_large` for a body over 64 KiB;
+  `GET /health` is answered from published state without a pump; `503 busy` when the game thread has not pumped for
+  `StalledAfter` (1 s); `504 timeout` after `GameThreadTimeout` (20 s), and the queued request is abandoned and never
+  applied later; `503 no_game` when the door is closed or the server stopped.
+- **Lifecycle.** The door and the HTTP listener are independent: `Stop()` closes both, `Start()` of the listener leaves the
+  door as it is, and `EnableInProcess()` creates a listener-less `BridgeServer` when none exists. `FrameUpdate` pumps
+  whenever a server exists. With the mod disabled the HTTP bridge does not start; the door is unaffected.
+- **The HTTP bridge is opt-in.** The mind no longer needs `bridge.json`, a port or a token. Turn the HTTP bridge on only
+  for external tools (the debug path, another agent, the `agentUrl` dial-out of colony events). Its contract is this file.
+- **bridge.json** no longer carries the mind's LLM endpoint for the mod's own use: the mind reads the engine's `/v1` (local
+  mode) or the player's endpoint (own mode) from the mod's settings directly. The `llm` block below is only for an
+  external agent.
 
 ## Threading (mod side)
 
@@ -564,7 +594,7 @@ A compact colony read for the steward: only what the player could see in the UI.
 - Caps: 30 pawns (colonists, then slaves), 4 skills per pawn (highest), 25 resources, 15 research
   options, 10 alerts, 10 letters, 20 beds.
 - `facts`: a flat block named exactly as the playbook's `digest_fields`
-  (`agent/rimworldllm_agent/games/rimworld/strategy/rules.json`), for the agent's rule evaluation; the agent
+  (`Mod/Source/Mind/RimWorld/Resources/rules.json`), for the agent's rule evaluation; the agent
   does not render it into the prompt. Filled (a key is left out when it cannot be computed): `day` (days
   since landing), `season` (spring/summer/fall/winter), `biome` (snake_case defName), `temp_c`, `storyteller`,
   `difficulty_threat_scale`, `wealth`, `food_days`, `dlc`; `colonists` (free adult colonists spawned),

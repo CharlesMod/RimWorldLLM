@@ -63,7 +63,7 @@ are everywhere in tales, interactions and combat; ours never carry the game's to
    the mourners; for log lines both pawns, their opinions of each other and their relation. `minor_involved` is set when
    anyone involved is under 18. The game's own text for that very instance is kept as `example`.
 3. **Never block.** The hook returns the game's text at once. Nothing calls the model from a hook.
-4. **Written in the background.** The agent's lowest-priority idle job (`agent/.../games/rimworld/textfill.py`) reads
+4. **Written in the background.** The agent's lowest-priority idle job (`Mod/Source/Mind/RimWorld/TextFill.cs`) reads
    `GET /text/queue`, writes up to three items of one kind in one structured call on an actor slot (`Cls.IDLE`,
    preemptible), cleans each text and posts `POST /text/fill`.
 5. **Ours from then on.** Stored per instance, keyed `art:<thingID>`, `grave:<graveID>:<deadPawnID>`,

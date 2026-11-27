@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the RimWorldLLM release zip: mod DLLs, agent wheel, four easy-engine binaries,
+# Builds the RimWorldLLM release zip: mod DLLs, four easy-engine binaries,
 # licenses, BUILD and SHA256SUMS, then verifies the result and prints PASS/FAIL per check.
 set -euo pipefail
 
@@ -34,14 +34,13 @@ done
 
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)   # physical path: the build caches absolute paths (a /home -> /var/home link lost Newtonsoft.Json.dll)
 GO=${GO:-$HOME/.local/go/bin/go}
-UV=${UV:-$(command -v uv || echo "$HOME/.local/bin/uv")}
 DOTNET=${DOTNET:-$HOME/.dotnet/dotnet}
 NICE="nice -n 19"
 MODSRC="$REPO/Mod"
 FAILS=0
 
 die() { echo "ERROR: $*" >&2; exit 1; }
-for t in zip zipinfo unzip file sha256sum python3 git; do
+for t in zip zipinfo unzip file sha256sum git; do
   command -v "$t" >/dev/null || die "missing tool: $t"
 done
 
@@ -61,37 +60,18 @@ for d in "$REPO" "$EE_DIR"; do
   s=$(git -C "$d" status --porcelain --untracked-files=no)
   if [ -n "$s" ]; then echo "DIRTY tracked files in $d:" >&2; echo "$s" >&2; dirty=1; fi
 done
-u=$(git -C "$REPO" ls-files --others --exclude-standard -- Mod agent)
-if [ -n "$u" ]; then echo "DIRTY untracked files under Mod/ or agent/:" >&2; echo "$u" >&2; dirty=1; fi
+u=$(git -C "$REPO" ls-files --others --exclude-standard -- Mod)
+if [ -n "$u" ]; then echo "DIRTY untracked files under Mod/:" >&2; echo "$u" >&2; dirty=1; fi
 [ "$dirty" = 0 ] || die "refusing to package a dirty tree"
 
 # --- versions ---
-MODVER=$(python3 -I - "$MODSRC/About/About.xml" <<'PY'
-import re,sys
-m=re.search(r'<modVersion>\s*([^<\s]+)\s*</modVersion>',open(sys.argv[1],encoding='utf-8').read())
-print(m.group(1) if m else '')
-PY
-)
+MODVER=$(sed -nE 's#.*<modVersion>[[:space:]]*([^<[:space:]]+)[[:space:]]*</modVersion>.*#\1#p' "$MODSRC/About/About.xml" | head -1)
 [ -n "$MODVER" ] || die "no <modVersion> in About.xml"
 [ -n "$VERSION" ] || VERSION="$MODVER-beta"
 RW_SHA=$(git -C "$REPO" rev-parse HEAD)
 EE_SHA=$(git -C "$EE_DIR" rev-parse HEAD)
-LLAMA_TAG=$(python3 -I - "$EE_DIR/catalog/catalog.json" <<'PY'
-import json,sys
-print(json.load(open(sys.argv[1]))["llamacpp"]["tag"])
-PY
-)
-UV_VER=$(python3 -I - "$EE_DIR/catalog/catalog.json" <<'PY'
-import json,re,sys
-c=json.load(open(sys.argv[1]))
-v=set()
-for e in c.get("uv",[]):
-    m=re.search(r'/download/([^/]+)/',e.get("url",""))
-    if m: v.add(m.group(1))
-print(",".join(sorted(v)))
-PY
-)
-[ -n "$LLAMA_TAG" ] && [ -n "$UV_VER" ] || die "could not read llama.cpp tag / uv version from catalog"
+LLAMA_TAG=$(tr -d '\n' <"$EE_DIR/catalog/catalog.json" | sed -nE 's#.*"llamacpp"[[:space:]]*:[[:space:]]*\{[[:space:]]*"tag"[[:space:]]*:[[:space:]]*"([^"]+)".*#\1#p')
+[ -n "$LLAMA_TAG" ] || die "could not read llama.cpp tag from catalog"
 
 [ -n "$OUT" ] || OUT="$REPO/dist-release"
 mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
@@ -134,18 +114,7 @@ fi
 cp -r "$MODSRC/About" "$MODSRC/Defs" "$MODSRC/Languages" "$ROOT/"
 mkdir -p "$ROOT/Textures"; cp -r "$MODSRC/Textures/RimWorldLLM" "$ROOT/Textures/"
 
-# --- 3. agent wheel ---
-echo "== agent wheel"
-( cd "$REPO/agent" && UV="$UV" PATH="$(dirname "$UV"):$PATH" $NICE ./build-wheel.sh ) >"$STAGE/wheel.log" 2>&1 \
-  || { tail -20 "$STAGE/wheel.log" >&2; die "wheel build failed"; }
-shopt -s nullglob
-wheels=("$REPO"/agent/dist/rimworldllm_agent-*-py3-none-any.whl)
-shopt -u nullglob
-[ "${#wheels[@]}" = 1 ] || die "expected exactly one wheel in agent/dist, found ${#wheels[@]}"
-mkdir -p "$ROOT/Engine/agent"; cp "${wheels[0]}" "$ROOT/Engine/agent/"
-WHEEL=$(basename "${wheels[0]}")
-
-# --- 4. engine binaries ---
+# --- 3. engine binaries ---
 TARGETS="linux-amd64 windows-amd64 darwin-arm64 darwin-amd64"
 # Go marks vcs.modified=true for any untracked file; tolerate only the checkout's own .claude/ dir.
 EE_UNTRACKED_OK=0
@@ -206,9 +175,7 @@ mod_version: $MODVER
 release: $VERSION
 rimworldllm_commit: $RW_SHA
 easyengine_commit: $EE_SHA
-agent_wheel: $WHEEL
 llamacpp_tag: $LLAMA_TAG
-uv_version: $UV_VER
 build_date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
 
@@ -249,13 +216,10 @@ for f in "${exp[@]}"; do [ -s "$V/$f" ] || miss="$miss $f"; done
 nbub=$(find "$V/Textures/RimWorldLLM/Bubbles" -name '*.png' | wc -l)
 nsrc=$(find "$MODSRC/Textures/RimWorldLLM/Bubbles" -name '*.png' | wc -l)
 [ "$nbub" = "$nsrc" ] && [ "$nbub" -gt 0 ] && pass "bubble PNGs: $nbub" || fail "bubble PNGs: $nbub vs source $nsrc"
-nw=$(find "$V/Engine/agent" -name '*.whl' | wc -l)
-[ "$nw" = 1 ] && pass "exactly one wheel ($WHEEL)" || fail "wheel count $nw"
 
 # mod identity (the mod was called HermesVoice before 2.1.0)
 grep -q '<name>RimWorldLLM</name>' "$V/About/About.xml" && grep -q '<packageId>charleszard.rimworldllm</packageId>' "$V/About/About.xml" \
   && pass "About.xml name RimWorldLLM, packageId charleszard.rimworldllm" || fail "About.xml name/packageId"
-case "$WHEEL" in rimworldllm_agent-*-py3-none-any.whl) pass "wheel is rimworldllm_agent";; *) fail "wheel name $WHEEL";; esac
 old=$(grep -E -i 'hermesvoice|hermes-engine' <<<"$LIST" || true)
 [ -z "$old" ] && pass "no old names in file paths" || fail "old names in paths: $(head -3 <<<"$old" | tr '\n' ' ')"
 
@@ -282,24 +246,20 @@ for t in $TARGETS; do
 done
 [ "$okrev" = 1 ] && pass "engine binaries built from easyEngine $EE_SHA, unmodified" || fail "engine vcs info mismatch"
 
-# wheel contents
-WL=$(unzip -Z1 "$V/Engine/agent/$WHEEL")
-bad=$(grep -E '(^|/)(tests?/|test_[^/]*\.py$|conftest\.py$|bench|\.env$)' <<<"$WL" || true)
-[ -z "$bad" ] && pass "wheel holds no tests/bench/conftest/.env" || fail "wheel contains: $(head -3 <<<"$bad" | tr '\n' ' ')"
-
 # forbidden entries
 nomatch "no .pdb" '\.pdb$'
 nomatch "no 0Harmony" '0Harmony'
 nomatch "no Mod.Tests / tests / test_*.py / conftest.py" '(^|/)(Mod\.Tests|tests?)/|(^|/)test_[^/]*\.py$|(^|/)conftest\.py$'
 nomatch "no bench/" '(^|/)bench/'
 nomatch "no Textures/src" 'Textures/src(/|$)'
+nomatch "no .py/.whl/.pyc" '\.(py|pyc|whl)$'
+nomatch "no python/uv/venv paths" '(^|/)(__pycache__|\.venv|venv|agent|uv)(/|$)|(^|/)(python[0-9.]*|uv)(\.exe)?$'
 nomatch "no *.jsonl" '\.jsonl$'
 nomatch "no bridge.json/engine-profile.json/.env/*.pem/*.key" '(^|/)(bridge\.json|engine-profile\.json|\.env)$|\.(pem|key)$'
 nomatch "no Source/ or csproj" '(^|/)Source/|\.csproj$'
 
-# secrets in text files (wheel searched unpacked)
-SCAN="$STAGE/scan"; mkdir "$SCAN"; unzip -q "$V/Engine/agent/$WHEEL" -d "$SCAN"
-hits=$(grep -rIlE 'sk-[A-Za-z0-9]{20,}|ghp_|hf_[A-Za-z0-9]{20,}|BEGIN .*PRIVATE KEY' "$V" "$SCAN" 2>/dev/null || true)
+# secrets in text files
+hits=$(grep -rIlE 'sk-[A-Za-z0-9]{20,}|ghp_|hf_[A-Za-z0-9]{20,}|BEGIN .*PRIVATE KEY' "$V" 2>/dev/null || true)
 [ -z "$hits" ] && pass "no secret patterns in text files" || fail "secret patterns in: $hits"
 
 # SHA256SUMS integrity and coverage

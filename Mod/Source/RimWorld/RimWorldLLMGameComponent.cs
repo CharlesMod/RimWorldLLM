@@ -93,6 +93,7 @@ namespace RimWorldLLM
         /// <summary>Called when the game ends (return to main menu): stop serving and drop per-game state.</summary>
         public static void OnGameEnd()
         {
+            MindHost.OnGameEnd();   // stop the mind first: it must not write into a game that is going away
             RWLBridge.OpIds.Clear();
             SayEffects.Reset();
             RWLBridge.Minds.Clear();

@@ -1,3 +1,5 @@
+*Historical: the agent measured here was the Python agent, last commit 36515840a97cbbbf576ffdfd782d0726f07b7443; the mind is now C# (docs/CSHARP-MIND.md).*
+
 # Final E4B pass (before publishing)
 
 Date: 2026-11-26. Model: **gemma4-e4b-rp-q40** (cmod/gemma4-e4b-rp-GGUF), served by easyEngine 1867470 from a fresh engine

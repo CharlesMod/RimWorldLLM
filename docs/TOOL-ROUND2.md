@@ -62,6 +62,6 @@ Working (what the harness sends; we own the result turn): a user turn with the r
 
 ## What follows for the design
 
-- Do not rely on the native tool-role turn for small models. It is not a template bug we can patch; it is the model's habit. Decide per model by a probe (`probe()` in `core/toolloop/harness.py`): three native calls, each followed by a result turn; the native form is chosen only if all three get a reply. gemma4-rp-maxxed passes (and runs native in tolerant mode); E4B and E2B fail and run the plain form.
+- Do not rely on the native tool-role turn for small models. It is not a template bug we can patch; it is the model's habit. Decide per model by a probe (`ToolProbe.ProbeAsync` in `Mod/Source/Mind/ToolLoop/Harness.cs`): three native calls, each followed by a result turn; the native form is chosen only if all three get a reply. gemma4-rp-maxxed passes (and runs native in tolerant mode); E4B and E2B fail and run the plain form.
 - A grammar with no empty alternative removes the failure whatever the model prefers: an end-of-turn token cannot be sampled where the grammar requires `{`.
 - An empty reply is still possible on endpoints without grammars (native tool mode). There the loop reads "empty after a tool result" as an explicit done (`implicit_done` in the trace) and "empty on the first step" as a failure to retry; nothing waits for text.
