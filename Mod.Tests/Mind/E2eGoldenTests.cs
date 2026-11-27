@@ -22,6 +22,9 @@ namespace RimWorldLLM.Tests.Mind
     [Collection("AdultState")]
     public class E2eGoldenTests
     {
+        // the ELAPSED line is wall-clock time of the cycle: it varies run to run and is not parity
+        private static string NoTime(string r) => System.Text.RegularExpressions.Regex.Replace(r, @"ELAPSED: [0-9.]+ s for the cycle \([0-9.?]+ s in the tool loop\)", "ELAPSED: <t>");
+
         static JObject Golden(string name)
         {
             using var s = typeof(E2eGoldenTests).Assembly.GetManifestResourceStream("RimWorldLLM.Tests.e2e-" + name + ".json");
@@ -140,7 +143,7 @@ namespace RimWorldLLM.Tests.Mind
                 FirstDiff("bridge", (JArray)g["bridge"], tap.Log),
                 FirstDiff("chat", (JArray)g["result"]["chat"], o.Chat),
                 Text(g["result"]["board"]) == Text(o.Board) ? null : "board differs:\n" + Around(Text(g["result"]["board"]), Text(o.Board)),
-                (string)g["report"] == sw.ToString().Replace("\r\n", "\n") ? null : "report differs:\n" + Around(Norm((string)g["report"]), Norm(sw.ToString())),
+                NoTime((string)g["report"]) == NoTime(sw.ToString().Replace("\r\n", "\n")) ? null : "report differs:\n" + Around(Norm((string)g["report"]), Norm(sw.ToString())),
                 (int)g["rc"] == rc ? null : "rc " + rc,
             }.Where(d => d != null).ToList();
             Assert.True(diffs.Count == 0, string.Join("\n", diffs));

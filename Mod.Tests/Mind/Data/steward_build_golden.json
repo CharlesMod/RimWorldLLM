@@ -133,7 +133,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -187,7 +187,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -221,20 +229,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -272,7 +286,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -460,7 +478,26 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
     },
     "build": {
      "home": {
@@ -541,15 +578,77 @@
       },
       "gold"
      ]
-    }
+    },
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
-   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"wall\" | \"door\" | \"bed\" | \"stove\" | \"cooler\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 12 bedroom, 14 kitchen, 15 Shed); one of: \"none\" | \"12\" | \"14\" | \"15\"\n    stuff: material; one of: \"none\" | \"wood\" | \"steel\" | \"cloth\" | \"None\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"potatoes\" | \"rice\" | \"corn\" | \"[filtered]\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 12 bedroom, 14 kitchen, 15 Shed); one of: \"none\" | \"12\" | \"14\" | \"15\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\" | \"gold\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (4410 fueled stove, 4411 tailor bench); one of: \"4410\" | \"4411\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
-   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"wall\\\"\" | \"\\\"door\\\"\" | \"\\\"bed\\\"\" | \"\\\"stove\\\"\" | \"\\\"cooler\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\" | \"\\\"steel\\\"\" | \"\\\"cloth\\\"\" | \"\\\"None\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"potatoes\\\"\" | \"\\\"rice\\\"\" | \"\\\"corn\\\"\" | \"\\\"[filtered]\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\" | \"\\\"gold\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"4410\\\"\" | \"\\\"4411\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
+   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"wall\" | \"door\" | \"bed\" | \"stove\" | \"cooler\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 12 bedroom, 14 kitchen, 15 Shed); one of: \"none\" | \"12\" | \"14\" | \"15\"\n    stuff: material; one of: \"none\" | \"wood\" | \"steel\" | \"cloth\" | \"None\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"potatoes\" | \"rice\" | \"corn\" | \"[filtered]\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 12 bedroom, 14 kitchen, 15 Shed); one of: \"none\" | \"12\" | \"14\" | \"15\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\" | \"gold\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (4410 fueled stove, 4411 tailor bench); one of: \"4410\" | \"4411\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- defend(kind, side?, at?, count?, length?, stuff?, why?): Plan defences (blueprints); the planner picks the cells.\n    kind: killbox is a kill zone at the main entrance; one of: \"turret\" | \"sandbags\" | \"barricade\" | \"killbox\" | \"traps\" | \"wall\"\n    side: threat (the enemy side) or n/e/s/w; one of: \"none\" | \"threat\" | \"n\" | \"e\" | \"s\" | \"w\"\n    at: instead of side; one of: \"none\" | \"chokepoint\" | \"entrance\"\n    count: turret 1-4, traps 1-8, 0 unused; a whole number from 0 to 8\n    length: sandbags, barricade, wall 1-20, 0 unused; a whole number from 0 to 20\n    stuff: material; one of: \"none\" | \"wood\" | \"steel\" | \"cloth\" | \"None\"\n    why: a brief reason in your own words, starting with since or because (for example: since the wounded must live); it is shown to the player beside what you did; short text, at most 80 characters",
+   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | call13 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"wall\\\"\" | \"\\\"door\\\"\" | \"\\\"bed\\\"\" | \"\\\"stove\\\"\" | \"\\\"cooler\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\" | \"\\\"steel\\\"\" | \"\\\"cloth\\\"\" | \"\\\"None\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"potatoes\\\"\" | \"\\\"rice\\\"\" | \"\\\"corn\\\"\" | \"\\\"[filtered]\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\" | \"\\\"gold\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"4410\\\"\" | \"\\\"4411\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall13 ::= \"{\\\"tool\\\":\\\"defend\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"turret\\\"\" | \"\\\"sandbags\\\"\" | \"\\\"barricade\\\"\" | \"\\\"killbox\\\"\" | \"\\\"traps\\\"\" | \"\\\"wall\\\"\") \",\" \"\\\"side\\\":\" (\"\\\"none\\\"\" | \"\\\"threat\\\"\" | \"\\\"n\\\"\" | \"\\\"e\\\"\" | \"\\\"s\\\"\" | \"\\\"w\\\"\") \",\" \"\\\"at\\\":\" (\"\\\"none\\\"\" | \"\\\"chokepoint\\\"\" | \"\\\"entrance\\\"\") \",\" \"\\\"count\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\") \",\" \"\\\"length\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\" | \"\\\"steel\\\"\" | \"\\\"cloth\\\"\" | \"\\\"None\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
    "acting": [
     "answer_letter",
     "assign_bed",
     "bill",
     "build",
+    "defend",
     "designate",
     "draft",
     "order",
@@ -573,7 +672,8 @@
     "build",
     "zone",
     "designate",
-    "bill"
+    "bill",
+    "defend"
    ],
    "calls": [
     {
@@ -1372,7 +1472,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -1426,7 +1526,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -1460,20 +1568,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -1511,7 +1625,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -1699,7 +1817,26 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
     },
     "build": {
      "home": {
@@ -1719,7 +1856,10 @@
        "door": true,
        "roofed": true,
        "x": 118,
-       "z": 101
+       "z": 101,
+       "temp_c": 18,
+       "mountain": false,
+       "dirty": false
       },
       {
        "id": 13,
@@ -1761,7 +1901,10 @@
        "door": true,
        "roofed": true,
        "x": 118,
-       "z": 94
+       "z": 94,
+       "temp_c": 3,
+       "mountain": true,
+       "dirty": true
       }
      ],
      "missing": [
@@ -1796,7 +1939,7 @@
        "kind": "stockpile",
        "label": "Stockpile zone 1",
        "cells": 36,
-       "preset": "all",
+       "preset": "food",
        "priority": "normal"
       }
      ],
@@ -1834,16 +1977,96 @@
        "cells": 34,
        "dist": 18
       }
+     ],
+     "loose": [
+      {
+       "label": "steel",
+       "count": 450,
+       "dist": 14,
+       "dir": "NE",
+       "forbidden": false,
+       "store": "none"
+      },
+      {
+       "label": "wood",
+       "count": 120,
+       "dist": 9,
+       "dir": "S",
+       "forbidden": false,
+       "store": "far"
+      }
      ]
-    }
+    },
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
-   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"wall\" | \"door\" | \"bed\" | \"table\" | \"chair\" | \"campfire\" | \"cooler\" | \"research bench\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 12 bedroom, 13 bedroom, 14 bedroom, 15 barracks); one of: \"none\" | \"12\" | \"13\" | \"14\" | \"15\"\n    stuff: material; one of: \"none\" | \"steel\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"potatoes\" | \"rice\" | \"corn\" | \"healroot\" | \"haygrass\" | \"cotton\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 12 bedroom, 13 bedroom, 14 bedroom, 15 barracks); one of: \"none\" | \"12\" | \"13\" | \"14\" | \"15\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (4410 campfire); one of: \"4410\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
-   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"wall\\\"\" | \"\\\"door\\\"\" | \"\\\"bed\\\"\" | \"\\\"table\\\"\" | \"\\\"chair\\\"\" | \"\\\"campfire\\\"\" | \"\\\"cooler\\\"\" | \"\\\"research bench\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"13\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"potatoes\\\"\" | \"\\\"rice\\\"\" | \"\\\"corn\\\"\" | \"\\\"healroot\\\"\" | \"\\\"haygrass\\\"\" | \"\\\"cotton\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"13\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"4410\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
+   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"wall\" | \"door\" | \"bed\" | \"table\" | \"chair\" | \"campfire\" | \"cooler\" | \"research bench\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 12 bedroom, 13 bedroom, 14 bedroom, 15 barracks); one of: \"none\" | \"12\" | \"13\" | \"14\" | \"15\"\n    stuff: material; one of: \"none\" | \"steel\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"potatoes\" | \"rice\" | \"corn\" | \"healroot\" | \"haygrass\" | \"cotton\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 12 bedroom, 13 bedroom, 14 bedroom, 15 barracks); one of: \"none\" | \"12\" | \"13\" | \"14\" | \"15\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (4410 campfire); one of: \"4410\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- defend(kind, side?, at?, count?, length?, stuff?, why?): Plan defences (blueprints); the planner picks the cells.\n    kind: killbox is a kill zone at the main entrance; one of: \"turret\" | \"sandbags\" | \"barricade\" | \"killbox\" | \"traps\" | \"wall\"\n    side: threat (the enemy side) or n/e/s/w; one of: \"none\" | \"threat\" | \"n\" | \"e\" | \"s\" | \"w\"\n    at: instead of side; one of: \"none\" | \"chokepoint\" | \"entrance\"\n    count: turret 1-4, traps 1-8, 0 unused; a whole number from 0 to 8\n    length: sandbags, barricade, wall 1-20, 0 unused; a whole number from 0 to 20\n    stuff: material; one of: \"none\" | \"steel\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since the wounded must live); it is shown to the player beside what you did; short text, at most 80 characters",
+   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | call13 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"wall\\\"\" | \"\\\"door\\\"\" | \"\\\"bed\\\"\" | \"\\\"table\\\"\" | \"\\\"chair\\\"\" | \"\\\"campfire\\\"\" | \"\\\"cooler\\\"\" | \"\\\"research bench\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"13\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"potatoes\\\"\" | \"\\\"rice\\\"\" | \"\\\"corn\\\"\" | \"\\\"healroot\\\"\" | \"\\\"haygrass\\\"\" | \"\\\"cotton\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"12\\\"\" | \"\\\"13\\\"\" | \"\\\"14\\\"\" | \"\\\"15\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"4410\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall13 ::= \"{\\\"tool\\\":\\\"defend\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"turret\\\"\" | \"\\\"sandbags\\\"\" | \"\\\"barricade\\\"\" | \"\\\"killbox\\\"\" | \"\\\"traps\\\"\" | \"\\\"wall\\\"\") \",\" \"\\\"side\\\":\" (\"\\\"none\\\"\" | \"\\\"threat\\\"\" | \"\\\"n\\\"\" | \"\\\"e\\\"\" | \"\\\"s\\\"\" | \"\\\"w\\\"\") \",\" \"\\\"at\\\":\" (\"\\\"none\\\"\" | \"\\\"chokepoint\\\"\" | \"\\\"entrance\\\"\") \",\" \"\\\"count\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\") \",\" \"\\\"length\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
    "acting": [
     "answer_letter",
     "assign_bed",
     "bill",
     "build",
+    "defend",
     "designate",
     "draft",
     "order",
@@ -1867,7 +2090,8 @@
     "build",
     "zone",
     "designate",
-    "bill"
+    "bill",
+    "defend"
    ],
    "calls": [
     {
@@ -2595,7 +2819,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -2649,7 +2873,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -2683,20 +2915,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -2734,7 +2972,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -2922,16 +3164,97 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
     },
-    "build": {}
+    "build": {},
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
-   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, preset?, size?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"stockpile\" | \"dump\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
-   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
+   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, preset?, size?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"stockpile\" | \"dump\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- defend(kind, side?, at?, count?, length?, why?): Plan defences (blueprints); the planner picks the cells.\n    kind: killbox is a kill zone at the main entrance; one of: \"turret\" | \"sandbags\" | \"barricade\" | \"killbox\" | \"traps\" | \"wall\"\n    side: threat (the enemy side) or n/e/s/w; one of: \"none\" | \"threat\" | \"n\" | \"e\" | \"s\" | \"w\"\n    at: instead of side; one of: \"none\" | \"chokepoint\" | \"entrance\"\n    count: turret 1-4, traps 1-8, 0 unused; a whole number from 0 to 8\n    length: sandbags, barricade, wall 1-20, 0 unused; a whole number from 0 to 20\n    why: a brief reason in your own words, starting with since or because (for example: since the wounded must live); it is shown to the player beside what you did; short text, at most 80 characters",
+   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"defend\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"turret\\\"\" | \"\\\"sandbags\\\"\" | \"\\\"barricade\\\"\" | \"\\\"killbox\\\"\" | \"\\\"traps\\\"\" | \"\\\"wall\\\"\") \",\" \"\\\"side\\\":\" (\"\\\"none\\\"\" | \"\\\"threat\\\"\" | \"\\\"n\\\"\" | \"\\\"e\\\"\" | \"\\\"s\\\"\" | \"\\\"w\\\"\") \",\" \"\\\"at\\\":\" (\"\\\"none\\\"\" | \"\\\"chokepoint\\\"\" | \"\\\"entrance\\\"\") \",\" \"\\\"count\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\") \",\" \"\\\"length\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
    "acting": [
     "answer_letter",
     "assign_bed",
     "build",
+    "defend",
     "designate",
     "draft",
     "order",
@@ -2954,7 +3277,8 @@
     "answer_letter",
     "build",
     "zone",
-    "designate"
+    "designate",
+    "defend"
    ],
    "calls": [
     {
@@ -3510,7 +3834,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -3564,7 +3888,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -3598,20 +3930,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -3649,7 +3987,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -3837,8 +4179,88 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
-    }
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
+    },
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
    "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
    "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
@@ -4359,7 +4781,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -4413,7 +4835,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -4447,20 +4877,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -4498,7 +4934,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -4686,7 +5126,26 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
     },
     "build": {
      "rooms": [
@@ -4734,15 +5193,77 @@
      },
      "stuff": "ab",
      "ores": null
-    }
+    },
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
-   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"a\" | \"b\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 7 a, 2 x, 1 t); one of: \"none\" | \"7\" | \"2\" | \"1\"\n    stuff: material; one of: \"none\" | \"a\" | \"b\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"k\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 7 a, 2 x, 1 t); one of: \"none\" | \"7\" | \"2\" | \"1\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (5 b); one of: \"5\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
-   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"a\\\"\" | \"\\\"b\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"7\\\"\" | \"\\\"2\\\"\" | \"\\\"1\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"a\\\"\" | \"\\\"b\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"k\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"7\\\"\" | \"\\\"2\\\"\" | \"\\\"1\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"5\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
+   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"a\" | \"b\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 7 a, 2 x, 1 t); one of: \"none\" | \"7\" | \"2\" | \"1\"\n    stuff: material; one of: \"none\" | \"a\" | \"b\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"k\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 7 a, 2 x, 1 t); one of: \"none\" | \"7\" | \"2\" | \"1\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (5 b); one of: \"5\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- defend(kind, side?, at?, count?, length?, stuff?, why?): Plan defences (blueprints); the planner picks the cells.\n    kind: killbox is a kill zone at the main entrance; one of: \"turret\" | \"sandbags\" | \"barricade\" | \"killbox\" | \"traps\" | \"wall\"\n    side: threat (the enemy side) or n/e/s/w; one of: \"none\" | \"threat\" | \"n\" | \"e\" | \"s\" | \"w\"\n    at: instead of side; one of: \"none\" | \"chokepoint\" | \"entrance\"\n    count: turret 1-4, traps 1-8, 0 unused; a whole number from 0 to 8\n    length: sandbags, barricade, wall 1-20, 0 unused; a whole number from 0 to 20\n    stuff: material; one of: \"none\" | \"a\" | \"b\"\n    why: a brief reason in your own words, starting with since or because (for example: since the wounded must live); it is shown to the player beside what you did; short text, at most 80 characters",
+   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | call13 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"a\\\"\" | \"\\\"b\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"7\\\"\" | \"\\\"2\\\"\" | \"\\\"1\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"a\\\"\" | \"\\\"b\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"k\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"7\\\"\" | \"\\\"2\\\"\" | \"\\\"1\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"5\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall13 ::= \"{\\\"tool\\\":\\\"defend\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"turret\\\"\" | \"\\\"sandbags\\\"\" | \"\\\"barricade\\\"\" | \"\\\"killbox\\\"\" | \"\\\"traps\\\"\" | \"\\\"wall\\\"\") \",\" \"\\\"side\\\":\" (\"\\\"none\\\"\" | \"\\\"threat\\\"\" | \"\\\"n\\\"\" | \"\\\"e\\\"\" | \"\\\"s\\\"\" | \"\\\"w\\\"\") \",\" \"\\\"at\\\":\" (\"\\\"none\\\"\" | \"\\\"chokepoint\\\"\" | \"\\\"entrance\\\"\") \",\" \"\\\"count\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\") \",\" \"\\\"length\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"a\\\"\" | \"\\\"b\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
    "acting": [
     "answer_letter",
     "assign_bed",
     "bill",
     "build",
+    "defend",
     "designate",
     "draft",
     "order",
@@ -4766,7 +5287,8 @@
     "build",
     "zone",
     "designate",
-    "bill"
+    "bill",
+    "defend"
    ],
    "calls": [
     {
@@ -5356,7 +5878,7 @@
        "Hauling": 3,
        "Firefighter": 1
       },
-      "health": "fine",
+      "health": "bleeding (left leg)",
       "downed": false,
       "mood": 52,
       "mental": "",
@@ -5410,7 +5932,15 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3303
+      "bed": 3303,
+      "cannot": [
+       "no manipulation: can't build, cook or craft"
+      ],
+      "break_risk": "near",
+      "mood_why": [
+       "ate without a table",
+       "low light"
+      ]
      },
      {
       "id": 104,
@@ -5444,20 +5974,26 @@
       "downed": false,
       "mood": 38,
       "mental": "",
-      "job": "Mining",
+      "job": "Wait_Wander",
       "drafted": false,
       "schedule_now": "work",
       "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
       "outfit": "Worker",
       "food": "Fine",
       "drug": "Social drugs",
-      "bed": 3304
+      "bed": 3304,
+      "idle": true,
+      "break_risk": "minor",
+      "mood_why": [
+       "sleeping in a barracks",
+       "dirty room"
+      ]
      },
      {
       "id": 105,
       "name": "Eli",
       "role": "colonist",
-      "age": 19,
+      "age": 11,
       "skills": [
        {
         "skill": "Plants",
@@ -5495,7 +6031,11 @@
       "outfit": "Anything",
       "food": "Fine",
       "drug": "No drugs",
-      "bed": null
+      "bed": null,
+      "child": true,
+      "cannot": [
+       "can't see well"
+      ]
      }
     ],
     "work_types": [
@@ -5683,7 +6223,26 @@
      "silver": 0,
      "dlc": [],
      "storyteller": "cassandra",
-     "difficulty_threat_scale": 1.0
+     "difficulty_threat_scale": 1.0,
+     "loose_unstorable": 1,
+     "loose_far": 1,
+     "blueprints_stuck": 2,
+     "stuck_no_material": 1,
+     "stuck_no_builder": false,
+     "bills_stuck": 1,
+     "colonists_children": 1,
+     "colonists_idle": 1,
+     "meals": 14,
+     "raw_food": 120,
+     "food_rot_soon": 30,
+     "crops_ready": 12,
+     "huntable": 3,
+     "days_to_winter": 12.0,
+     "bleed_out_hours": 5.5,
+     "infections_losing": 0,
+     "tattered_apparel": 0,
+     "ancient_danger": false,
+     "unreachable_piles": 0
     },
     "build": {
      "rooms": [
@@ -5867,15 +6426,77 @@
        "stuff": "wood"
       }
      ]
-    }
+    },
+    "stuck": [
+     {
+      "what": "solar generator blueprints",
+      "count": 2,
+      "reason": "waiting on components: need 8, have 6",
+      "dist": 14,
+      "dir": "NE"
+     },
+     {
+      "what": "bill: simple meal at fueled stove",
+      "count": 1,
+      "reason": "no ingredients (raw food)"
+     }
+    ],
+    "food": {
+     "meals": 14,
+     "meals_loose": 3,
+     "raw": 120,
+     "raw_loose": 40,
+     "rot_soon": [
+      {
+       "label": "raw potatoes",
+       "count": 30,
+       "days": 0.8
+      }
+     ],
+     "harvest": [
+      {
+       "plant": "rice",
+       "cells": 40,
+       "ready": 12,
+       "days": 1.5
+      }
+     ],
+     "game": [
+      {
+       "label": "deer",
+       "count": 3,
+       "dist": 30,
+       "dir": "W"
+      }
+     ],
+     "hunters": 2
+    },
+    "deadlines": [
+     {
+      "what": "Bram bleeds out",
+      "hours": 5.5,
+      "kind": "bleed"
+     },
+     {
+      "what": "raw potatoes rot",
+      "hours": 19,
+      "kind": "rot"
+     },
+     {
+      "what": "winter (crops die)",
+      "hours": 288,
+      "kind": "winter"
+     }
+    ]
    },
-   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"cooler\" | \"bed\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 1 kitchen, 2 bedroom, 3 kitchen, 4 bedroom, 5 kitchen, 6 bedroom, 7 kitchen, 8 bedroom, 9 kitchen, 10 bedroom, 11 kitchen, 12 bedroom); one of: \"none\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\"\n    stuff: material; one of: \"none\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"rice\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 1 kitchen, 2 bedroom, 3 kitchen, 4 bedroom, 5 kitchen, 6 bedroom, 7 kitchen, 8 bedroom, 9 kitchen, 10 bedroom, 11 kitchen, 12 bedroom); one of: \"none\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (100 b0, 101 b1, 102 b2, 103 b3, 104 b4, 105 b5, 106 b6, 107 b7); one of: \"100\" | \"101\" | \"102\" | \"103\" | \"104\" | \"105\" | \"106\" | \"107\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters",
-   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"cooler\\\"\" | \"\\\"bed\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\" | \"\\\"5\\\"\" | \"\\\"6\\\"\" | \"\\\"7\\\"\" | \"\\\"8\\\"\" | \"\\\"9\\\"\" | \"\\\"10\\\"\" | \"\\\"11\\\"\" | \"\\\"12\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"rice\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\" | \"\\\"5\\\"\" | \"\\\"6\\\"\" | \"\\\"7\\\"\" | \"\\\"8\\\"\" | \"\\\"9\\\"\" | \"\\\"10\\\"\" | \"\\\"11\\\"\" | \"\\\"12\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"100\\\"\" | \"\\\"101\\\"\" | \"\\\"102\\\"\" | \"\\\"103\\\"\" | \"\\\"104\\\"\" | \"\\\"105\\\"\" | \"\\\"106\\\"\" | \"\\\"107\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
+   "tools": "Tools:\n- set_time(pause, speed, emergency, why?): Pause or unpause the game, or set its speed. Only what the settings allow; pausing is for real emergencies.\n    pause: pause the game, unpause it, or leave it; one of: \"leave\" | \"yes\" | \"no\"\n    speed: game speed 1 to 4, or leave; one of: \"leave\" | \"1\" | \"2\" | \"3\" | \"4\"\n    emergency: yes only for a real emergency pause; one of: \"no\" | \"yes\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_work(pawn, work, priority, why?): Set one colonist's priority for one kind of work: 1 is done first, 4 last, 0 is off.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    work: work type; one of: \"Firefighter\" | \"Patient\" | \"Doctor\" | \"Cooking\" | \"Hunting\" | \"Construction\" | \"Growing\" | \"Mining\" | \"PlantCutting\" | \"Smithing\" | \"Tailoring\" | \"Art\" | \"Crafting\" | \"Hauling\" | \"Cleaning\" | \"Research\"\n    priority: 0 off, 1 highest, 4 lowest; a whole number from 0 to 4\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_schedule(pawn, from_hour, to_hour, assignment, why?): Set one colonist's schedule for the hours from_hour up to to_hour (0 to 24).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    from_hour: first hour, 0 to 23; a whole number from 0 to 23\n    to_hour: end hour, 0 to 24; a whole number from 0 to 24\n    assignment: what they do in those hours; one of: \"anything\" | \"work\" | \"joy\" | \"sleep\" | \"meditate\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- draft(pawns, drafted, why?): Draft or undraft colonists. pawns is a comma-separated list of names, or all.\n    pawns: names separated by commas, or all; short text, at most 160 characters\n    drafted: draft or undraft; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- order(pawn, order, x, z, target_id, hold, why?): Give one drafted colonist an order: move to a cell, attack a target (by id), or hold position.\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    order: the order; one of: \"move\" | \"attack\" | \"hold\"\n    x: move: cell x (0 if unused); a whole number from 0 to 999\n    z: move: cell z (0 if unused); a whole number from 0 to 999\n    target_id: attack: the target's id (0 if unused); a whole number from 0 to 999999\n    hold: hold: yes to hold, no to stop holding; one of: \"yes\" | \"no\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_policy(pawn, kind, name, why?): Give one colonist an outfit, food or drug policy by name (see POLICIES).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    kind: which policy; one of: \"outfit\" | \"food\" | \"drug\"\n    name: the policy's name; short text, at most 60 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- assign_bed(pawn, bed_id, why?): Assign one colonist to a bed (by the bed's id in BEDS).\n    pawn: which colonist, by name; one of: \"Ana\" | \"Bram\" | \"Cy\" | \"Dara\" | \"Eli\"\n    bed_id: the bed's id; one of: \"3301\" | \"3302\" | \"3303\" | \"3304\" | \"3305\" | \"3306\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- set_research(project, why?): Choose the research project to work on, by name (see RESEARCH).\n    project: the project's name; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- answer_letter(letter_id, choice, why?): Answer a letter that needs a choice (an offer, a quest) with one of its choices, or dismiss it.\n    letter_id: the letter's id; one of: \"77\"\n    choice: one of the letter's choices, or dismiss; short text, at most 80 characters\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- build(kind, purpose?, size?, thing?, room?, stuff?, why?): Plan a room or one building; the planner picks the cells.\n    kind: room: walls and a door; thing: one building; one of: \"room\" | \"thing\"\n    purpose: room: its use; one of: \"none\" | \"bedroom\" | \"barracks\" | \"kitchen\" | \"dining\" | \"storage\" | \"freezer\" | \"hospital\" | \"workshop\" | \"rec\"\n    size: room: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    thing: thing: what; one of: \"none\" | \"cooler\" | \"bed\"\n    room: thing: inside this existing room (a room planned this turn has no id yet), else near home (room id: 1 kitchen, 2 bedroom, 3 kitchen, 4 bedroom, 5 kitchen, 6 bedroom, 7 kitchen, 8 bedroom, 9 kitchen, 10 bedroom, 11 kitchen, 12 bedroom); one of: \"none\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\"\n    stuff: material; one of: \"none\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- zone(kind, plant?, preset?, size?, room?, why?): Mark a growing zone, stockpile or dump; the planner picks the cells.\n    kind: grow: a field; stockpile: storage; dump: junk; one of: \"grow\" | \"stockpile\" | \"dump\"\n    plant: grow: the crop; one of: \"none\" | \"rice\"\n    preset: stockpile: what it takes; one of: \"none\" | \"food\" | \"meds\" | \"raw\" | \"all\"\n    size: how big; one of: \"none\" | \"small\" | \"medium\" | \"large\"\n    room: stockpile: inside this room (room id: 1 kitchen, 2 bedroom, 3 kitchen, 4 bedroom, 5 kitchen, 6 bedroom, 7 kitchen, 8 bedroom, 9 kitchen, 10 bedroom, 11 kitchen, 12 bedroom); one of: \"none\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- designate(kind, ore?, why?): Order mining, chopping, harvesting or hauling near home.\n    kind: mine: ore rock; chop: trees in the way; harvest: wild plants; haul: loose items; one of: \"chop\" | \"harvest\" | \"haul\" | \"mine\"\n    ore: mine: resource; one of: \"none\" | \"steel\"\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- bill(op, bench, recipe, count?, until?, why?): Add, remove, suspend or resume a workbench bill.\n    op: what to do; one of: \"add\" | \"remove\" | \"suspend\" | \"resume\"\n    bench: the workbench id (100 b0, 101 b1, 102 b2, 103 b3, 104 b4, 105 b5, 106 b6, 107 b7); one of: \"100\" | \"101\" | \"102\" | \"103\" | \"104\" | \"105\" | \"106\" | \"107\"\n    recipe: the bench's recipe; short text, at most 60 characters\n    count: add: make this many, 0 if unused; a whole number from 0 to 99\n    until: add: keep this many in stock, 0 if unused; a whole number from 0 to 999\n    why: a brief reason in your own words, starting with since or because (for example: since meals are running low); it is shown to the player beside what you did; short text, at most 80 characters\n- defend(kind, side?, at?, count?, length?, stuff?, why?): Plan defences (blueprints); the planner picks the cells.\n    kind: killbox is a kill zone at the main entrance; one of: \"turret\" | \"sandbags\" | \"barricade\" | \"killbox\" | \"traps\" | \"wall\"\n    side: threat (the enemy side) or n/e/s/w; one of: \"none\" | \"threat\" | \"n\" | \"e\" | \"s\" | \"w\"\n    at: instead of side; one of: \"none\" | \"chokepoint\" | \"entrance\"\n    count: turret 1-4, traps 1-8, 0 unused; a whole number from 0 to 8\n    length: sandbags, barricade, wall 1-20, 0 unused; a whole number from 0 to 20\n    stuff: material; one of: \"none\" | \"wood\"\n    why: a brief reason in your own words, starting with since or because (for example: since the wounded must live); it is shown to the player beside what you did; short text, at most 80 characters",
+   "grammar": "root ::= call0 | call1 | call2 | call3 | call4 | call5 | call6 | call7 | call8 | call9 | call10 | call11 | call12 | call13 | final | done\ntstr60 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,59} \"\\\"\"\ntstr80 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,79} \"\\\"\"\ntstr160 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,159} \"\\\"\"\ntstr200 ::= \"\\\"\" [^\"\\\\\\n\\r\\t<>{} ] [^\"\\\\\\n\\r\\t<>{}]{0,199} \"\\\"\"\ninteger ::= \"-\"? [0-9]{1,6}\ncall0 ::= \"{\\\"tool\\\":\\\"set_time\\\",\\\"args\\\":{\" \"\\\"pause\\\":\" (\"\\\"leave\\\"\" | \"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"speed\\\":\" (\"\\\"leave\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\") \",\" \"\\\"emergency\\\":\" (\"\\\"no\\\"\" | \"\\\"yes\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall1 ::= \"{\\\"tool\\\":\\\"set_work\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"work\\\":\" (\"\\\"Firefighter\\\"\" | \"\\\"Patient\\\"\" | \"\\\"Doctor\\\"\" | \"\\\"Cooking\\\"\" | \"\\\"Hunting\\\"\" | \"\\\"Construction\\\"\" | \"\\\"Growing\\\"\" | \"\\\"Mining\\\"\" | \"\\\"PlantCutting\\\"\" | \"\\\"Smithing\\\"\" | \"\\\"Tailoring\\\"\" | \"\\\"Art\\\"\" | \"\\\"Crafting\\\"\" | \"\\\"Hauling\\\"\" | \"\\\"Cleaning\\\"\" | \"\\\"Research\\\"\") \",\" \"\\\"priority\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall2 ::= \"{\\\"tool\\\":\\\"set_schedule\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"from_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\") \",\" \"\\\"to_hour\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\" | \"21\" | \"22\" | \"23\" | \"24\") \",\" \"\\\"assignment\\\":\" (\"\\\"anything\\\"\" | \"\\\"work\\\"\" | \"\\\"joy\\\"\" | \"\\\"sleep\\\"\" | \"\\\"meditate\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall3 ::= \"{\\\"tool\\\":\\\"draft\\\",\\\"args\\\":{\" \"\\\"pawns\\\":\" tstr160 \",\" \"\\\"drafted\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall4 ::= \"{\\\"tool\\\":\\\"order\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"order\\\":\" (\"\\\"move\\\"\" | \"\\\"attack\\\"\" | \"\\\"hold\\\"\") \",\" \"\\\"x\\\":\" integer \",\" \"\\\"z\\\":\" integer \",\" \"\\\"target_id\\\":\" integer \",\" \"\\\"hold\\\":\" (\"\\\"yes\\\"\" | \"\\\"no\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall5 ::= \"{\\\"tool\\\":\\\"set_policy\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"kind\\\":\" (\"\\\"outfit\\\"\" | \"\\\"food\\\"\" | \"\\\"drug\\\"\") \",\" \"\\\"name\\\":\" tstr60 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall6 ::= \"{\\\"tool\\\":\\\"assign_bed\\\",\\\"args\\\":{\" \"\\\"pawn\\\":\" (\"\\\"Ana\\\"\" | \"\\\"Bram\\\"\" | \"\\\"Cy\\\"\" | \"\\\"Dara\\\"\" | \"\\\"Eli\\\"\") \",\" \"\\\"bed_id\\\":\" (\"\\\"3301\\\"\" | \"\\\"3302\\\"\" | \"\\\"3303\\\"\" | \"\\\"3304\\\"\" | \"\\\"3305\\\"\" | \"\\\"3306\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall7 ::= \"{\\\"tool\\\":\\\"set_research\\\",\\\"args\\\":{\" \"\\\"project\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall8 ::= \"{\\\"tool\\\":\\\"answer_letter\\\",\\\"args\\\":{\" \"\\\"letter_id\\\":\" (\"\\\"77\\\"\") \",\" \"\\\"choice\\\":\" tstr80 \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall9 ::= \"{\\\"tool\\\":\\\"build\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"room\\\"\" | \"\\\"thing\\\"\") \",\" \"\\\"purpose\\\":\" (\"\\\"none\\\"\" | \"\\\"bedroom\\\"\" | \"\\\"barracks\\\"\" | \"\\\"kitchen\\\"\" | \"\\\"dining\\\"\" | \"\\\"storage\\\"\" | \"\\\"freezer\\\"\" | \"\\\"hospital\\\"\" | \"\\\"workshop\\\"\" | \"\\\"rec\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"thing\\\":\" (\"\\\"none\\\"\" | \"\\\"cooler\\\"\" | \"\\\"bed\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\" | \"\\\"5\\\"\" | \"\\\"6\\\"\" | \"\\\"7\\\"\" | \"\\\"8\\\"\" | \"\\\"9\\\"\" | \"\\\"10\\\"\" | \"\\\"11\\\"\" | \"\\\"12\\\"\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall10 ::= \"{\\\"tool\\\":\\\"zone\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"grow\\\"\" | \"\\\"stockpile\\\"\" | \"\\\"dump\\\"\") \",\" \"\\\"plant\\\":\" (\"\\\"none\\\"\" | \"\\\"rice\\\"\") \",\" \"\\\"preset\\\":\" (\"\\\"none\\\"\" | \"\\\"food\\\"\" | \"\\\"meds\\\"\" | \"\\\"raw\\\"\" | \"\\\"all\\\"\") \",\" \"\\\"size\\\":\" (\"\\\"none\\\"\" | \"\\\"small\\\"\" | \"\\\"medium\\\"\" | \"\\\"large\\\"\") \",\" \"\\\"room\\\":\" (\"\\\"none\\\"\" | \"\\\"1\\\"\" | \"\\\"2\\\"\" | \"\\\"3\\\"\" | \"\\\"4\\\"\" | \"\\\"5\\\"\" | \"\\\"6\\\"\" | \"\\\"7\\\"\" | \"\\\"8\\\"\" | \"\\\"9\\\"\" | \"\\\"10\\\"\" | \"\\\"11\\\"\" | \"\\\"12\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall11 ::= \"{\\\"tool\\\":\\\"designate\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"chop\\\"\" | \"\\\"harvest\\\"\" | \"\\\"haul\\\"\" | \"\\\"mine\\\"\") \",\" \"\\\"ore\\\":\" (\"\\\"none\\\"\" | \"\\\"steel\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall12 ::= \"{\\\"tool\\\":\\\"bill\\\",\\\"args\\\":{\" \"\\\"op\\\":\" (\"\\\"add\\\"\" | \"\\\"remove\\\"\" | \"\\\"suspend\\\"\" | \"\\\"resume\\\"\") \",\" \"\\\"bench\\\":\" (\"\\\"100\\\"\" | \"\\\"101\\\"\" | \"\\\"102\\\"\" | \"\\\"103\\\"\" | \"\\\"104\\\"\" | \"\\\"105\\\"\" | \"\\\"106\\\"\" | \"\\\"107\\\"\") \",\" \"\\\"recipe\\\":\" tstr60 \",\" \"\\\"count\\\":\" integer \",\" \"\\\"until\\\":\" integer \",\" \"\\\"why\\\":\" tstr80 \"}}\"\ncall13 ::= \"{\\\"tool\\\":\\\"defend\\\",\\\"args\\\":{\" \"\\\"kind\\\":\" (\"\\\"turret\\\"\" | \"\\\"sandbags\\\"\" | \"\\\"barricade\\\"\" | \"\\\"killbox\\\"\" | \"\\\"traps\\\"\" | \"\\\"wall\\\"\") \",\" \"\\\"side\\\":\" (\"\\\"none\\\"\" | \"\\\"threat\\\"\" | \"\\\"n\\\"\" | \"\\\"e\\\"\" | \"\\\"s\\\"\" | \"\\\"w\\\"\") \",\" \"\\\"at\\\":\" (\"\\\"none\\\"\" | \"\\\"chokepoint\\\"\" | \"\\\"entrance\\\"\") \",\" \"\\\"count\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\") \",\" \"\\\"length\\\":\" (\"0\" | \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\" | \"10\" | \"11\" | \"12\" | \"13\" | \"14\" | \"15\" | \"16\" | \"17\" | \"18\" | \"19\" | \"20\") \",\" \"\\\"stuff\\\":\" (\"\\\"none\\\"\" | \"\\\"wood\\\"\") \",\" \"\\\"why\\\":\" tstr80 \"}}\"\nfinal ::= \"{\\\"final\\\":\" \" \"? tstr200 \"}\"\ndone ::= \"{\\\"done\\\":true}\"\n",
    "acting": [
     "answer_letter",
     "assign_bed",
     "bill",
     "build",
+    "defend",
     "designate",
     "draft",
     "order",
@@ -5899,7 +6520,8 @@
     "build",
     "zone",
     "designate",
-    "bill"
+    "bill",
+    "defend"
    ],
    "calls": [
     {
