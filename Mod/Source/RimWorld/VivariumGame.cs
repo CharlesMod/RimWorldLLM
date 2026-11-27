@@ -7,10 +7,7 @@ namespace RimWorldLLM
     /// merge with the bridge worker's BridgeRuntime.Vivarium field is a one-line change.</summary>
     public static class VivariumGame
     {
-        // TEMP until the merge: BridgeRuntime gets `public readonly Vivarium Vivarium = new Vivarium();`; then this
-        // becomes `RWLBridge.Runtime.Vivarium` (delete _temp).
-        static readonly Vivarium _temp = new Vivarium();
-        public static Vivarium State { get { return _temp; } }
+        public static Vivarium State { get { return RWLBridge.Runtime.Vivarium; } }
 
         /// <summary>The "from" of a waiting talk request ("chat" for the chat bar's @Name), or null.</summary>
         public static string TalkFrom(string talkId)
