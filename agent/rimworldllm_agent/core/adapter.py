@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, Sequence, runtime_checkable
 
 from .lease import Cls
 from .minds import FixedBio, VoiceCard
@@ -76,6 +76,7 @@ class GameAdapter(Protocol):
     def normalize_event(self, raw: dict) -> dict: ...                      # wire event -> core event
     def importance(self, event: dict, actor_id: int) -> float: ...         # 0..1 from game numbers
     def is_pinned(self, event: dict, actor_id: int, firsts: list[str]) -> bool: ...
+    def drops_meta(self, text: str, context: Sequence[str]) -> bool: ...   # a generated line that only remarks on the talking itself (context: the scene's texts)
     def first_person(self, event: dict, actor_id: int) -> str: ...
     def conversation_pair(self, event: dict) -> tuple[int, int] | None: ...
     def is_urgent_visual(self, event: dict) -> bool: ...                   # shown as combat/alert in the game's log
