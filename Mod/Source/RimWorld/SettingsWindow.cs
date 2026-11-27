@@ -334,7 +334,7 @@ namespace RimWorldLLM
             s.narratorRestartMode = Mathf.Clamp(s.narratorRestartMode, 0, 2);
             var modeRect = l.GetRect(30f);
             TooltipHandler.TipRegion(modeRect, UiUtil.T("RWL_Viv_RestartModeTip"));
-            if (Widgets.ButtonText(modeRect, UiUtil.T("RWL_Viv_RestartMode", UiUtil.T("RWL_Viv_RestartMode" + s.narratorRestartMode))))
+            if (Widgets.ButtonText(modeRect, UiUtil.T("RWL_Viv_RestartMode", UiUtil.T("RWL_Viv_RestartMode_" + s.narratorRestartMode))))
                 s.narratorRestartMode = (s.narratorRestartMode + 1) % 3;
             int undoable = Current.Game != null ? VivariumGame.State.Ledger.Count : 0;
             if (Button(l, "RWL_Viv_Undo", "RWL_Viv_UndoTip", undoable > 0)) VivariumChat.UndoNarrator(1);

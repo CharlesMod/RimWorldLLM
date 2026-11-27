@@ -506,9 +506,9 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_AutosaveKeep>Keep {0} autosaves</RWL_Viv_AutosaveKeep>
   <RWL_Viv_AutosaveKeepTip>How many RWL-Narrator saves rotate. The oldest is overwritten; saves the mod did not make are never touched.</RWL_Viv_AutosaveKeepTip>
   <RWL_Viv_RestartMode>When the colony is lost: {0}</RWL_Viv_RestartMode>
-  <RWL_Viv_RestartMode0>ask me</RWL_Viv_RestartMode0>
-  <RWL_Viv_RestartMode1>restart by itself</RWL_Viv_RestartMode1>
-  <RWL_Viv_RestartMode2>do nothing</RWL_Viv_RestartMode2>
+  <RWL_Viv_RestartMode_0>ask me</RWL_Viv_RestartMode_0>
+  <RWL_Viv_RestartMode_1>restart by itself</RWL_Viv_RestartMode_1>
+  <RWL_Viv_RestartMode_2>do nothing</RWL_Viv_RestartMode_2>
   <RWL_Viv_RestartModeTip>Only while the narrator plays. Ask: a window offers a new colony on this world, a new world, or stopping. Restart by itself: new colonists on this world if the game allows, else a new world; the lost world is saved once under a new name first and nothing is ever deleted. Click to change.</RWL_Viv_RestartModeTip>
   <RWL_Viv_ColonyLost>The colony is lost.</RWL_Viv_ColonyLost>
   <RWL_Viv_RestartTitle>The colony is lost</RWL_Viv_RestartTitle>
