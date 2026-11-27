@@ -469,4 +469,47 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Unit_Sec>{0} s</RWL_Unit_Sec>
   <RWL_Unit_Min>{0} min</RWL_Unit_Min>
   <RWL_Unit_HourMin>{0} h {1} min</RWL_Unit_HourMin>
+  <RWL_Viv_Title>Narrator plays</RWL_Viv_Title>
+  <RWL_Viv_Help>When "Narrator plays" is on (the eye icon at the bottom right, or its key), the narrator runs the colony and you can still act and talk to it. These settings limit what it may do.</RWL_Viv_Help>
+  <RWL_Viv_MayPause>The narrator may pause for emergencies</RWL_Viv_MayPause>
+  <RWL_Viv_MayPauseTip>Lets the narrator pause the game when something urgent happens, even though it does not control the speed.</RWL_Viv_MayPauseTip>
+  <RWL_Viv_ControlsSpeed>The narrator controls the game speed</RWL_Viv_ControlsSpeed>
+  <RWL_Viv_ControlsSpeedTip>Off: your speed is respected. On: the narrator may pause, unpause and change the speed.</RWL_Viv_ControlsSpeedTip>
+  <RWL_Viv_Heartbeat>The narrator looks at the colony every {0} game hours</RWL_Viv_Heartbeat>
+  <RWL_Viv_HeartbeatTip>How often the narrator wakes up on its own to look over the colony, in game hours. It also wakes when you chat or something important happens.</RWL_Viv_HeartbeatTip>
+  <RWL_Viv_SwitchTip>Narrator plays: the narrator runs the colony; you can still act and talk to it.</RWL_Viv_SwitchTip>
+  <RWL_Viv_NoteOn>Narrator plays: on</RWL_Viv_NoteOn>
+  <RWL_Viv_NoteOff>Narrator plays: off</RWL_Viv_NoteOff>
+  <RWL_Viv_ChatHint>Talk to the narrator, or @Name to talk to a colonist (Enter sends, Esc closes)</RWL_Viv_ChatHint>
+  <RWL_Viv_NoColonist>No colonist named {0}.</RWL_Viv_NoColonist>
+  <RWL_Viv_LinePlayer>You: {0}</RWL_Viv_LinePlayer>
+  <RWL_Viv_LinePlayerTo>You to {0}: {1}</RWL_Viv_LinePlayerTo>
+  <RWL_Viv_LineNarrator>Narrator: {0}</RWL_Viv_LineNarrator>
+  <RWL_TabGoals>Goals</RWL_TabGoals>
+  <RWL_Viv_GoalsTitle>The narrator's goals</RWL_Viv_GoalsTitle>
+  <RWL_Viv_PagePlaying>Narrator plays</RWL_Viv_PagePlaying>
+  <RWL_Viv_Plan>Plan</RWL_Viv_Plan>
+  <RWL_Viv_PlanSave>Save the plan</RWL_Viv_PlanSave>
+  <RWL_Viv_Goals>Goals</RWL_Viv_Goals>
+  <RWL_Viv_GoalsEmpty>No goals yet.</RWL_Viv_GoalsEmpty>
+  <RWL_Viv_GoalHead>{0}, {1}, by {2}</RWL_Viv_GoalHead>
+  <RWL_Viv_Horizon_long>long term</RWL_Viv_Horizon_long>
+  <RWL_Viv_Horizon_short>short term</RWL_Viv_Horizon_short>
+  <RWL_Viv_Status_open>open</RWL_Viv_Status_open>
+  <RWL_Viv_Status_done>done</RWL_Viv_Status_done>
+  <RWL_Viv_Status_dropped>dropped</RWL_Viv_Status_dropped>
+  <RWL_Viv_By_player>you</RWL_Viv_By_player>
+  <RWL_Viv_By_narrator>narrator</RWL_Viv_By_narrator>
+  <RWL_Viv_Done>Done</RWL_Viv_Done>
+  <RWL_Viv_Drop>Drop</RWL_Viv_Drop>
+  <RWL_Viv_Reopen>Reopen</RWL_Viv_Reopen>
+  <RWL_Viv_Remove>Remove</RWL_Viv_Remove>
+  <RWL_Viv_GoalLong>Long-term goal</RWL_Viv_GoalLong>
+  <RWL_Viv_GoalAdd>Add goal</RWL_Viv_GoalAdd>
+  <RWL_Viv_Orders>Standing orders</RWL_Viv_Orders>
+  <RWL_Viv_OrdersEmpty>No standing orders. Add one, for example: always keep 20 meals.</RWL_Viv_OrdersEmpty>
+  <RWL_Viv_OrderAdd>Add standing order</RWL_Viv_OrderAdd>
+  <RWL_Viv_Log>What the narrator did and why</RWL_Viv_Log>
+  <RWL_Viv_Actions>Actions (last 30)</RWL_Viv_Actions>
+  <RWL_Viv_ActionsEmpty>No actions yet.</RWL_Viv_ActionsEmpty>
 </LanguageData>

@@ -57,7 +57,7 @@ namespace RimWorldLLM.Tests
             var names = doc.Root.Elements().Select(e => e.Name.LocalName).ToList();
             Assert.Equal(names.Count, names.Distinct().Count());
             string all = string.Join("\n", Sources().Select(File.ReadAllText));
-            var dynamicPrefixes = new[] { "RWL_Probe_", "RWL_Section_", "RWL_Effects_", "RWL_Refused_", "RWL_LogEffect_", "RWL_Gpu_" };
+            var dynamicPrefixes = new[] { "RWL_Probe_", "RWL_Section_", "RWL_Effects_", "RWL_Refused_", "RWL_LogEffect_", "RWL_Gpu_", "RWL_Viv_Horizon_", "RWL_Viv_Status_", "RWL_Viv_By_" };
             var unused = names.Where(n => !dynamicPrefixes.Any(p => n.StartsWith(p)) && all.IndexOf("\"" + n + "\"", StringComparison.Ordinal) < 0).ToList();
             Assert.Empty(unused);
         }

@@ -85,7 +85,9 @@ namespace RimWorldLLM
             SpeechBubbles.Add(speaker, text, (string)b["kind"], intent, combat);
             DirectorCamera.OnConversation(speaker, listener);
             bool fromPlayer = talkId != null && RWLBridge.Talk.Contains(talkId);
+            bool fromChat = talkId != null && VivariumGame.TalkFrom(talkId) == "chat";
             if (talkId != null) RWLBridge.Talk.Remove(talkId);
+            if (fromChat) VivariumGame.State.Chat.Add("colonist", text, VivariumGame.NowTick, speaker.thingIDNumber, speaker.LabelShort);
 
             // A line for a vanilla interaction goes onto that interaction's log entry and thoughts, and adds no effect of its own.
             string attach = null;

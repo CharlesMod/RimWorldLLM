@@ -95,7 +95,7 @@ namespace RimWorldLLM
         }
 
         static FieldInfo optTextField;
-        static string OptText(DiaOption o)
+        internal static string OptText(DiaOption o)
         {
             if (optTextField == null) optTextField = typeof(DiaOption).GetField("text", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             return optTextField != null ? optTextField.GetValue(o) as string : null;
