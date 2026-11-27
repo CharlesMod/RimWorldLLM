@@ -41,7 +41,6 @@ STEPS, BUDGET_S, STEP_TIMEOUT_S = 8, 120.0, 60.0
 FINAL_MAX = 300
 ENV_STRATEGY = "RIMWORLDLLM_STEWARD_STRATEGY"
 STRATEGY_HEADING = "## Strategy notes"
-_QUIET_VERBS = ("work", "schedule", "policy")           # routine tweaks: the first to lose their chat note when there are more than three
 _NO_LINE = {"", "done", "nothing", "nothing to say", "none", "n/a", "ok"}
 
 
@@ -355,15 +354,7 @@ class Steward:
         t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, executed=[(e.tool, e.args, e.result) for e in res.executed],
                  elapsed_s=round(res.elapsed_s, 2))
 
-        # chat notes for what was done: the bridge's own words, at most MAX_NOTES in all
-        room = 0 if used["notes"] else MAX_NOTES      # the model wrote its own notes this turn: no automatic ones on top
-        if room > 0 and acts:
-            loud = [a for a in acts if a[0] not in _QUIET_VERBS] + [a for a in acts if a[0] in _QUIET_VERBS]
-            for verb, note in loud[:room]:
-                line = self._clean_line("→ " + note, 160)
-                if line and await self._say("note", line):
-                    self.stats.notes += 1
-                    used["posted"] += 1
+        # no automatic chat notes: the game writes one greentext line per act itself (from the act's "why")
         # the cycle's final line
         final = self._clean_line(res.final_text, 500) if res.outcome == "final" else None
         if final and await self._say("narrator", final):
