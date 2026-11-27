@@ -131,5 +131,21 @@ namespace RimWorldLLM.Tests
             Assert.Equal("had Ana hold position", VivariumHandsPure.OrderNote("Ana", "hold", 0, 0, null, true));
             Assert.Equal("send Ana to (3, 4)", VivariumHandsPure.OrderWhat("Ana", "move", 3, 4, null, false));
         }
+    
+        [Fact]
+        public void WrittenArtGraveBookGoToStoryOthersDont()
+        {
+            ChatFeed.Written(L, 1, "art", "Ana", "Blue Hour", "A calm river.");
+            Assert.Equal("art", Last.Who); Assert.Equal("Art: \"Blue Hour\" by Ana: A calm river.", Last.Text);
+            ChatFeed.Written(L, 2, "grave", "Tok", null, "He died as he lived.");
+            Assert.Equal("art", Last.Who); Assert.Equal("Epitaph for Tok: He died as he lived.", Last.Text);
+            ChatFeed.Written(L, 3, "book", null, "The Quiet Vigil", "A gentle tale.");
+            Assert.Equal("Book: \"The Quiet Vigil\": A gentle tale.", Last.Text);
+            int n = L.Entries.Count;
+            Assert.Null(ChatFeed.Written(L, 4, "social", "Ana", null, "Ana chatted with Bo."));
+            Assert.Null(ChatFeed.Written(L, 4, "combat", "Ana", null, "Ana missed."));
+            Assert.Null(ChatFeed.Written(L, 4, "grave", "Tok", null, "  "));
+            Assert.Equal(n, L.Entries.Count);
+        }
     }
 }

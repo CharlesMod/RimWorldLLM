@@ -411,6 +411,7 @@ namespace RimWorldLLM
             {
                 var o = LiveOf(entry.Id);
                 if (o == null) return "pending";
+                try { PostToChat(o, entry); } catch (Exception) { }   // the chat log line never blocks applying
                 try
                 {
                     var book = o as Book;
@@ -421,6 +422,18 @@ namespace RimWorldLLM
                 }
                 catch (Exception e) { Log.Warning("[RimWorldLLM] text apply " + entry.Id + ": " + e.Message); return "failed"; }
             }
+        }
+
+        /// <summary>One Story line in the chat panel per stored art/grave/book text.</summary>
+        static void PostToChat(object o, TextEntry e)
+        {
+            if (VivariumGame.State == null) return;
+            string subject = null;
+            var comp = o as CompArt ?? (o as ThingWithComps)?.GetComp<CompArt>();
+            if (e.Kind == TextKinds.Art && comp != null) subject = Plain(comp.AuthorName);
+            var grave = o as Building_Grave;
+            if (e.Kind == TextKinds.Grave && grave != null && grave.Corpse != null && grave.Corpse.InnerPawn != null) subject = grave.Corpse.InnerPawn.LabelShort;
+            ChatFeed.Written(VivariumGame.State.Chat, VivariumGame.NowTick, e.Kind, subject, e.Title, e.Text);
         }
 
         static readonly AccessTools.FieldRef<Book, string> BookTitle = AccessTools.FieldRefAccess<Book, string>("title");
