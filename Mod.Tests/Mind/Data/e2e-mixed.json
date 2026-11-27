@@ -1670,29 +1670,6 @@
    "reply": "none normal I just want this to be over with."
   },
   {
-   "kind": "narrator",
-   "slot": 0,
-   "actor": null,
-   "max_tokens": 48,
-   "stop": [
-    "\n"
-   ],
-   "grammar": null,
-   "temperature": null,
-   "json_schema": null,
-   "messages": [
-    [
-     "system",
-     "You are a dry narrator of a RimWorld colony. Write one short third-person line about what just happened. No speech, no invention."
-    ],
-    [
-     "user",
-     "What just happened: The raid was driven off.\nWrite the narrator's one line."
-    ]
-   ],
-   "reply": "Fine."
-  },
-  {
    "kind": "line",
    "slot": 1,
    "actor": 1,

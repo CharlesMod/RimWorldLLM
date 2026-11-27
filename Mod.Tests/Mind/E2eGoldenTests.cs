@@ -84,7 +84,7 @@ namespace RimWorldLLM.Tests.Mind
 
         // Main changed the chitchat wording of the game's own interactions (adapter.py _PASSING_KIND, the summary of a chitchat memory); the
         // "delta2" port brings it. Remove the Skip when that merges: this golden then proves it byte for byte.
-        [Fact(Skip = "needs the delta2 chitchat wording (adapter.py _PASSING_KIND)")]
+        [Fact]
         public Task ChitchatReplayMatchesThePythonOnceTheNewWordingIsPorted() { return Check("chitchat", "e2e-chitchat.jsonl"); }
 
         static async Task Check(string name, string input)
@@ -109,7 +109,7 @@ namespace RimWorldLLM.Tests.Mind
             return (JObject)BridgeJson.Parse(r.ReadToEnd());
         }
 
-        [Theory(Skip = "needs delta2 steward_system.txt (OPEN DIALOGS line) + steward_strategy.md (loose materials); matched 4/4 with those synced")]
+        [Theory]
         [InlineData("grammar")]
         [InlineData("advisor")]
         [InlineData("json")]

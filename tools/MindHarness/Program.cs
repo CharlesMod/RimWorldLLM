@@ -24,7 +24,7 @@ namespace RimWorldLLM.Harness
             "      and replay-requests.jsonl (every raw HTTP request body and reply, plus one 'decision' row per LLM call).",
             "  speedsim [--speed N | --all] [--events FILE] [--slots N] [--seed N]   (virtual-time speed simulation)",
             "  steward-try --digest FILE --llm-url URL [--goals FILE] [--chat TEXT] [--playing] [--model M] [--mode auto|grammar|json|native]",
-            "  comment-try   (not wired: the commentary function is delta2's; see docs/csmind/parity-tools.md)");
+            "  comment-try --events FILE [--llm-url URL --model M --key K]   (documentary voice on sample events; FakeLlm without --llm-url)");
 
         static int Main(string[] a)
         {
@@ -41,11 +41,38 @@ namespace RimWorldLLM.Harness
                 case "replay": return await ReplayAsync(rest);
                 case "steward-try": return await StewardTry.MainAsync(rest, Console.Out, Console.Error);
                 case "speedsim": return SpeedSim.Run(rest, Console.Out, Console.Error);
-                case "comment-try":
-                    Console.Error.WriteLine("comment-try: not wired (delta2's commentary function is not in this tree); see docs/csmind/parity-tools.md");
-                    return 2;
+                case "comment-try": return await CommentTryAsync(rest);
                 default: Console.Error.WriteLine("MindHarness: unknown command " + a[0] + "\n" + Usage()); return 2;
             }
+        }
+
+        static async Task<int> CommentTryAsync(string[] a)
+        {
+            string events = null, url = null, model = "", key = "";
+            for (int i = 0; i < a.Length; i++)
+            {
+                string Next() { if (i + 1 >= a.Length) throw new ArgumentException("expected a value after " + a[i]); return a[++i]; }
+                switch (a[i])
+                {
+                    case "--events": events = Next(); break;
+                    case "--llm-url": url = Next(); break;
+                    case "--model": model = Next(); break;
+                    case "--key": key = Next(); break;
+                    default: throw new ArgumentException("unknown option " + a[i]);
+                }
+            }
+            if (events == null) { Console.Error.WriteLine("comment-try: --events FILE is required"); return 2; }
+            var list = JArray.Parse(File.ReadAllText(events)).OfType<JObject>().ToList();
+            ILlmClient llm;
+            if (url != null)
+            {
+                var lc = new LlmConfig { BaseUrl = url, Model = model, ApiKey = key };
+                llm = new HttpLlm(lc, null, new HttpClient { Timeout = TimeSpan.FromSeconds(lc.TimeoutS + 30) });
+            }
+            else llm = new RimWorldLLM.Tests.Mind.Fakes.FakeLlm();
+            foreach (var row in await RimWorldLLM.Tests.Mind.CommentTry.TryEventsAsync(list, llm))
+                Console.Out.WriteLine(RimWorldLLM.Tests.Mind.CommentTry.Format(row));
+            return 0;
         }
 
         /// <summary>Logs each raw request body and its reply to a JSONL file.</summary>
