@@ -160,3 +160,17 @@ Use an early colony (day 2-10, 3-5 colonists, wood and some stone, no freezer). 
 
 Report back: the step numbers that failed, the agent log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
+
+## D. Unattended play: camera director (watch mode)
+
+1. A camera button sits beside the "Narrator plays" eye; hover shows the tip; click: message "Watch mode on." Settings
+   (Talk/Camera page) shows the same switch, reopened state matches. Optionally bind a key under Keyboard, RimWorldLLM.
+2. With watch mode on and nothing happening, the camera drifts to a colonist about every 25 s (no chat line).
+3. Dev mode: fire a raid; within a second the camera cuts to the raiders, chat gets "Camera: a raid arrives from the <side>".
+4. Start a fight, a mental break and a social fight (dev tools) one after another: shots follow, the chat does not flood
+   (at most one camera line per 12 s). The same colonist is not shown again and again while others have events.
+5. Move or zoom the camera yourself: it stays still for the pause time (default 20 s), then resumes by itself.
+6. A funeral, a wedding or a party each get a shot and a line. Kill a colonist: cut to the body, "Camera: X has died".
+7. Biotech: a birth gives "Camera: X gives birth" and a `birth` event on GET /events. Without Biotech: no errors in the log.
+8. A masterwork item and a finished ship part give shots and `masterwork` / `ship_part` events.
+9. Watch mode off: the camera never moves by itself. Other maps: a shot on another map cuts there (camera only, no selection).

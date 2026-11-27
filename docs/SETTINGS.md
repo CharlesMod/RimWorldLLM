@@ -88,6 +88,7 @@ Options > Controls. The three settings above reach the agent on `GET /vivarium` 
 | `showBubbles`, `colorBubbles`, `bubbleStyle`, `bubbleOpacity`, `comicLettering`, `bubbleDurationSec` | true, true, "comic", 1.0, false, 8 | P | Speech bubbles |
 | `showThoughts`, `thoughtOpacity`, `thoughtPerPawnSec`, `thoughtGlobalSec` | true, 0.6, 120, 20 | P | Inner-thought clouds (comic style) |
 | `directorCameraAllowed`, `directorCameraOnAtStart`, `directorPanSpeed` | true, false, 2.5 | P | Director camera |
+| `watchMode`, `watchCaptions`, `watchPlayerPauseSec` | false, true, 20 | P | Watch mode (camera director for unattended play); `watchMode` is a mod setting, not per game |
 | `shareFooter` | true | P | Footer on shared images (was under Talk) |
 
 ### Content
