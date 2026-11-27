@@ -134,7 +134,7 @@ namespace RimWorldLLM.Mind.Fakes
         /// <summary>A BridgeClient over a FakeBridge with the RimWorld protocol names (the Python tests' mk()).</summary>
         public static BridgeClient Client(FakeBridge fb, string token = "tok")
         {
-            return new BridgeClient(fb, ProtocolNames.RimWorld, token);
+            return new BridgeClient(fb, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames, token);
         }
 
         // ---- test helpers -----------------------------------------------------

@@ -49,19 +49,6 @@ namespace RimWorldLLM.Mind
 
         /// <summary>The generic defaults (core/adapter.py).</summary>
         public static ProtocolNames Default { get { return new ProtocolNames(); } }
-
-        /// <summary>The RimWorld mod's wire names (games/rimworld/adapter.py): /pawn, /colony, pawn, tick, save_epoch, expires_tick.</summary>
-        public static ProtocolNames RimWorld
-        {
-            get
-            {
-                return new ProtocolNames
-                {
-                    ActorPath = "/pawn", ScenePath = "/scene", MindPath = "/mind", RosterPath = "/colony",
-                    ActorField = "pawn", TimeField = "tick", EpochField = "save_epoch", ExpiryField = "expires_tick"
-                };
-            }
-        }
     }
 
     /// <summary>One request on the transport seam (the httpx.request call of the Python).</summary>

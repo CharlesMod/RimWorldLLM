@@ -35,7 +35,7 @@ namespace RimWorldLLM.Tests.Mind
         BridgeClient Client(BridgeServer s = null)
         {
             s = s ?? _s;
-            return new BridgeClient(new InProcessTransport(s), ProtocolNames.RimWorld);
+            return new BridgeClient(new InProcessTransport(s), RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
         }
 
         static async Task<T> Pumped<T>(BridgeServer s, Task<T> t)
@@ -244,11 +244,11 @@ namespace RimWorldLLM.Tests.Mind
                 string url = "http://127.0.0.1:" + h.Server.Port;
                 using (var http = new HttpBridgeTransport(url))
                 {
-                    var b = new BridgeClient(http, ProtocolNames.RimWorld, "secret");
+                    var b = new BridgeClient(http, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames, "secret");
                     Assert.Equal("RimWorldLLM", (string)(await b.HealthAsync())["mod"]);
                     Assert.Equal(2, (int)(await Pumped(h.Server, b.ConfigAsync()))["a"]);
                     Assert.Equal(1000, b.Env.Game);
-                    var bad = new BridgeClient(http, ProtocolNames.RimWorld, "wrong");
+                    var bad = new BridgeClient(http, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames, "wrong");
                     Assert.Equal("unauthorized", (await Fails(bad.ConfigAsync())).Code);
                 }
                 int port = h.Server.Port;
@@ -260,7 +260,7 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         // ---- BridgeRuntime: pumping runs whether or not HTTP is on ----
-        sealed class TestGame : IGameAdapter
+        sealed class TestGame : RimWorldLLM.Bridge.IGameAdapter
         {
             public GameState State = new GameState { GameLoaded = true, Tick = 77, SaveEpoch = 2, Speed = 2 };
             public GameState BuildState() { return State; }
@@ -278,7 +278,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Null(rt.Server);
             rt.EnableInProcess();
             Assert.False(rt.IsRunning);
-            var b = new BridgeClient(new InProcessTransport(() => rt.Server), ProtocolNames.RimWorld);
+            var b = new BridgeClient(new InProcessTransport(() => rt.Server), RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             async Task<JObject> Frame(Task<JObject> t)
             {
                 var until = DateTime.UtcNow.AddSeconds(10);

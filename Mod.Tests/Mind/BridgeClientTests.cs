@@ -187,12 +187,12 @@ namespace RimWorldLLM.Tests.Mind
         public async Task HealthSendsNoAuthAndTokenOnlyWhenNonEmpty()
         {
             var t = new Rec();
-            var b = new BridgeClient(t, ProtocolNames.RimWorld, "s3");
+            var b = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames, "s3");
             await b.HealthAsync();
             Assert.Null(t.Last.Authorization);
             await b.ConfigAsync();
             Assert.Equal("Bearer s3", t.Last.Authorization);
-            var b2 = new BridgeClient(t, ProtocolNames.RimWorld, "");
+            var b2 = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames, "");
             await b2.ConfigAsync();
             Assert.Null(t.Last.Authorization);
         }
@@ -208,7 +208,7 @@ namespace RimWorldLLM.Tests.Mind
             await d.GetMindAsync(5); Assert.Equal("/mind/5", t.Last.Path);
             await d.SayAsync(5, "x", expiresAt: 9);
             Assert.True(t.Body["actor"] != null && (int)t.Body["expires_at"] == 9 && t.Body["expires_tick"] == null);
-            var r = new BridgeClient(t, ProtocolNames.RimWorld);
+            var r = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             await r.RosterAsync(); Assert.Equal("/colony", t.Last.Path);
             await r.ActorAsync(5); Assert.Equal("/pawn/5", t.Last.Path);
             await r.SayAsync(5, "x", expiresAt: 9);
@@ -219,7 +219,7 @@ namespace RimWorldLLM.Tests.Mind
         public async Task SayBodyHasPythonFieldOrderAndOmitsEmptyOptionals()
         {
             var t = new Rec();
-            var b = new BridgeClient(t, ProtocolNames.RimWorld);
+            var b = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             await b.SayAsync(3, "Hi", listener: 4, intent: "kind", conversationId: "c1", combat: true, talkId: "t1", expiresAt: 50,
                 opId: "o", about: 7, vanillaRef: "v", kind: "shout");
             Assert.Equal("{\"pawn\":3,\"text\":\"Hi\",\"intent\":\"kind\",\"combat\":true,\"kind\":\"shout\",\"vanilla_ref\":\"v\",\"listener\":4,\"about\":7,\"conversation_id\":\"c1\",\"talk_id\":\"t1\",\"op_id\":\"o\",\"expires_tick\":50}", t.Last.JsonBody);
@@ -244,7 +244,7 @@ namespace RimWorldLLM.Tests.Mind
         public async Task OtherWritesAndReadsHaveTheContractShapes()
         {
             var t = new Rec();
-            var b = new BridgeClient(t, ProtocolNames.RimWorld);
+            var b = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             await b.ThoughtAsync(2, "t", kind: "diary", surface: "s", opId: "o");
             Assert.Equal("{\"pawn\":2,\"text\":\"t\",\"kind\":\"diary\",\"surface\":\"s\",\"op_id\":\"o\"}", t.Last.JsonBody);
             await b.SocialActionAsync(2, "seek_out", 3, "food", "o");
@@ -314,7 +314,7 @@ namespace RimWorldLLM.Tests.Mind
         public async Task EnvelopeIsAbsorbedFromErrorsAndOnlyWithTheTimeField()
         {
             var t = new Rec();
-            var b = new BridgeClient(t, ProtocolNames.RimWorld);
+            var b = new BridgeClient(t, RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames);
             t.Reply = r => new BridgeReply(404, "{\"ok\": false, \"error\": \"not_found\", \"tick\": 42, \"save_epoch\": 5, \"paused\": true, \"speed\": 0}");
             await Fails(b.ActorAsync(1));
             Assert.True(b.Env.Game == 42 && b.Env.Epoch == 5 && b.Env.Paused && b.Env.Speed == 0 && !b.EpochChanged);
@@ -397,7 +397,7 @@ namespace RimWorldLLM.Tests.Mind
             var d = ProtocolNames.Default;
             Assert.Equal(("/actor", "/scene", "/mind", "/roster", "actor", "time", "epoch", "expires_at"),
                 (d.ActorPath, d.ScenePath, d.MindPath, d.RosterPath, d.ActorField, d.TimeField, d.EpochField, d.ExpiryField));
-            var r = ProtocolNames.RimWorld;
+            var r = RimWorldLLM.Mind.RimWorld.RimWorldAdapter.WireNames;
             Assert.Equal(("/pawn", "/scene", "/mind", "/colony", "pawn", "tick", "save_epoch", "expires_tick"),
                 (r.ActorPath, r.ScenePath, r.MindPath, r.RosterPath, r.ActorField, r.TimeField, r.EpochField, r.ExpiryField));
         }
