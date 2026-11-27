@@ -19,12 +19,15 @@ namespace RimWorldLLM.Tests.Mind.Fakes
     {
         public readonly FakeLlm Inner;
         public Func<Task> Before;
+        /// <summary>Like Before, but told the call's kind (a Python test's GatedLLM waits on chosen kinds).</summary>
+        public Func<string, Task> BeforeKind;
         public HookLlm(FakeLlm inner) { Inner = inner; }
         public async Task<Completion> CompleteAsync(IReadOnlyList<LlmMessage> messages, int? slot, string kind = "line", int maxTokens = 48,
                                                     IReadOnlyList<string> stop = null, string grammar = null, double? temperature = null,
                                                     int? actor = null, JObject jsonSchema = null)
         {
             if (Before != null) await Before();
+            if (BeforeKind != null) await BeforeKind(kind);
             return await Inner.CompleteAsync(messages, slot, kind, maxTokens, stop, grammar, temperature, actor, jsonSchema);
         }
     }

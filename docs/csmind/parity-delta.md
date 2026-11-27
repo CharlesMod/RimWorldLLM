@@ -74,9 +74,8 @@ Python tests ported:
   test_why_is_in_every_acting_tool_and_optional, test_why_is_cleaned_and_capped.
 
 Deferred (need the Director/world fixture or core/steward.py):
-- test_textfill.py: test_art_idle_job_skipped_when_text_queue_live, test_idle_runs_text_fill_last_when_idle,
-  test_idle_text_fill_yields_to_other_jobs_and_to_real_work, test_idle_text_fill_honours_both_flags,
-  test_idle_text_fill_404_backs_off_five_minutes (idle runner, director clock, leases, art queue).
+- test_textfill.py: the five idle tests are ported (Mod.Tests/Mind/JobsWorldTests.cs: ArtIdleJobSkippedWhenTextQueueLive, IdleRunsTextFillLastWhenIdle,
+  IdleTextFillYieldsToOtherJobsAndToRealWork, IdleTextFillHonoursBothFlags, IdleTextFill404BacksOffFiveMinutes).
 - test_vanilla_social.py: test_a_meta_thought_is_dropped_and_counted, test_a_meta_vanilla_line_is_dropped_for_chitchat,
   test_the_same_words_are_kept_for_an_insult (world: director step/drain), test_insult_line_prompt..., tier and dropped-line tests
   (already deferred earlier).
