@@ -15,6 +15,7 @@ from ...core import gamedata as gd
 from ...core.bridge import BridgeError
 from ...core.toolloop import Param, ToolSpec
 from .steward_digest import pawn_names, render_digest
+from .steward_rules import alerts_section
 
 _HERE = Path(__file__).parent
 
@@ -240,7 +241,11 @@ class StewardKit:
         return (_HERE / "steward_system.txt").read_text() + (ADVISOR_NOTE if advisor else "")
 
     def default_strategy(self) -> str:
-        return (_HERE / "steward_strategy.txt").read_text()
+        return (_HERE / "strategy" / "steward_strategy.md").read_text(encoding="utf-8")
+
+    def playbook_alerts(self, digest: dict) -> str:
+        """The "=== PLAYBOOK ALERTS ===" block: playbook rules that fire on this digest's facts ("" when none)."""
+        return alerts_section(digest)
 
     def render_digest(self, digest: dict) -> str:
         return render_digest(digest)
