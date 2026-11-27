@@ -559,7 +559,8 @@ class Director:
                           third_person=mind.voice.speaks_third_person(self.name_tokens.get(aid, set())),
                           minor_involved=self.is_minor(aid) or bool(hearers & minors), minor_names=self.minor_tokens(),
                           intent_labels=tuple(self.adapter.intent_labels))
-        sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), sc.job]).encode()).hexdigest()
+        job = (sc.job.get("label") or sc.job.get("def") or "") if isinstance(sc.job, dict) else str(sc.job or "")
+        sig = hashlib.sha1("|".join([trigger, sc.state, sc.where, ",".join(sc.present), job]).encode()).hexdigest()
         return ctx, scene, sig
 
     def _common_talk(self, aid: int, trigger: str, sc, present_ids: set[int], conv_with: int | None) -> list[str]:

@@ -85,7 +85,7 @@ def test_old_history_and_named_lines_are_not_answered(world):
     async def go():
         w = world
         w.fb.add_chat("player", "an old line from before the agent connected")
-        w.fb.tick += 5000                         # more than an in-game hour ago: history, not caught up
+        w.fb.add_chat("narrator", "the narrator answered it back then")
         w, st, fake = await boot(world, playing=False)
         await cycle(w)
         assert fake.calls == []                   # the cursor started at the current seq
@@ -110,9 +110,9 @@ def test_chat_cursor_resets_on_a_new_world(world):
         w.fb.chat, w.fb.chat_seq = [], 0         # the loaded save has its own chat log
         await w.d.step()
         assert st.cursor is None                 # reset by the epoch change
-        w.fb.add_chat("player", "typed long before the agent looked at the new log")
-        w.fb.tick += 5000
-        await w.d.steward.step()                 # first sight of the new world: an old unanswered line is history
+        w.fb.add_chat("player", "answered in that save")
+        w.fb.add_chat("narrator", "an answer in that save")
+        await w.d.steward.step()                 # first sight of the new world: answered lines are history
         assert fake.cycles == 1
         chat(w, "after the load")
         await cycle(w)
@@ -454,4 +454,16 @@ def test_recent_unanswered_lines_are_caught_up_on_first_sight(world):
         await cycle(w)
         assert lines(w, "narrator")[-1] == "Here now."
         assert "typed while the agent was restarting" in fake.calls[0]["messages"][1]["content"]
+    run(go())
+
+
+def test_switching_on_wakes_the_steward_at_once(world):
+    async def go():
+        w, st, fake = await boot(world, [final("Advice."), final("Taking over.")], playing=False)
+        chat(w, "advise me")
+        await cycle(w)                           # an advisor cycle sets the heartbeat clock
+        assert fake.cycles == 1
+        w.fb.playing = True                      # the player flips the switch
+        await cycle(w)
+        assert fake.cycles == 2 and st.stats.by_reason.get("switched on") == 1
     run(go())

@@ -229,9 +229,23 @@ class BridgeClient:
         """GET /chat?since=N -> {"entries": [...], "next_seq": N}."""
         return await self._req("GET", "/chat", params={"since": seq})
 
-    async def post_chat(self, who: str, text: str, op_id: str | None = None) -> dict:
-        """POST /chat {who: narrator|note, text}; -> {"seq": N}."""
-        return await self._req("POST", "/chat", json_body=self._write_body({"who": who, "text": text}, None, op_id))
+    async def post_chat(self, who: str, text: str, op_id: str | None = None, stream_id: str | None = None) -> dict:
+        """POST /chat {who: narrator|note, text, stream_id?}; -> {"seq": N}. A stream_id ends that /chat/status stream."""
+        body: dict[str, Any] = {"who": who, "text": text}
+        if stream_id is not None:
+            body["stream_id"] = stream_id
+        return await self._req("POST", "/chat", json_body=self._write_body(body, None, op_id))
+
+    async def post_chat_status(self, who: str, state: str, stream_id: str, to: int | None = None,
+                               progress: float | None = None, op_id: str | None = None) -> dict:
+        """POST /chat/status {who: narrator|<character>, to?, state: thinking|typing|idle, stream_id, progress?}.
+        An older mod answers 404 not_found."""
+        body: dict[str, Any] = {"who": who, "state": state, "stream_id": stream_id}
+        if to is not None:
+            body["to"] = to
+        if progress is not None:
+            body["progress"] = progress
+        return await self._req("POST", "/chat/status", json_body=self._write_body(body, None, op_id))
 
     async def goals(self) -> dict:
         """GET /goals: the goals board with its rev."""

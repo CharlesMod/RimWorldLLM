@@ -35,7 +35,7 @@ log = logging.getLogger("rimworldllm.steward")
 
 MAX_EVENT_LINES = 15
 MAX_CHAT_LINES = 10
-CATCH_UP_DAYS = 1 / 24                    # one in-game hour: older unanswered lines stay history
+CATCH_UP_LINES = 3                         # at most this many unanswered player lines are answered on first sight
 MAX_NOTES = 3
 STEPS, BUDGET_S, STEP_TIMEOUT_S = 8, 120.0, 60.0
 FINAL_MAX = 300
@@ -88,6 +88,7 @@ class Steward:
         self.disabled = self.kit is None or not d.cfg.steward
         self.task: asyncio.Task | None = None
         self.stats = StewardStats()
+        self._streams = 0                                # per-cycle /chat/status stream counter
         self.vv: dict = {}
         self._strategy_note = None
         self.reset()
@@ -101,6 +102,8 @@ class Steward:
         self.urgent: list[str] = []
         self.last_game: int | None = None
         self.last_real: float | None = None
+        self.was_playing = False                      # the switch was on at the last step (an off→on flip wakes at once)
+        self.switched_on = False
         self.pause_woken = False
         self.vv = {}
         if self.d.leases.narrator_owner == "steward":
@@ -139,6 +142,9 @@ class Steward:
             return
         self.vv = vv
         playing = bool(vv.get("playing"))
+        if playing and not self.was_playing:
+            self.switched_on = True                   # the player just handed over: look at the world now
+        self.was_playing = playing
         seq = int(vv.get("chat_seq", 0) or 0)
         if self.cursor is None or seq < self.cursor:
             self.cursor = seq                         # first sight (or a new log): old history is not answered,
@@ -166,26 +172,21 @@ class Steward:
             self._start(reason, playing)
 
     async def _catch_up(self, seq: int) -> None:
-        """First sight of a chat log: queue the player's lines after the last narrator line when they are
-        recent (typed while the agent was starting or restarting), so they get an answer."""
+        """First sight of a chat log: queue the player's lines after the last narrator line (typed while the agent
+        was starting, restarting or away), so they get an answer. Lines the narrator already answered stay history."""
         if seq <= 0:
             return
         try:
             b = await self.d.bridge.chat_since(max(0, seq - MAX_CHAT_LINES))
         except BridgeError:
             return
-        now = int(getattr(self.d.bridge.env, "game", 0) or 0)
-        proto = getattr(self.d.bridge, "protocol", None)
-        tfield = getattr(proto, "time_field", "") or "game"
-        window = float(getattr(self.d.adapter, "units_per_day", 0) or 0) * CATCH_UP_DAYS
         tail: list[dict] = []
         for e in b.get("entries") or []:
             if e.get("who") == "narrator":
                 tail = []                             # answered up to here
-            elif (e.get("who") == "player" and not int(e.get("to") or 0) and str(e.get("text", "")).strip()
-                  and (window <= 0 or now - int(e.get(tfield) or 0) <= window)):
+            elif e.get("who") == "player" and not int(e.get("to") or 0) and str(e.get("text", "")).strip():
                 tail.append(e)
-        self.pending_chat.extend(tail[-MAX_CHAT_LINES:])
+        self.pending_chat.extend(tail[-CATCH_UP_LINES:])
 
     def _wake(self, playing: bool) -> str | None:
         d, env = self.d, self.d.bridge.env
@@ -193,6 +194,10 @@ class Steward:
             return "chat"
         if not playing or env.paused and not self.vv.get("paused_by_narrator"):
             return None
+        if self.switched_on:
+            self.switched_on = False
+            if self.last_game is not None:            # never looked yet: the heartbeat below fires anyway
+                return "switched on"
         if self.last_real is not None and d.clock() - self.last_real < d.cfg.steward_min_gap_real_s:
             return None
         if self.urgent and not env.paused:
@@ -258,6 +263,13 @@ class Steward:
             self.d.dropped.append((-1, "steward_line:age_gate"))
             return None
         return t
+
+    async def _status(self, state: str, stream_id: str) -> None:
+        """Tell the game's chat the narrator is thinking / idle. Best effort: never breaks or stalls a cycle."""
+        try:
+            await asyncio.wait_for(self.d.bridge.post_chat_status("narrator", state, stream_id), 3.0)
+        except Exception as e:                           # older mod (not_found), network, timeout
+            log.debug("steward: chat status %s not posted: %s", state, e)
 
     async def _run(self, reason: str, chat: list[dict], events: list[str], playing: bool, t: dict) -> None:
         d, kit = self.d, self.kit
@@ -332,8 +344,14 @@ class Steward:
             return out.result
 
         harness = ToolHarness(d.tool_backend, tools, mode=d.tool_mode, max_steps=STEPS, time_budget_s=BUDGET_S, step_timeout_s=STEP_TIMEOUT_S)
-        res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
-                                slot=d.cfg.narrator_slot, final_max=FINAL_MAX, max_tokens=220)
+        self._streams += 1
+        stream_id = f"steward-{os.getpid()}-{self._streams}"
+        await self._status("thinking", stream_id)
+        try:
+            res = await harness.run(system=system, user=user, executor=executor, validator=validator, allowed=sorted(allowed),
+                                    slot=d.cfg.narrator_slot, final_max=FINAL_MAX, max_tokens=220)
+        finally:
+            await self._status("idle", stream_id)
         t.update(outcome=res.outcome, reason_ended=res.reason, protocol=res.protocol, executed=[(e.tool, e.args, e.result) for e in res.executed],
                  elapsed_s=round(res.elapsed_s, 2))
 

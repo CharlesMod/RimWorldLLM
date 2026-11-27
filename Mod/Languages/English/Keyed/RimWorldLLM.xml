@@ -483,8 +483,23 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_ChatHint>Talk to the narrator, or @Name to talk to a colonist (Enter sends, Esc closes)</RWL_Viv_ChatHint>
   <RWL_Viv_NoColonist>No colonist named {0}.</RWL_Viv_NoColonist>
   <RWL_Viv_LinePlayer>You: {0}</RWL_Viv_LinePlayer>
-  <RWL_Viv_LinePlayerTo>You to {0}: {1}</RWL_Viv_LinePlayerTo>
+  <RWL_Viv_LinePlayerTo>You → {0}: {1}</RWL_Viv_LinePlayerTo>
   <RWL_Viv_LineNarrator>Narrator: {0}</RWL_Viv_LineNarrator>
+  <RWL_Viv_NarratorName>Narrator</RWL_Viv_NarratorName>
+  <RWL_Viv_Thinking>{0} is thinking</RWL_Viv_Thinking>
+  <RWL_Viv_Typing>{0} is typing</RWL_Viv_Typing>
+  <RWL_Chat_Show>Show the chat panel</RWL_Chat_Show>
+  <RWL_Chat_ShowTip>The chat log stays on screen, translucent, at the side. Off: it shows only while you type (Enter).</RWL_Chat_ShowTip>
+  <RWL_Chat_Right>Chat panel on the right</RWL_Chat_Right>
+  <RWL_Chat_RightTip>Off: the left side, next to the resources list. On: the right side, left of the date and alerts.</RWL_Chat_RightTip>
+  <RWL_Chat_Medium>Larger chat text</RWL_Chat_Medium>
+  <RWL_Chat_MediumTip>Uses the medium font for the chat panel instead of the small one.</RWL_Chat_MediumTip>
+  <RWL_Chat_Opacity>Chat background: {0}%</RWL_Chat_Opacity>
+  <RWL_Chat_OpacityTip>How dark the panel's background is while the mouse is elsewhere. Under the mouse it is nearly opaque.</RWL_Chat_OpacityTip>
+  <RWL_Chat_Width>Chat panel width: {0}</RWL_Chat_Width>
+  <RWL_Chat_WidthTip>Width in UI units; a narrow screen shrinks it to fit.</RWL_Chat_WidthTip>
+  <RWL_Chat_Lines>Chat lines shown: {0}</RWL_Chat_Lines>
+  <RWL_Chat_LinesTip>How many lines of text the panel shows; scroll with the mouse wheel over it to read older ones.</RWL_Chat_LinesTip>
   <RWL_TabGoals>Goals</RWL_TabGoals>
   <RWL_Viv_GoalsTitle>The narrator's goals</RWL_Viv_GoalsTitle>
   <RWL_Viv_PagePlaying>Narrator plays</RWL_Viv_PagePlaying>

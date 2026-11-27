@@ -97,6 +97,9 @@ class FakeBridge:
         self.viv_settings = {"may_pause_for_emergencies": True, "controls_speed": False, "heartbeat_hours": 6.0}
         self.chat: list[dict] = []               # entries, oldest first (cap 300)
         self.chat_seq = 0
+        self.chat_status: list[dict] = []        # POST /chat/status bodies (minus op_id), in order
+        self.chat_streams: list[str | None] = []  # stream_id of each POST /chat, in order
+        self.chat_status_enabled = True          # False: answer 404 like an older mod
         self.goals_board = {"rev": 0, "goals": [], "plan": "", "orders": [], "log": []}
         self._goal_ids = 0
         self.actions: list[dict] = []
@@ -296,8 +299,25 @@ class FakeBridge:
             if not 1 <= len(text) <= 500:
                 return self._err(400, "bad_request", "text 1..500 chars")
             e = self.add_chat(body["who"], text)
+            self.chat_streams.append(body.get("stream_id"))
             self.seen_ops[body["op_id"]] = {"seq": e["seq"]}
             return self._ok(seq=e["seq"])
+        if path == "/chat/status" and req.method == "POST":
+            if not self.chat_status_enabled:
+                return self._err(404, "not_found")
+            who, state, sid, to = body.get("who"), body.get("state"), body.get("stream_id"), body.get("to")
+            prog = body.get("progress")
+            if who not in ("narrator", "colonist") or state not in ("thinking", "typing", "idle"):
+                return self._err(400, "bad_request", "who/state invalid")
+            if not isinstance(sid, str) or not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", sid):
+                return self._err(400, "bad_request", "stream_id 1..64 of [A-Za-z0-9_.:-]")
+            if who == "colonist" and not (isinstance(to, int) and not isinstance(to, bool) and to > 0):
+                return self._err(400, "bad_request", "colonist needs to > 0")
+            if prog is not None and (isinstance(prog, bool) or not isinstance(prog, (int, float)) or not 0 <= prog <= 1):
+                return self._err(400, "bad_request", "progress 0..1")
+            self.chat_status.append({k: v for k, v in body.items() if k != "op_id"})
+            self.seen_ops[body["op_id"]] = {}
+            return self._ok(stream_id=sid, state=state)
         if path == "/goals":
             b = self.goals_board
             if req.method == "GET":
