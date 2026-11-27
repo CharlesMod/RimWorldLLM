@@ -227,8 +227,8 @@ class Steward:
     def _clean_line(self, text: str, cap: int = 500) -> str | None:
         """A narrator line made safe to post, or None: empty, "done", or romantic/sexual with a minor (core/agegate.py)."""
         t = plain(text, cap)
-        if t.strip(" .!").lower() in _NO_LINE:
-            return None
+        if t.strip(" .!").lower() in _NO_LINE or not any(c.isalpha() for c in t):
+            return None                                  # "done", or a scrap with no words in it (":" seen live)
         if agegate.violation(t, minor_names=self.d.minor_tokens()):
             self.d.gate.skipped_events += 1
             self.d.dropped.append((-1, "steward_line:age_gate"))
@@ -314,7 +314,7 @@ class Steward:
                  elapsed_s=round(res.elapsed_s, 2))
 
         # chat notes for what was done: the bridge's own words, at most MAX_NOTES in all
-        room = MAX_NOTES - used["notes"]
+        room = 0 if used["notes"] else MAX_NOTES      # the model wrote its own notes this turn: no automatic ones on top
         if room > 0 and acts:
             loud = [a for a in acts if a[0] not in _QUIET_VERBS] + [a for a in acts if a[0] in _QUIET_VERBS]
             for verb, note in loud[:room]:
@@ -328,7 +328,7 @@ class Steward:
             self.stats.lines += 1
             used["posted"] += 1
             t["line"] = final
-        elif chat and res.outcome in ("gave_up", "fallback") and not res.executed:
+        elif chat and not used["posted"] and not res.executed:   # the player asked and would otherwise hear nothing
             await self._say("narrator", "I couldn't think that through just now. Ask me again in a moment.")
         # the goals board: one PUT with the edits and the log line
         if edits or acts:

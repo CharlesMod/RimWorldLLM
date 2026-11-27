@@ -104,7 +104,7 @@ def test_chat_cursor_resets_on_a_new_world(world):
         w, st, fake = await boot(world, playing=False)
         chat(w, "one")
         await cycle(w)
-        assert st.cursor == w.fb.chat_seq
+        assert st.pending_chat == [] and st.cursor >= 1     # read; the steward's own answer may follow it in the log
         w.fb.reload_game()
         w.fb.chat, w.fb.chat_seq = [], 0         # the loaded save has its own chat log
         await w.d.step()
@@ -317,6 +317,18 @@ def test_playing_runs_many_actions_with_resolved_ids(world):
     run(go())
 
 
+def test_own_note_replaces_automatic_notes(world):
+    async def go():
+        w, st, fake = await boot(world, [
+            call("assign_bed", pawn="Eli", bed_id="3305"),
+            call("note", text="Eli has a bed now"),
+            final("Done with beds.")])
+        await cycle(w)
+        assert w.fb.act_log == [("bed", {"pawn": 105, "bed": 3305})]
+        assert lines(w, "note") == ["Eli has a bed now"]              # no "→ bed 3305 ..." doubled on top
+    run(go())
+
+
 def test_schedule_attack_hold_and_time_bodies(world):
     async def go():
         w, st, fake = await boot(world, [
@@ -416,4 +428,15 @@ def test_digest_unreadable_on_a_chat_says_so(world):
         chat(w, "hello?")
         await cycle(w)
         assert "can't read the game state" in lines(w, "narrator")[0] and fake.calls == []
+    run(go())
+
+
+def test_a_wordless_final_line_on_a_chat_gets_a_plain_reply(world):
+    async def go():
+        w, st, fake = await boot(world, [final(":")])        # seen live on the 26B
+        w.fb.playing = False
+        chat(w, "should we take the quest?")
+        await cycle(w)
+        got = lines(w, "narrator")
+        assert len(got) == 1 and ":" != got[0] and "couldn't think that through" in got[0]
     run(go())

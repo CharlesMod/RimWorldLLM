@@ -34,7 +34,9 @@ ADVISOR_NOTE = (
     "\n\nADVISOR MODE. The narrator is not playing right now: the player is only chatting with you. Act only on what the "
     "player's message explicitly asks for, and do at most one task (one action tool call); then say plainly what you did. "
     "If they ask for something you cannot do yet (building, zones, bills, trade, caravans), say you cannot yet. If they only "
-    "ask or talk, just answer. Do not change the goals board except to record a standing order they ask for.")
+    "ask or talk, just answer. A question (\"should we take the quest?\", \"what do you think about...?\") is not a request: "
+    "answer it with your advice and do not act. Act only on a plain instruction such as \"put Ana on cooking\". "
+    "Do not change the goals board except to record a standing order they ask for.")
 
 
 @dataclass
