@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased: more tools for the narrator
+
+When "Narrator plays" is on, the narrator can now do and see much more. Each tool shows only when the colony needs it, so a quiet
+colony sees a short list. Every action keeps its green `>` line and its "since ..." reason. Full list: docs/VIVARIUM.md "The narrator's tool catalogue".
+
+- **Read tools (`inspect`, `find`, `survey`).** The narrator can look at a colonist, animal, prisoner, room, building, item or zone,
+  list things by kind with `#id`s (wounded, idle, hostiles, fires, corpses, free beds, tameable animals ...), and survey stock
+  (days of food and medicine) or threats. They change nothing, cost no action, never show what is in the fog, and are limited to
+  four a turn.
+- **Command tools.** `job` (haul, rescue, tend, clean, repair, refuel, equip, wear, drop, use, go, stay), `medical` (surgery bills,
+  bed rest, care level), `prisoner` (recruit, chat, convert, release, free), `animal` (tame, train, slaughter, release, keep to an
+  area) and `social` (a party or a wedding). At most 20 orders a cycle.
+- **`place`.** Furnish a room, run power (generators, batteries, conduits, switches), put in heaters and coolers with a target
+  temperature (a freezer at -10), and place ship parts. The keeper still launches the ship.
+- **`rezone`, `floor`, `area`, `undo`.** Change a stockpile's priority and filter or a field's crop (and the hydroponics), lay a floor
+  or smooth rough stone, shape allowed areas and restrict pawns to them, and take back its own last placements (one `undo` a turn,
+  1 to 5 placements; new undo marks `zone_settings`, `floor` and `area_restrict`; a surgery bill on a pawn can be undone too).
+- **Two new settings, both off by default** ("Narrator plays" group): "The narrator may execute prisoners" (`narratorMayExecutePrisoners`)
+  and "The narrator may slaughter named pets" (`narratorMaySlaughterPets`; off, it may slaughter only unnamed, unbonded animals).
+  `GET /config` shows `vivarium_may_execute_prisoners` and `vivarium_may_slaughter_pets`.
+- **Bridge.** New routes `GET /inspect`, `/find`, `/survey` and `POST /act/job`, `/medical`, `/prisoner`, `/animal`, `/social`, `/place`,
+  `/rezone`, `/floor`, `/undo`; `/act/area` takes words (`where`, `who`). The digest gains a `cmd` block, `ZONES` priority, `FLOORS`,
+  `AREAS` and `undoable` lines. Shapes: docs/BRIDGE-API.md.
+- **Shorter prompt.** The `why` text on each acting tool is one short phrase (`StewardKit.WhyText`), explained once in the system prompt. A
+  full colony's tool section is about 12.9k chars (about 3.2k tokens).
+- **For developers: golden update helper.** After a deliberate change to tool text, `RWL_UPDATE_GOLDENS=1 dotnet test Mod.Tests --filter <golden tests>`
+  (`Mod.Tests/Mind/GoldenUpdate.cs`) rewrites `steward_build_golden.json`, `jobs-steward-golden.json` and `e2e-steward-*.json` instead of asserting.
+  Read the diff before you commit it.
+- What to check in game: docs/release/VIVARIUM-PLAYTEST.md section M.
+
 ## Unreleased: share an engine across your PCs
 
 - **Same PC by default.** A fresh install runs the engine on this PC only (127.0.0.1): nothing is exposed, nothing asks to pair.

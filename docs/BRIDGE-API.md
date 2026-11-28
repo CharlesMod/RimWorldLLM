@@ -762,6 +762,76 @@ negotiator, target_kind console|trader, target, trader, start_tick, deadline_tic
 `"traders": [{"id": "S31", "kind": "orbital", "name": "Exotic goods trader Sigma"}]`: the traders that can trade now
 (the digest's ids; polled every 250 ticks, not saved; empty array when none). The agent wakes one trade turn per new id.
 
+### Narrator tools: read, command, place, zones (2026-11-27; game needed)
+The routes behind the steward's new tools (the tool list is in docs/VIVARIUM.md "The narrator's tool catalogue"). The `/act/*`
+ones follow the usual rules (op_id, `why`, `400` shape, `503 no_game`, `409 refused` with a reason, `{"done": note}` and a
+greentext line). Words, never cells: names, room labels, "room 12", "#id" from `find`.
+
+#### Read routes (GET; no op_id, no caps, no greentext, not logged as actions)
+Each returns `{"text": "...", "ids"?: [...], "total"?: N}` (`text` is a few short lines of words), or `409 refused` with a
+reason (`{"refused"}` inside the mind). They never show fogged things (pawns, rooms, fires, dormant hostiles); a world pawn is not found.
+| Route | Query | Checks |
+| --- | --- | --- |
+| `GET /inspect` | `target` (a colonist, animal, prisoner or guest name; a room label or "room 12"; a building, item or zone label; or `#id`) | target 1..60 chars (`400` when empty or longer) |
+| `GET /find` | `what` (item, wounded, idle, hostiles, fires, corpses, forbidden, bed_free, door_out, tameable, rotting, sick, downed, prisoners, animals, guests, building), `near` (a pawn, room or `#id` to measure from; default home), `item` (a label, for `item` and `building`) | `what` one of those words; near and item at most 40 chars |
+| `GET /survey` | `what` = `stock` (resources, days of food, medicine, components) or `threats` (hostiles by group, fires, hazards) | `what` is stock or threats |
+
+Example: `GET /find?what=item&item=steel` -> `{"text": "steel: steel x400 #12, 14 cells north of home (in the stockpile). 1 total; showing 1", "ids": [12], "total": 1}`.
+`find` shows at most 8 rows and says "N total; showing M"; an ambiguous name answers `3 match "hay": Hay #12 (kitchen), ... say #id`.
+The mind takes at most 4 reads a turn and cuts the text at 700 chars.
+
+#### Command routes (POST)
+Same hands object as the rest (the command part is `IVivariumCommandHands`; without it, `409 refused` "command hands are not available").
+| Route | Body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/job` | `{"op": "haul", "who": "Ana", "target": "#5512"}` | op in haul, rescue, tend, clean, repair, refuel, equip, wear, drop, consume, go, stay; who 1..60; target at most 80 chars and required for every op except stay; order cap |
+| `/act/medical` | `{"op": "operate", "who": "Bram", "what": "amputate left leg"}` / `{"op": "care", "who": "Bram", "what": "best"}` | op operate, rest, care; who 1..60; what at most 80 chars; care's what in none, no_meds, herbal, normal, best (spaces become `_`); `operate` with no `what` lists the choices in the refusal; order cap (an operate bill is a `bill` mark instead) |
+| `/act/prisoner` | `{"op": "mode", "who": "Cade", "mode": "recruit"}` / `{"op": "free", "who": "Cade"}` | op mode or free; mode (needed for `mode`) in none, chat, recruit, convert, enslave, release, execute; `execute` is refused unless **may_execute_prisoners**; convert and enslave need Ideology; order cap |
+| `/act/animal` | `{"op": "tame", "who": "wild boar"}` / `{"op": "train", "who": "Rex", "what": "rescue"}` / `{"op": "area", "who": "Rex", "what": "Pens"}` | op tame, train, slaughter, release, area; who 1..60; what at most 60 chars, required for train and area; slaughter of a named or bonded animal refused unless **may_slaughter_pets**; order cap (tame and slaughter are designation marks) |
+| `/act/social` | `{"op": "party"}` / `{"op": "wedding", "who": "Ana"}` / `{"op": "other", "what": "concert"}` | op party, wedding, other; who and what at most 60 chars; `other` needs what; order cap |
+
+The **order cap**: a command that leaves no marks costs one of 20 orders a cycle (the cycle is 2500 ticks, as the build caps).
+The 21st is `409 refused`, "that is 20 orders this cycle; let the colony carry them out first". Commands with marks (tame, slaughter,
+surgery bills) are charged as marks (bills: 4 a cycle). Examples of refusals: `"no colonist named Zed; colonists: Ana, Bram"`,
+`"the player has not let the narrator execute prisoners; recruit, convert or release instead"`, `"no bed is free for Bram; build or free a bed first"`,
+`"cannot start the wedding now: the weather or an event (a raid, fallout, extreme heat or cold) makes it a bad time; try again later"`.
+Replies are `{"done": "have Ana haul steel"}`; a surgery bill, tame and slaughter also return `undo_seq` and `left`.
+
+#### Place, rezone, floor, area, undo (POST)
+| Route | Body | Checks before the game is asked |
+| --- | --- | --- |
+| `/act/place` | `{"op": "furnish", "what": "research bench", "at": "room 12"}` / `{"op": "generator", "what": "solar"}` / `{"op": "heater", "at": "the freezer"}` / `{"op": "target", "at": "the freezer", "temp": "freezing"}` / `{"op": "ship", "what": "beam"}` | op in furnish, generator, battery, connect, switch, heater, cooler, target, ship; what at most 40 chars, at at most 60; temp in freezing (-10 C), chilled (3), cool (15), comfy (21), warm (25); furnish needs what and at; generator needs what in wood, chemfuel, solar, wind, geothermal; connect, heater and cooler need at; target needs at and temp; ship needs what in beam, reactor, engine, casket, sensor, core ("launch" is `400`: the keeper launches); blueprints left (every op but `target`) |
+| `/act/rezone` | `{"zone": "#4", "priority": "important", "allow": "meals, steel", "deny": "corn"}` / `{"zone": "hydroponics", "plant": "rice"}` | zone 1..40 chars ("#id" or "hydroponics"); priority in low, normal, preferred, important, critical, or none; allow and deny comma lists of at most 8 words of at most 40 chars; plant a crop word or none; at least one of priority, allow, deny, plant; refusals say when a field is given a stockpile's field ("a stockpile grows nothing; plant is for fields and hydroponics"). No caps. |
+| `/act/floor` | `{"room": 12, "kind": "carpet"}` / `{"room": 12, "kind": "smooth stone"}` | room a positive id; kind 1..40 chars (a word from the digest's FLOORS or "smooth stone"); blueprints and cells left; the stock must pay; open ground refused |
+| `/act/area` (word form) | `{"op": "add", "name": "Inside", "where": "room 12"}` / `{"op": "remove", "name": "home", "where": "#4"}` / `{"op": "assign", "name": "Inside", "who": ["Rex", "Ana"]}` / `{"op": "assign", "name": "none", "who": "Rex"}` | op add, remove, assign; name 1..40 chars (`home` for the home area; `none` only with assign, frees the pawns); `where` (add and remove; required): "room N", "#N" (a ZONES id) or "base"; `who` (assign; required): a name or a list of at most 12 names (colonists or animals); assign takes `who`, never `where`; `home` cannot be assigned. The body is the word form when it has `where` or `who` or op `assign`; the numeric form (x, z, w, h, assign ids) is as before. |
+| `/act/undo` | `{"n": 2, "why": "since the cooler was in the wrong room"}` | n 1..5 (default 1); the same ledger and the same undo as `POST /vivarium/undo`, for the narrator's own placements. Reply `{"done": "undid 2 narrator actions: ...", "undone": [...], "undoable": 1}`; adds no marks and charges no caps. `409 refused` when the ledger is empty. (`POST /vivarium/undo` is the player's: n 1..20, logged as `player`.) |
+
+Marks and undo. Every new placing route returns `undo_seq` and `left`, and its marks go in the narrator's ledger (max 50):
+- `place` (not `target`) and `floor`: blueprint marks; `floor` marks use the kind `floor` (floor blueprints per cell; the undo cancels the
+  blueprints and counts a floor already laid as built, not removed).
+- `rezone`: kind `zone_settings`; the undo puts back the stockpile's priority and filter (`Extra` holds the filter change as "+on|-off" defs) and the old crop.
+- `area` assign: kind `area_restrict`; the undo gives every pawn its old area back (none when it had none).
+- `medical` operate: a `bill` mark on the pawn (before, only benches); the undo deletes that bill.
+- `place target` returns a plain `{"done"}` with no marks: it cannot be undone. A target set before the cooler is finished is kept and applied
+  when it is built ("target -10 C will be set once it is built").
+Refusal examples: `"no room called the vault; rooms: the kitchen, room 12"`, `"no steam geyser near the base; geothermal needs one in sight"`,
+`"no power conduit built yet to put a switch on; run power first (place generator, place connect)"`, `"the keeper launches the ship; the narrator cannot launch"`,
+`"not enough steel in stock: 40 cells need 80, there is 55"`, `"room 7 is open ground, not a room; use a room id from ROOMS"`,
+`"no allowed area named Pens; there are none yet (add one with where)"`.
+
+#### Config keys
+`GET /config` gains `vivarium_may_execute_prisoners` and `vivarium_may_slaughter_pets` (both default `false`); `GET /vivarium` carries them
+as `settings.may_execute_prisoners` and `settings.may_slaughter_pets`. They are the mod settings `narratorMayExecutePrisoners` and
+`narratorMaySlaughterPets` (docs/SETTINGS.md). The gate for each is the route's (a `409` as above), not only the tool list.
+
+#### Digest additions
+- `cmd` (an object when the map has colonists, else absent): `patients` (hurt or sick names, 6), `surgery` (true when an operation is possible),
+  `prisoners` (6), `animals` (colony animals, 8), `wild` (tameable wild kinds near, 5), `social` (true when a gathering is possible), `ideo`
+  (Ideology active), `may_execute` (true only when the setting is on). The mind renders one `PEOPLE:` line from it.
+- `build.floors` (floor words the game can build now, at most 8), `build.areas` (`[{"name", "cells"}]`, at most 6),
+  `build.animals` (names for the area tool, at most 8) and `build.undoable` (the ledger's size). The mind renders them as `AREAS` and `FLOORS` lines and `undoable N` in the BUILD head. The `ZONES` line now shows a stockpile's
+  priority when it is not normal, and a hydroponics entry (no id) counts basins.
+
 ### Events `letter` and `alert`
 `letter`: `{"type": "letter", "severity": 0.6, "data": {"letter": 77, "label": "...", "choices": ["Accept", "Reject"], "quest": true}}`
 (severity 0.3 when the letter has no choice). `alert`: `{"type": "alert", "severity": 0.8,

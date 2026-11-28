@@ -1363,3 +1363,105 @@ board, chat, `calls.jsonl`, the loop result or the steward trace (only the kinds
 5. A second `look` in one turn is refused (only base/wide then close is allowed).
 6. Raid or a trader arrives: that turn has no `look`.
 7. Grep `~/.local/share/.../calls.jsonl` and the saved minds for `base64`: nothing.
+
+## The narrator's tool catalogue (2026-11-27)
+Every tool the steward model can call, grouped. Each is offered only when the digest holds what it needs (the "when"
+column), so a quiet colony sees a short list. Every acting tool takes an optional `why` (at most 80 chars, "since ..."),
+which is printed beside the action as the greentext line; steward_system.txt explains `why` once and each tool's `why`
+param says only "since or because ..., shown to the player". Read tools never take `why`, print nothing and cost no cap.
+Targets are words (names, room labels, "room 12", "#id" from `find`), never coordinates. A refusal is read as `{"refused": reason}`
+and the reason says what to do instead.
+
+**The read limit.** `inspect`, `find` and `survey` together are allowed at most 4 a turn (`InspectKit.MaxReads`). The fifth is
+an error, "no more reads this turn; act now". `look` and `trade_offer` have their own limits (`look`: one picture a turn;
+`trade_offer`: see Phase 4). Each read answers one plain text of at most 700 chars (the route aims near 600).
+
+### Read
+| Tool | What it does | Args | When |
+| --- | --- | --- | --- |
+| `inspect` | One thing in words: a colonist, animal, prisoner, guest, room, building, item or zone (mood, health, thoughts, relations, job, gear; a room's contents; a building's state) | `target` (a name, a room label, "room 12", or "#id") | the digest has pawns; also on combat turns |
+| `find` | Lists matching things with `#id` and where they are (cells in words, "N cells north") | `what` (item, wounded, idle, hostiles, fires, corpses, forbidden, bed_free, door_out, tameable, rotting, sick, downed, prisoners, animals, guests, building), `near?` (pawn, room or #id; default home), `item?` (a label, for item and building) | the digest has pawns |
+| `survey` | The colony at a glance: `stock` = key resources, days of food, medicine and components; `threats` = hostiles by group, fires, hazards, manhunters, mech clusters | `what` (stock or threats) | the digest has pawns; `threats` and `inspect` also on combat turns (`survey` is in the combat list) |
+| `look` | A picture of the map from above (not the interface) | `kind` (base, wide, close), `target?` | a routine turn, the setting on and a model that reads images (VIVARIUM "vision") |
+| `trade_offer` | One trader's prices | `with` | a trade turn |
+
+Fog: the read tools never show what the colony cannot see. Fogged pawns, rooms, fires and dormant hostiles are left out, and a
+world pawn is not found by id. `find` and `survey` hide fogged things the same way.
+
+### Colony and goals board
+| Tool | What it does | Args | When |
+| --- | --- | --- | --- |
+| `set_time` | Pause or unpause, or set the speed | `pause`, `speed`, `emergency` | always; the settings decide what is allowed |
+| `set_work` | One colonist's priority for one work type (0 off, 1 first, 4 last) | `pawn`, `work`, `priority` | digest has pawns |
+| `set_schedule` | One colonist's hours | `pawn`, `from_hour`, `to_hour`, `assignment` | digest has pawns |
+| `set_policy` | An outfit, food or drug policy by name (it cannot make one) | `pawn`, `kind`, `name` | the digest lists policies |
+| `assign_bed` | A colonist to a bed id | `pawn`, `bed_id` | the digest lists beds |
+| `set_research` | The research project | `project` | always |
+| `answer_letter`, `choose` | Answer a letter or an open dialog by id (naming, growth moments too) | `letter_id`/`dialog`, `choice`/`option`, `text?`, `passions?`, `trait?` | a letter or dialog is open |
+| `draft`, `order` | Draft or undraft; give one drafted colonist a move, attack or hold order | `pawns`, `drafted`; `pawn`, `order`, `x`, `z`, `target_id`, `hold` | digest has pawns; `order` is dropped when the squad tool is listed |
+| `add_goal`, `set_goal`, `set_plan`, `add_order`, `drop_order`, `note`, `do_nothing` | The goals board: goals, plan, the player's standing orders, a chat note (three a turn), or end the turn | see "Goals board" in design section 3 | always (`set_goal` and `drop_order` only with something open) |
+
+### Build (when the digest has a `build` block)
+| Tool | What it does | Args | Caps and undo |
+| --- | --- | --- | --- |
+| `build` | A room (purpose, size, near, for) or one building in a room | `kind`, `purpose`, `size`, `thing`, `room`, `stuff`, ... | 50 blueprints a cycle; blueprint marks; never-seal-off guard |
+| `zone` | A growing zone, stockpile or dump | `kind`, `plant`, `preset`, `size`, `room`, `priority` | 200 cells a cycle; zone marks |
+| `designate` | Mine, chop, harvest, haul, deconstruct (only when the player asked this cycle), cancel | `kind`, `ore`, `max`, ... | 150 designations a cycle |
+| `bill` | Add, remove, suspend, resume a workbench bill | `op`, `bench`, `recipe`, `count`/`until` | 4 bills a cycle; bill marks |
+| `place` | Furnish a room, add power, heating, cooling, ship parts (one tool, an `op`) | `op` (furnish, generator, battery, connect, switch, heater, cooler, target, ship), `what`, `at`, `temp` (freezing, chilled, cool, comfy, warm), `why` | blueprints a cycle; blueprint marks; `target` is not undoable |
+| `rezone` | A stockpile's priority and filter (`allow`, `deny`), a field's or the hydroponics' crop | `zone` (a ZONES id like "#4", or "hydroponics"), `priority`, `allow`, `deny`, `plant` | no cap; `zone_settings` mark restores the old settings |
+| `floor` | Lays a floor in a room (a terrain blueprint per cell) or marks the rough stone to be smoothed | `room` (a room id), `kind` (a word from FLOORS, or "smooth stone") | blueprints and cells a cycle; `floor` mark; stock must cover the cost |
+| `area` | Shapes an allowed area or restricts pawns and animals to it | `op` (add, remove, assign), `area`, `where` ("room 12", "#4", "base"), `who` (names) | cells a cycle; `area_restrict` mark puts each pawn's old area back |
+| `undo` | Takes back the narrator's own last placements | `n` (1 to 5, default 1) | one call a turn; adds no marks and charges no caps |
+| `defend` | Turrets, sandbags, barricades, a killbox, traps, a wall | `kind`, `side`, `at`, `count`, `length`, `stuff` | blueprint marks; the guard |
+
+Gating inside the build family. `build`, `zone`, `designate`, `bill`, `place` need the `build` block (`bill` also needs a bench).
+`rezone` needs a zone or hydroponics in the ZONES line. `floor` needs a room and at least one floor word in FLOORS. `area` needs a
+room or a zone. `undo` needs `undoable` above 0. The digest also says what the tools may use: a `ZONES` line (id, kind, what,
+priority when not normal, cells; hydroponics counts basins), an `AREAS` line (allowed areas with cells, and the animals), a
+`FLOORS` line (floor words the game can build now), and `undoable N` in the BUILD head.
+
+What `undo` takes back: blueprint, designation, zone, zone cells, area cells, bill (a bench's or a pawn's surgery bill), and the new
+kinds `zone_settings` (stockpile settings and crops: the old ones are restored), `floor` (the floor blueprints, or the laid floor
+is noted as built) and `area_restrict` (every pawn gets its old area back). The ledger holds 50 placements. The player's own
+`/undo` and the narrator's use the same ledger; the narrator never undoes what the player built.
+
+### People (command tools; when the digest has a `cmd` block)
+The digest's `cmd` block lists who is hurt, the prisoners, the colony animals and the tameable wild kinds near, and three
+flags (`surgery`, `social`, `ideo`, plus `may_execute`). The digest shows one line, `PEOPLE: hurt/sick: ...; prisoners: ...; animals: ...; tameable wild: ...`.
+| Tool | What it does | Args | When |
+| --- | --- | --- | --- |
+| `job` | One order now, like a right-click: haul, rescue, tend, clean, repair, refuel, equip, wear, drop, consume (food or drug), go, stay (drafted) | `op`, `who` (colonist), `target` (name, room, "#id"; none for stay) | any colonist exists |
+| `medical` | `operate` adds a surgery bill (leave `what` empty to list the choices), `rest` sends to a medical bed, `care` sets none, no_meds, herbal, normal or best | `op`, `who`, `what` | someone is hurt or sick, or a surgery is possible |
+| `prisoner` | `mode` sets recruit, chat, convert, enslave, release, execute or none; `free` lets them go now | `op`, `who`, `mode` | prisoners exist; convert and enslave only with Ideology; execute only when the setting is on |
+| `animal` | tame (a wild kind), train (`what` = a training), slaughter, release, area (`what` = an allowed area, or none) | `op`, `who`, `what` | colony animals or tameable wild ones |
+| `social` | A party, a wedding (`who` = one of the engaged pair), or another gathering by label | `op`, `who?`, `what?` | the game says a gathering is possible |
+
+Caps. A command that leaves no mark uses one order of 20 a cycle (`BuildBudget.Orders`); the 21st is refused,
+"that is 20 orders this cycle; let the colony carry them out first". Tame, slaughter and surgery bills leave marks instead (a
+bill is capped at 4 a cycle like a bench bill) and can be undone; a plain `job`, `rest`, `care`, a party and a prisoner mode
+have no marks and cannot be undone.
+
+The two player settings, both off by default and shown in the settings window under "Narrator plays":
+- `narratorMayExecutePrisoners` ("The narrator may execute prisoners"). Off: the `execute` mode is not in the tool and the route refuses
+  "the player has not let the narrator execute prisoners; recruit, convert or release instead".
+- `narratorMaySlaughterPets` ("The narrator may slaughter named pets"). Off: `slaughter` takes only unnamed, unbonded colony animals.
+
+### Combat, trade, Biotech
+| Tool | What it does | When |
+| --- | --- | --- |
+| `squad` | draft, move, hold, fire_at_will, focus, retreat, rescue, extinguish, flee, undraft | a fight, or a squad exists |
+| `trade` | Buy and sell with one trader at once (final) | a trader is here; trade turn |
+| `mechs`, `genes`, `children` | Mechs (mode, group, gestate), genepacks and xenogerms (store, assemble, implant, donate), children (schedule, feed, care) | the digest has Biotech data |
+
+### Size of the tool section
+The tools are rendered into the prompt each turn. A full colony (everything open) costs about 12.9k chars, about 3.2k tokens
+(`VivariumCommandTests ActingAndRenderCost`, cap 13500 chars). The build family with every tool open is under 11000 chars
+(`StewardAreasTests.Size`). The shared `why` text and one explanation in steward_system.txt keep it down; a tool
+that is not gated in costs nothing. Raising a cap needs the lead's say.
+
+### Goldens
+The golden files (`steward_build_golden.json`, `jobs-steward-golden.json`, `e2e-steward-*.json`) hold the tool text and the system prompt.
+After a deliberate change to a tool's text, regenerate them with `RWL_UPDATE_GOLDENS=1 dotnet test Mod.Tests --filter <golden tests>`
+(`Mod.Tests/Mind/GoldenUpdate.cs`): it rewrites the named fields instead of asserting. Read the diff before committing; only tool
+text, grammar, tool lists and system prompt sizes should change.
