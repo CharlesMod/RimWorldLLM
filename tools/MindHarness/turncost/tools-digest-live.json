@@ -1,0 +1,782 @@
+{
+ "date": {
+  "day": 5,
+  "quadrum": "Aprimay",
+  "year": 5500,
+  "hour": 14,
+  "season": "spring"
+ },
+ "weather": "Rain",
+ "temperature": 12.5,
+ "map": "Ferngrove",
+ "time": {
+  "paused": false,
+  "speed": 2
+ },
+ "food_days": 2.4,
+ "resources": [
+  {
+   "category": "food",
+   "label": "simple meal",
+   "count": 14
+  },
+  {
+   "category": "food",
+   "label": "raw potatoes",
+   "count": 60
+  },
+  {
+   "category": "food",
+   "label": "muffalo meat",
+   "count": 22
+  },
+  {
+   "category": "materials",
+   "label": "steel",
+   "count": 410
+  },
+  {
+   "category": "materials",
+   "label": "wood",
+   "count": 280
+  },
+  {
+   "category": "materials",
+   "label": "components",
+   "count": 6
+  },
+  {
+   "category": "medicine",
+   "label": "herbal medicine",
+   "count": 4
+  },
+  {
+   "category": "weapons",
+   "label": "revolver",
+   "count": 2
+  }
+ ],
+ "pawns": [
+  {
+   "id": 101,
+   "name": "Ana",
+   "role": "colonist",
+   "age": 31,
+   "skills": [
+    {
+     "skill": "Cooking",
+     "level": 9,
+     "passion": "major"
+    },
+    {
+     "skill": "Growing",
+     "level": 6,
+     "passion": "minor"
+    },
+    {
+     "skill": "Social",
+     "level": 5,
+     "passion": "none"
+    }
+   ],
+   "incapable": [
+    "Violent"
+   ],
+   "work": {
+    "Cooking": 1,
+    "Hauling": 3,
+    "Cleaning": 4,
+    "Growing": 2
+   },
+   "health": "fine",
+   "downed": false,
+   "mood": 64,
+   "mental": "",
+   "job": "Cooking simple meal",
+   "drafted": false,
+   "schedule_now": "work",
+   "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+   "outfit": "Anything",
+   "food": "Lavish",
+   "drug": "Social drugs",
+   "bed": 3301
+  },
+  {
+   "id": 102,
+   "name": "Bram",
+   "role": "colonist",
+   "age": 38,
+   "skills": [
+    {
+     "skill": "Shooting",
+     "level": 11,
+     "passion": "major"
+    },
+    {
+     "skill": "Melee",
+     "level": 7,
+     "passion": "minor"
+    },
+    {
+     "skill": "Construction",
+     "level": 6,
+     "passion": "none"
+    }
+   ],
+   "incapable": [],
+   "work": {
+    "Hunting": 1,
+    "Construction": 2,
+    "Hauling": 3,
+    "Firefighter": 1
+   },
+   "health": "bleeding (left leg)",
+   "downed": false,
+   "mood": 52,
+   "mental": "",
+   "job": "Hunting muffalo",
+   "drafted": false,
+   "schedule_now": "work",
+   "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+   "outfit": "Worker",
+   "food": "Fine",
+   "drug": "Social drugs",
+   "bed": 3302
+  },
+  {
+   "id": 103,
+   "name": "Cy",
+   "role": "colonist",
+   "age": 27,
+   "skills": [
+    {
+     "skill": "Intellectual",
+     "level": 12,
+     "passion": "major"
+    },
+    {
+     "skill": "Medicine",
+     "level": 8,
+     "passion": "minor"
+    },
+    {
+     "skill": "Crafting",
+     "level": 4,
+     "passion": "none"
+    }
+   ],
+   "incapable": [
+    "Dumb Labor"
+   ],
+   "work": {
+    "Research": 1,
+    "Doctor": 1,
+    "Patient": 2
+   },
+   "health": "fine",
+   "downed": false,
+   "mood": 71,
+   "mental": "",
+   "job": "Researching electricity",
+   "drafted": false,
+   "schedule_now": "work",
+   "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+   "outfit": "Anything",
+   "food": "Fine",
+   "drug": "Social drugs",
+   "bed": 3303,
+   "cannot": [
+    "no manipulation: can't build, cook or craft"
+   ],
+   "break_risk": "near",
+   "mood_why": [
+    "ate without a table",
+    "low light"
+   ]
+  },
+  {
+   "id": 104,
+   "name": "Dara",
+   "role": "colonist",
+   "age": 24,
+   "skills": [
+    {
+     "skill": "Mining",
+     "level": 10,
+     "passion": "major"
+    },
+    {
+     "skill": "Construction",
+     "level": 8,
+     "passion": "minor"
+    },
+    {
+     "skill": "Melee",
+     "level": 9,
+     "passion": "minor"
+    }
+   ],
+   "incapable": [],
+   "work": {
+    "Mining": 1,
+    "Construction": 2,
+    "Hauling": 3
+   },
+   "health": "bruised (left arm)",
+   "downed": false,
+   "mood": 38,
+   "mental": "",
+   "job": "Wait_Wander",
+   "drafted": false,
+   "schedule_now": "work",
+   "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+   "outfit": "Worker",
+   "food": "Fine",
+   "drug": "Social drugs",
+   "bed": 3304,
+   "idle": true,
+   "break_risk": "minor",
+   "mood_why": [
+    "sleeping in a barracks",
+    "dirty room"
+   ]
+  },
+  {
+   "id": 105,
+   "name": "Eli",
+   "role": "colonist",
+   "age": 11,
+   "skills": [
+    {
+     "skill": "Plants",
+     "level": 7,
+     "passion": "major"
+    },
+    {
+     "skill": "Animals",
+     "level": 6,
+     "passion": "minor"
+    },
+    {
+     "skill": "Artistic",
+     "level": 8,
+     "passion": "major"
+    }
+   ],
+   "incapable": [
+    "Violent"
+   ],
+   "work": {
+    "Growing": 1,
+    "PlantCutting": 2,
+    "Art": 3,
+    "Hauling": 3
+   },
+   "health": "fine",
+   "downed": false,
+   "mood": 58,
+   "mental": "",
+   "job": "Sowing potato plants",
+   "drafted": false,
+   "schedule_now": "work",
+   "schedule": "SSSSSSWWWWWWWWWWWWWWJJSS",
+   "outfit": "Anything",
+   "food": "Fine",
+   "drug": "No drugs",
+   "bed": null,
+   "child": true,
+   "cannot": [
+    "can't see well"
+   ]
+  }
+ ],
+ "work_types": [
+  "Firefighter",
+  "Patient",
+  "Doctor",
+  "Cooking",
+  "Hunting",
+  "Construction",
+  "Growing",
+  "Mining",
+  "PlantCutting",
+  "Smithing",
+  "Tailoring",
+  "Art",
+  "Crafting",
+  "Hauling",
+  "Cleaning",
+  "Research"
+ ],
+ "manual_priorities": true,
+ "policies": {
+  "outfit": [
+   "Anything",
+   "Worker",
+   "Soldier"
+  ],
+  "food": [
+   "Lavish",
+   "Fine",
+   "Simple",
+   "Raw okay"
+  ],
+  "drug": [
+   "Social drugs",
+   "No drugs",
+   "Unrestricted"
+  ]
+ },
+ "beds": [
+  {
+   "id": 3301,
+   "label": "bed",
+   "room": "Bedroom",
+   "owner": "Ana"
+  },
+  {
+   "id": 3302,
+   "label": "bed",
+   "room": "Bedroom",
+   "owner": "Bram"
+  },
+  {
+   "id": 3303,
+   "label": "bed",
+   "room": "Bedroom",
+   "owner": "Cy"
+  },
+  {
+   "id": 3304,
+   "label": "bed",
+   "room": "Barracks",
+   "owner": "Dara"
+  },
+  {
+   "id": 3305,
+   "label": "bed",
+   "room": "Barracks",
+   "owner": ""
+  },
+  {
+   "id": 3306,
+   "label": "sleeping spot",
+   "room": "",
+   "owner": ""
+  }
+ ],
+ "alerts": [
+  {
+   "alert": "Alert_LowFood",
+   "label": "Low food",
+   "critical": false
+  },
+  {
+   "alert": "Alert_NeedColonistBeds",
+   "label": "Need colonist beds",
+   "critical": false
+  }
+ ],
+ "letters": [
+  {
+   "id": 77,
+   "label": "Quest: Ancient danger",
+   "text": "A group of scavengers asks for help clearing an ancient danger. They offer a reward of 600 silver if your colonists can stand guard at the site for a few days.",
+   "choices": [
+    "Accept",
+    "Reject"
+   ],
+   "quest": true,
+   "expires_in_hours": 30
+  }
+ ],
+ "research": {
+  "current": {
+   "def": "Electricity",
+   "label": "electricity",
+   "progress": 0.4
+  },
+  "available": [
+   {
+    "def": "Batteries",
+    "label": "batteries",
+    "cost": 700
+   },
+   {
+    "def": "Smithing",
+    "label": "smithing",
+    "cost": 400
+   },
+   {
+    "def": "Stonecutting",
+    "label": "stonecutting",
+    "cost": 400
+   },
+   {
+    "def": "Complex clothing",
+    "label": "complex clothing",
+    "cost": 500
+   }
+  ]
+ },
+ "threats": [],
+ "rooms": {
+  "bedrooms": 3,
+  "barracks": 1,
+  "hospital": false,
+  "freezer": false
+ },
+ "power": {
+  "produced": 0,
+  "used": 0,
+  "stored": 0
+ },
+ "facts": {
+  "day": 6,
+  "season": "spring",
+  "biome": "temperate_forest",
+  "temp_c": 12.5,
+  "colonists": 5,
+  "colonists_capable_fighters": 4,
+  "colonists_armed": 2,
+  "colonists_downed": 0,
+  "colonists_bleeding": 0,
+  "colonists_sick": 0,
+  "colonists_below_minor": 1,
+  "colonists_below_major": 0,
+  "mental_breaks_active": 0,
+  "mood_avg": 56.6,
+  "mood_min": 38,
+  "prisoners": 0,
+  "prisoner_beds_free": 0,
+  "beds_free": 2,
+  "colonists_without_bedroom": 2,
+  "animals": 3,
+  "food_days": 2.4,
+  "medicine_total": 4,
+  "medicine_industrial": 0,
+  "wealth": 18000,
+  "raid_active": false,
+  "enemies_count": 0,
+  "turrets": 0,
+  "events": [],
+  "fires": 0,
+  "power_net_w": 0,
+  "battery_wd": 0,
+  "research_current": "Electricity",
+  "research_done": [],
+  "hospital_beds": 0,
+  "best_cook_skill": 9,
+  "best_doctor_skill": 3,
+  "doctors_capable": 3,
+  "steel": 410,
+  "wood": 280,
+  "components": 6,
+  "silver": 0,
+  "dlc": [],
+  "storyteller": "cassandra",
+  "difficulty_threat_scale": 1.0,
+  "loose_unstorable": 1,
+  "loose_far": 1,
+  "blueprints_stuck": 2,
+  "stuck_no_material": 1,
+  "stuck_no_builder": false,
+  "bills_stuck": 1,
+  "colonists_children": 1,
+  "colonists_idle": 1,
+  "meals": 14,
+  "raw_food": 120,
+  "food_rot_soon": 30,
+  "crops_ready": 12,
+  "huntable": 3,
+  "days_to_winter": 12.0,
+  "bleed_out_hours": 5.5,
+  "infections_losing": 0,
+  "tattered_apparel": 0,
+  "ancient_danger": false,
+  "unreachable_piles": 0
+ },
+ "build": {
+  "home": {
+   "x": 120,
+   "z": 98
+  },
+  "rooms": [
+   {
+    "id": 12,
+    "role": "bedroom",
+    "label": "Ana's bedroom",
+    "w": 3,
+    "h": 3,
+    "cells": 9,
+    "impressiveness": 24,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 118,
+    "z": 101,
+    "temp_c": 18,
+    "mountain": false,
+    "dirty": false
+   },
+   {
+    "id": 13,
+    "role": "bedroom",
+    "label": "Bram's bedroom",
+    "w": 3,
+    "h": 3,
+    "cells": 9,
+    "impressiveness": 22,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 122,
+    "z": 101
+   },
+   {
+    "id": 14,
+    "role": "bedroom",
+    "label": "Cy's bedroom",
+    "w": 3,
+    "h": 4,
+    "cells": 12,
+    "impressiveness": 20,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 126,
+    "z": 101
+   },
+   {
+    "id": 15,
+    "role": "barracks",
+    "label": "barracks",
+    "w": 5,
+    "h": 4,
+    "cells": 20,
+    "impressiveness": 16,
+    "bed": true,
+    "door": true,
+    "roofed": true,
+    "x": 118,
+    "z": 94,
+    "temp_c": 3,
+    "mountain": true,
+    "dirty": true
+   },
+   {
+    "id": 16,
+    "role": "kitchen",
+    "label": "the kitchen",
+    "w": 5,
+    "h": 4,
+    "cells": 20,
+    "impressiveness": 18,
+    "door": true,
+    "roofed": true,
+    "x": 124,
+    "z": 94,
+    "temp_c": 19
+   },
+   {
+    "id": 17,
+    "role": "research",
+    "label": "the lab",
+    "w": 5,
+    "h": 5,
+    "cells": 25,
+    "impressiveness": 12,
+    "door": true,
+    "roofed": true,
+    "x": 130,
+    "z": 94,
+    "temp_c": 17
+   },
+   {
+    "id": 18,
+    "role": "freezer",
+    "label": "the freezer",
+    "w": 4,
+    "h": 4,
+    "cells": 16,
+    "impressiveness": 5,
+    "door": true,
+    "roofed": true,
+    "x": 130,
+    "z": 100,
+    "temp_c": 21
+   }
+  ],
+  "missing": [
+   "freezer",
+   "dining table",
+   "research bench"
+  ],
+  "benches": [
+   {
+    "id": 4410,
+    "label": "campfire",
+    "room": "",
+    "bills": [
+     "cook simple meal x10"
+    ],
+    "recipes": [
+     "simple meal",
+     "roasted meat"
+    ]
+   }
+  ],
+  "zones": [
+   {
+    "id": 3,
+    "kind": "grow",
+    "label": "Growing zone 1",
+    "cells": 64,
+    "plant": "potatoes"
+   },
+   {
+    "id": 4,
+    "kind": "stockpile",
+    "label": "Stockpile zone 1",
+    "cells": 36,
+    "preset": "food",
+    "priority": "normal"
+   }
+  ],
+  "can_build": [
+   "wall",
+   "door",
+   "bed",
+   "table",
+   "chair",
+   "campfire",
+   "cooler",
+   "research bench"
+  ],
+  "stuff": [
+   {
+    "stuff": "steel",
+    "count": 410
+   },
+   {
+    "stuff": "wood",
+    "count": 280
+   }
+  ],
+  "plants": [
+   "potatoes",
+   "rice",
+   "corn",
+   "healroot",
+   "haygrass",
+   "cotton"
+  ],
+  "ores": [
+   {
+    "ore": "steel",
+    "cells": 34,
+    "dist": 18
+   }
+  ],
+  "loose": [
+   {
+    "label": "steel",
+    "count": 450,
+    "dist": 14,
+    "dir": "NE",
+    "forbidden": false,
+    "store": "none"
+   },
+   {
+    "label": "wood",
+    "count": 120,
+    "dist": 9,
+    "dir": "S",
+    "forbidden": false,
+    "store": "far"
+   }
+  ],
+  "floors": [
+   "wood floor",
+   "concrete",
+   "stone tiles"
+  ]
+ },
+ "stuck": [
+  {
+   "what": "solar generator blueprints",
+   "count": 2,
+   "reason": "waiting on components: need 8, have 6",
+   "dist": 14,
+   "dir": "NE"
+  },
+  {
+   "what": "bill: simple meal at fueled stove",
+   "count": 1,
+   "reason": "no ingredients (raw food)"
+  }
+ ],
+ "food": {
+  "meals": 14,
+  "meals_loose": 3,
+  "raw": 120,
+  "raw_loose": 40,
+  "rot_soon": [
+   {
+    "label": "raw potatoes",
+    "count": 30,
+    "days": 0.8
+   }
+  ],
+  "harvest": [
+   {
+    "plant": "rice",
+    "cells": 40,
+    "ready": 12,
+    "days": 1.5
+   }
+  ],
+  "game": [
+   {
+    "label": "deer",
+    "count": 3,
+    "dist": 30,
+    "dir": "W"
+   }
+  ],
+  "hunters": 2
+ },
+ "deadlines": [
+  {
+   "what": "Bram bleeds out",
+   "hours": 5.5,
+   "kind": "bleed"
+  },
+  {
+   "what": "raw potatoes rot",
+   "hours": 19,
+   "kind": "rot"
+  },
+  {
+   "what": "winter (crops die)",
+   "hours": 288,
+   "kind": "winter"
+  }
+ ],
+ "cmd": {
+  "patients": [
+   "Bram"
+  ],
+  "surgery": true,
+  "prisoners": [
+   "Mira"
+  ],
+  "animals": [
+   "Rex"
+  ],
+  "wild": [
+   "boar"
+  ],
+  "social": true
+ }
+}

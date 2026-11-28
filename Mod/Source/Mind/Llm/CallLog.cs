@@ -26,6 +26,8 @@ namespace RimWorldLLM.Mind
         public double Ts = NowS();
         /// <summary>The X-Request-Id sent with the call (HttpLlm only; null for a call that was never sent). Appended to the row last.</summary>
         public string RequestId;
+        /// <summary>The tool-loop turn this call belongs to (the steward's calls of one turn share it; tool backend only). Appended after request_id when set.</summary>
+        public long? Turn;
 
         /// <summary>time.time(): seconds since the Unix epoch.</summary>
         public static double NowS() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
@@ -57,6 +59,7 @@ namespace RimWorldLLM.Mind
             d["raw_prefill_tps"] = PyRound.Round(RawPrefillTps, 1);
             d["effective_prefill_tps"] = PyRound.Round(EffectivePrefillTps, 1);
             if (RequestId != null) d["request_id"] = RequestId;
+            if (Turn.HasValue) d["turn"] = Turn.Value;
             return d;
         }
     }

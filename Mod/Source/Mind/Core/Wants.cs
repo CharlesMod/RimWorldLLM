@@ -161,7 +161,7 @@ namespace RimWorldLLM.Mind
                 return new JObject { ["ok"] = true };
             };
 
-            var harness = new ToolHarness(backend, Tools(others.Select(o => o.Value).OrderBy(x => x, StringComparer.Ordinal).ToList()), mode, maxSteps: 3);
+            var harness = new ToolHarness(backend, Tools(others.Select(o => o.Value).OrderBy(x => x, StringComparer.Ordinal).ToList()), mode, maxSteps: 3) { Kind = "wants" };
             var allowedSorted = allowed.OrderBy(x => x, StringComparer.Ordinal).ToList();
             var res = await harness.RunAsync(SystemText, user, executor, Loop.SyncCheck(validator),
                 new LoopAction("call", "do_nothing").AsFallback(), o => o.Allowed = allowedSorted).ConfigureAwait(false);

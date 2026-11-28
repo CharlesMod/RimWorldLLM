@@ -134,6 +134,8 @@ namespace RimWorldLLM.Mind.ToolLoop
         public LoopOptions Limits { get; }
         public Capabilities Caps { get; private set; }
         public string Protocol { get; private set; }
+        /// <summary>The calls.jsonl kind of this harness's loop calls (steward, steward_combat, steward_trade, wants ...).</summary>
+        public string Kind { get; set; } = "toolloop";
 
         public ToolHarness(IBackend backend, IEnumerable<ToolSpec> tools, string mode = "auto", string cacheKey = null,
                            int maxSteps = 4, int maxRetries = 2, double timeBudgetS = 40.0, double stepTimeoutS = 20.0)
@@ -151,7 +153,7 @@ namespace RimWorldLLM.Mind.ToolLoop
                 if (Mode == "grammar" || Mode == "json" || Mode == "native") Protocol = Mode;
                 else
                 {
-                    Caps = await ToolProbe.ProbeAsync(Backend, CacheKey).ConfigureAwait(false);
+                    using (ToolCallKind.Push("probe")) Caps = await ToolProbe.ProbeAsync(Backend, CacheKey).ConfigureAwait(false);
                     Protocol = ToolProbe.ChooseProtocol(Caps, Mode);
                 }
             }
@@ -166,7 +168,7 @@ namespace RimWorldLLM.Mind.ToolLoop
             string proto = await EnsureAsync().ConfigureAwait(false);
             var o = Limits.Clone();
             over?.Invoke(o);
-            return await Loop.RunAsync(Backend, Tools, system, user, executor, proto, validator, fallback, o).ConfigureAwait(false);
+            using (ToolCallKind.Push(Kind, true)) return await Loop.RunAsync(Backend, Tools, system, user, executor, proto, validator, fallback, o).ConfigureAwait(false);
         }
     }
 }

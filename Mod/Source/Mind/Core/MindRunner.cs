@@ -37,7 +37,7 @@ namespace RimWorldLLM.Mind
 
         /// <summary>The tool-loop backend (wants, the vivarium steward): the engine endpoint of the line calls, or null when both are off.
         /// Sampler fields are forced only where the config forces them.</summary>
-        public static OpenAIBackend MakeToolBackend(MindConfig cfg)
+        public static OpenAIBackend MakeToolBackend(MindConfig cfg, CallLog callLog = null)
         {
             if (!cfg.Wants && !cfg.Steward) return null;
             var forced = new JObject();
@@ -47,7 +47,7 @@ namespace RimWorldLLM.Mind
             if (l.TopP != null) forced["top_p"] = l.TopP;
             if (l.MinP != null) forced["min_p"] = l.MinP;
             if (l.RepeatPenalty != null) forced["repeat_penalty"] = l.RepeatPenalty;
-            return new OpenAIBackend(l.BaseUrl, l.Model, l.ApiKey, null, null, l.Engine, forced);
+            return new OpenAIBackend(l.BaseUrl, l.Model, l.ApiKey, null, null, l.Engine, forced) { CallLog = callLog };
         }
 
         public bool Running { get { return _loop != null && !_loop.IsCompleted; } }
@@ -93,8 +93,9 @@ namespace RimWorldLLM.Mind
         {
             Directory.CreateDirectory(Cfg.DataDir);
             var bridge = new BridgeClient(_transport, Adapter.Protocol, _token);
-            var llm = new HttpLlm(Cfg.Llm, new CallLog(Path.Combine(Cfg.DataDir, "calls.jsonl")));
-            OpenAIBackend tools = MakeToolBackend(Cfg);
+            var callLog = new CallLog(Path.Combine(Cfg.DataDir, "calls.jsonl"));
+            var llm = new HttpLlm(Cfg.Llm, callLog);
+            OpenAIBackend tools = MakeToolBackend(Cfg, callLog);
             var d = new Director(Cfg, bridge, llm, Adapter, null, _clock, null, true);
             if (ChatLiveFactory != null) d.ChatLive = ChatLiveFactory(bridge);
             d.ToolBackend = tools; d.ToolMode = "auto";

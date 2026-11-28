@@ -65,6 +65,8 @@ namespace RimWorldLLM.Mind
         public double TimeoutS = 60.0;
         /// <summary>The last reply's token and time counts (for the call log / trace), or null.</summary>
         public JObject LastStats;
+        /// <summary>When set, each look is recorded to calls.jsonl as kind "steward_look".</summary>
+        public CallLog CallLog;
 
         public EngineLookClient(HttpClient http, string baseUrl, IVisionGate gate, string apiKey = "", int? slot = null)
         {
@@ -99,15 +101,32 @@ namespace RimWorldLLM.Mind
             var body = new JObject { ["images"] = new JArray(img), ["question"] = q, ["detail"] = Detail(r.Kind), ["max_tokens"] = MaxTokens };
             if (Slot.HasValue) body["id_slot"] = Slot.Value;
             HttpReply rep;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try { rep = await HttpUtil.PostJsonAsync(_http, LookUrl(_base), body, _headers, TimeoutS).ConfigureAwait(false); }
-            catch (HttpTransportException) { return null; }
-            if (rep.Status != 200) return null;                       // 409 vision_off and anything else: the steward goes on with text
+            catch (HttpTransportException e) { RecordLook(sw, null, false, e.Kind); return null; }
+            if (rep.Status != 200) { RecordLook(sw, null, false, "HTTP " + rep.Status); return null; }   // 409 vision_off and anything else: the steward goes on with text
             JObject o;
-            try { o = rep.Json() as JObject; } catch (PyJsonException) { return null; }
+            try { o = rep.Json() as JObject; } catch (PyJsonException) { RecordLook(sw, null, false, "bad reply"); return null; }
             string text = o?["text"]?.Type == JTokenType.String ? ((string)o["text"]).Trim() : "";
             if (text.Length == 0) return null;
             LastStats = new JObject { ["tokens"] = o["tokens"]?.DeepClone(), ["ms"] = o["ms"]?.DeepClone() };
+            RecordLook(sw, o, true, "");
             return new LookOutcome { Answer = text };
+        }
+
+        private void RecordLook(System.Diagnostics.Stopwatch sw, JObject o, bool ok, string error)
+        {
+            if (CallLog == null) return;
+            var st = new CallStats { Kind = "steward_look", Slot = Slot, WallS = sw.Elapsed.TotalSeconds, Ok = ok, Error = error };
+            if (o != null)
+            {
+                st.PromptN = LlmWire.PyInt(o["tokens"]?["prompt"] ?? new JValue(0));
+                st.PredictedN = LlmWire.PyInt(o["tokens"]?["completion"] ?? new JValue(0));
+                st.PromptMs = LlmWire.PyFloatOf(o["ms"]?["prefill"] ?? new JValue(0));
+                double total = LlmWire.PyFloatOf(o["ms"]?["total"] ?? new JValue(0));
+                if (total > 0) st.PredictedMs = Math.Max(0.0, total - st.PromptMs);
+            }
+            CallLog.Record(st);
         }
     }
 

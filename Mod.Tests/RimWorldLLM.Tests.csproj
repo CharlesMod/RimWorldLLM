@@ -52,6 +52,7 @@
         <EmbeddedResource Include="Mind/Data/steward_digest_trader.json" LogicalName="RimWorldLLM.Tests.steward_digest_trader.json" />
         <EmbeddedResource Include="Mind/Data/bio_*.json" LogicalName="RimWorldLLM.Tests.%(Filename)%(Extension)" />
         <None Include="Mind/Data/multiday.jsonl" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="../tools/MindHarness/turncost/*" Link="turncost/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
         <EmbeddedResource Include="Mind/Data/e2e-multiday.json" LogicalName="RimWorldLLM.Tests.e2e-multiday.json" />
         <EmbeddedResource Include="Mind/Data/e2e-mixed.json" LogicalName="RimWorldLLM.Tests.e2e-mixed.json" />
         <None Include="Mind/Data/e2e-mixed.jsonl" CopyToOutputDirectory="PreserveNewest" />

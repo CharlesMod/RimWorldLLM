@@ -642,7 +642,7 @@ namespace RimWorldLLM.Mind
                         var probe = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
                         int slot = LookSlot ?? (D.Cfg.ActorSlots.Concat(new[] { D.Cfg.NarratorSlot }).Max() + 1);
                         Vision = probe;
-                        Look = new RoutedLookClient(probe, new EngineLookClient(ob.Http, ob.Base, probe, ob.ApiKey, slot));
+                        Look = new RoutedLookClient(probe, new EngineLookClient(ob.Http, ob.Base, probe, ob.ApiKey, slot) { CallLog = ob.CallLog });
                     }
                     if (Vision == null) return false;
                     if (Look == null) Look = new DirectLookClient(Vision);
@@ -769,7 +769,7 @@ namespace RimWorldLLM.Mind
                 return outc.Result;
             }
 
-            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, reason == "combat started" ? CombatStartSteps : Steps, 2, BudgetS, StepTimeoutS);
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, reason == "combat started" ? CombatStartSteps : Steps, 2, BudgetS, StepTimeoutS) { Kind = "steward" };
             _streams++;
             string streamId = "steward-" + Environment.ProcessId + "-" + _streams;
             StewardLiveSink sink = null;
@@ -909,7 +909,7 @@ namespace RimWorldLLM.Mind
                 return outc.Result;
             }
 
-            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, CombatSteps, 2, CombatBudgetS, CombatStepTimeoutS);
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, CombatSteps, 2, CombatBudgetS, CombatStepTimeoutS) { Kind = "steward_combat" };
             var allowedSorted = allowed.OrderBy(x => x, StringComparer.Ordinal).ToList();
             LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
             {
@@ -999,7 +999,7 @@ namespace RimWorldLLM.Mind
                 return outc.Result;
             }
 
-            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, TradeSteps, 2, TradeBudgetS, TradeStepTimeoutS);
+            var harness = new ToolHarness(d.ToolBackend, tools, d.ToolMode, null, TradeSteps, 2, TradeBudgetS, TradeStepTimeoutS) { Kind = "steward_trade" };
             var allowedSorted = allowed.OrderBy(x => x, StringComparer.Ordinal).ToList();
             LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
             {

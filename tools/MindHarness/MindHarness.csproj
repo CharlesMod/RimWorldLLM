@@ -33,6 +33,9 @@
         <Compile Include="../../Mod.Tests/Mind/CommentTry.cs" />
     </ItemGroup>
     <ItemGroup>
+        <None Include="turncost/*" LinkBase="turncost" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    <ItemGroup>
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/rules.json" LogicalName="RimWorldLLM.Mind.rules.json" />
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_strategy.md" LogicalName="RimWorldLLM.Mind.steward_strategy.md" />
         <EmbeddedResource Include="../../Mod/Source/Mind/RimWorld/Resources/steward_system.txt" LogicalName="RimWorldLLM.Mind.steward_system.txt" />

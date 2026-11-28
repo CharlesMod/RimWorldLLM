@@ -26,6 +26,7 @@ namespace RimWorldLLM.Harness
             "  steward-try --digest FILE --llm-url URL [--goals FILE] [--chat TEXT] [--playing] [--model M] [--mode auto|grammar|json|native] [--combat FILE [--combat-cycle]] [--trade-turn]",
             "  planner-sim --digest FILE --grid FILE --llm-url URL --out DIR [--cycles N] [--chat TEXT] [--model M] [--mode M]",
             "      steward cycles on a recorded digest; its room requests go through the base planner on a recorded map grid (ASCII)",
+            "  turncost --llm-url URL --out DIR [--cycles N] [--digests F,F] [--events recording.jsonl] [--mode M] [--model M] [--playing]   (steward + pawns on one engine over many cycles; a table by kind. See Turncost.Usage)",
             "  stream-try --llm-url URL [--model M] [--key K]   (one streamed request; prints every stream event with its time)",
             "  comment-try --events FILE [--llm-url URL --model M --key K]   (documentary voice on sample events; FakeLlm without --llm-url)");
 
@@ -43,6 +44,7 @@ namespace RimWorldLLM.Harness
             {
                 case "replay": return await ReplayAsync(rest);
                 case "steward-try": return await StewardTry.MainAsync(rest, Console.Out, Console.Error);
+                case "turncost": return await Turncost.MainAsync(rest, Console.Out, Console.Error);
                 case "planner-sim": return await PlannerSim.MainAsync(rest, Console.Out, Console.Error);
                 case "speedsim": return SpeedSim.Run(rest, Console.Out, Console.Error);
                 case "comment-try": return await CommentTryAsync(rest);

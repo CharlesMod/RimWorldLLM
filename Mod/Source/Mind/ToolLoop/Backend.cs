@@ -69,6 +69,33 @@ namespace RimWorldLLM.Mind.ToolLoop
         string Model { get; }
     }
 
+    /// <summary>The kind a tool-loop call gets in calls.jsonl: set by ToolHarness.RunAsync for the length of a loop (flows with the async call).
+    /// A call with no slot is the protocol probe.</summary>
+    public static class ToolCallKind
+    {
+        private static readonly AsyncLocal<string> Cur = new AsyncLocal<string>();
+        private static readonly AsyncLocal<long?> CurTurn = new AsyncLocal<long?>();
+        private static long _turns;
+        public static string Current => Cur.Value;
+        /// <summary>The turn the calling loop belongs to (null outside a loop and for the probe).</summary>
+        public static long? Turn => CurTurn.Value;
+        public static string For(int? slot) => Cur.Value == "probe" || !slot.HasValue ? "probe" : (Cur.Value ?? "toolloop");
+        /// <summary>Scopes a kind; a loop (newTurn) also gets a fresh turn number, so the calls of one turn can be summed.</summary>
+        public static IDisposable Push(string kind, bool newTurn = false)
+        {
+            var prev = new Pop(Cur.Value, CurTurn.Value);
+            Cur.Value = kind;
+            CurTurn.Value = newTurn ? System.Threading.Interlocked.Increment(ref _turns) : (long?)null;
+            return prev;
+        }
+        private sealed class Pop : IDisposable
+        {
+            private readonly string _prev; private readonly long? _prevTurn;
+            public Pop(string prev, long? prevTurn) { _prev = prev; _prevTurn = prevTurn; }
+            public void Dispose() { Cur.Value = _prev; CurTurn.Value = _prevTurn; }
+        }
+    }
+
     /// <summary>POST {base}/chat/completions. Extra goes into every body (id_slot, cache_prompt...).</summary>
     public sealed class OpenAIBackend : IStreamingBackend, IBackendIdentity, IDisposable
     {
@@ -83,6 +110,8 @@ namespace RimWorldLLM.Mind.ToolLoop
         private bool? _engine;
         /// <summary>Makes the X-Request-Id of each call (printable ASCII, at most 128 bytes). Replaceable for tests.</summary>
         public Func<string> RequestIdFactory { get; set; } = RequestIds.New;
+        /// <summary>When set, every call is recorded to it (kind from <see cref="ToolCallKind"/>, "probe" when it has no slot). Same log the HttpLlm writes.</summary>
+        public CallLog CallLog { get; set; }
         private readonly bool _ownsHttp;
 
         public OpenAIBackend(string baseUrl, string model = "", string apiKey = "", HttpClient client = null, JObject extra = null, bool? engine = null,
@@ -154,18 +183,20 @@ namespace RimWorldLLM.Mind.ToolLoop
                 body["tool_choice"] = string.IsNullOrEmpty(toolChoice) ? "auto" : toolChoice;
             }
             var sw = Stopwatch.StartNew();
-            if (sink != null) return await StreamChatAsync(body, headers, engine, sink, timeout, cancel, sw, requestId).ConfigureAwait(false);
+            if (sink != null) return await StreamChatAsync(body, headers, engine, sink, timeout, cancel, sw, requestId, slot).ConfigureAwait(false);
             HttpReply r;
             try { r = await HttpUtil.PostJsonAsync(Http, Base + "/chat/completions", body, headers, timeout, cancel).ConfigureAwait(false); }
-            catch (HttpTransportException e) { throw new BackendError("unreachable (" + e.Kind + ")", e); }
+            catch (OperationCanceledException) when (cancel.IsCancellationRequested) { Record(slot, requestId, sw, null, null, false, "cancelled"); throw; }
+            catch (HttpTransportException e) { Record(slot, requestId, sw, null, null, false, e.Kind); throw new BackendError("unreachable (" + e.Kind + ")", e); }
             double ms = sw.Elapsed.TotalMilliseconds;
             var y = LlmWire.ParseYielded(r.Status, r.Content, r.Header("Retry-After"));
             if (y != null)
             {
+                Record(slot, requestId, sw, null, null, false, "away");
                 Gate.WentAway(y.Message, y.RetryAfter);
                 throw new BackendAway(y.Message, y.RetryAfter);
             }
-            if (r.Status >= 400) throw new BackendError("HTTP " + r.Status.ToString(CultureInfo.InvariantCulture) + ": " + PyStr.Head(r.Text, 160));
+            if (r.Status >= 400) { Record(slot, requestId, sw, null, null, false, "HTTP " + r.Status.ToString(CultureInfo.InvariantCulture)); throw new BackendError("HTTP " + r.Status.ToString(CultureInfo.InvariantCulture) + ": " + PyStr.Head(r.Text, 160)); }
             Gate.Ok();
             JToken ch, m2;
             try
@@ -175,7 +206,14 @@ namespace RimWorldLLM.Mind.ToolLoop
             }
             catch (Exception e) when (e is PyJsonException || e is PyKeyError || e is PyIndexError || e is PyTypeError)
             {
+                Record(slot, requestId, sw, null, null, false, "bad reply");
                 throw new BackendError("reply was not a chat completion", e);
+            }
+            if (CallLog != null)
+            {
+                JObject rj = null;
+                try { rj = r.Json() as JObject; } catch (Exception) { }
+                Record(slot, requestId, sw, rj?["timings"], rj?["usage"], true, "");
             }
             if (!PyJson.Truthy(m2)) m2 = new JObject();
             var calls = new List<ToolCall>();
@@ -212,22 +250,46 @@ namespace RimWorldLLM.Mind.ToolLoop
             };
         }
 
+        /// <summary>One calls.jsonl row for a non-streamed call: timings (llama-server) or usage (any OpenAI server) give the token counts.</summary>
+        private void Record(int? slot, string requestId, Stopwatch sw, JToken timings, JToken usage, bool ok, string error)
+        {
+            if (CallLog == null) return;
+            var st = new CallStats { Kind = ToolCallKind.For(slot), Slot = slot, Turn = slot.HasValue ? ToolCallKind.Turn : null, RequestId = requestId, WallS = sw.Elapsed.TotalSeconds, Ok = ok, Error = error ?? "" };
+            if (timings != null && PyJson.Truthy(timings))
+            {
+                st.PromptN = LlmWire.PyInt(PyAccess.Get(timings, "prompt_n", new JValue(0)));
+                st.CacheN = LlmWire.PyInt(PyAccess.Get(timings, "cache_n", new JValue(0)));
+                st.PromptMs = LlmWire.PyFloatOf(PyAccess.Get(timings, "prompt_ms", new JValue(0)));
+                st.PredictedN = LlmWire.PyInt(PyAccess.Get(timings, "predicted_n", new JValue(0)));
+                st.PredictedMs = LlmWire.PyFloatOf(PyAccess.Get(timings, "predicted_ms", new JValue(0)));
+            }
+            else if (usage != null && PyJson.Truthy(usage))
+            {
+                st.PromptN = LlmWire.PyInt(PyAccess.Get(usage, "prompt_tokens", new JValue(0)));
+                st.PredictedN = LlmWire.PyInt(PyAccess.Get(usage, "completion_tokens", new JValue(0)));
+            }
+            CallLog.Record(st);
+        }
+
         private async Task<Reply> StreamChatAsync(JObject body, Dictionary<string, string> headers, bool engine, ILlmStreamSink sink, double timeout,
-                                                  CancellationToken cancel, Stopwatch sw, string requestId)
+                                                  CancellationToken cancel, Stopwatch sw, string requestId, int? slot)
         {
             body["stream"] = true;
             body["stream_options"] = new JObject { ["include_usage"] = true };
             if (engine) body["return_progress"] = true;
             ChatStreamResult sr;
             try { sr = await StreamSender.PostAsync(Http, Base + "/chat/completions", body, headers, sink, timeout, cancel, sw).ConfigureAwait(false); }
-            catch (HttpTransportException e) { throw new BackendError("unreachable (" + e.Kind + ")", e); }
+            catch (OperationCanceledException) when (cancel.IsCancellationRequested) { Record(slot, requestId, sw, null, null, false, "cancelled"); throw; }
+            catch (HttpTransportException e) { Record(slot, requestId, sw, null, null, false, e.Kind); throw new BackendError("unreachable (" + e.Kind + ")", e); }
             catch (LlmAway e)
             {
+                Record(slot, requestId, sw, null, null, false, "away");
                 Gate.WentAway(e.AwayMessage, e.RetryAfter);
                 throw new BackendAway(e.AwayMessage, e.RetryAfter);
             }
             catch (LlmError e)
             {
+                Record(slot, requestId, sw, null, null, false, e.Cause);
                 string d = string.IsNullOrEmpty(e.Detail) ? "" : ": " + PyStr.Head(e.Detail, 160);
                 throw new BackendError(e.Cause + d, e);
             }
@@ -259,6 +321,7 @@ namespace RimWorldLLM.Mind.ToolLoop
                 st.PromptN = LlmWire.PyInt(PyAccess.Get(sr.Usage, "prompt_tokens", new JValue(0)));
                 st.PredictedN = LlmWire.PyInt(PyAccess.Get(sr.Usage, "completion_tokens", new JValue(0)));
             }
+            if (CallLog != null) { st.Kind = ToolCallKind.For(slot); st.Slot = slot; st.Turn = slot.HasValue ? ToolCallKind.Turn : null; CallLog.Record(st); }
             ChatStreamReader.Emit(sink, StreamEvent.Done(sr.Text, st));
             return new Reply { Text = sr.Text, ToolCalls = calls, Finish = sr.Finish, Reasoning = sr.Reasoning, Ms = ms, RequestId = requestId };
         }
