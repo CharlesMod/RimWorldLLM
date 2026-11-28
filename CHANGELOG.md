@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased: share an engine across your PCs
+
+- **Same PC by default.** A fresh install runs the engine on this PC only (127.0.0.1): nothing is exposed, nothing asks to pair.
+- **Share this PC's engine on my network** (Model, local engine, off by default). Your other PCs with RimWorldLLM can use it
+  at home (LAN) or over Tailscale. It switches on live, shows the name and addresses with LAN and Tailscale badges and a QR
+  of the hello URL, and asks in game "<PC> wants to use this PC's engine. Code: ..." with Allow and Deny (compare the code).
+  A Paired PCs list has Remove. The first time, the Windows firewall (allow on private networks) or macOS asks about
+  incoming connections.
+- **An engine on another PC on my network** is a new LLM source. Find looks on the LAN (mDNS) and on Tailscale (online
+  peers, once per press), shows each engine with a LAN or Tailscale badge, and pairs with a code. The token is kept per
+  engine and sent only to it; the guest says "removed this PC" when the host removes it, and reconnects after restarts.
+  Needs an engine with the share slice (older engines say "This engine can't share yet").
+- New settings: `shareEngine`, `llmOwnKind`. What to check with two PCs: docs/release/PLAYTEST.md.
+
 ## Unreleased: the mind moves into the mod (C#)
 
 The narrator's and colonists' mind (the agent) is now C# inside the mod, namespace `RimWorldLLM.Mind`. It was a Python program
