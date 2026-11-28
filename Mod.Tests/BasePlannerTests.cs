@@ -180,5 +180,197 @@ namespace RimWorldLLM.Tests
             _out.WriteLine(BasePlanner.Describe(g));
             Assert.Equal(7, g.Rooms.Count);
         }
+
+        [Fact]
+        public void FreezerGoesNextToTheKitchenWithAnOutsideWall()
+        {
+            var g = Early();
+            string why;
+            var k = BasePlanner.Plan(g, new RoomRequest { Role = "kitchen" }, out why);
+            Assert.NotNull(k);
+            BasePlanner.Apply(g, k);
+            var f = BasePlanner.Plan(g, new RoomRequest { Role = "freezer" }, out why);
+            _out.WriteLine(f.Words);
+            _out.WriteLine(Draw(g, f));
+            var kitchen = g.Rooms.First(r => r.Role == "kitchen");
+            Assert.Contains(kitchen.Id, f.SharedWith);
+            Assert.Contains("sharing the kitchen's", f.Words);
+            Assert.Contains(f.Walls, c => BasePlanner.OuterWallCell(g, f.Box, c));
+        }
+
+        [Fact]
+        public void NearNamesTheRoomItGoesBy()
+        {
+            var g = Early();
+            string why;
+            var a = BasePlanner.Plan(g, new RoomRequest { Role = "workshop" }, out why);
+            BasePlanner.Apply(g, a, "the workshop");
+            var b = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom", Near = "workshop", For = "Cy" }, out why);
+            _out.WriteLine(b.Words);
+            Assert.Contains(g.Rooms.First(r => r.Role == "workshop").Id, b.SharedWith);
+            var c = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom", Near = "the moon" }, out why);
+            Assert.Contains("no the moon found", c.Words);
+        }
+
+        [Fact]
+        public void PlannerKeepsOffWaterMarshAndFertileSoilAndKeepsDoorstepsClear()
+        {
+            var g = BaseGrid.FromAscii(0, 0,
+                "~~~~~~~~~~~~~~~~~~~~",
+                "~~~~~~~~~~~~~~~~~~~~",
+                "mmmmmmmm,,,,,,,,,,,,",
+                "mmmmmmmm,,,,,,,,,,,,",
+                "........,,,,,,,,,,,,",
+                "........,,,,,,,,,,,,",
+                ".#####..............",
+                ".#B..#..............",
+                ".#...#..............",
+                ".##+##..............",
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                "....................");
+            string why;
+            var p = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom" }, out why);
+            Assert.NotNull(p);
+            _out.WriteLine(Draw(g, p));
+            foreach (var c in BuildPure.BoxCells(p.Box))
+            {
+                Assert.False(g.Has(c[0], c[1], BaseFlag.Water | BaseFlag.Marsh));
+                Assert.False(g.Has(c[0], c[1], BaseFlag.Fertile), "covers soil at " + c[0] + "," + c[1]);
+            }
+            // the doorstep of the existing door (3,6) stays clear
+            Assert.False(p.Box.Contains(3, 5));
+        }
+
+        [Fact]
+        public void NoSiteSaysWhy()
+        {
+            var g = BaseGrid.FromAscii(0, 0,
+                "~~~~~~~~",
+                "~......~",
+                "~..@...~",
+                "~......~",
+                "~~~~~~~~");
+            string why;
+            Assert.Null(BasePlanner.Plan(g, new RoomRequest { Role = "storage", Size = "large" }, out why));
+            Assert.Contains("no open ground", why);
+        }
+
+        [Fact]
+        public void PlannerNeverPicksASpotTheGuardRefuses()
+        {
+            // a narrow pass between rock and water: a room in it would seal the colonist in
+            var g = BaseGrid.FromAscii(0, 0,
+                "RRRRRRRRRRRRRRRRRRRR",
+                "R..................R",
+                "R..@...............R",
+                "R..................R",
+                "R..................R",
+                "R..................R",
+                "R..................R",
+                "R..................R",
+                "RRRRRRRR...RRRRRRRRR",
+                "~~~~~~~~...~~~~~~~~~");
+            string why;
+            var p = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom" }, out why);
+            Assert.NotNull(p);
+            _out.WriteLine(Draw(g, p));
+            Assert.Null(ReachGuard.Check(g, p.Walls, new[] { p.Door }));
+        }
+
+        // ------------------------------------------------------------ furniture
+        [Fact]
+        public void BedroomBedIsAgainstAWallAndNeverBlocksTheDoor()
+        {
+            var inside = new CellBox(1, 1, 4, 5);
+            var door = new[] { 3, 0 };   // south wall
+            var l = FurnitureLayout.Place(inside, door, FurnitureLayout.Items("bedroom", "medium", 0));
+            _out.WriteLine(string.Join(" ", l));
+            var bed = l.First(p => p.Word == "bed");
+            Assert.Equal(1, bed.Rect.W); Assert.Equal(2, bed.Rect.H);
+            Assert.Equal(inside.MaxZ, bed.Rect.MaxZ);    // far wall: head against the north wall
+            Assert.Equal(0, bed.Rect.MaxZ == inside.MaxZ ? 0 : 1);
+            foreach (var p in l) Assert.False(p.Rect.Contains(3, 1), p.Word + " blocks the door");
+            Assert.Equal(3, l.Count);
+        }
+
+        [Fact]
+        public void BarracksFitsItsBedsAndKitchenGetsStoveAndButcher()
+        {
+            int w, h;
+            BasePlanner.Inside("barracks", "medium", 0, out w, out h);
+            var l = FurnitureLayout.Place(new CellBox(1, 1, w, h), new[] { 1 + w / 2, 0 }, FurnitureLayout.Items("barracks", "medium", 0));
+            Assert.Equal(6, l.Count(p => p.Word == "bed"));
+            var k = FurnitureLayout.Place(new CellBox(1, 1, 5, 5), new[] { 3, 0 }, FurnitureLayout.Items("kitchen", "medium", 0));
+            Assert.Contains(k, p => p.Word == "stove");
+            Assert.Contains(k, p => p.Word == "butcher table");
+        }
+
+        [Fact]
+        public void FreezerCoolerGoesInAnOuterWallFacingIn()
+        {
+            var inside = new CellBox(1, 1, 5, 5);
+            var outer = new List<int[]> { new[] { 6, 3 }, new[] { 3, 6 } };   // east wall and north wall cells with open air outside
+            var l = FurnitureLayout.Place(inside, new[] { 3, 0 }, FurnitureLayout.Items("freezer", "medium", 0), outer);
+            var c = Assert.Single(l);
+            Assert.Equal("cooler", c.Word);
+            Assert.True((c.Rect.X == 6 && c.Rot == 1) || (c.Rect.Z == 6 && c.Rot == 0));
+            Assert.Empty(FurnitureLayout.Place(inside, new[] { 3, 0 }, FurnitureLayout.Items("freezer", "medium", 0), new List<int[]>()));
+        }
+
+        [Fact]
+        public void DiningTableGetsChairsFacingIt()
+        {
+            var l = FurnitureLayout.Place(new CellBox(1, 1, 6, 6), new[] { 4, 0 }, FurnitureLayout.Items("dining", "medium", 0));
+            var t = l.First(p => p.Word == "table");
+            var chairs = l.Where(p => p.Word == "chair").ToList();
+            Assert.Equal(4, chairs.Count);
+            foreach (var ch in chairs)
+            {
+                var st = BaseGrid.Dirs[ch.Rot];
+                Assert.True(t.Rect.Contains(ch.Rect.X + st[0], ch.Rect.Z + st[1]), "chair " + ch + " faces the table");
+            }
+        }
+
+        // ------------------------------------------------------------ BASE line
+        [Fact]
+        public void BaseLineDescribesOutlineEntranceGrowthAndNextSpots()
+        {
+            var g = Early();
+            string s = BasePlanner.Describe(g);
+            _out.WriteLine(s);
+            Assert.StartsWith("one room 7x6, 1 room, entrance south", s);
+            Assert.Contains("room to grow:", s);
+            Assert.Contains("west 9 (water)", s);
+            Assert.Contains("next: room for 3+ more bedrooms", s);
+            Assert.True(s.Length < 260, s.Length.ToString());
+            var empty = BaseGrid.FromAscii(0, 0, "....", "..@.", "....");
+            Assert.StartsWith("no rooms yet; home at", BasePlanner.Describe(empty));
+        }
+
+        [Fact]
+        public void PlanningOnAFullSizeWindowIsQuick()
+        {
+            var rows = new List<string>();
+            for (int z = 0; z < 170; z++) rows.Add(new string('.', 170));
+            var g = BaseGrid.FromAscii(0, 0, rows.ToArray());
+            g.HomeX = 85; g.HomeZ = 85;
+            for (int i = 0; i < 6; i++)
+            {
+                string why;
+                var p = BasePlanner.Plan(g, new RoomRequest { Role = i % 2 == 0 ? "bedroom" : "storage" }, out why);
+                Assert.NotNull(p);
+                BasePlanner.Apply(g, p);
+            }
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string line = BasePlanner.Describe(g);
+            var p2 = BasePlanner.Plan(g, new RoomRequest { Role = "dining" }, out string _);
+            sw.Stop();
+            _out.WriteLine(line + "  [" + sw.ElapsedMilliseconds + " ms]");
+            Assert.NotNull(p2);
+            Assert.True(sw.ElapsedMilliseconds < 1500, sw.ElapsedMilliseconds + " ms");
+        }
     }
 }

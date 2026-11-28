@@ -187,6 +187,12 @@ namespace RimWorldLLM.Bridge
                 }
                 Rooms.Add(room);
             }
+            AddRoomPois();
+        }
+
+        /// <summary>Adds every room as a thing to keep reachable (all its cells).</summary>
+        public void AddRoomPois()
+        {
             Pois.RemoveAll(p => p.Kind == "room");
             foreach (var r in Rooms)
             {
@@ -290,6 +296,18 @@ namespace RimWorldLLM.Bridge
         /// mustReach: cells (new doors) that must be reachable from outside after the plan.</summary>
         public static string Check(BaseGrid g, IEnumerable<int[]> solid, IEnumerable<int[]> doors = null, IEnumerable<int[]> mustReach = null)
         {
+            return Check(g, solid, doors, mustReach, null);
+        }
+
+        /// <summary>Reach from the map edge before any plan: the planner computes it once and checks many candidates against it.</summary>
+        public static HashSet<int> EdgeBefore(BaseGrid g)
+        {
+            Func<int, int, bool> walk = (x, z) => g.Has(x, z, BaseFlag.Walk);
+            return Flood(g, walk, EdgeSources(g, walk));
+        }
+
+        public static string Check(BaseGrid g, IEnumerable<int[]> solid, IEnumerable<int[]> doors, IEnumerable<int[]> mustReach, HashSet<int> edgeBefore)
+        {
             var solidSet = new HashSet<long>();
             foreach (var c in solid ?? Enumerable.Empty<int[]>()) solidSet.Add(BaseGrid.Key(c[0], c[1]));
             var doorSet = new HashSet<long>();
@@ -314,7 +332,7 @@ namespace RimWorldLLM.Bridge
                 return g.Has(x, z, BaseFlag.Walk);
             };
             int[] main = MainCell(g, walkAfter);
-            var edge0 = Flood(g, walkBefore, EdgeSources(g, walkBefore));
+            var edge0 = edgeBefore ?? Flood(g, walkBefore, EdgeSources(g, walkBefore));
             var edge1 = Flood(g, walkAfter, EdgeSources(g, walkAfter));
             // the base's main area counts only when it has no way out to begin with (a sealed base); otherwise reach from
             // outside covers it, and a plan that walls in home itself is caught as cutting home off from outside

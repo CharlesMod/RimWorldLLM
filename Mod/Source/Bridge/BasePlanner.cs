@@ -160,10 +160,11 @@ namespace RimWorldLLM.Bridge
                 return null;
             }
             string guardWhy = null;
+            var edge0 = ReachGuard.EdgeBefore(g);
             foreach (var p in cands.OrderByDescending(c => c.Score).Take(maxGuard))
             {
                 var solid = new List<int[]>(p.Walls);
-                string gw = ReachGuard.Check(g, solid, new[] { p.Door }, new[] { p.Door });
+                string gw = ReachGuard.Check(g, solid, new[] { p.Door }, new[] { p.Door }, edge0);
                 if (gw == null) { Words(g, p, r); return p; }
                 if (guardWhy == null) guardWhy = gw;
             }

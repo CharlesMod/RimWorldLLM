@@ -127,12 +127,29 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void RoomSizeFromPurpose()
         {
-            Assert.True(Post("/act/room", new { purpose = "bedroom" }).Ok);
+            // no size given: W/H stay 0 and the hand asks the base planner (its table); the args carry the planner's words
+            Assert.True(Post("/act/room", new { purpose = "bedroom", near = "the barracks", @for = "Bram", why = "Bram sleeps on the floor" }).Ok);
             var a = (RoomArgs)Hands.LastArgs;
-            Assert.Equal(5, a.W); Assert.Equal(5, a.H); Assert.Equal("auto", a.Door);
-            Assert.True(Post("/act/room", new { purpose = "storage", size = "large", door = "n", stuff = "granite" }).Ok);
+            Assert.Equal(0, a.W); Assert.Equal(0, a.H); Assert.Equal("auto", a.Door);
+            Assert.Equal("the barracks", a.Near); Assert.Equal("Bram", a.For); Assert.True(a.Furnish);
+            Assert.True(Post("/act/room", new { purpose = "research", size = "large", door = "n", stuff = "granite", furnish = false, beds = 2 }).Ok);
             a = (RoomArgs)Hands.LastArgs;
-            Assert.Equal(10, a.W); Assert.Equal(9, a.H); Assert.Equal("n", a.Door); Assert.Equal("granite", a.Stuff);
+            Assert.Equal("research", a.Purpose); Assert.Equal("n", a.Door); Assert.Equal("granite", a.Stuff); Assert.False(a.Furnish); Assert.Equal(2, a.Beds);
+            // scripts may still give an exact size
+            Assert.True(Post("/act/room", new { purpose = "storage", w = 9, h = 8 }).Ok);
+            a = (RoomArgs)Hands.LastArgs;
+            Assert.Equal(9, a.W); Assert.Equal(8, a.H);
+        }
+
+        [Fact]
+        public void RoomGateCountsThePlannerSize()
+        {
+            // a large storage room is 9x9 inside, 11x11 outer: 40 walls; the gate refuses when fewer blueprints are left
+            int inW, inH;
+            BasePlanner.Inside("storage", "large", 0, out inW, out inH);
+            Assert.Equal(9, inW); Assert.Equal(9, inH);
+            var r = Post("/act/room", new { purpose = "storage", size = "large" });
+            Assert.True(r.Ok);
         }
 
         [Theory]

@@ -262,6 +262,8 @@ namespace RimWorldLLM
                 }
 
             place:
+                string sealOff = VivariumBaseRead.Guard(map, def, new[] { cell }, rot);
+                if (sealOff != null) return HandResult.No("can't put a " + def.label + " at (" + cell.x + "," + cell.z + "): it " + sealOff);
                 var bp = GenConstruct.PlaceBlueprintForBuild(def, cell, map, rot, Faction.OfPlayer, stuff);
                 if (bp == null) return HandResult.No("the game would not place a " + def.label + " at (" + cell.x + "," + cell.z + ")");
                 var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
@@ -337,9 +339,8 @@ namespace RimWorldLLM
                 var doorDef = ResolveThing("door", out no);
                 if (doorDef == null) return no;
                 int w = a.W, h = a.H;
-                if (w <= 0 || h <= 0) BuildPure.RoomSize(a.Purpose, a.Size, out w, out h);
+                if (w <= 0 || h <= 0) { BasePlanner.Inside(a.Purpose, a.Size, a.Beds, out w, out h); w += 2; h += 2; }
                 if (w < BuildPure.MinRoom || h < BuildPure.MinRoom) return HandResult.No("a room needs at least 3x3 cells");
-                var home = HomeCenter(map);
 
                 // stuff: the walls need 5 each; ask for the full wall count of a closed box as the stock check
                 int needStuff = (2 * (w + h) - 4) * BuildHelpers.WallStuffCost;
@@ -351,54 +352,183 @@ namespace RimWorldLLM
                     if (wallStuff != null && GenStuff.AllowedStuffsFor(doorDef).Contains(wallStuff)) doorStuff = wallStuff;
                     else { doorStuff = ResolveStuff(map, doorDef, null, false, 0, out no); if (no != null) return no; }
                 }
+                if (a.At.X != null && a.At.Z != null) return RoomAtCorner(map, a, left, w, h, wallDef, wallStuff, doorDef, doorStuff);
 
-                IEnumerable<int[]> corners;
-                bool exact = a.At.X != null && a.At.Z != null;
-                if (exact) corners = new[] { new[] { a.At.X.Value, a.At.Z.Value } };
-                else corners = BuildPure.SiteCandidates(home.x, home.z, w, h, 30);
-
-                string firstReason = null; int tried = 0;
-                foreach (var cn in corners)
+                // the base planner picks the site: attached to the base, door onto a kept-clear walkway, guard-checked
+                var g = VivariumBaseRead.Read(map);
+                var req = new RoomRequest { Role = a.Purpose, Size = a.Size, Near = a.Near, For = a.For, Door = a.Door, Beds = a.Beds };
+                if (a.W > 0 && a.H > 0) { req.InW = a.W - 2; req.InH = a.H - 2; }
+                RoomPlan plan = null; string why = null;
+                for (int attempt = 0; attempt < 6; attempt++)
                 {
-                    tried++;
-                    var box = new CellBox(cn[0], cn[1], w, h);
-                    string side = (a.Door ?? "auto").ToLowerInvariant();
-                    var sides = new List<string>();
-                    if (side == "auto") { string pref = BuildPure.DoorToward(box, home.x, home.z); sides.Add(pref); foreach (var s in new[] { "n", "e", "s", "w" }) if (s != pref) sides.Add(s); }
-                    else sides.Add(side);
-                    foreach (var sd in sides)
+                    plan = BasePlanner.Plan(g, req, out why);
+                    if (plan == null) break;
+                    // the grid can't see everything the game checks (a pawn's corpse, a minified thing, a mod's rule): ask the game
+                    // about each new cell; a cell it refuses is taken off the grid and the planner picks again
+                    int[] bad = null; string badWhy = null;
+                    foreach (var c in plan.Walls.Concat(new[] { plan.Door }))
                     {
-                        List<int[]> toPlace; int[] door; bool doorNeeds;
-                        string why = RoomBoxProblem(map, box, wallDef, wallStuff, out toPlace, out door, sd, doorDef, doorStuff, out doorNeeds);
-                        if (firstReason == null) firstReason = why;
-                        if (why != null) { if (why.Contains("door")) continue; break; }   // only a door problem is worth another side
-                        int cost = toPlace.Count + (doorNeeds ? 1 : 0);
-                        if (cost > left.Blueprints) return HandResult.No("that room needs " + cost + " blueprints but only " + left.Blueprints + " are left this cycle");
-                        if (wallStuff != null)
-                        {
-                            int have = VivariumLoose.Usable(map, wallStuff);
-                            if (have < toPlace.Count * BuildHelpers.WallStuffCost)
-                                return HandResult.No("not enough " + StuffLabel(wallStuff) + " in stock: " + toPlace.Count + " walls need " + toPlace.Count * BuildHelpers.WallStuffCost + ", there is " + have);
-                        }
-                        var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
-                        foreach (var wc in toPlace)
-                        {
-                            var bp = GenConstruct.PlaceBlueprintForBuild(wallDef, new IntVec3(wc[0], 0, wc[1]), map, Rot4.North, Faction.OfPlayer, wallStuff);
-                            if (bp != null) mb.Blueprint(wallDef.defName, wc[0], wc[1], bp.thingIDNumber);
-                        }
-                        if (doorNeeds)
-                        {
-                            var bp = GenConstruct.PlaceBlueprintForBuild(doorDef, new IntVec3(door[0], 0, door[1]), map, Rot4.North, Faction.OfPlayer, doorStuff);
-                            if (bp != null) mb.Blueprint(doorDef.defName, door[0], door[1], bp.thingIDNumber);
-                        }
-                        return HandResult.Placed(BuildHelpers.RoomNote(a.Purpose, box, toPlace.Count, StuffLabel(wallStuff), doorNeeds), mb.Marks);
+                        var cell = new IntVec3(c[0], 0, c[1]);
+                        bool isDoor = c == plan.Door;
+                        string fb = FootprintBlock(map, CellRect.SingleCell(cell));
+                        if (fb != null) { bad = c; badWhy = fb; break; }
+                        var rep = GenConstruct.CanPlaceBlueprintAt(isDoor ? doorDef : wallDef, cell, Rot4.North, map, false, null, null, isDoor ? doorStuff : wallStuff);
+                        if (!rep.Accepted) { bad = c; badWhy = rep.Reason.NullOrEmpty() ? "it does not fit" : rep.Reason; break; }
                     }
-                    if (exact) break;
+                    if (bad == null) break;
+                    g.Flags[g.Idx(bad[0], bad[1])] &= ~BaseFlag.Free;
+                    why = "the game refused (" + bad[0] + "," + bad[1] + "): " + badWhy;
+                    plan = null;
                 }
-                if (exact) return HandResult.No("can't build the room at (" + a.At.X + "," + a.At.Z + "): " + (firstReason ?? "no fit"));
-                return HandResult.No("no room site found near the base after " + tried + " places" + (firstReason == null ? "" : " (first problem: " + firstReason + ")"));
+                if (plan == null) return HandResult.No("can't fit a " + a.Purpose + " into the base: " + (why ?? "no site"));
+
+                // furniture first: a cooler takes a wall cell instead of a wall
+                var furniture = new List<KeyValuePair<FurniturePlace, ThingDef>>();
+                var skipped = new List<string>();
+                if (a.Furnish)
+                {
+                    var items = FurnitureLayout.Items(a.Purpose, a.Size, a.Beds);
+                    var defs = new Dictionary<FurnitureItem, ThingDef>();
+                    foreach (var it in items)
+                    {
+                        HandResult n2;
+                        var d = ResolveThing(it.Word, out n2);
+                        if (d == null) { if (!skipped.Contains(it.Word)) skipped.Add(it.Word); continue; }
+                        it.W = d.size.x; it.H = d.size.z;
+                        defs[it] = d;
+                    }
+                    var outer = plan.Walls.Where(c => BasePlanner.OuterWallCell(g, plan.Box, c)).ToList();
+                    var placesByItem = FurnitureLayout.Place(plan.Inside, plan.Door, defs.Keys.ToList(), outer);
+                    // Place returns the pieces in item order; pair them back by word in order
+                    var queue = defs.Keys.ToList();
+                    foreach (var p in placesByItem)
+                    {
+                        int i = queue.FindIndex(it => it.Word == p.Word);
+                        if (i < 0) continue;
+                        furniture.Add(new KeyValuePair<FurniturePlace, ThingDef>(p, defs[queue[i]]));
+                        queue.RemoveAt(i);
+                    }
+                    foreach (var it in queue) if (!skipped.Contains(it.Word + " (no room for it)")) skipped.Add(it.Word + " (no room for it)");
+                }
+                var mounted = new HashSet<long>(furniture.Where(f => f.Value.passability == Traversability.Impassable && !plan.Inside.Contains(f.Key.Rect.X, f.Key.Rect.Z))
+                                                          .Select(f => BaseGrid.Key(f.Key.Rect.X, f.Key.Rect.Z)));
+                var walls = plan.Walls.Where(c => !mounted.Contains(BaseGrid.Key(c[0], c[1]))).ToList();
+
+                int cost = walls.Count + 1;
+                if (cost > left.Blueprints) return HandResult.No("that room needs " + cost + " blueprints but only " + left.Blueprints + " are left this cycle");
+                if (wallStuff != null)
+                {
+                    int have = VivariumLoose.Usable(map, wallStuff);
+                    if (have < walls.Count * BuildHelpers.WallStuffCost)
+                        return HandResult.No("not enough " + StuffLabel(wallStuff) + " in stock: " + walls.Count + " walls need " + walls.Count * BuildHelpers.WallStuffCost + ", there is " + have);
+                }
+                var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
+                foreach (var wc in walls)
+                {
+                    var bp = GenConstruct.PlaceBlueprintForBuild(wallDef, new IntVec3(wc[0], 0, wc[1]), map, Rot4.North, Faction.OfPlayer, wallStuff);
+                    if (bp != null) mb.Blueprint(wallDef.defName, wc[0], wc[1], bp.thingIDNumber);
+                }
+                var dbp = GenConstruct.PlaceBlueprintForBuild(doorDef, new IntVec3(plan.Door[0], 0, plan.Door[1]), map, Rot4.North, Faction.OfPlayer, doorStuff);
+                if (dbp != null) mb.Blueprint(doorDef.defName, plan.Door[0], plan.Door[1], dbp.thingIDNumber);
+
+                // the furniture, while blueprints are left
+                var placed = new List<string>();
+                int budget = left.Blueprints - cost;
+                foreach (var kv in furniture)
+                {
+                    var p = kv.Key; var def = kv.Value;
+                    if (!PlaceFurniture(map, p, def, budget, mb, skipped))
+                    {
+                        // a cooler that could not go in leaves its wall cell: close it with a wall
+                        if (!plan.Inside.Contains(p.Rect.X, p.Rect.Z))
+                        {
+                            var bp = GenConstruct.PlaceBlueprintForBuild(wallDef, new IntVec3(p.Rect.X, 0, p.Rect.Z), map, Rot4.North, Faction.OfPlayer, wallStuff);
+                            if (bp != null) mb.Blueprint(wallDef.defName, p.Rect.X, p.Rect.Z, bp.thingIDNumber);
+                        }
+                        continue;
+                    }
+                    placed.Add(p.Word);
+                    budget--;
+                }
+                string note = plan.Words + " (" + BuildHelpers.Plural(walls.Count, "new " + (StuffLabel(wallStuff) + " wall").Trim(), "new " + (StuffLabel(wallStuff) + " walls").Trim())
+                              + ", " + plan.Reused + " shared" + ")";
+                if (placed.Count > 0) note += "; furniture: " + string.Join(", ", placed.GroupBy(x => x).Select(gr => gr.Count() > 1 ? gr.Count() + " " + gr.Key + "s" : gr.Key));
+                if (skipped.Count > 0) note += "; skipped " + string.Join(", ", skipped.Distinct());
+                var extra = new JObject { ["box"] = new JArray(plan.Box.X, plan.Box.Z, plan.Box.W, plan.Box.H), ["door"] = new JArray(plan.Door[0], plan.Door[1]) };
+                return HandResult.Placed(note, mb.Marks, extra);
             }
             catch (Exception e) { return Failed(e); }
+        }
+
+        /// <summary>One piece of a room's furniture as a blueprint: the layout's rect and rotation back to a root cell; false (with
+        /// a skipped word) when it can't go in.</summary>
+        static bool PlaceFurniture(Map map, FurniturePlace p, ThingDef def, int budget, BuildHelpers.MarkBuilder mb, List<string> skipped)
+        {
+            if (budget <= 0) { skipped.Add(p.Word + " (cap)"); return false; }
+            var rot = new Rot4(p.Rot);
+            IntVec3 root = IntVec3.Invalid;
+            foreach (var c in BuildPure.BoxCells(p.Rect))
+            {
+                var r = GenAdj.OccupiedRect(new IntVec3(c[0], 0, c[1]), rot, def.size);
+                if (r.minX == p.Rect.X && r.minZ == p.Rect.Z && r.maxX == p.Rect.MaxX && r.maxZ == p.Rect.MaxZ) { root = new IntVec3(c[0], 0, c[1]); break; }
+            }
+            if (!root.IsValid) { skipped.Add(p.Word); return false; }
+            HandResult no;
+            var stuff = ResolveStuff(map, def, null, false, 0, out no);
+            if (no != null) { skipped.Add(p.Word + " (no material)"); return false; }
+            var rep = GenConstruct.CanPlaceBlueprintAt(def, root, rot, map, false, null, null, stuff);
+            if (!rep.Accepted) { skipped.Add(p.Word); return false; }
+            var bp = GenConstruct.PlaceBlueprintForBuild(def, root, map, rot, Faction.OfPlayer, stuff);
+            if (bp == null) { skipped.Add(p.Word); return false; }
+            mb.Blueprint(def.defName, root.x, root.z, bp.thingIDNumber);
+            return true;
+        }
+
+        /// <summary>The scripts' path: a room box at an exact south-west corner (x, z), door side as given or toward home,
+        /// still checked by the never-seal-off guard.</summary>
+        HandResult RoomAtCorner(Map map, RoomArgs a, BuildBudget left, int w, int h, ThingDef wallDef, ThingDef wallStuff, ThingDef doorDef, ThingDef doorStuff)
+        {
+            var home = HomeCenter(map);
+            var box = new CellBox(a.At.X.Value, a.At.Z.Value, w, h);
+            string side = (a.Door ?? "auto").ToLowerInvariant();
+            var sides = new List<string>();
+            if (side == "auto") { string pref = BuildPure.DoorToward(box, home.x, home.z); sides.Add(pref); foreach (var s in new[] { "n", "e", "s", "w" }) if (s != pref) sides.Add(s); }
+            else sides.Add(side);
+            string firstReason = null;
+            BaseGrid g = null;
+            foreach (var sd in sides)
+            {
+                List<int[]> toPlace; int[] door; bool doorNeeds;
+                string why = RoomBoxProblem(map, box, wallDef, wallStuff, out toPlace, out door, sd, doorDef, doorStuff, out doorNeeds);
+                if (why == null)
+                {
+                    if (g == null) g = VivariumBaseRead.Read(map);
+                    why = ReachGuard.Check(g, toPlace, new[] { door }, new[] { door });
+                }
+                if (firstReason == null) firstReason = why;
+                if (why != null) continue;
+                int cost = toPlace.Count + (doorNeeds ? 1 : 0);
+                if (cost > left.Blueprints) return HandResult.No("that room needs " + cost + " blueprints but only " + left.Blueprints + " are left this cycle");
+                if (wallStuff != null)
+                {
+                    int have = VivariumLoose.Usable(map, wallStuff);
+                    if (have < toPlace.Count * BuildHelpers.WallStuffCost)
+                        return HandResult.No("not enough " + StuffLabel(wallStuff) + " in stock: " + toPlace.Count + " walls need " + toPlace.Count * BuildHelpers.WallStuffCost + ", there is " + have);
+                }
+                var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
+                foreach (var wc in toPlace)
+                {
+                    var bp = GenConstruct.PlaceBlueprintForBuild(wallDef, new IntVec3(wc[0], 0, wc[1]), map, Rot4.North, Faction.OfPlayer, wallStuff);
+                    if (bp != null) mb.Blueprint(wallDef.defName, wc[0], wc[1], bp.thingIDNumber);
+                }
+                if (doorNeeds)
+                {
+                    var bp = GenConstruct.PlaceBlueprintForBuild(doorDef, new IntVec3(door[0], 0, door[1]), map, Rot4.North, Faction.OfPlayer, doorStuff);
+                    if (bp != null) mb.Blueprint(doorDef.defName, door[0], door[1], bp.thingIDNumber);
+                }
+                return HandResult.Placed(BuildHelpers.RoomNote(a.Purpose, box, toPlace.Count, StuffLabel(wallStuff), doorNeeds), mb.Marks);
+            }
+            return HandResult.No("can't build the room at (" + a.At.X + "," + a.At.Z + "): " + (firstReason ?? "no fit"));
         }
 
         // ---------------------------------------------------------------- zone
