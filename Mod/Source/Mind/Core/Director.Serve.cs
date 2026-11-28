@@ -199,8 +199,9 @@ namespace RimWorldLLM.Mind
                     int turnNo; _lineCount.TryGetValue(aid, out turnNo);
                     InnerArgs ia = InnerKw(mind, listener);
                     string request = PromptBlocks.LineRequest(_names[aid], item.Kind == "player_talk" || Adapter.EarnsLength(item.Event));
+                    var (soloCheck, soloOnCheck) = Cfg.AcrossRepeat ? RepeatCheck(new List<Turn>(), aid) : (null, null);          // own and everyone-wide repeats, one retry
                     res = await Passes.SpeakAsync(Llm, lease.Slot, mind, _names[aid], prefix, new List<(string, string)>(), turnNo, ctx, lname,
-                                                  LabelsFor(minor), Cfg.Llm.LineMaxTokens, request, ia.Aim, ia.SoloAim, ia.FreshAim, null, 0, null,
+                                                  LabelsFor(minor), Cfg.Llm.LineMaxTokens, request, ia.Aim, ia.SoloAim, ia.FreshAim, soloCheck, Cfg.RepeatRetries, soloOnCheck,
                                                   speech, ia.AimExtra, ia.IntentLlm, ia.DropJustWant);
                 }
                 lease.Generating = false;
@@ -641,10 +642,11 @@ namespace RimWorldLLM.Mind
             var turns = turnList.Select(t => (t.Speaker, t.Text)).ToList();
             List<string> ownL;
             var own = RecentOwn.TryGetValue(speaker, out ownL) ? new List<string>(ownL) : new List<string>();
+            var spoken = Cfg.AcrossRepeat ? new List<(int, string)>(RecentSpoken.Select(c => (c.Actor, c.Text))) : null;
             var hits = new Dictionary<string, Hit>();
             LineCheck check = text =>
             {
-                Hit hit = LoopGuard.FindRepeat(text, speaker, turns, own);
+                Hit hit = LoopGuard.FindRepeat(text, speaker, turns, own, spokenRecent: spoken);
                 if (hit == null) return null;
                 hits[text] = hit;
                 return ("repeat", LoopGuard.RetryRequest(_names[speaker], hit));
@@ -687,6 +689,8 @@ namespace RimWorldLLM.Mind
             lst.Add(text);
             int keep = Math.Max(1, Cfg.RepeatOwnRecent);
             if (lst.Count > keep) lst.RemoveRange(0, lst.Count - keep);
+            RecentSpoken.Add((aid, text));
+            if (RecentSpoken.Count > LoopGuard.SpokenKeep) RecentSpoken.RemoveRange(0, RecentSpoken.Count - LoopGuard.SpokenKeep);
         }
 
         /// <summary>One memory and one relation update per actor, written by that actor's window (template fallback).

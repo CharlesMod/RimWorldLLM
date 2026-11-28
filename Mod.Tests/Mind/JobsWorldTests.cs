@@ -376,6 +376,20 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ADiaryOpeningLikeARecentOneIsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Minds[1].AddDiary(0, 100, "Today I kept my head down and got the stew finished. Nothing else happened.");
+            w.D.Minds[1].LastDiaryDay = -1;
+            w.Llm.Script["diary"] = new List<string> { "Today I kept my head down and got the soup finished. Nobody ate alone again." };
+            Inject(w, 1, "I mended the east wall.", 5000);
+            w.Fb.Tick = (int)(0.7 * Day);
+            await Step(w);
+            Assert.Contains((1, "diary:repeat"), w.D.Dropped);
+            Assert.Single(w.D.Minds[1].Diary);
+        }
+
+        [Fact]
         public async Task DiaryKeepsLastSevenAndIsSavedInTheBlob()
         {
             using var w = new World(); await w.GoAsync();
@@ -383,7 +397,7 @@ namespace RimWorldLLM.Tests.Mind
             {
                 Inject(w, 1, "I did chore number " + day + ".", day * Day + 100);
                 w.Fb.Tick = day * Day + (int)(0.8 * Day);
-                w.Llm.Script["diary"] = new List<string> { Diary };
+                w.Llm.Script["diary"] = new List<string> { "Day " + day + " went by. I kept my head down and got the stew finished before dark." };   // distinct openings: a repeated one is dropped
                 await Step(w);
             }
             await Step(w);

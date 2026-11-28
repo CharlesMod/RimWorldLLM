@@ -81,6 +81,8 @@ namespace RimWorldLLM.Mind
         public WantsStats Wants { get; } = new WantsStats();
         public GateStats Gate { get; } = new GateStats();
         public readonly Dictionary<int, List<string>> RecentOwn = new Dictionary<int, List<string>>();
+        /// <summary>The last LoopGuard.SpokenKeep spoken lines of every speaker, oldest first (speaker id, text). In memory only.</summary>
+        public readonly List<(int Actor, string Text)> RecentSpoken = new List<(int Actor, string Text)>();
         public bool Started { get; private set; }
         public Chronicle Chronicle { get; }
         public LoreBook Lore { get; }

@@ -438,6 +438,43 @@ namespace RimWorldLLM.Tests.Mind
             Assert.True((bool)w.D.Loop.Trace[0]["refused"]);
         }
 
+        [Fact]
+        public async Task AnotherPawnsRecentLineRefusesTheRepeatAndTheRetryIsUsed()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.RememberOwn(2, "Where did you put the spare medicine for the leg?");
+            w.Llm.Script["line"] = new List<string> { "Where did you put the spare medicine for the leg?", "Hm. Cold room, second shelf, friend.",
+                                                      "Fetch it quickly then, before the leg gets worse.", "Mind the ice on the step as you go past the freezer." };
+            StartConv(w);
+            await Step(w);
+            Assert.True(w.D.Loop.Caught >= 1);
+            Assert.Equal("others", (string)w.D.Loop.Trace[0]["kind"]);
+            Assert.True((bool)w.D.Loop.Trace[0]["refused"]);
+        }
+
+        [Fact]
+        public void TheColonyListKeepsTheLastTwentyLinesOfAllPawns()
+        {
+            using var w = new World();
+            for (int i = 0; i < 25; i++) w.D.RememberOwn(1 + i % 3, "line " + i);
+            Assert.Equal(LoopGuard.SpokenKeep, w.D.RecentSpoken.Count);
+            Assert.Equal("line 24", w.D.RecentSpoken[w.D.RecentSpoken.Count - 1].Text);
+            Assert.Equal("line 5", w.D.RecentSpoken[0].Text);
+            Assert.True(w.D.RecentSpoken.Select(c => c.Actor).Distinct().Count() == 3);
+        }
+
+        [Fact]
+        public async Task OwnRepeatIsStillCaughtPerPawnOnTheSingleLinePath()
+        {
+            using var w = new World(); await w.GoAsync();
+            var (check, _) = w.D.RepeatCheck(new List<Turn>(), 1);
+            w.D.RememberOwn(1, "Where did you put the spare medicine for the leg?");
+            (check, _) = w.D.RepeatCheck(new List<Turn>(), 1);
+            Assert.NotNull(check("Where did you put the spare medicine for the leg?"));
+            Assert.NotNull(w.D.RepeatCheck(new List<Turn>(), 2).Check("Where did you put the spare medicine for the leg?"));   // another pawn: colony
+            Assert.Null(check("The roof over the freezer needs patching before winter."));
+        }
+
         // ---------------------------------------------------------------- test_firsts.py
 
         static JObject Cue(World w, string what = "snow", int[] witnesses = null, string summary = "It began to snow.")

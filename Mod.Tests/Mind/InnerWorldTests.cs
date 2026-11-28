@@ -503,6 +503,38 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ASimilarThoughtToOneOfTheLastTenIsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I saw Bram eat alone.", 1000, people: new List<int> { 2 });
+            w.Llm.Script["thought"] = new List<string> { "I wonder if Bram is thinking about me too.", "I wonder if Bram is thinking of me too.",
+                                                         "The berry bush by the wall is ripe." };
+            await Step(w);
+            Assert.Single(ThoughtsOfKind(w));
+            InjectMemory(w, 1, "I found a ripe berry bush.", 2000);
+            w.Real += w.D.Cfg.ThoughtEveryRealS + 1;
+            await Step(w);
+            Assert.Single(ThoughtsOfKind(w));                                          // the repeat never reached the map
+            Assert.Contains((1, "thought:repeat"), w.D.Dropped);
+            w.Real += w.D.Cfg.IdleRetryRealS + 1;
+            await Step(w);
+            Assert.Equal(2, ThoughtsOfKind(w).Count);
+            Assert.Equal(2, w.D.Idle.ThoughtHistory[1].Count);
+        }
+
+        [Fact]
+        public async Task ThoughtHistorySeedsFromStoredMusings()
+        {
+            using var w = new World(); await w.GoAsync();
+            Inner.AddInner(w.D.Minds[1], "A stored musing about the well.", "musing", 10);
+            Inner.AddInner(w.D.Minds[1], "A stored aim.", "aim", 11);
+            var r = w.D.Idle.RecentThoughts(1, w.D.Minds[1]);
+            Assert.Contains("A stored musing about the well.", r);
+            Assert.DoesNotContain("A stored aim.", r);
+        }
+
+        [Fact]
         public async Task ThoughtsOffBySetting()
         {
             using var w = new World(); await w.GoAsync();

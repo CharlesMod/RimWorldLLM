@@ -65,6 +65,10 @@ namespace RimWorldLLM.Mind
         public readonly Dictionary<int, double> ThoughtNext = new Dictionary<int, double>();
         /// <summary>memory ids the last thought drew on</summary>
         public readonly Dictionary<int, string[]> ThoughtLast = new Dictionary<int, string[]>();
+        /// <summary>per actor: the last ThoughtKeep thought texts, oldest first (in memory; seeded from the mind's stored musings)</summary>
+        public readonly Dictionary<int, List<string>> ThoughtHistory = new Dictionary<int, List<string>>();
+        public const int ThoughtKeep = 10;
+        public const int DiaryOpeningsKept = 3;
         /// <summary>director clock: earliest next text-fill call</summary>
         public double TextNext = 0.0;
         /// <summary>what idle work produced (reflections, diaries, chronicle entries)</summary>
@@ -204,6 +208,24 @@ namespace RimWorldLLM.Mind
             int now = Bridge.Env.Game;
             long floor = now - (long)(Cfg.ThoughtMemoryWindowDays * Day);          // int(): truncation toward zero
             return MemoryOps.WeightSorted(mind, now, Day).Where(m => m.Game >= floor && m.Visibility == "public").Take(3).ToList();
+        }
+
+        /// <summary>The mind's recent thoughts: the in-memory list plus its stored musings, so a restart does not forget them.</summary>
+        public List<string> RecentThoughts(int aid, Mind mind)
+        {
+            var o = new List<string>();
+            if (mind != null) o.AddRange(mind.Inner.Where(t => t.Kind == "musing").Select(t => t.Text));
+            List<string> mem;
+            if (ThoughtHistory.TryGetValue(aid, out mem)) o.AddRange(mem);
+            return o;
+        }
+
+        void RememberThought(int aid, string text)
+        {
+            List<string> l;
+            if (!ThoughtHistory.TryGetValue(aid, out l)) { l = new List<string>(); ThoughtHistory[aid] = l; }
+            l.Add(text);
+            if (l.Count > ThoughtKeep) l.RemoveRange(0, l.Count - ThoughtKeep);
         }
 
         public List<(int Aid, List<Memory> Mems)> DueThought()
@@ -477,6 +499,12 @@ namespace RimWorldLLM.Mind
                 Dropped.Add((aid, "diary:" + s.Reason));
                 return;
             }
+            if (Cfg.AcrossRepeat && LoopGuard.FindRepeatedDiaryOpening(s.Text, Mind.Tail(mind.Diary, DiaryOpeningsKept).Select(e => e.Text)) != null)
+            {
+                Fail("diary", aid);
+                Dropped.Add((aid, "diary:repeat"));
+                return;
+            }
             mind.AddDiary(target, now, s.Text);
             Dirty.Add(aid);
             Log.Add(new JObject { ["kind"] = "diary", ["actor"] = aid, ["name"] = NameTok(aid), ["day"] = target, ["game"] = now, ["text"] = s.Text });
@@ -537,6 +565,10 @@ namespace RimWorldLLM.Mind
             {
                 text = null; s = new Sanitized(null, "meta_talk");               // a thought that only remarks on the chatter
             }
+            if (text != null && Cfg.AcrossRepeat && LoopGuard.FindRepeatedThought(text, RecentThoughts(aid, mind)) != null)
+            {
+                text = null; s = new Sanitized(null, "repeat");                  // the same thought as one of its last ten
+            }
             if (text == null)
             {
                 Fail("thought", aid);
@@ -545,6 +577,7 @@ namespace RimWorldLLM.Mind
             }
             ThoughtNext[aid] = D.Clock() + Cfg.ThoughtEveryRealS;
             ThoughtLast[aid] = mems.Select(m => m.Id).ToArray();
+            RememberThought(aid, text);
             Log.Add(new JObject { ["kind"] = "thought", ["actor"] = aid, ["name"] = NameTok(aid), ["game"] = Bridge.Env.Game, ["text"] = text });
             if (Cfg.InnerMonologue)
             {
