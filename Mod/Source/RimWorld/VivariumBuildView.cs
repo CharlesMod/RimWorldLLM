@@ -14,6 +14,21 @@ namespace RimWorldLLM
         const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 10;
         static readonly HashSet<string> logged = new HashSet<string>();
 
+        // The BASE line is worked out from the live map, then kept until the colony's buildings, blueprints or the hour change
+        // (planning a few rooms on a big window costs tens of milliseconds; the digest is read every steward cycle).
+        static string baseKey, baseLine;
+
+        static string BaseLine(Map map)
+        {
+            string key = map.uniqueID + "/" + map.listerBuildings.allBuildingsColonist.Count + "/" +
+                         map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Count + "/" +
+                         map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame).Count + "/" + GenTicks.TicksGame / 2500;
+            if (key == baseKey && baseLine != null) return baseLine;
+            baseLine = RimWorldLLM.Bridge.BasePlanner.Describe(VivariumBaseRead.Read(map));
+            baseKey = key;
+            return baseLine;
+        }
+
         static void Part(JObject o, string name, Func<JToken> f)
         {
             try { var t = f(); if (t != null) o[name] = t; }
@@ -37,6 +52,7 @@ namespace RimWorldLLM
                     ["temp_c"] = r.TempC, ["mountain"] = r.Mountain, ["dirty"] = r.Dirty
                 }));
 
+            Part(o, "base", () => BaseLine(map));
             Part(o, "missing", () => new JArray(Missing(map, rooms)));
             Part(o, "benches", () => Benches(map));
             Part(o, "zones", () => Zones(map));

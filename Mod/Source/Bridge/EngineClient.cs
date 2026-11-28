@@ -67,6 +67,8 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("custom")] public EngineCustom Custom;
         /// <summary>Human name of the serving model.</summary>
         [JsonProperty("model_name")] public string ModelName;
+        /// <summary>Code name of the serving model; empty from an older engine: see <see cref="ModelCodename"/>.</summary>
+        [JsonProperty("model_codename")] public string ModelCodename;
         /// <summary>The model kept on disk after a switch, null when none.</summary>
         [JsonProperty("previous")] public EnginePrevious Previous;
         /// <summary>Graphics picture and the room left for the model; null from an older engine.</summary>
@@ -152,6 +154,8 @@ namespace RimWorldLLM.Bridge
     {
         [JsonProperty("target")] public string Target;
         [JsonProperty("target_name")] public string TargetName;
+        /// <summary>The tier's code name (Flashlight, Lantern, Campfire...); empty from an older engine: see <see cref="ModelCodename"/>.</summary>
+        [JsonProperty("target_codename")] public string TargetCodename;
         [JsonProperty("state")] public string State;
         [JsonProperty("progress")] public EngineProgress Progress;
         [JsonProperty("error")] public string Error;

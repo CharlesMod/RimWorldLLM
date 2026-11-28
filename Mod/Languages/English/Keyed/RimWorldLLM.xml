@@ -744,4 +744,12 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_Log>What the narrator did and why</RWL_Viv_Log>
   <RWL_Viv_Actions>Actions (last 30)</RWL_Viv_Actions>
   <RWL_Viv_ActionsEmpty>No actions yet.</RWL_Viv_ActionsEmpty>
+  <!-- main-menu download bar -->
+  <RWL_Bar_Model>Downloading {0}</RWL_Bar_Model>
+  <RWL_Bar_ModelGeneric>Downloading the AI model</RWL_Bar_ModelGeneric>
+  <RWL_Bar_Engine>Downloading the AI engine</RWL_Bar_Engine>
+  <RWL_Bar_Checking>Checking download</RWL_Bar_Checking>
+  <RWL_Bar_Unknown>Downloading... {0} MB</RWL_Bar_Unknown>
+  <RWL_Bar_Ready>Ready</RWL_Bar_Ready>
+  <RWL_Bar_Paused>Download paused, will retry</RWL_Bar_Paused>
 </LanguageData>

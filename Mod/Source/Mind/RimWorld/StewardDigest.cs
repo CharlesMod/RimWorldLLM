@@ -157,6 +157,7 @@ namespace RimWorldLLM.Mind.RimWorld
         internal sealed class BuildLevel
         {
             public int Rooms, Benches, Bills, Recipes, Zones, CanBuild, Stuff, Plants, Ores, Loose, Flags;
+            public bool KeepBase = true;
             public BuildLevel(int rooms, int benches, int bills, int recipes, int zones, int canBuild, int stuff, int plants, int ores, int loose, int flags)
             { Rooms = rooms; Benches = benches; Bills = bills; Recipes = recipes; Zones = zones; CanBuild = canBuild; Stuff = stuff; Plants = plants; Ores = ores; Loose = loose; Flags = flags; }
         }
@@ -168,7 +169,7 @@ namespace RimWorldLLM.Mind.RimWorld
             new BuildLevel(12, 8, 5, 8, 10, 40, 8, 10, 6, 6, 1),
             new BuildLevel(8, 5, 3, 4, 6, 20, 6, 6, 4, 4, 1),
             new BuildLevel(5, 3, 2, 0, 4, 0, 4, 0, 2, 2, 1),
-            new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            new BuildLevel(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) { KeepBase = false },
         };
 
         internal sealed class TradeLevel
@@ -515,6 +516,11 @@ namespace RimWorldLLM.Mind.RimWorld
             var miss = Words(DigestJson.G(b, "missing"), 8);
             head += "; missing: " + (miss.Count > 0 ? string.Join(", ", miss) : "nothing");
             outl.Add(head);
+            if (bl.KeepBase)   // BASE is kept at every level but the last
+            {
+                string bs = GameData.Clean(DigestJson.Truthy(DigestJson.G(b, "base")) && DigestJson.G(b, "base").Type == JTokenType.String ? (string)DigestJson.G(b, "base") : "", "label", 260);
+                if (bs.Length > 0) outl.Add("BASE: " + bs);
+            }
             var rooms = Objs(DigestJson.G(b, "rooms"), bl.Rooms);
             if (rooms.Count > 0)
                 outl.Add("ROOMS" + (counts.Length > 0 ? " (" + counts + ")" : "") + ": " + string.Join("; ", rooms.Select(r => RoomLine(r, bl.Flags))));

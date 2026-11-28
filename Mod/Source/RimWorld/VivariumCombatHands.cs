@@ -880,6 +880,11 @@ namespace RimWorldLLM
         static int PlaceAll(Map map, ThingDef def, ThingDef stuff, IEnumerable<int[]> cells, int max, BuildHelpers.MarkBuilder mb, ref string firstReason)
         {
             int n = 0;
+            // never seal the base off: a blocking line (walls) is simulated first and refused whole if it cuts anything off
+            var list = cells.ToList();
+            string sealOff = VivariumBaseRead.Guard(map, def, list.Take(max).Select(V), Rot4.North);
+            if (sealOff != null) { firstReason = sealOff; return 0; }
+            cells = list;
             foreach (var p in cells)
             {
                 if (n >= max) break;
@@ -1049,6 +1054,7 @@ namespace RimWorldLLM
             if (walls.Count > 0 && no != null) return no;
             string first = null;
             int nw = walls.Count > 0 ? PlaceAll(map, ThingDefOf.Wall, wallStuff, walls, left.Blueprints, mb, ref first) : 0;
+            if (walls.Count > 0 && nw == 0 && first != null && first.StartsWith("would")) return HandResult.No("no killbox here: its funnel walls " + first);
             int nb = 0, nt = 0;
             if (bagDef != null && bags.Count > 0)
             {

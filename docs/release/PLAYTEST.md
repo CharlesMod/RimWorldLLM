@@ -30,6 +30,13 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 4. **First-run letter.** On the first game start or load: one letter "RimWorldLLM: local model" with Set up / Use my own
    endpoint / Later. "Later" dismisses it without nagging every load.
 
+5. **Download bar (clean machine).** On a first run with no engine or model installed, the main menu itself shows a small panel
+   at the bottom centre while things download: "Downloading the AI engine", then "Downloading Flashlight (Gemma 4 E2B)" (or
+   your chosen tier), each with a 0-100 bar and a whole percent, moving about once a second, no ETA, speed or bytes. Check it
+   does not overlap the menu buttons, the version/mods text, the news, the expansion icons or the language/credits buttons at
+   UI scale 1 and 2 (the position is a guess made without the game; tell us where it collides). "Checking download" appears
+   during the checksum pass, "Ready" for a few seconds at the end, and a failed download shows one short line.
+
 ## B. Setup and the first line (E4B starter)
 
 5. **Setup window.** Shows the card, its memory, RAM, disk, the recommended model and a fit verdict per model. On a 16 GB

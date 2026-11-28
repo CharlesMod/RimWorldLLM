@@ -336,6 +336,27 @@ Any colony past day 3. `$B` and `$T` as above. Each step: read the digest field,
 57. **Size.** With all of the above at once, the agent's log shows the rendered digest under 6000 chars, and the
     narrator's turn still fits its time.
 
+## L. Base planner and the never-seal-off guard (agent with the 26B for the narrator steps)
+
+74. **The entrance case.** A shelter with one door. Ask the narrator in chat "put a wall line in front of the door" (or
+    `curl -X POST $B/act/defend -d '{"kind":"wall","at":"entrance"}'`): refused, greentext/reason says "would block the
+    entrance ...". A wall line two cells further out with a way round is placed.
+75. **Seeing the base.** `curl -s -H "Authorization: Bearer $T" $B/digest | jq -r .build.base`: the outline matches the
+    map (compact block / separate buildings, room count), the entrance side is the door's side, "room to grow" stops at
+    the river/rock you can see, and "next" names a sensible spot.
+76. **A bedroom for someone.** "Build Bram a bedroom": one room appears attached to the existing building (sharing a
+    wall), about 4x5 inside, door onto open ground next to the other doors (not into another room, not onto a wall),
+    a bed against the far wall (check the head is at the wall), an end table. The chat line says where in words.
+77. **Kitchen and freezer.** Ask for a kitchen, then a freezer: the freezer shares a wall with the kitchen, its cooler
+    is in an outside wall with the blue (cold) side in; the kitchen gets a stove and a butcher table with their work
+    spots free.
+78. **Five or six rooms.** Let the narrator play a morning with "build us a proper base". The rooms form one block with
+    doors on a walkway; nothing is walled in; no blueprint sits on a doorstep; no room covers the growing zone or good
+    soil when other ground is free; nothing on water or marsh.
+79. **Undo.** `/undo` after a room removes its walls, door and furniture blueprints together.
+80. **Refusal words.** Fill the space around the base (or ask for a large storage room in a tight valley): refused with
+    "can't fit a storage into the base: ..." and a reason a player can act on.
+
 Report back: the step numbers that failed, the log around them, and how the narrator's play felt
 (too busy, too quiet, sensible priorities?).
 

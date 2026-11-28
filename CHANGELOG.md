@@ -16,6 +16,9 @@
 
 ## Unreleased: the mind moves into the mod (C#)
 
+- **Download bar on the main menu.** A first run on a clean machine now shows what is downloading and a 0-100 bar (updated once a
+  second, no ETA) before any game is loaded. Models are shown by code name first (Flashlight, Lantern, Campfire).
+
 The narrator's and colonists' mind (the agent) is now C# inside the mod, namespace `RimWorldLLM.Mind`. It was a Python program
 that the engine installed and ran.
 
