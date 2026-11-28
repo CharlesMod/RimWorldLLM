@@ -208,6 +208,9 @@ namespace RimWorldLLM.Tests
             var b = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom", Near = "workshop", For = "Cy" }, out why);
             _out.WriteLine(b.Words);
             Assert.Contains(g.Rooms.First(r => r.Role == "workshop").Id, b.SharedWith);
+            BasePlanner.Apply(g, b, null, "Cy");
+            var d = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom", Near = "Cy's bedroom" }, out why);
+            Assert.Contains("sharing Cy's bedroom's", d.Words);
             var c = BasePlanner.Plan(g, new RoomRequest { Role = "bedroom", Near = "the moon" }, out why);
             Assert.Contains("no the moon found", c.Words);
         }

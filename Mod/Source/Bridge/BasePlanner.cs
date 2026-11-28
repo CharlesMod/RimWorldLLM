@@ -370,7 +370,7 @@ namespace RimWorldLLM.Bridge
 
         static string Possessive(string name)
         {
-            if (name.EndsWith("'s bedroom") || name.EndsWith("s")) return name + "'";
+            if (name.EndsWith("s")) return name + "'";   // the barracks'; Dara's bedroom's
             return name + "'s";
         }
 
