@@ -13,7 +13,8 @@ namespace RimWorldLLM.Mind
 {
     public sealed class Hit
     {
-        public string Kind;      // "turn" (earlier turn of this conversation) or "own" (the speaker's line in another)
+        public string Kind;      // "turn" (earlier turn of this conversation), "own" (the speaker's line in another),
+                                 // "others" (another speaker's recent line) or "opening" (the same first words as the last lines of all speakers)
         public string Other;     // the earlier line it repeats
         public double Score;
         public bool Own;         // the earlier line was the speaker's own
@@ -27,7 +28,11 @@ namespace RimWorldLLM.Mind
         {
             get
             {
-                string who = Own ? "your own earlier line" : "an earlier line in this conversation";
+                if (Kind == "opening")
+                    return "it starts with \"" + Other + "\", the same words the last few lines started with; "
+                        + "begin with a different word";
+                string who = Kind == "others" ? "a line someone else said a moment ago"
+                    : Own ? "your own earlier line" : "an earlier line in this conversation";
                 return "it repeats " + who + ": \"" + Other + "\"";
             }
         }
@@ -58,6 +63,10 @@ namespace RimWorldLLM.Mind
         public const double Threshold = 0.6;         // inside a conversation
         public const double CrossThreshold = 0.8;    // against the speaker's own lines from other conversations
         public const int CrossMinWords = 5;
+        public const int SpokenKeep = 20;            // recent spoken lines of all speakers kept
+        public const int OpeningWindow = 8;          // the last lines whose openings are compared
+        public const int OpeningRepeats = 2;         // that many earlier lines with the same opening refuse a new one
+        public const double ThoughtThreshold = 0.6;  // a thought this like an earlier one of the same mind is dropped
         public const int MinContent = 2;             // content words each side needs for the content measure
 
         static readonly HashSet<string> Stop = new HashSet<string>(
@@ -121,7 +130,7 @@ namespace RimWorldLLM.Mind
 
         /// <summary>The first earlier line the new one repeats, or null. turns is [(speaker id, text)] so far.</summary>
         public static Hit FindRepeat(string text, int speaker, IList<(int, string)> turns, IList<string> ownRecent = null,
-            double threshold = Threshold, double crossThreshold = CrossThreshold)
+            double threshold = Threshold, double crossThreshold = CrossThreshold, IList<(int, string)> spokenRecent = null)
         {
             Hit best = null;
             foreach (var (sp, prev) in turns)
@@ -143,6 +152,61 @@ namespace RimWorldLLM.Mind
                     if (s >= crossThreshold) return new Hit("own", prev, s, true);
                 }
             }
+            if (spokenRecent != null)
+            {
+                foreach (var (sp, prev) in spokenRecent)
+                {
+                    if (sp == speaker) continue;                       // the speaker's own lines are judged above
+                    double s = Similarity(text, prev, CrossMinWords);
+                    if (s >= crossThreshold) return new Hit("others", prev, s);
+                }
+                string op = FindSameOpening(text, spokenRecent);
+                if (op != null) return new Hit("opening", op, 1.0);
+            }
+            return null;
+        }
+
+        /// <summary>The first two words of a line, normalised, or null when it has fewer than two.</summary>
+        public static string Opening(string text)
+        {
+            var w = Words(text);
+            return w.Count < 2 ? null : w[0] + " " + w[1];
+        }
+
+        /// <summary>The opening of text when at least OpeningRepeats of the last OpeningWindow spoken lines begin the same way, else null.</summary>
+        public static string FindSameOpening(string text, IList<(int, string)> spokenRecent)
+        {
+            string op = Opening(text);
+            if (op == null || spokenRecent == null) return null;
+            int n = 0;
+            for (int i = Math.Max(0, spokenRecent.Count - OpeningWindow); i < spokenRecent.Count; i++)
+                if (Opening(spokenRecent[i].Item2) == op) n++;
+            return n >= OpeningRepeats ? op : null;
+        }
+
+        /// <summary>The earlier text (of the same mind's recent thoughts) that a new one repeats, or null.</summary>
+        public static string FindRepeatedThought(string text, IEnumerable<string> recent, double threshold = ThoughtThreshold)
+        {
+            if (recent == null) return null;
+            foreach (var prev in recent)
+                if (Similarity(text, prev, 3) >= threshold) return prev;
+            return null;
+        }
+
+        /// <summary>The first sentence of a diary entry.</summary>
+        public static string FirstSentence(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+            var m = Regex.Match(text.Trim(), @"^.*?[.!?](?=\s|$)", RegexOptions.Singleline);
+            return m.Success ? m.Value : text.Trim();
+        }
+
+        /// <summary>The earlier diary whose opening sentence a new entry's opening resembles, or null.</summary>
+        public static string FindRepeatedDiaryOpening(string text, IEnumerable<string> recentDiaries, double threshold = ThoughtThreshold)
+        {
+            string first = FirstSentence(text);
+            foreach (var d in recentDiaries ?? new string[0])
+                if (Similarity(first, FirstSentence(d), 3) >= threshold) return d;
             return null;
         }
 

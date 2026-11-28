@@ -77,6 +77,10 @@ namespace RimWorldLLM.Mind
 
         private static readonly Regex SentenceSplit = new Regex(@"(?<=[.!?])\s", RegexOptions.CultureInvariant);
 
+        private static readonly Regex DayPrefix = new Regex(@"^\s*Day\s+\d+\s*[:.\-]\s*", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        /// <summary>The newer text checks (a leading "Day N:", talk about talk). Off for the recorded parity replays.</summary>
+        public bool CleanChecks = true;
+
         public readonly string Dir;
         public readonly long UnitsPerDay;
         public string LastDrop = "";                      // why the last write was dropped by the sanitiser (read by idle)
@@ -261,8 +265,14 @@ namespace RimWorldLLM.Mind
                 LastDrop = string.IsNullOrEmpty(s.Reason) ? "sanitize" : s.Reason;
                 return null;
             }
+            string text = s.Text;
+            if (CleanChecks)
+            {
+                text = DayPrefix.Replace(text, "");                      // the recent entries are shown as "Day N: ..." and the model copies it
+                if (Sanitize.IsTalkAboutTalk(text)) { LastDrop = "meta_talk"; return null; }
+            }
             long game = d.Notes.Max(n => n.Game);
-            var e = new ChronicleEntry { Day = d.Day, Game = game, Kind = d.Kind, Text = s.Text };
+            var e = new ChronicleEntry { Day = d.Day, Game = game, Kind = d.Kind, Text = text };
             var st = State;
             st.Pending = st.Pending.Where(n => !d.Notes.Contains(n)).ToList();
             st.Recent.Add(e);

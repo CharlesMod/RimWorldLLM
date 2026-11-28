@@ -131,7 +131,7 @@ namespace RimWorldLLM.Mind
             var mind = d.Minds[aid];
             int now = d.Bridge.Env.Game;
             long floor = now - d.Day - JobsJson.FloorDiv(d.Day, 4);
-            return MemoryOps.WeightSorted(mind, now, d.Day).Where(m => m.Game >= floor && m.Visibility == "public").Take(DreamMemoriesN).ToList();
+            return MemoryOps.WeightSorted(mind, now, d.Day).Where(m => m.Game >= floor && m.Visibility == "public" && !(d.Cfg.SpeechChecks && MemoryOps.IsRoutineSocial(m, d.Adapter))).Take(DreamMemoriesN).ToList();
         }
 
         private static bool Asleep(JObject snap)

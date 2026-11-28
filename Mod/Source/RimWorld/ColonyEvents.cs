@@ -776,6 +776,8 @@ namespace RimWorldLLM
                 d["ref"] = vref;
                 d["tier"] = high ? "high" : "idle";
                 d["vanilla_text"] = sentence ?? "";
+                // what the game recorded of how it went (rebuffed, insulted, social fight...): the line can match the outcome
+                if (pending.Thoughts.Count > 0) d["outcome"] = new JArray(pending.Thoughts.Select(t => t.LabelCap.ToString()).Distinct().Take(3));
                 d["window_ticks"] = QuotedInteractions.WindowTicks;
                 d["window_real_s"] = QuotedInteractions.RealFloorSec;
                 // Consequential interactions skip the per-initiator social cooldown; chitchat keeps it.

@@ -296,6 +296,44 @@ per phase; regex, case-folding and Unicode corner cases follow .NET where they d
 105. Dict job: the Python `build_scene` printed a `{def, label}` job as the dict repr; C# reads the label with `Js.JobText` (string, or `label`, falling back to `def`), then "idle" (bug fixed; golden data uses string jobs). (parity-contract)
 106. Prompt wording files `AdapterText.cs` and `BlockAText.cs` are generated from the Python (gen_adapter_text.py) for byte-for-byte wording; `BlockAText.cs` gained the no-meta line by hand edit, checked by ContractGoldenTests. (parity-contract, parity-delta)
 
+### Speech in context (2026-11-27)
+
+The keeper's first run gave flat lines (median 10 words), a fixation on prices and silver, lines about random subjects ("Hickory wood
+burns hot and fast."), and thoughts, diaries and a chronicle about the talking itself. What fixed each:
+
+- **Voice card.** The code-written example lines are gone from every prompt. They were the same for all pawns ("Right. What now?"), and
+  the Greedy one was about silver. A prompt now shows example lines only when the model or the player wrote them. Topic tics ("Mentions
+  what things cost", "Talks about the next job") are replaced by manner tics. A saved card's old tics and register fragments are filtered
+  on the way into the prompt (`PromptBlocks.PromptTics`/`PromptRegister`). A habit shows at most one line in three, counted per pawn.
+  Reflection makes no topic or meta habits (`Habits.IsStyleHabit`).
+- **Salience picker** (`Mind/Core/Salience.cs`, pure). It takes `SalientFact`s (kind, key, text, weight 0..1, age in game hours,
+  listener, social) and picks 3 to 6. Score = weight x recency (half-life 4 h; a day for diaries) x 1.5 when the fact is about the
+  listener (lines) x 0.35 for keys the pawn used in its last three prompts. Routine social facts count x0.1 in thoughts and diaries. A
+  fact about price or value is never picked. One fact per kind comes first, then the rest by score. Floor 0.2. Min is reached only with
+  real facts (weight 0.3+), never filler such as the time or a mild sky. `Mind/RimWorld/SalienceFacts.cs` builds the facts from the
+  snapshot, scene, listener and recent events. It uses only what the game gives and puts states in words (no numbers).
+- **Line prompt.** Two new sections ride on the frozen per-lease prefix. `WHAT STANDS OUT RIGHT NOW` holds the picked facts.
+  `WHO YOU ARE TALKING TO` gives the listener's name, what they do and how they look, the relation and both opinions in words, and the
+  last 2 to 3 lines between the two (in memory, newest last). The scene speaks in words ("dirty", "cold", "mood low"), not numbers.
+- **Vanilla interactions.** The InteractionDef is the line's intent, with a tone. Chitchat and DeepTalk never pass the play-log
+  sentence, because its topic is a random flavour noun. Insult and Slight pass it with "only if it fits". The Postfix's outcome
+  thoughts are stated as "How it landed".
+- **Length.** A passing remark is a few words. A death, injury, fight, raid, deep talk or romance may take up to three short
+  sentences. Never more than 60 words (`Sanitize.MaxWords` 60, `LineMaxTokens` 96, stop "\n" kept). The request carries a per-line
+  hint (`PromptBlocks.LengthHint`, `GameAdapter.EarnsLength`).
+- **Repeats.** The last 20 lines of all speakers are kept, and a line too like another pawn's (0.8) is refused once with a retry. A line
+  whose first two words open 2 of the last 8 lines is refused too. A thought too like one of the pawn's last 10 (0.6) is dropped, and
+  so is a diary whose first sentence repeats one of the last 3. `MindConfig.SpeechChecks` (on; off only for the Python parity
+  replays).
+- **Thoughts, diaries, chronicle.** A thought gets `RIGHT NOW` (picked present state: job, room, low needs, pain, mood thoughts, a
+  recent real event). Routine social memories (chitchat, deep talk, "X and Y talked") are kept out of thought, diary, dream and
+  chronicle inputs unless they carry an outcome (insult, rebuff, romance, fight, a secret). `Sanitize.IsTalkAboutTalk` drops a
+  thought, diary or chronicle entry whose subject is the talking itself.
+- **Measured** on Campfire-26B over the same recorded scenes (2 passes, about 110 lines and 25 thoughts each). Price or silver
+  lines went from 16 to 3 (all from the Greedy pawn). Random-topic lines went to none. Line words: median 10 in both, p90 13 to 24,
+  max 17 to 31. Deep talk went from 11 to 24 words and romance from 8 to 24, while chitchat stays short. Line prompt median rose from
+  1990 to 2130 tokens. Lantern-4B held the format: median 8 words, max 30, no rambling.
+
 ### Minds, memory and conversation
 
 107. Minds use a hand-written pydantic-lax validator (`PyModel.Validate`); an invalid blob gives a fresh mind; `relations` is an insertion-ordered `RelationMap`. (parity-text)

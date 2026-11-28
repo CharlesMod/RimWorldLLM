@@ -389,56 +389,56 @@ namespace RimWorldLLM.Mind.RimWorld
             return new FixedBio { Text = string.Join("\n", lines), FactsHash = FactsHash(p), Extras = dlc };
         }
 
-        // trait def/label (lowercase, substring) -> (register fragment, tic, example line)
-        private static readonly (string Key, string Reg, string Tic, string Ex)[] Traits = {
-            ("abrasive", "blunt and needling", "Starts with 'Look.'", "Look. That is not how you do it."),
-            ("kind", "warm, asks after people", "Calls people 'friend'", "You alright, friend? Sit a minute."),
-            ("psychopath", "flat and cold, little feeling", "Never apologises", "He was in the way. Now he is not."),
-            ("bloodlust", "relishes violence", "Talks about the kill", "Good shot. Messy, but good."),
-            ("greedy", "counts everything", "Mentions what things cost", "That rug is worth a hundred silver. Do not stand on it."),
-            ("ascetic", "plain, wants little", "Says 'Enough.'", "Enough. A bed is a bed."),
-            ("jealous", "resentful of others' comfort", "Compares rooms", "Funny how some of us get the big room."),
-            ("nervous", "hesitant, trails off", "Trailing 'um...'", "Um... is that, are they coming back?"),
-            ("tough", "stoic, understates pain", "Says 'Fine.'", "Fine. It is a scratch."),
-            ("sanguine", "easy and upbeat", "Laughs it off", "Ha. Could be worse. Probably will be."),
-            ("pessimist", "expects the worst", "Says 'Wait for it.'", "Wait for it. Something always goes wrong."),
-            ("optimist", "sees a bright side", "Says 'We'll see.'", "We have food and walls. We will see."),
-            ("gourmand", "thinks about food", "Mentions meals", "Is that lunch? Tell me that is lunch."),
-            ("lazy", "slow, avoids work", "Sighs first", "Sigh. Later. Maybe."),
-            ("industrious", "always busy", "Talks about the next job", "Next crate. Move."),
-            ("neurotic", "tense, hard on themself", "Repeats things twice", "Check it twice. Check it twice."),
-            ("cannibal", "casual about eating people", "Calls the dead 'meat'", "Waste not. That one was fresh."),
-            ("bookworm", "dry, bookish", "Quotes numbers", "The data says no. Mostly."),
-            ("wimp", "avoids pain, complains", "Winces aloud", "Ow. Ow. It hurts, it really does."),
-            ("sickly", "tired, often unwell", "Coughs mid-sentence", "Cough. Sorry. Go on."),
-            ("depressive", "heavy and flat", "Says 'Whatever.'", "Whatever. It will not matter."),
-            ("volatile", "short-tempered", "Snaps mid-sentence", "Do not. Just do not."),
-            ("night owl", "slow in the morning", "Mentions sleep", "Too early. Ask me at dusk."),
-            ("slowpoke", "slow-moving, patient", "Says 'Hold on.'", "Hold on. I am getting there."),
-            ("creative", "imaginative, restless", "Compares things to art", "That wall wants a mural."),
+        // trait def/label (lowercase, substring) -> (register fragment, tic). A tic is a MANNER (how the pawn talks), never a topic
+        // (what it talks about): a topic tic made every pawn of that trait talk about the same thing in every line.
+        private static readonly (string Key, string Reg, string Tic)[] Traits = {
+            ("abrasive", "blunt and needling", "Starts with 'Look.'"),
+            ("kind", "warm, asks after people", "Calls people 'friend'"),
+            ("psychopath", "flat and cold, little feeling", "Never apologises"),
+            ("bloodlust", "relishes violence", "Grins at the rough parts"),
+            ("greedy", "grasping, never satisfied", "Hedges before giving anything"),
+            ("ascetic", "plain, wants little", "Says 'Enough.'"),
+            ("jealous", "bitter, resentful of others", "Needles with a question"),
+            ("nervous", "hesitant, trails off", "Trailing 'um...'"),
+            ("tough", "stoic, understates pain", "Says 'Fine.'"),
+            ("sanguine", "easy and upbeat", "Laughs it off"),
+            ("pessimist", "expects the worst", "Says 'Wait for it.'"),
+            ("optimist", "sees a bright side", "Says 'We'll see.'"),
+            ("gourmand", "enjoys the pleasures", "Savours the word"),
+            ("lazy", "slow, avoids work", "Sighs first"),
+            ("industrious", "always busy, no time to spare", "Clipped sentences"),
+            ("neurotic", "tense, hard on themself", "Repeats things twice"),
+            ("cannibal", "unbothered by grisly things", "Dry understatement"),
+            ("bookworm", "dry, bookish", "Precise wording"),
+            ("wimp", "avoids pain, complains", "Winces aloud"),
+            ("sickly", "tired, often unwell", "Coughs mid-sentence"),
+            ("depressive", "heavy and flat", "Says 'Whatever.'"),
+            ("volatile", "short-tempered", "Snaps mid-sentence"),
+            ("night owl", "slow and groggy early on", "Yawns mid-sentence"),
+            ("slowpoke", "slow-moving, patient", "Says 'Hold on.'"),
+            ("creative", "imaginative, restless", "Odd comparisons"),
         };
-        private static readonly string[] GenericEx = { "Right. What now?", "Not my favourite thing. Still, it has to be done.", "Hm. Noted." };
 
-        /// <summary>Deterministic: register from traits, 1-3 tics, 3 example lines. Age and backstory fill gaps.</summary>
+        /// <summary>Deterministic: register from traits, 1-3 tics. Age and backstory fill gaps. No example lines: an example
+        /// written by code is the same few sentences for every pawn; examples come only from the model or the player.</summary>
         public static VoiceCard BuildVoiceCard(JObject p)
         {
             var defs = TraitDefs(p);
-            var reg = new List<string>(); var tics = new List<string>(); var exs = new List<string>();
+            var reg = new List<string>(); var tics = new List<string>();
             foreach (var t in Traits)
-                if (defs.Any(d => d.Contains(t.Key))) { reg.Add(t.Reg); tics.Add(t.Tic); exs.Add(t.Ex); }
+                if (defs.Any(d => d.Contains(t.Key))) { reg.Add(t.Reg); tics.Add(t.Tic); }
             var ageTok = Js.Get(p, "age");
             double age = Js.Truthy(ageTok) ? Js.Dbl(ageTok) : 30;
-            if (age < 18) { reg.Add("young, quick, blunt about adults"); exs.Add("Do I have to? Fine."); }
-            else if (age >= 55) { reg.Add("slow and weathered"); exs.Add("Seen worse. Seen a lot worse."); }
+            if (age < 18) reg.Add("young, quick, blunt about adults");
+            else if (age >= 55) reg.Add("slow and weathered");
             string bs = Backstory(Js.Get(p, "backstory")).ToLowerInvariant();
-            foreach (var (kw, r) in new[] { ("cook", "talks in kitchen terms"), ("soldier", "clipped, military"), ("doctor", "clinical"),
+            foreach (var (kw, r) in new[] { ("soldier", "clipped, military"), ("doctor", "clinical"),
                                             ("noble", "formal, a little superior"), ("slave", "guarded, short answers"), ("tribal", "plain and literal") })
                 if (bs.Contains(kw)) { reg.Add(r); break; }
-            exs.AddRange(GenericEx);
-            string register = reg.Count > 0 ? "Speaks " + string.Join(", ", reg.Take(3)) + "." : "Plain and brief.";
+            string register = reg.Count > 0 ? "Comes across as " + string.Join("; ", reg.Take(3)) + "." : "Plain and brief.";
             var tl = tics.Distinct().Take(3).ToList();
             if (tl.Count == 0) tl = new List<string> { "Short sentences" };
-            return new VoiceCard { RegisterLine = register, Tics = tl, Examples = exs.Distinct().Take(3).ToList() };
+            return new VoiceCard { RegisterLine = register, Tics = tl, Examples = new List<string>() };
         }
 
         /// <summary>Chattiness from traits, used by the director to scale ambient leases.</summary>

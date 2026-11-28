@@ -76,7 +76,7 @@ namespace RimWorldLLM.Tests.Mind
             using var tmp = new TempDir();
             var llm = new RecordingLlm(new FakeLlm());
             RecordingTransport tap = null;
-            var cfg = new MindConfig { DataDir = tmp.Path };       // the Python capture used Config(bridge_url, bridge_token) with the defaults
+            var cfg = new MindConfig { DataDir = tmp.Path, SpeechChecks = false };       // the Python capture used Config(bridge_url, bridge_token) with the defaults
             var o = await Replay.RunAsync(Data(input), cfg, llm, t => tap = new RecordingTransport(t));
             return (llm.Log, tap.Log, o);
         }

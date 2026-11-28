@@ -65,6 +65,10 @@ namespace RimWorldLLM.Mind
         public readonly Dictionary<int, double> ThoughtNext = new Dictionary<int, double>();
         /// <summary>memory ids the last thought drew on</summary>
         public readonly Dictionary<int, string[]> ThoughtLast = new Dictionary<int, string[]>();
+        /// <summary>per actor: the last ThoughtKeep thought texts, oldest first (in memory; seeded from the mind's stored musings)</summary>
+        public readonly Dictionary<int, List<string>> ThoughtHistory = new Dictionary<int, List<string>>();
+        public const int ThoughtKeep = 10;
+        public const int DiaryOpeningsKept = 3;
         /// <summary>director clock: earliest next text-fill call</summary>
         public double TextNext = 0.0;
         /// <summary>what idle work produced (reflections, diaries, chronicle entries)</summary>
@@ -203,7 +207,25 @@ namespace RimWorldLLM.Mind
         {
             int now = Bridge.Env.Game;
             long floor = now - (long)(Cfg.ThoughtMemoryWindowDays * Day);          // int(): truncation toward zero
-            return MemoryOps.WeightSorted(mind, now, Day).Where(m => m.Game >= floor && m.Visibility == "public").Take(3).ToList();
+            return MemoryOps.WeightSorted(mind, now, Day).Where(m => m.Game >= floor && m.Visibility == "public" && !(Cfg.SpeechChecks && MemoryOps.IsRoutineSocial(m, Adapter))).Take(3).ToList();
+        }
+
+        /// <summary>The mind's recent thoughts: the in-memory list plus its stored musings, so a restart does not forget them.</summary>
+        public List<string> RecentThoughts(int aid, Mind mind)
+        {
+            var o = new List<string>();
+            if (mind != null) o.AddRange(mind.Inner.Where(t => t.Kind == "musing").Select(t => t.Text));
+            List<string> mem;
+            if (ThoughtHistory.TryGetValue(aid, out mem)) o.AddRange(mem);
+            return o;
+        }
+
+        void RememberThought(int aid, string text)
+        {
+            List<string> l;
+            if (!ThoughtHistory.TryGetValue(aid, out l)) { l = new List<string>(); ThoughtHistory[aid] = l; }
+            l.Add(text);
+            if (l.Count > ThoughtKeep) l.RemoveRange(0, l.Count - ThoughtKeep);
         }
 
         public List<(int Aid, List<Memory> Mems)> DueThought()
@@ -438,9 +460,12 @@ namespace RimWorldLLM.Mind
             var mind = Minds[aid];
             int now = Bridge.Env.Game;
             int day = Day;
-            var mems = MemoryOps.WeightSorted(mind, now, day).Where(m => FloorDiv(m.Game, day) == target).Take(MaxDiaryMemories)
-                .OrderBy(m => m.Game).ThenBy(m => m.Id, StringComparer.Ordinal).ToList();
+            var ofDay = MemoryOps.WeightSorted(mind, now, day).Where(m => FloorDiv(m.Game, day) == target).ToList();
+            // Real events of the day first; routine talk is left out, or is one plain line when nothing else happened.
+            var kept = Cfg.SpeechChecks ? ofDay.Where(m => !MemoryOps.IsRoutineSocial(m, Adapter)).ToList() : ofDay;
+            var mems = kept.Take(MaxDiaryMemories).OrderBy(m => m.Game).ThenBy(m => m.Id, StringComparer.Ordinal).ToList();
             string today = string.Join("\n", mems.Select(m => "- " + GameData.Clean(m.Text, "event")));
+            if (mems.Count == 0 && ofDay.Count > 0) today = "- Nothing out of the ordinary happened; I spent part of the day around other people.";
             var stream = Cfg.InnerMonologue ? Inner.InnerOnDay(mind, target, day) : new List<InnerThought>();
             string words = await W(Speech.RegisterPhraseAsync(Adapter, Bridge, aid, mind), tok).ConfigureAwait(false);
             string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", PromptBlocks.BioLineCap, true))
@@ -477,6 +502,18 @@ namespace RimWorldLLM.Mind
                 Dropped.Add((aid, "diary:" + s.Reason));
                 return;
             }
+            if (Cfg.SpeechChecks && Sanitize.IsTalkAboutTalk(s.Text))
+            {
+                Fail("diary", aid);
+                Dropped.Add((aid, "diary:meta_talk"));
+                return;
+            }
+            if (Cfg.SpeechChecks && LoopGuard.FindRepeatedDiaryOpening(s.Text, Mind.Tail(mind.Diary, DiaryOpeningsKept).Select(e => e.Text)) != null)
+            {
+                Fail("diary", aid);
+                Dropped.Add((aid, "diary:repeat"));
+                return;
+            }
             mind.AddDiary(target, now, s.Text);
             Dirty.Add(aid);
             Log.Add(new JObject { ["kind"] = "diary", ["actor"] = aid, ["name"] = NameTok(aid), ["day"] = target, ["game"] = now, ["text"] = s.Text });
@@ -491,16 +528,46 @@ namespace RimWorldLLM.Mind
             catch (Exception e) when (!(e is OperationCanceledException)) { LlmLog.Warning("rimworldllm", "dream failed: " + e); }
         }
 
+        public const int NowKeep = 3;
+        private readonly Dictionary<int, List<List<string>>> _nowRecent = new Dictionary<int, List<List<string>>>();
+
+        /// <summary>What the character actually has at this moment, picked by salience: its job, where it is, a low need, pain, what weighs on it,
+        /// a recent event that was not routine talk. Empty when the game cannot say.</summary>
+        public async Task<List<string>> RightNowAsync(int aid, Mind mind)
+        {
+            JObject snap, scene;
+            try { snap = await Bridge.ActorAsync(aid).ConfigureAwait(false); scene = await Bridge.SceneAsync(aid).ConfigureAwait(false); }
+            catch (BridgeError) { return new List<string>(); }
+            long now = Bridge.Env.Game;
+            var events = new List<JObject>();
+            foreach (var m in mind.Memories.Where(x => x.Visibility != "private" && x.Source != "told" && now - x.Game <= Day && !string.IsNullOrWhiteSpace(x.Text)
+                                                       && !MemoryOps.IsRoutineSocial(x, Adapter)).OrderByDescending(x => x.Game).Take(6))
+                events.Add(new JObject { ["type"] = string.IsNullOrEmpty(m.Etype) ? "memory" : m.Etype, ["summary"] = m.Text, ["game"] = m.Game,
+                                         ["severity"] = Math.Min(1.0, m.Importance) });
+            var all = Adapter.SalientFacts(snap, scene, null, -1, events, now);
+            var recentKeys = new HashSet<string>();
+            List<List<string>> recent;
+            if (_nowRecent.TryGetValue(aid, out recent)) foreach (var r in recent) recentKeys.UnionWith(r);
+            var picked = Salience.Pick(all.Where(f => f.Kind != FactKind.Listener),
+                new SalienceAsk { Purpose = SaliencePurpose.Thought, Min = 2, Max = 4, RecentKeys = recentKeys });
+            if (!_nowRecent.TryGetValue(aid, out recent)) { recent = new List<List<string>>(); _nowRecent[aid] = recent; }
+            recent.Add(picked.Select(f => f.Key).ToList());
+            if (recent.Count > NowKeep) recent.RemoveAt(0);
+            return picked.Select(f => f.Text).ToList();
+        }
+
         /// <summary>One short thought for the map's cloud balloon. The text is the surface line itself; no diary, no memory.</summary>
         private async Task ThoughtAsync(int aid, List<Memory> mems, Lease lease, CancellationToken tok)
         {
             var mind = Minds[aid];
             string memLines = string.Join("\n", mems.Select(m => "- " + GameData.Clean(m.Text, "event")));
             string words = await W(Speech.RegisterPhraseAsync(Adapter, Bridge, aid, mind), tok).ConfigureAwait(false);
+            var now = Cfg.SpeechChecks ? await W(RightNowAsync(aid, mind), tok).ConfigureAwait(false) : new List<string>();
             string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", PromptBlocks.BioLineCap, true))
                 + "=== WHO YOU ARE BECOMING ===\n" + GameData.DataSection("character", GameData.Clean(
                     string.IsNullOrEmpty(mind.EvolvingBio) ? "(nothing yet)" : mind.EvolvingBio, "desc", PromptBlocks.EvolvingCap))
                 + "=== WHAT IS ON YOUR MIND ===\n" + GameData.DataSection("memories", memLines)
+                + (now.Count > 0 ? "=== RIGHT NOW ===\n" + GameData.DataSection("now", string.Join("\n", now.Select(t => "- " + GameData.Clean(t, "event")))) : "")
                 + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + Adapter.ThoughtRequest;
             var minors = A.MinorTokens();
             bool involvesMinor = A.IsMinor(aid) || mems.Any(m => m.People.Any(p => A.IsMinor(p)));
@@ -537,6 +604,14 @@ namespace RimWorldLLM.Mind
             {
                 text = null; s = new Sanitized(null, "meta_talk");               // a thought that only remarks on the chatter
             }
+            if (text != null && Cfg.SpeechChecks && Sanitize.IsTalkAboutTalk(text))
+            {
+                text = null; s = new Sanitized(null, "meta_talk");               // a thought whose subject is the talking itself
+            }
+            if (text != null && Cfg.SpeechChecks && LoopGuard.FindRepeatedThought(text, RecentThoughts(aid, mind)) != null)
+            {
+                text = null; s = new Sanitized(null, "repeat");                  // the same thought as one of its last ten
+            }
             if (text == null)
             {
                 Fail("thought", aid);
@@ -545,6 +620,7 @@ namespace RimWorldLLM.Mind
             }
             ThoughtNext[aid] = D.Clock() + Cfg.ThoughtEveryRealS;
             ThoughtLast[aid] = mems.Select(m => m.Id).ToArray();
+            RememberThought(aid, text);
             Log.Add(new JObject { ["kind"] = "thought", ["actor"] = aid, ["name"] = NameTok(aid), ["game"] = Bridge.Env.Game, ["text"] = text });
             if (Cfg.InnerMonologue)
             {

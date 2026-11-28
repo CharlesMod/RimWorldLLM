@@ -374,6 +374,16 @@ namespace RimWorldLLM.Tests.Mind
     [Collection("AdultState")]
     public class LookSwitchTests
     {
+        [Fact]
+        public void LookLabelIsCappedAt256Utf8BytesWithoutSplittingAChar()
+        {
+            string label = new string('a', 250) + "ééééé";   // 250 + 10 bytes
+            string c = EngineLookClient.CapUtf8(label, 256);
+            Assert.True(System.Text.Encoding.UTF8.GetByteCount(c) <= 256);
+            Assert.Equal(253, c.Length);                       // 250 a + 3 é = 256 bytes
+            Assert.Equal("short", EngineLookClient.CapUtf8("short", 256));
+        }
+
         private static VisionProbe Probe(string host, Func<Seen, MockResponse> f)
         {
             var c = Mock.Client(f, out _);

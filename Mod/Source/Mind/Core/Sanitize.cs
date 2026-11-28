@@ -24,7 +24,7 @@ namespace RimWorldLLM.Mind
 
     public static class Sanitize
     {
-        public const int MaxWords = 35;
+        public const int MaxWords = 60;
         public const int SecretRun = 5;     // consecutive words shared with a private memory that count as quoting it
 
         private const RegexOptions Opts = RegexOptions.CultureInvariant;
@@ -106,7 +106,7 @@ namespace RimWorldLLM.Mind
             return false;
         }
 
-        private static readonly Regex TrailingLabel = new Regex(@"^(.*[.!?…])" + Ws + @"+([a-z_]+)" + Ws + @"*[.!?]?$", Opts);
+        private static readonly Regex TrailingLabel = new Regex(@"^(.*[.!?…])(?:" + Ws + @"|[|:>\-–—(\[])+([a-z_]+)(?:" + Ws + @"|[)\]])*[.!?]?$", Opts);   // "... it. insult", "... it. | insult", "... it. (insult)"
 
         /// <summary>Cut one bare intent label left after the last sentence ("...before dark. kind" -> "...before dark.").</summary>
         public static string StripTrailingLabel(string t, IEnumerable<string> labels)
@@ -259,6 +259,26 @@ namespace RimWorldLLM.Mind
             var r = new HashSet<string>();
             foreach (Match m in NameToken.Matches(prefix)) r.Add(Tail.Replace(m.Value, ""));   // "Biscuit's" counts as "Biscuit"
             return r;
+        }
+
+        // A thought, diary or chronicle line whose subject is the talking itself ("Jessie and I had a little chat earlier.").
+        private static readonly Regex TalkAct = new Regex(
+            @"\b(had|have|having|shared?|held|engaged in|continued|continue|kept|keep|enjoyed|spent[^.!?]{0,25})\b[^.!?]{0,30}?\b(chats?|talks?|conversations?|discussions?|chitchat|small talk)\b|" +
+            @"\b(a|another|the|their|our|my)\s+(little|quick|short|nice|long|good|deep|brief|pleasant|passing|private)\s+(chats?|talks?|conversations?|exchange)\b|" +
+            @"\b(talked|chatted|were talking|were chatting|were saying|were discussing|discussed|exchanged words|had words|was talking|was chatting)\b|" +
+            @"\bchit[\s-]?chat\b|\bsmall[\s-]?talk\b|\bengaged in (a )?(deep |long |quiet )?(conversation|talk|chat)",
+            Opts | RegexOptions.IgnoreCase);
+        // "talked about the stolen steel" is about something else: a concrete subject after about/over/regarding keeps the line.
+        private static readonly Regex TalkContent = new Regex(
+            @"\b(about|regarding|concerning|over|on)\s+(?!(nothing|anything|everything|something|it|this|that|things|stuff|much|whatever|so much|all)\b)(the|a|an|his|her|their|my|our|your|[a-z]{3,})\b",
+            Opts | RegexOptions.IgnoreCase);
+
+        /// <summary>True when the text only remarks on the talking itself (a chat, a conversation, "were saying", "had words") with no
+        /// concrete subject; a line that names what the talk was about, or that mentions talking in passing, is kept.</summary>
+        public static bool IsTalkAboutTalk(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return TalkAct.IsMatch(text) && !TalkContent.IsMatch(text);
         }
 
         /// <summary>A paragraph (diary entry, chronicle, bio): one block, refusals and invented names dropped.</summary>

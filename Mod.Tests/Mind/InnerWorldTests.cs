@@ -503,6 +503,89 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ASimilarThoughtToOneOfTheLastTenIsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I saw Bram eat alone.", 1000, people: new List<int> { 2 });
+            w.Llm.Script["thought"] = new List<string> { "I wonder if Bram is thinking about me too.", "I wonder if Bram is thinking of me too.",
+                                                         "The berry bush by the wall is ripe." };
+            await Step(w);
+            Assert.Single(ThoughtsOfKind(w));
+            InjectMemory(w, 1, "I found a ripe berry bush.", 2000);
+            w.Real += w.D.Cfg.ThoughtEveryRealS + 1;
+            await Step(w);
+            Assert.Single(ThoughtsOfKind(w));                                          // the repeat never reached the map
+            Assert.Contains((1, "thought:repeat"), w.D.Dropped);
+            w.Real += w.D.Cfg.IdleRetryRealS + 1;
+            await Step(w);
+            Assert.Equal(2, ThoughtsOfKind(w).Count);
+            Assert.Equal(2, w.D.Idle.ThoughtHistory[1].Count);
+        }
+
+        [Fact]
+        public async Task ThoughtHistorySeedsFromStoredMusings()
+        {
+            using var w = new World(); await w.GoAsync();
+            Inner.AddInner(w.D.Minds[1], "A stored musing about the well.", "musing", 10);
+            Inner.AddInner(w.D.Minds[1], "A stored aim.", "aim", 11);
+            var r = w.D.Idle.RecentThoughts(1, w.D.Minds[1]);
+            Assert.Contains("A stored musing about the well.", r);
+            Assert.DoesNotContain("A stored aim.", r);
+        }
+
+        [Fact]
+        public async Task ThoughtPromptHasRightNowFromThePawnsPresentState()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I found a ripe berry bush.", 1000);
+            w.Llm.Script["thought"] = new List<string> { "The berries will keep a few days." };
+            await Step(w);
+            var c = w.Llm.Calls.First(x => x.Kind == "thought");
+            string u = c.Messages[c.Messages.Count - 1].Text;
+            Assert.Contains("=== RIGHT NOW ===", u);
+            Assert.Contains("cooking", u.ToLowerInvariant());
+            Assert.True(u.IndexOf("=== WHAT IS ON YOUR MIND ===", StringComparison.Ordinal) < u.IndexOf("=== RIGHT NOW ===", StringComparison.Ordinal));
+            Assert.Contains("or right now", u);
+            Assert.DoesNotContain("only about something listed", u);
+        }
+
+        [Fact]
+        public async Task RoutineChatterNeverFeedsAThoughtButAnInsultDoes()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            w.D.Minds[1].Memories.Add(new Memory { Id = w.D.Minds[1].NextMemId(), Game = 1000, Etype = "social", People = new List<int> { 2 },
+                Text = "I was part of it: Ana and Bram had a passing exchange while going about their day; what was said wasn't noted." });
+            w.D.Minds[1].Memories.Add(new Memory { Id = w.D.Minds[1].NextMemId(), Game = 1001, Etype = "conversation", People = new List<int> { 2 },
+                Text = "I talked with Bram. Bram started it: \"Nice day.\" It ended on: \"Yes.\"" });
+            await Step(w);
+            Assert.DoesNotContain(w.Llm.Calls, c => c.Kind == "thought");               // nothing but routine talk: no thought
+            w.D.Minds[1].Memories.Add(new Memory { Id = w.D.Minds[1].NextMemId(), Game = 1002, Etype = "social", People = new List<int> { 2 },
+                Text = "It happened to me: Bram -> Ana: insult." });
+            w.Llm.Script["thought"] = new List<string> { "Bram will pay for that remark." };
+            await Step(w);
+            var c = w.Llm.Calls.First(x => x.Kind == "thought");
+            string u = c.Messages[c.Messages.Count - 1].Text;
+            Assert.Contains("insult", u);
+            Assert.DoesNotContain("passing exchange", u);
+            Assert.DoesNotContain("I talked with Bram", u);
+        }
+
+        [Fact]
+        public async Task AThoughtAboutTheChatItselfIsDroppedWithoutAChitchatScene()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            InjectMemory(w, 1, "I found a ripe berry bush.", 1000);
+            w.Llm.Script["thought"] = new List<string> { "I had a little chat earlier, that was all." };
+            await Step(w);
+            Assert.Empty(ThoughtsOfKind(w));
+            Assert.Contains((1, "thought:meta_talk"), w.D.Dropped);
+        }
+
+        [Fact]
         public async Task ThoughtsOffBySetting()
         {
             using var w = new World(); await w.GoAsync();

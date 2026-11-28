@@ -19,6 +19,21 @@ Note the version, the mode (local or own endpoint) and `calls.jsonl` lines for a
    new artworks.
 7. **Recap on load.** Loading a save shows the "Previously on..." recap (if enabled), once.
 
+## Speech in context (what to listen for)
+1. **No price talk.** A Greedy pawn may mention silver now and then. Nobody keeps talking about what steel or sabres cost.
+2. **No random subjects.** Chitchat is about what is really around them: the raid, a wound, low food, the room, the weather if it
+   matters. No hickory wood, mortars, gambling or haircuts unless the game shows them.
+3. **Length follows the moment.** Small talk is a few words. A deep talk, a romance attempt, an insult, a death or an injury gets
+   1 to 3 sentences, never a speech.
+4. **The insult or kind word fits.** The line reads as what the game's log says happened, and matches how it landed (a rebuff, a
+   fight).
+5. **Replies answer.** In a conversation the second pawn answers what was just said. Two pawns who just spoke pick it up later.
+6. **Voices differ.** No pawn keeps opening with the same word ("Look.", "Sigh."). Two pawns don't say the same line. No trailing
+   "insult" or "| kind" labels, and no "*sighs*".
+7. **Thoughts and diaries are about the day.** Hunger, the cold, a wound, eating without a table, the raid, a death. Never "Jessie
+   and I had a chat". The chronicle names events, not "a deep conversation". No thought comes back day after day.
+8. **A child sounds like a child.** No romance with or about a child.
+
 ## Narrator plays (vivarium)
 8. Switch Narrator plays on: the steward acts (work priorities, schedules, policies, drafting) and each action prints a greentext line.
    Switch it off: the narrator answers as an advisor and does one task when asked.

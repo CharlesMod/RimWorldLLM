@@ -376,6 +376,64 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ADiaryOpeningLikeARecentOneIsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Minds[1].AddDiary(0, 100, "Today I kept my head down and got the stew finished. Nothing else happened.");
+            w.D.Minds[1].LastDiaryDay = -1;
+            w.Llm.Script["diary"] = new List<string> { "Today I kept my head down and got the soup finished. Nobody ate alone again." };
+            Inject(w, 1, "I mended the east wall.", 5000);
+            w.Fb.Tick = (int)(0.7 * Day);
+            await Step(w);
+            Assert.Contains((1, "diary:repeat"), w.D.Dropped);
+            Assert.Single(w.D.Minds[1].Diary);
+        }
+
+        [Fact]
+        public async Task DiaryLeadsWithRealEventsAndLeavesRoutineTalkOut()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Minds[1].Memories.Add(new Memory { Id = "s1", Game = 4000, Etype = "social", Importance = 0.9, People = new List<int> { 2 },
+                Text = "I was part of it: Ana and Bram had a passing exchange while going about their day; what was said wasn't noted." });
+            w.D.Minds[1].Memories.Add(new Memory { Id = "s2", Game = 4500, Etype = "conversation", Importance = 0.9, Text = "I talked with Bram. He started it." });
+            Inject(w, 1, "I saw the east wall burn down.", 5000);
+            w.Llm.Script["diary"] = new List<string> { Diary };
+            w.Fb.Tick = (int)(0.7 * Day);
+            await Step(w);
+            var c = w.Llm.Calls.First(x => x.Kind == "diary" && x.Actor == 1);
+            string u = c.Messages[1].Text;
+            Assert.Contains("east wall burn down", u);
+            Assert.DoesNotContain("passing exchange", u);
+            Assert.DoesNotContain("I talked with Bram", u);
+        }
+
+        [Fact]
+        public async Task AllRoutineTalkBecomesOnePlainLineInTheDiaryPrompt()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Minds[1].Memories.Add(new Memory { Id = "s1", Game = 4000, Etype = "social", Text = "I was part of it: Ana and Bram had a passing exchange." });
+            w.D.Minds[1].Memories.Add(new Memory { Id = "s2", Game = 4500, Etype = "conversation", Text = "I talked with Bram. He started it." });
+            w.Llm.Script["diary"] = new List<string> { Diary };
+            w.Fb.Tick = (int)(0.7 * Day);
+            await Step(w);
+            string u = w.Llm.Calls.First(x => x.Kind == "diary" && x.Actor == 1).Messages[1].Text;
+            Assert.Contains("Nothing out of the ordinary happened", u);
+            Assert.DoesNotContain("passing exchange", u);
+        }
+
+        [Fact]
+        public async Task ADiaryThatIsAboutTheChatIsDropped()
+        {
+            using var w = new World(); await w.GoAsync();
+            Inject(w, 1, "I mended a wall.", 5000);
+            w.Llm.Script["diary"] = new List<string> { "Today I had a long conversation. Nothing else happened at all." };
+            w.Fb.Tick = (int)(0.7 * Day);
+            await Step(w);
+            Assert.Contains((1, "diary:meta_talk"), w.D.Dropped);
+            Assert.Empty(w.D.Minds[1].Diary);
+        }
+
+        [Fact]
         public async Task DiaryKeepsLastSevenAndIsSavedInTheBlob()
         {
             using var w = new World(); await w.GoAsync();
@@ -383,7 +441,7 @@ namespace RimWorldLLM.Tests.Mind
             {
                 Inject(w, 1, "I did chore number " + day + ".", day * Day + 100);
                 w.Fb.Tick = day * Day + (int)(0.8 * Day);
-                w.Llm.Script["diary"] = new List<string> { Diary };
+                w.Llm.Script["diary"] = new List<string> { "Day " + day + " went by. I kept my head down and got the stew finished before dark." };   // distinct openings: a repeated one is dropped
                 await Step(w);
             }
             await Step(w);

@@ -38,8 +38,7 @@ namespace RimWorldLLM.Mind.RimWorld
         // A chitchat names no topic of its own: describe the situation (a passing exchange), never the word. The marker phrase
         // is how DropsMeta later recognises a thought or line whose scene was only that.
         private const string Passing = "passing exchange";
-        private const string PassingKind = "a passing exchange about something really going on around them right now (take it from the scene: "
-            + "what they are doing, where they are, a recent event); never assume food or a meal unless someone is eating";
+        private const string PassingKind = "a passing exchange about something really going on around them right now";
         private static readonly Regex ChitchatSummary = new Regex(@"^(?<a>.+?) -> (?<b>.+?): Chitchat\.?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         private static readonly Regex MetaTalk = new Regex(
             @"chit[\s-]?chat|small[\s-]?talk|\bidle (talk|chatter|chat)\b|\b(all|this|that|enough|more|so much|too much|such)\s+(the\s+)?" +
@@ -298,19 +297,77 @@ namespace RimWorldLLM.Mind.RimWorld
                 { "ref", Js.Str(Js.Get(data, "ref")) }, { "initiator", pair.Value.Item1 }, { "recipient", pair.Value.Item2 },
                 { "tier", Js.StrOr(data, "tier", null) == "high" ? "high" : "idle" },
                 { "window_ticks", windowTicks }, { "window_real_s", windowReal }, { "sentence", sentence },
-                { "romantic", RomanticInteractions.Contains(key) }, { "kind", kind },
+                { "romantic", RomanticInteractions.Contains(key) }, { "kind", kind }, { "key", key },
+                { "outcome", new JArray(Js.ItemsGet(data, "outcome").Select(x => Js.S(x).Trim()).Where(x => x.Length > 0).Take(3)) },
             };
         }
 
-        /// <summary>The line request for a vanilla interaction: what the game wrote, what kind of thing it was, the same subject.</summary>
+        // What each game interaction asks of the line: the intent and its tone. The line is about the people and the scene, not about a
+        // random subject the game's play-log sentence names (a chitchat's "topic" is a flavour noun picked at random).
+        private static readonly Dictionary<string, string> InteractionTone = new Dictionary<string, string>
+        {
+            { "Insult", "cutting: an open attack, aimed at something real in the scene or about the person" },
+            { "Slight", "a small, cold put-down about something real in the scene or about the person" },
+            { "KindWords", "warm and specific: kind words that fit who they are and how they are doing" },
+            { "Chitchat", "casual and passing, about something that is really going on around you right now; never assume food or a meal unless someone is eating" },
+            { "DeepTalk", "personal and unguarded: something from your own real history, fears or hopes, not the weather or work" },
+            { "RomanceAttempt", "a romantic advance, in your own manner" },
+            { "MarriageProposal", "a marriage proposal, in your own manner" },
+            { "Breakup", "ending it between you, in your own manner" },
+            { "ConvertIdeoAttempt", "trying to win them over to what you believe" },
+            { "Reassure", "reassuring: steady words to someone who needs them" },
+            { "Counsel", "counsel: advice that fits their trouble" },
+        };
+        // The topic in the game's log sentence is a random flavour noun for these: never passed on.
+        private static readonly HashSet<string> TopicIsNoise = new HashSet<string> { "Chitchat", "DeepTalk" };
+        private static readonly HashSet<string> LongInteractions = new HashSet<string>
+            { "Insult", "DeepTalk", "RomanceAttempt", "MarriageProposal", "Breakup", "ConvertIdeoAttempt", "Counsel" };
+
+        /// <summary>The line request for a vanilla interaction: what kind of thing it was, the tone it asks for, how it landed.</summary>
         public override string VanillaRequest(JObject info, string speaker, string listener)
         {
             string sentence = (string)info["sentence"], kind = (string)info["kind"];
-            string s = sentence.Length > 0 ? " The game's own log reads: \"" + sentence + "\"." : "";
+            string key = info["key"] == null ? "" : (string)info["key"];
+            string tone;
+            bool known = InteractionTone.TryGetValue(key, out tone);
+            string s = "";
+            if (!TopicIsNoise.Contains(key) && sentence.Length > 0)
+                s = key == "Insult" || key == "Slight"
+                    ? " The game's own log reads: \"" + sentence + "\" Use its subject only if it fits what is really going on here."
+                    : " The game's own log reads: \"" + sentence + "\"";
+            var outcome = info["outcome"] as JArray;
+            string landed = outcome != null && outcome.Count > 0 ? " How it landed (the game's own note): " + string.Join("; ", outcome.Select(x => (string)x)) + "." : "";
             return "=== REQUEST ===\n" +
-                   speaker + " has just done something to " + listener + ": it is " + kind + "." + s + "\n" +
-                   "Write " + speaker + "'s one line of speech to " + listener + " that goes with it. It must read as " + kind + " " +
-                   "and stay on the same subject the log names. " + NoMetaRule + " One line only.";
+                   speaker + " has just done something to " + listener + ": it is " + kind + "." + s + landed + "\n" +
+                   (known ? "Tone: " + tone + ".\n" : "") +
+                   "Write " + speaker + "'s line of speech to " + listener + " that goes with it, so it reads as " + kind.Split(new[] { " about " }, StringSplitOptions.None)[0] + ". " +
+                   PromptBlocks.LengthHint(LongInteractions.Contains(key)) + " " + NoMetaRule;
+        }
+
+        /// <summary>A chitchat or deep talk carries no usable sentence: the scene only says they were talking.</summary>
+        public override string VanillaTrigger(JObject info, string speaker, string listener)
+        {
+            string key = info["key"] == null ? "" : (string)info["key"];
+            string sentence = (string)info["sentence"];
+            if (key == "Chitchat") return speaker + " and " + listener + " are making small talk while going about their day.";
+            if (key == "DeepTalk") return speaker + " is having a deep, personal talk with " + listener + ".";
+            return sentence.Length > 0 ? sentence : speaker + " and " + listener + " had a " + Passing + ".";
+        }
+
+        public override List<SalientFact> SalientFacts(JObject snap, JObject scene, JObject listenerSnap, int listenerId, IEnumerable<JObject> events, long nowGame)
+        { return SalienceFacts.Build(snap, scene, listenerSnap, listenerId, events, nowGame); }
+
+        public override List<string> ListenerCard(JObject snap, JObject listenerSnap, int listenerId) { return SalienceFacts.ListenerCard(snap, listenerSnap, listenerId); }
+
+        private static readonly HashSet<string> LongEvents = new HashSet<string> { "death", "injury", "mental_break", "raid_start", "funeral", "wedding" };
+
+        public override bool EarnsLength(JObject ev)
+        {
+            if (ev == null) return false;
+            string t = Js.StrOr(ev, "type", "");
+            if (LongEvents.Contains(t)) return true;
+            if (t == "social") return LongInteractions.Contains(Js.StrOr(DataOf(ev), "interaction", ""));
+            return SeverityOf(ev, 0.0) >= 0.7;
         }
 
         /// <summary>True for a thought or line that is only meta-talk about chatting ("I wish people would cut this chitchat")
@@ -320,6 +377,33 @@ namespace RimWorldLLM.Mind.RimWorld
             if (!MetaTalk.IsMatch(text ?? "")) return false;
             if (context == null) return false;
             return context.Any(c => (c ?? "").ToLowerInvariant().Contains(Passing));
+        }
+
+        // Routine social contact has no outcome: a chat, a deep talk, a passing exchange. An insult, a rebuff, romance, a breakup, a fight
+        // or a told secret has one and stays.
+        private static readonly Regex RoutineTalk = new Regex(
+            @"passing exchange|chit[\s-]?chat|small[\s-]?talk|deep (talk|conversation)|\bdeeptalk\b|\bhad a (little |quick |short |nice |long |brief )?(chat|talk|conversation)\b|" +
+            @"\btalked (with|to)\b|\bwere talking\b|\bchatted\b|\bkind words\b|\breassur|\bcounsel",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex TalkOutcome = new Regex(
+            @"insult|slight|rebuff|reject|romanc|romantic|break ?up|broke up|propos|kiss|fight|quarrel|argu|secret|gossip|confid|\btold me\b|\bsnapp|\bangry|\bhurt my",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly HashSet<string> RoutineInteractions = new HashSet<string> { "Chitchat", "DeepTalk", "KindWords", "Reassure", "Counsel" };
+
+        public override bool RoutineSocial(string etype, string text)
+        {
+            if (etype == "conversation") return true;                    // the template or model summary of a spoken talk: the relation carries its outcome
+            if (etype != "social") return false;
+            string t = text ?? "";
+            return RoutineTalk.IsMatch(t) && !TalkOutcome.IsMatch(t);
+        }
+
+        public override bool RoutineSocialEvent(JObject ev)
+        {
+            if (Js.StrOr(ev, "type", "") != "social") return false;
+            string inter = Js.StrOr(DataOf(ev), "interaction", "");
+            if (inter.Length > 0) return RoutineInteractions.Contains(inter);
+            return RoutineSocial("social", Js.StrOr(ev, "summary", ""));
         }
 
         /// <summary>The idle text filler core/idle runs last: fn(host, slot) -> texts stored.</summary>
@@ -423,10 +507,16 @@ namespace RimWorldLLM.Mind.RimWorld
             var room = Js.Get(scene, "room") as JObject ?? new JObject();
             string where = Js.Truthy(Js.Get(room, "role")) ? PyJson.Str(Js.Get(room, "role")) : "outdoors";
             var extras = new List<string>();
-            foreach (var k in new[] { "clean", "temp" })
-                if (room.ContainsKey(k)) extras.Add(k + " " + PyJson.Str(room[k]));
+            var cl = Js.Get(room, "clean");
+            if (Js.IsNum(cl, noBool: true)) { double c = Js.Dbl(cl); if (c < -3) extras.Add("filthy"); else if (c < -1) extras.Add("dirty"); else if (c > 1.5) extras.Add("spotless"); }
+            else if (Js.Truthy(cl) && cl.Type == JTokenType.String && (string)cl != "clean") extras.Add((string)cl);   // a plain word from the mod: kept
+            var tp = Js.Get(room, "temp");
+            if (Js.IsNum(tp, noBool: true)) { double t = Js.Dbl(tp); if (t <= -15) extras.Add("freezing"); else if (t <= 0) extras.Add("cold"); else if (t >= 45) extras.Add("dangerously hot"); else if (t >= 33) extras.Add("hot"); }
+            else if (Js.Truthy(tp) && tp.Type == JTokenType.String) extras.Add((string)tp);
             if (extras.Count > 0) where += " (" + string.Join(", ", extras) + ")";
-            string when = string.Join(", ", new[] { Js.Get(scene, "time_of_day"), Js.Get(scene, "weather") }.Where(x => Js.Truthy(x)).Select(x => PyJson.Str(x)));
+            var todTok = Js.Get(scene, "time_of_day");
+            if (todTok is JObject) todTok = Js.Get(todTok, "label");
+            string when = string.Join(", ", new[] { todTok, Js.Get(scene, "weather") }.Where(x => Js.Truthy(x)).Select(x => PyJson.Str(x)));
             var present = new List<string>();
             foreach (var q in Js.ItemsGet(scene, "present"))
             {
@@ -445,8 +535,11 @@ namespace RimWorldLLM.Mind.RimWorld
             var h = Js.Get(snap, "health");
             var st = new List<string>();
             var nm = Js.Get(needs, "mood");
-            if (nm != null)
-                st.Add("mood " + (Js.Float(nm) <= 1 ? PyFmt.RoundInt(Js.Float(nm) * 100).ToString(CultureInfo.InvariantCulture) : PyJson.Str(nm)) + "%");
+            if (nm != null && Js.IsNum(nm, noBool: true))
+            {
+                double mv = Js.Dbl(nm); if (mv > 1) mv /= 100;
+                st.Add(mv < 0.2 ? "mood very low" : mv < 0.35 ? "mood low" : mv < 0.65 ? "mood middling" : mv < 0.85 ? "mood good" : "mood high");
+            }
             if (Js.Truthy(Js.Get(h, "downed"))) st.Add("downed");
             var pain = Js.Get(h, "pain");
             if (Js.Truthy(pain) && Js.Dbl(pain) > 0.3) st.Add("in pain");
@@ -455,7 +548,11 @@ namespace RimWorldLLM.Mind.RimWorld
                 foreach (var kv in trends)
                 {
                     var v = kv.Value as JArray;
-                    if (v != null && v.Count >= 2) st.Add(kv.Key.Replace("_", " ") + " " + PyJson.Str(v[0]) + " -> " + PyJson.Str(v[v.Count - 1]));
+                    if (v != null && v.Count >= 2 && Js.IsNum(v[0], noBool: true) && Js.IsNum(v[v.Count - 1], noBool: true))
+                    {
+                        double d = Js.Dbl(v[v.Count - 1]) - Js.Dbl(v[0]);
+                        if (Math.Abs(d) > 1e-9) st.Add(kv.Key.Replace("_", " ") + (d < 0 ? " falling" : " rising"));
+                    }
                 }
             var ths = new List<string>();
             foreach (var t in Js.ItemsGet(mood, "thoughts").Take(4))

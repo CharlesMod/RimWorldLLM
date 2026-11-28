@@ -83,6 +83,12 @@ namespace RimWorldLLM.Mind
             return written;
         }
 
+        /// <summary>True for a memory of routine social contact with no outcome. A told memory (gossip, a confidence) is never routine.</summary>
+        public static bool IsRoutineSocial(Memory m, IGameAdapter adapter)
+        {
+            return adapter != null && m.Source != "told" && adapter.RoutineSocial(m.Etype ?? "", m.Text ?? "");
+        }
+
         /// <summary>Gossip or confiding: lower confidence, source traceable to the teller.</summary>
         public static Memory RememberTold(Mind mind, int tellerId, string tellerName, string text, long game,
                                           double importance = 0.3, List<int> people = null)

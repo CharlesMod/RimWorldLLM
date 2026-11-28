@@ -1,5 +1,6 @@
 // Port of agent/rimworldllm_agent/core/habits.py: the voice card's tics change rarely, at reflection, from what happened.
 using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,7 +37,24 @@ namespace RimWorldLLM.Mind
             if (nameTokens == null || !nameTokens.TryGetValue(actorId, out speaker)) speaker = new HashSet<string>();
             var s = Sanitize.SanitizeProse(Sanitize.PyStrip(raw).Trim('"'), new HashSet<string>(), allNames, Sanitize.PromptCapWords(prompt),
                 commonWords, speaker, HabitMinWords, HabitMaxWords, involvesMinor, minorNames);
-            return s.Ok && s.Text.Length > 0 ? s.Text.TrimEnd('.') : "";
+            if (!s.Ok || s.Text.Length == 0) return "";
+            if (!IsStyleHabit(s.Text)) return "";
+            return s.Text.TrimEnd('.');
+        }
+
+        // A habit is how someone speaks, never a subject they keep returning to or a remark about talking itself.
+        private static readonly Regex TopicHabit = new Regex(
+            @"^\s*(always |often |keeps? |constantly |likes? to |tends? to )?(mentions?|mentioning|brings? up|bringing up|talks? about|talking about|goes? on about|going on about|comments? on|remarks? on|refers? to|notes?|points? out)\b",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex MetaHabit = new Regex(
+            @"\b(chat|chats|chatting|chitchat|conversations?|small talk|others? talk\w*|people talk\w*|(see|sees|seeing|hear|hears|hearing|watch\w*|notic\w*) [^.]{0,20}\b(talk\w*|chat\w*|speak\w*)|what (others|people|everyone) (say|said|are saying))\b",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        /// <summary>False for a topic habit ("mentions what things cost") and a meta habit ("mentions seeing others talk").</summary>
+        public static bool IsStyleHabit(string habit)
+        {
+            if (TopicHabit.IsMatch(habit) || MetaHabit.IsMatch(habit)) return false;
+            return !Salience.IsPriceTalk(habit);
         }
 
         /// <summary>Replace the oldest tic with habit (append while fewer than three). False when not allowed or a repeat.</summary>
