@@ -74,7 +74,7 @@ namespace RimWorldLLM
             public string Missing; // null = ingredients exist
         }
 
-        static bool CasualSurgery(RecipeDef r)
+        internal static bool CasualSurgery(RecipeDef r)
         {
             if (r.isViolation) return false;
             string d = r.defName ?? "";
@@ -107,6 +107,9 @@ namespace RimWorldLLM
                 foreach (var part in parts)
                 {
                     if (!r.AvailableOnNow(p, part)) continue;
+                    // no organ harvesting or violations (the narrator never mutilates): only amputations of injured or diseased parts
+                    if (r.Worker is Recipe_RemoveBodyPart && HealthUtility.PartRemovalIntent(p, part) == BodyPartRemovalIntent.Harvest) continue;
+                    try { if (r.Worker.IsViolationOnPawn(p, part, Faction.OfPlayer)) continue; } catch (Exception) { }
                     list.Add(new SurgeryOption { Recipe = r, Part = part, Label = r.label + (r.hideBodyPartNames ? "" : " " + part.Label), Missing = missing });
                 }
             }
@@ -151,15 +154,17 @@ namespace RimWorldLLM
                 return HandResult.No("only a colonist can be sent to bed; prisoners and animals use their own beds");
             if (p.Downed) return HandResult.No(Name(p) + " is downed; have someone rescue them to a bed instead");
             if (p.Drafted) return HandResult.No(Name(p) + " is drafted; undraft first");
+            if (p.InMentalState) return HandResult.No(Name(p) + " is in a mental break and cannot take orders");
+            if (p.jobs == null) return HandResult.No(Name(p) + " cannot take orders");
             if (RestUtility.InBed(p) && p.CurJobDef == JobDefOf.LayDown && p.CurJob != null && p.CurJob.restUntilHealed) return HandResult.No(Name(p) + " is already resting in bed");
             if (!HealthAIUtility.ShouldSeekMedicalRest(p)) return HandResult.No(Name(p) + " is not hurt or sick enough to need bed rest");
             var bed = RestUtility.FindPatientBedFor(p);
-            if (bed == null || !bed.Medical) return HandResult.No("no medical bed is free for " + Name(p) + "; build or free one first");
+            if (bed == null) return HandResult.No("no bed is free for " + Name(p) + "; build or free a bed first");
             var job = JobMaker.MakeJob(JobDefOf.LayDown, bed);
             job.forceSleep = false;
             job.restUntilHealed = true;
             if (!p.jobs.TryTakeOrderedJob(job, JobTag.Misc)) return HandResult.No(Name(p) + " cannot go to the bed right now (unreachable or busy)");
-            return HandResult.Done(Name(p) + " is going to a medical bed to rest");
+            return HandResult.Done(Name(p) + " is going to " + (bed.Medical ? "a medical bed" : "a bed") + " to rest");
         }
 
         static readonly string[] CareWords = { "none", "no_meds", "herbal", "normal", "best" };

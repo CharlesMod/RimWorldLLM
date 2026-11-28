@@ -497,7 +497,7 @@ namespace RimWorldLLM
         HandResult JobDrop(Pawn pawn, string t)
         {
             HandResult no;
-            var th = JobPick(JobThings(pawn, t, x => false, true).Where(x => !x.Spawned), x => null, "no item " + t + " on " + Name(pawn) + "; they carry: " + JobHeldList(pawn), out no);
+            var th = JobPick(JobThings(pawn, t, x => true, true).Where(x => !x.Spawned), x => null, "no item " + t + " on " + Name(pawn) + "; they carry: " + JobHeldList(pawn), out no);
             if (th == null) return no;
             if (th.Spawned) return HandResult.No(JobDesc(th) + " is not carried by " + Name(pawn));
             var ap = th as Apparel;
@@ -550,7 +550,7 @@ namespace RimWorldLLM
             }, "no food or drug " + t + " found (use #id from the digest)", out no);
             if (th == null) return no;
             var job = JobMaker.MakeJob(JobDefOf.Ingest, th);
-            job.count = th.def.IsDrug ? 1 : Math.Max(1, Math.Min(th.stackCount, th.def.ingestible.maxNumToIngestAtOnce));
+            job.count = th.def.IsDrug ? 1 : Math.Max(1, Math.Min(th.stackCount, FoodUtility.WillIngestStackCountOf(pawn, th.def, FoodUtility.GetNutrition(pawn, th, th.def))));
             return JobTake(pawn, job, Name(pawn) + " will " + (th.def.IsDrug ? "take" : "eat") + " the " + th.LabelNoCount);
         }
 

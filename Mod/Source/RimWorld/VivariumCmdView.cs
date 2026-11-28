@@ -60,7 +60,7 @@ namespace RimWorldLLM
             if (p.Dead || p.def?.AllRecipes == null) return false;
             foreach (var r in p.def.AllRecipes)
             {
-                if (r == null || !r.IsSurgery || !r.AvailableNow) continue;
+                if (r == null || !r.IsSurgery || !r.AvailableNow || !VivariumHands.CasualSurgery(r)) continue;
                 if (!r.Worker.AvailableOnNow(p, null)) continue;
                 if (!r.targetsBodyPart) return true;
                 if (r.Worker.GetPartsToApplyOn(p, r).Any()) return true;

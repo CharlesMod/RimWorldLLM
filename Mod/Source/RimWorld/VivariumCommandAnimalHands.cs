@@ -129,6 +129,7 @@ namespace RimWorldLLM
                 AcceptanceReport r;
                 try { r = des.CanDesignateThing(p); } catch (Exception) { r = TameUtility.CanTame(p); }
                 if (!r.Accepted) { whyNot = string.IsNullOrEmpty(r.Reason) ? "the " + CmdKindLabel(p) + " cannot be tamed" : r.Reason; continue; }
+                dm.TryRemoveDesignationOn(p, DesignationDefOf.Hunt); // as the vanilla designator does: a hunt mark would kill what we mean to tame
                 dm.AddDesignation(new Designation(p, DesignationDefOf.Tame));
                 var mb = new BuildHelpers.MarkBuilder(map.uniqueID);
                 mb.Designation(DesignationDefOf.Tame.defName, p.thingIDNumber, 0, 0);
@@ -183,6 +184,7 @@ namespace RimWorldLLM
                     continue;
                 }
                 if (dm.DesignationOn(p, DesignationDefOf.Slaughter) != null) { last = CmdAnimalLabel(p) + " is already marked for slaughter"; continue; }
+                if (dm.DesignationOn(p, DesignationDefOf.ReleaseAnimalToWild) != null) { last = CmdAnimalLabel(p) + " is marked for release to the wild; the order conflicts, pick another animal"; continue; }
                 if (!byName && !CmdAdult(p)) { last = "only young " + CmdKindLabel(p) + " are left; wait for them to grow"; continue; }
                 AcceptanceReport r;
                 try { r = des.CanDesignateThing(p); } catch (Exception) { r = true; }
@@ -215,6 +217,7 @@ namespace RimWorldLLM
                     continue;
                 }
                 if (dm.DesignationOn(p, DesignationDefOf.ReleaseAnimalToWild) != null) { last = CmdAnimalLabel(p) + " is already marked for release"; continue; }
+                if (dm.DesignationOn(p, DesignationDefOf.Slaughter) != null) { last = CmdAnimalLabel(p) + " is marked for slaughter; the order conflicts, pick another animal"; continue; }
                 AcceptanceReport r;
                 try { r = des.CanDesignateThing(p); } catch (Exception) { r = true; }
                 if (!r.Accepted) { last = string.IsNullOrEmpty(r.Reason) ? CmdAnimalLabel(p) + " cannot be released" : r.Reason; continue; }
