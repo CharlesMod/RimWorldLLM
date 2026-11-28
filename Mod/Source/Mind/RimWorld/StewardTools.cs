@@ -59,6 +59,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly BioKit Bio;
         /// <summary>The read tools inspect, find, survey (offered when the digest has pawns); the 4-reads-per-turn counter lives here, one session per turn.</summary>
         public readonly InspectKit Inspect;
+        /// <summary>The command tools (job, medical, prisoner, animal, social); they exist only when the digest has a cmd block.</summary>
+        public readonly CommandKit Cmd;
         /// <summary>Cleaned colonist name -> age, for the pawns whose digest entry has a numeric age.</summary>
         public readonly Dictionary<string, double> Ages = new Dictionary<string, double>(StringComparer.Ordinal);
         public const int ChildAge = 13;
@@ -90,6 +92,7 @@ namespace RimWorldLLM.Mind.RimWorld
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
                 if (p is JObject po && IncapableOfViolence(DigestJson.G(po, "incapable"))) CannotFight.Add(GameData.Name(DigestJson.G(po, "name")));
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
+            Cmd = new CommandKit(Digest);
             Bio = new BioKit(Digest);                            // the Biotech tools exist only when the digest has a bio block
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
                 if (p is JObject ao && DigestJson.IsNumberish(DigestJson.G(ao, "age"))) Ages[GameData.Name(DigestJson.G(ao, "name"))] = DigestJson.PyFloat(DigestJson.G(ao, "age"));
@@ -99,8 +102,8 @@ namespace RimWorldLLM.Mind.RimWorld
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Inspect.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n)), StringComparer.Ordinal);
+            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Cmd.Tools).Concat(Inspect.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n) || Cmd.Names.Contains(n)), StringComparer.Ordinal);
         }
 
         /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
@@ -444,6 +447,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
                     if (Trade.Acting.Contains(tool)) return Trade.Body(tool, v);
                     if (Bio.Names.Contains(tool)) return Bio.Body(tool, v);
+            if (Cmd.Names.Contains(tool)) return Cmd.Body(tool, v);
                     throw new PyValueError("unknown tool " + tool);
             }
         }

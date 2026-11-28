@@ -75,6 +75,7 @@ namespace RimWorldLLM
             Sec(o, "rooms", () => Rooms(map));
             Sec(o, "build", () => VivariumBuildView.Build(map));
             Sec(o, "bio", () => VivariumBioView.Build(map));
+            Sec(o, "cmd", () => VivariumCmdView.Build(map));
             Sec(o, "stuck", () => Stuck(map));
             Sec(o, "power", () => Power(map));
             Sec(o, "food", () => VivariumFood.Digest(map));

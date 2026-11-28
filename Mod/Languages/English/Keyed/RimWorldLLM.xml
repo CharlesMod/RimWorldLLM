@@ -614,6 +614,10 @@ Your RimWorldLLM settings are kept, and so is any GGUF file you chose yourself. 
   <RWL_Viv_MayLook>Narrator may look at the screen</RWL_Viv_MayLook>
   <RWL_Viv_MayLookTip>The narrator may take a picture of the map (never the interface) when planning the base. Used only when the model supports images.</RWL_Viv_MayLookTip>
   <RWL_Viv_ImplantGenes>The narrator may implant xenogerms (Biotech)</RWL_Viv_ImplantGenes>
+  <RWL_Viv_ExecutePrisoners>The narrator may execute prisoners</RWL_Viv_ExecutePrisoners>
+  <RWL_Viv_ExecutePrisonersTip>Off: the narrator never orders a prisoner executed. On: it may set a prisoner to be executed, always with a reason you can read.</RWL_Viv_ExecutePrisonersTip>
+  <RWL_Viv_SlaughterPets>The narrator may slaughter named pets</RWL_Viv_SlaughterPets>
+  <RWL_Viv_SlaughterPetsTip>Off: the narrator may slaughter only unnamed, unbonded colony animals. On: it may also slaughter animals with a name or a bond.</RWL_Viv_SlaughterPetsTip>
   <RWL_Viv_SlowForCombat>The narrator slows the game for fights</RWL_Viv_SlowForCombat>
   <RWL_Viv_SlowForCombatTip>On: when a fight starts the narrator sets normal speed, and puts your speed back when it ends (unless you changed it meanwhile). Works even when the narrator does not control the speed.</RWL_Viv_SlowForCombatTip>
   <RWL_Viv_Commentary>Narrator commentary</RWL_Viv_Commentary>

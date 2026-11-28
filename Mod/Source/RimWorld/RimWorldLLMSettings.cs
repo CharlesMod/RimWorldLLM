@@ -127,6 +127,10 @@ namespace RimWorldLLM
         /// <summary>Biotech: the narrator may set a colonist to receive a xenogerm (never children). Default off.</summary>
         public bool narratorMayLook = true;            // the narrator may take a picture of the map (never the UI) when planning the base; GET /config vision_allowed; used only when the engine supports images
         public bool narratorMayImplantGenes = false;
+        /// <summary>The narrator may order a prisoner executed (prisoner tool). Default off.</summary>
+        public bool narratorMayExecutePrisoners = false;
+        /// <summary>The narrator may slaughter named or bonded animals. Default off.</summary>
+        public bool narratorMaySlaughterPets = false;
         public bool narratorSlowsForCombat = true;
         public float stewardHeartbeatHours = 6f;
         public bool narratorAnswerDialogs = true;
@@ -260,6 +264,8 @@ namespace RimWorldLLM
             Scribe_Values.Look(ref narratorControlsSpeed, "narratorControlsSpeed", false);
             Scribe_Values.Look(ref narratorMayLook, "narratorMayLook", true);
             Scribe_Values.Look(ref narratorMayImplantGenes, "narratorMayImplantGenes", false);
+            Scribe_Values.Look(ref narratorMayExecutePrisoners, "narratorMayExecutePrisoners", false);
+            Scribe_Values.Look(ref narratorMaySlaughterPets, "narratorMaySlaughterPets", false);
             Scribe_Values.Look(ref narratorSlowsForCombat, "narratorSlowsForCombat", true);
             Scribe_Values.Look(ref stewardHeartbeatHours, "stewardHeartbeatHours", 6f);
             Scribe_Values.Look(ref narratorAnswerDialogs, "narratorAnswerDialogs", true);

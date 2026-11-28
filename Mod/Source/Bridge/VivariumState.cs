@@ -38,6 +38,9 @@ namespace RimWorldLLM.Bridge
         public bool Commentary = true;
         /// <summary>Biotech: may the narrator implant xenogerms into colonists. Off until the player says so.</summary>
         public bool MayImplantGenes = false;
+        /// <summary>The narrator may order prisoners executed / slaughter named or bonded animals. Off until the player says so.</summary>
+        public bool MayExecutePrisoners = false;
+        public bool MaySlaughterPets = false;
         /// <summary>Phase 4: trade and caravans (docs/VIVARIUM.md "Phase 4"); the game side refreshes these from the mod settings.</summary>
         public bool Trade = true;
         public bool Caravans = true;
@@ -70,6 +73,8 @@ namespace RimWorldLLM.Bridge
                 ["slow_for_combat"] = SlowForCombat,
                 ["heartbeat_hours"] = HeartbeatHours,
                 ["may_implant_genes"] = MayImplantGenes,
+                ["may_execute_prisoners"] = MayExecutePrisoners,
+                ["may_slaughter_pets"] = MaySlaughterPets,
                 ["trade"] = Trade,
                 ["caravans"] = Caravans,
                 ["trade_max_deal"] = TradeMaxDeal,

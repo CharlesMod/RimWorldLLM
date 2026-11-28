@@ -36,6 +36,8 @@ namespace RimWorldLLM
             vs.MayPauseForEmergencies = s.narratorMayPauseForEmergencies;
             vs.ControlsSpeed = s.narratorControlsSpeed;
             vs.MayImplantGenes = s.narratorMayImplantGenes;
+            vs.MayExecutePrisoners = s.narratorMayExecutePrisoners;
+            vs.MaySlaughterPets = s.narratorMaySlaughterPets;
             vs.SlowForCombat = s.narratorSlowsForCombat;
             vs.HeartbeatHours = s.stewardHeartbeatHours;
             vs.AnswerDialogs = s.narratorAnswerDialogs;

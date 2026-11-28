@@ -1159,6 +1159,13 @@ namespace RimWorldLLM
                         }
                         case "bill":
                         {
+                            var patient = map.mapPawns.AllPawnsSpawned.FirstOrDefault(x => x.thingIDNumber == mk.Id);
+                            if (patient != null)
+                            {
+                                var pbill = patient.BillStack.Bills.FirstOrDefault(x => BuildHelpers.LoadIdOf(x.GetUniqueLoadID()) == mk.Sub);
+                                if (pbill != null) { patient.BillStack.Delete(pbill); bills++; } else gone++;
+                                break;
+                            }
                             Map bm;
                             var bench = FindBench(mk.Id, out bm);
                             var giver = bench as IBillGiver;
