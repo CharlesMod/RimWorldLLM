@@ -11,7 +11,7 @@ namespace RimWorldLLM
     /// Vanilla reads only, nothing the player could not see in the UI. Each part is independent and dropped if it throws.</summary>
     public static class VivariumBuildView
     {
-        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 10;
+        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 14;
         static readonly HashSet<string> logged = new HashSet<string>();
 
         // The BASE line is worked out from the live map, then kept until the colony's buildings, blueprints or the hour change
@@ -222,16 +222,24 @@ namespace RimWorldLLM
                 {
                     var plant = g.GetPlantDefToGrow();
                     var o = new JObject { ["id"] = z.ID, ["kind"] = "grow", ["label"] = z.label, ["cells"] = z.Cells.Count };
-                    if (plant != null) o["plant"] = plant.label;
+                    if (plant != null) o["plant"] = RimWorldLLM.Bridge.ZonesPure.CropWord(plant.defName, plant.label);
                     arr.Add(o);
                 }
                 else if (s != null)
                     arr.Add(new JObject { ["id"] = z.ID, ["kind"] = "stockpile", ["label"] = z.label, ["cells"] = z.Cells.Count, ["preset"] = Preset(s), ["priority"] = s.GetStoreSettings().Priority.ToString().ToLowerInvariant() });
             }
+            var basins = VivariumHands.HydroBasins(map);
+            if (basins.Count > 0)
+            {
+                var hp = basins[0].GetPlantDefToGrow();
+                var ho = new JObject { ["kind"] = "hydroponics", ["label"] = "hydroponics", ["cells"] = basins.Count };
+                if (hp != null) ho["plant"] = RimWorldLLM.Bridge.ZonesPure.CropWord(hp.defName, hp.label);
+                arr.Add(ho);
+            }
             return arr;
         }
 
-        static string Preset(Zone_Stockpile s)
+        internal static string Preset(Zone_Stockpile s)
         {
             var f = s.GetStoreSettings().filter;
             var allowed = f.AllowedThingDefs.ToList();
@@ -271,17 +279,17 @@ namespace RimWorldLLM
 
         static JToken Plants(Map map)
         {
+            // every sowable, researched crop (labels as the model says them), food crops first, then the aliased ones
             var words = new List<string>();
-            var seen = new HashSet<string>();
-            foreach (var kv in RimWorldLLM.Bridge.BuildPure.PlantAliases)
+            var rows = VivariumHands.Crops().Where(c => c.Ground && c.Research == null).Select(c =>
             {
-                if (words.Count >= MaxPlants) break;
-                var def = DefDatabase<ThingDef>.GetNamedSilentFail(kv.Value);
-                if (def == null || def.plant == null || !seen.Add(kv.Value)) continue;
-                if (def.plant.sowTags == null || !def.plant.sowTags.Contains("Ground")) continue;
-                if (def.plant.sowResearchPrerequisites != null && def.plant.sowResearchPrerequisites.Any(r => !r.IsFinished)) continue;
-                words.Add(kv.Key);
-            }
+                var d = DefDatabase<ThingDef>.GetNamedSilentFail(c.Def);
+                bool food = d != null && d.plant != null && d.plant.harvestedThingDef != null && d.plant.harvestedThingDef.IsNutritionGivingIngestible;
+                string w = RimWorldLLM.Bridge.ZonesPure.CropWord(c.Def, c.Label);
+                bool alias = RimWorldLLM.Bridge.BuildPure.PlantAliases.ContainsKey(w);
+                return new { w, rank = (food ? 0 : 2) + (alias ? 0 : 1) };
+            }).OrderBy(r => r.rank).ThenBy(r => r.w, StringComparer.Ordinal);
+            foreach (var r in rows) { if (words.Count >= MaxPlants) break; if (!words.Contains(r.w)) words.Add(r.w); }
             return new JArray(words);
         }
 

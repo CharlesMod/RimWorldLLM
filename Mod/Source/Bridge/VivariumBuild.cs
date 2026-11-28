@@ -106,6 +106,7 @@ namespace RimWorldLLM.Bridge
         public int Map;            // Map.uniqueID
         public string Def;
         public int Id, Sub;
+        public string Extra;       // zone_settings: the filter change as "+turnedOn|-turnedOff" def names
         public List<int> Things = new List<int>();
         public List<int> Cells = new List<int>(); // flat x0, z0, x1, z1, ...
 
@@ -118,6 +119,7 @@ namespace RimWorldLLM.Bridge
             if (!string.IsNullOrEmpty(Def)) o["def"] = Def;
             if (Id != 0) o["id"] = Id;
             if (Sub != 0) o["sub"] = Sub;
+            if (!string.IsNullOrEmpty(Extra)) o["extra"] = Extra;
             if (Things.Count > 0) o["things"] = new JArray(Things);
             if (Cells.Count > 0) o["cells"] = new JArray(Cells);
             return o;
@@ -129,7 +131,7 @@ namespace RimWorldLLM.Bridge
             var m = new NarratorMark
             {
                 Kind = VivJson.Str(o["kind"]), Map = VivJson.Int(o["map"]), Def = VivJson.Str(o["def"], null),
-                Id = VivJson.Int(o["id"]), Sub = VivJson.Int(o["sub"])
+                Id = VivJson.Int(o["id"]), Sub = VivJson.Int(o["sub"]), Extra = VivJson.Str(o["extra"], null)
             };
             if (string.IsNullOrEmpty(m.Kind)) return null;
             if (o["things"] is JArray t) foreach (var x in t) if (x.Type == JTokenType.Integer) m.Things.Add(x.Value<int>());

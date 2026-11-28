@@ -543,7 +543,11 @@ namespace RimWorldLLM.Mind.RimWorld
                     string kind = CleanLabel(DigestJson.G(z, "kind"));
                     JToken pl = DigestJson.G(z, "plant"), pr = DigestJson.G(z, "preset");
                     string what = CleanLabel(DigestJson.Truthy(pl) ? pl : DigestJson.Truthy(pr) ? pr : null);
-                    zs.Add(("#" + Num(DigestJson.G(z, "id")) + " " + kind + " " + what + " " + Num(DigestJson.G(z, "cells")) + " cells").Replace("  ", " "));
+                    // a hydroponics entry has no id and counts basins; a stockpile's priority shows when it is not normal
+                    string idp = kind != "hydroponics" ? "#" + Num(DigestJson.G(z, "id")) + " " : "";
+                    string prio = CleanLabel(DigestJson.G(z, "priority"));
+                    prio = prio.Length > 0 && prio != "normal" ? " " + prio : "";
+                    zs.Add((idp + kind + " " + what + prio + " " + Num(DigestJson.G(z, "cells")) + (kind == "hydroponics" ? " basins" : " cells")).Replace("  ", " "));
                 }
                 outl.Add("ZONES: " + string.Join("; ", zs));
             }

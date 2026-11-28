@@ -7,7 +7,7 @@ using Xunit;
 
 namespace RimWorldLLM.Tests
 {
-    sealed class FakeHands : IVivariumHands
+    class FakeHands : IVivariumHands
     {
         public List<string> Calls = new List<string>();
         public HandResult Next = HandResult.Done("did it");

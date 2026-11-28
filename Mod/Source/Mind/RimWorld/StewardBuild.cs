@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using RimWorldLLM.Bridge;
 using RimWorldLLM.Mind.Py;
 using RimWorldLLM.Mind.ToolLoop;
 
