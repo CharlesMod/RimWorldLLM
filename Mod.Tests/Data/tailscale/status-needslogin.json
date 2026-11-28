@@ -1,0 +1,56 @@
+{
+  "Version": "1.90.6-t0000000-g000000",
+  "TUN": false,
+  "BackendState": "NeedsLogin",
+  "HaveNodeKey": true,
+  "AuthURL": "https://login.tailscale.com/a/0000",
+  "TailscaleIPs": null,
+  "Self": {
+    "ID": "nFake0CNTRL",
+    "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000000",
+    "HostName": "game-pc",
+    "DNSName": "",
+    "OS": "windows",
+    "UserID": 1000,
+    "TailscaleIPs": null,
+    "AllowedIPs": [],
+    "Tags": [],
+    "Addrs": null,
+    "CurAddr": "",
+    "Relay": "ord",
+    "PeerRelay": "",
+    "RxBytes": 0,
+    "TxBytes": 0,
+    "Created": "2026-09-13T17:13:01.711583571Z",
+    "LastWrite": "0001-01-01T00:00:00Z",
+    "LastSeen": "2026-11-20T10:00:00Z",
+    "LastHandshake": "0001-01-01T00:00:00Z",
+    "Online": false,
+    "ExitNode": false,
+    "ExitNodeOption": false,
+    "Active": false,
+    "PeerAPIURL": [],
+    "TaildropTarget": 0,
+    "NoFileSharingReason": "",
+    "InNetworkMap": true,
+    "InMagicSock": true,
+    "InEngine": false,
+    "Capabilities": [
+      "https"
+    ],
+    "CapMap": {
+      "https": null
+    },
+    "KeyExpiry": "2027-05-01T00:00:00Z"
+  },
+  "Health": [
+    "Tailscale is stopped."
+  ],
+  "MagicDNSSuffix": "",
+  "CurrentTailnet": null,
+  "CertDomains": null,
+  "ExtraRecords": null,
+  "Peer": null,
+  "User": null,
+  "ClientVersion": null
+}

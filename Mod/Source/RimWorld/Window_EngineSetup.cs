@@ -97,7 +97,7 @@ namespace RimWorldLLM
             if (EngineManager.Client == null)
             {
                 l.Gap(6f);
-                if (!EngineManager.Launching && l.ButtonText(UiUtil.T("RWL_Setup_Retry"))) EngineManager.LaunchAsync();
+                if (EngineManager.LocalSource && !EngineManager.Launching && l.ButtonText(UiUtil.T("RWL_Setup_Retry"))) EngineManager.LaunchAsync();
                 l.End();
                 _viewHeight = l.CurHeight + 12f;
                 Widgets.EndScrollView();

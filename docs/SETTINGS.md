@@ -30,7 +30,9 @@ next to bridge ports and tokens; they now have their own first tab, and the deve
 | Setting (key) | Default | Who | What it does | Moved |
 |---|---|---|---|---|
 | `enabled` | true | P | Master switch: events, art, wants and dial-out stop when off | Connection -> Model |
-| `llmSource` | "local" | P | Built-in engine or My own endpoint | Connection -> Model |
+| `llmSource` | "local" | P | Built-in engine, or own (An engine on another PC on my network / My own endpoint) | Connection -> Model |
+| `llmOwnKind` | "" | - | Which kind of own source is picked: "pc" (An engine on another PC on my network) or "endpoint" (My own endpoint); "" = endpoint | **new** |
+| `shareEngine` | false | P | Share this PC's engine on my network (local engine only); off = the engine serves this PC only | **new** |
 | `llmBaseUrl`, `llmModel`, `llmApiKey` | "" | PU | Own OpenAI-compatible endpoint; used by the mind directly (the key stays in the mod settings) | Connection -> Model |
 | `llmEngineId` | "" | - | Internal: the easyEngine (engine_id) the own endpoint was filled from by pairing; "" for a typed endpoint | **new** |
 | `pairedEngines` | "" | - | Internal: JSON list of `{engine_id, token, client_id, name, address}`, one per paired engine; never logged | **new** |
@@ -49,19 +51,57 @@ the header: architecture, parameters, quant, trained context, size, fit verdict,
 it. The file is read in place; nothing copies, moves or deletes it. Without a native file dialog: Unity/Mono has no
 reliable one on Windows, Linux and macOS, so the browser is in-game.
 
-#### Finding and pairing an engine (My own endpoint)
+#### Sharing this PC's engine (host)
 
-For an easyEngine on another computer (the PC with the card): no URL or key to type. In My own endpoint:
+Off by default. With "Share this PC's engine on my network" off, the local engine listens on 127.0.0.1 only, nothing is
+exposed and nobody is asked anything. The toggle (`shareEngine`) is shown with the local engine only; with another
+source the status line reads "Sharing needs the local engine."
 
-1. **Find engines on my network** browses mDNS for `_easy-engine._tcp.local.` for about 2 s (IPv4 first); when nothing
-   answers, it runs the shipped `easy-engine find --json` instead. Each engine is listed with its name, model, phase and
-   address, and `[paired]` when this game already holds a token for its engine_id. **Or its address** takes a typed
-   `host[:port]` (default port 47480) and asks that engine's hello.
+- **On:** the mod asks the running engine to listen on the private networks (LAN and Tailscale) with pairing on. It is
+  live: no restart of the engine or the game. The toggle is the truth: an engine found shared while the toggle is off
+  is put back to off.
+- **The exposure line** under the toggle: "Any device on this network (a cafe's Wi-Fi too) can see this PC's engine name
+  and model; only PCs you Allow can use it."
+- **Status lines:** "Not shared: the engine serves this PC only." / "Changing sharing..." / "Shared as <name>." /
+  "Sharing is on, but this PC has no private network up right now (no LAN or Tailscale address). It starts when one is." /
+  "This engine can't share yet. Update RimWorldLLM on this PC." / "Couldn't change sharing: <reason>".
+- **Other PCs find it at:** each address of this PC with a LAN or Tailscale badge. Click one to show its hello URL
+  (`http://<address>:47480/engine/v1/hello`) as a QR code: scan it with a phone to check the engine answers (it returns a
+  small JSON with the name and model). Other PCs find it by themselves; nothing needs typing there.
+- **Allow / Deny:** when another PC asks to pair, a window "A PC wants to use this engine" opens in game: "<name> wants to
+  use this PC's engine.", "Code: 493 201", "From <address>", "Allow only if the other PC shows the same code." Allow or
+  Deny. The code must match the one the other PC shows big on its screen. If the other PC asks again, the window says
+  "It asked again with a new code. Compare again." If it withdraws or the request is answered elsewhere: "The request
+  ended (withdrawn on the other PC, or answered elsewhere)." The window does not pause the game and Esc does not answer it.
+- **Waiting to pair:** every request still waiting, with Allow and Deny. After a Deny, the engine marks that address's
+  later requests quiet for the rest of its life: no pop-up, but they still wait here, so a mistaken Deny can be undone.
+- **Paired PCs:** the list under the toggle, "<name> (since <date>)", with **Remove**: it takes the PC's access away at
+  once; that PC has to pair again.
+- **Firewall:** the first time sharing is on, Windows asks whether easy-engine may use the network: allow it on private
+  networks only. On a Mac, allow incoming connections when asked. (This is also in the toggle's tooltip.)
+- **Provisional:** the engine calls behind this (live share switch, share addresses in status, the paired clients list and
+  its removal) are the engine's share slice; an engine without it shows "This engine can't share yet."
+
+#### Finding and pairing an engine (another PC, or My own endpoint)
+
+For an easyEngine on another computer (the PC with the card): no URL or key to type. Pick the LLM source
+**An engine on another PC on my network** (`llmSource` = own, `llmOwnKind` = pc; the other PC turns on sharing, see above).
+"My own endpoint" keeps the URL, model and key fields and the Pair with this engine button below. In either:
+
+1. **Find engines on my network** merges two searches, once per press (not continuously): mDNS for
+   `_easy-engine._tcp.local.` for about 2 s (IPv4 first; when nothing answers, the shipped `easy-engine find --json`), and
+   Tailscale: the game runs `tailscale status --json` (on PATH; `/Applications/Tailscale.app/Contents/MacOS/Tailscale` on
+   macOS; `%ProgramFiles%\Tailscale\tailscale.exe` on Windows), takes the online peers and asks each one's
+   `GET /engine/v1/hello` on port 47480 with a timeout of about 1 s, 4 at a time (IPv6 tailnet addresses too). No
+   Tailscale installed or not running: that search is skipped quietly. Each engine is listed with its name, model, phase,
+   address, a **LAN** or **Tailscale** badge, and `[paired]` when this game already holds a token for its engine_id. **Or its address** takes a typed
+   `host[:port]` (default port 47480) and asks that engine's hello; it is the last fallback when nothing is found.
 2. **Connect** calls hello. An engine that needs no token (a loopback engine in local mode, or `--open`) is used at once.
    Otherwise the game asks to pair as "RimWorld on <computer name>" and shows the six-digit code big ("493 201"):
    compare it with the code on the engine's screen (setup page, tray, or `easy-engine pair`) and press Allow there.
    Cancel withdraws the request. Denied on the engine ends it; a request the engine ended (it restarted, or a newer
-   request from this computer replaced it) offers Try again once. A dropped connection is retried by itself.
+   request from this computer replaced it) offers Try again once. A dropped connection is retried by itself. Hello is
+   always asked first without a token (anonymous); a stored token is sent only to the engine_id that issued it.
 3. **Paired:** the token is stored per engine_id in `pairedEngines` and the endpoint fields are filled: `llmBaseUrl` =
    the engine's address + `/v1`, `llmModel` = the `model_id` from hello (the selected model's catalog id; easyEngine
    871f821 and newer, `""` when none is selected or the model is a custom file, absent on older engines) or, when that
@@ -70,8 +110,10 @@ For an easyEngine on another computer (the PC with the card): no URL or key to t
    `llmEngineId` = the engine. The token is sent as `Authorization: Bearer` from then on; it never appears in a log.
 4. **Staying connected:** at game start the paired engine is called at its last address with the token; if it moved, it
    is found again by engine_id over mDNS and the URL follows. A revoked or unknown token (also seen from a 401 with
-   `token_revoked` / `token_invalid` on the Test button or the engine client) is dropped, and the status line says
-   **Pair again** with a button (and a message once, in a running game). Typing another URL by hand lets go of the
+   `token_revoked` / `token_invalid` on the Test button or the engine client) is dropped; when the host pressed Remove,
+   the status line says "<name> removed this PC. Pair again to use its engine." Otherwise the status line says
+   **Pair again** with a button (and a message once, in a running game). If the host is off or gone, the status line says
+   so ("Nothing answered at <address>.") without freezing the game; it reconnects by itself after either side restarts. Typing another URL by hand lets go of the
    paired engine (its token stays stored for later).
 
 5. **Pair with this engine** (shown under the status line when `llmBaseUrl` is set and is not already a paired engine,

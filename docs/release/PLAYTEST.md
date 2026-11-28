@@ -30,6 +30,13 @@ in-game check", [CREATIVE-ROUND.md](../CREATIVE-ROUND.md) "Still needs an in-gam
 4. **First-run letter.** On the first game start or load: one letter "RimWorldLLM: local model" with Set up / Use my own
    endpoint / Later. "Later" dismisses it without nagging every load.
 
+5. **Download bar (clean machine).** On a first run with no engine or model installed, the main menu itself shows a small panel
+   at the bottom centre while things download: "Downloading the AI engine", then "Downloading Lantern (Gemma 4 E4B RP)" (or
+   your chosen tier), each with a 0-100 bar and a whole percent, moving about once a second, no ETA, speed or bytes. Check it
+   does not overlap the menu buttons, the version/mods text, the news, the expansion icons or the language/credits buttons at
+   UI scale 1 and 2 (the position is a guess made without the game; tell us where it collides). "Checking download" appears
+   during the checksum pass, "Ready" for a few seconds at the end, and a failed download shows one short line.
+
 ## B. Setup and the first line (E4B starter)
 
 5. **Setup window.** Shows the card, its memory, RAM, disk, the recommended model and a fit verdict per model. On a 16 GB
@@ -210,6 +217,33 @@ Decisions for the keeper:
 - Graves get an epitaph line the game never had (additive). Keep, or limit graves to sarcophagus plates?
 - Names (pawns, factions, settlements, animals, xenotypes), quests, letters and growth moments stay the game's (keys,
   parsed tags, children). Say if any of them should be next.
+
+## Two PCs: sharing an engine (LAN and Tailscale)
+
+Needs two PCs with RimWorldLLM (A = the host with the engine, B = the guest), a phone, and for the Tailscale items
+Tailscale on both. The host-side calls (live share switch, share addresses, paired clients list and removal) belong to the
+engine's share slice and are provisional: if A's status says "This engine can't share yet. Update RimWorldLLM on this PC.",
+the engine on A lacks that slice; note it and skip the items that need it.
+
+S1. **Default is same-PC.** Fresh install on A, no sharing: no prompts of any kind (no firewall prompt) and nothing
+    listening outside. Linux: `ss -ltnp | grep 4748` shows only 127.0.0.1. Windows: `netstat -an | findstr 4748` shows
+    only 127.0.0.1.
+S2. **Turn sharing on (A).** Model, local engine: tick "Share this PC's engine on my network". The firewall prompt
+    appears (Windows: allow on private networks only; macOS: allow incoming connections). No game or engine restart.
+S3. **Status.** Shows "Shared as <name>." with the exposure line and "Other PCs find it at:" with an address per network,
+    badged LAN and Tailscale. Click an address: a QR shows. Scan it with the phone: the hello JSON opens (name, model).
+S4. **Find on LAN (B).** Same Wi-Fi. Pick "An engine on another PC on my network", press Find: A shows with the LAN badge.
+S5. **Find on Tailscale (B).** Move B off A's LAN (phone hotspot), Tailscale on both, press Find: A shows with the
+    Tailscale badge. (Found on both: it appears once.) Optional: a peer with only an IPv6 tailnet address.
+S6. **Pair, Allow.** Connect on B: a big code shows. On A the window "A PC wants to use this engine" shows the same code
+    and B's name. Allow: B says paired and the colonists talk on B.
+S7. **Deny.** Pair again from B (remove B first if paired), press Deny on A: B says "Denied on the engine".
+S8. **Withdraw.** Connect on B, leave A's window open, press Cancel on B: A's window says "The request ended".
+S9. **Replacement.** Connect on B, then press Connect again: A's window says "It asked again with a new code. Compare again."
+S10. **Remove.** On A, Paired PCs, Remove on B: B's status says "<A> removed this PC. Pair again to use its engine."
+S11. **Restart A's game.** B reconnects by itself (no new pairing).
+S12. **A off.** Untick the toggle, or quit A: B shows a clear status ("Nothing answered at ...") and the game does not hang.
+S13. **Off again.** With the toggle off, repeat S1: only 127.0.0.1 again.
 
 ## Windows run (separate, short)
 

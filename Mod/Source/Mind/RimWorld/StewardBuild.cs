@@ -33,7 +33,7 @@ namespace RimWorldLLM.Mind.RimWorld
             "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);   // as StewardSession's (a copy, as the Python)
 
         public static readonly string[] ToolNames = { "build", "zone", "designate", "bill" };
-        public static readonly string[] Purposes = { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec" };   // BuildPure room purposes
+        public static readonly string[] Purposes = { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec", "research" };   // BuildPure room purposes
         public static readonly string[] Sizes = { "small", "medium", "large" };
         public static readonly string[] Presets = { "food", "meds", "raw", "all" };
         public static readonly string[] BillOps = { "add", "remove", "suspend", "resume" };
@@ -46,6 +46,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly List<KeyValuePair<string, string>> Benches;
         public readonly Dictionary<string, List<string>> Recipes = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         public readonly List<string> Things, Stuff, Plants, Ores;
+        /// <summary>The near choices: room labels and roles from build.rooms, then colonist names. NameList: the colonist names (for).</summary>
+        public readonly List<string> NearList, NameList;
         /// <summary>The stockpile presets: waste (a wastepack-only stockpile) is added with a Biotech bio block.</summary>
         public readonly List<string> PresetList;
         public readonly List<ToolSpec> Tools;
@@ -126,6 +128,20 @@ namespace RimWorldLLM.Mind.RimWorld
                 if (xo != null && Benches.Any(p => p.Key == PyJson.Str(DigestJson.G(xo, "id"))) && DigestJson.G(xo, "recipes") is JArray rec)
                     Recipes[PyJson.Str(DigestJson.G(xo, "id"))] = WordsOf(rec);
             }
+            NameList = new List<string>();
+            try { NameList.AddRange(StewardDigest.PawnNames(digest).Keys.Where(n => n.Length > 0 && n.Length <= 40 && n != None)); }
+            catch (Exception e) when (e is PyTypeError || e is PyValueError || e is InvalidCastException) { }
+            NameList = NameList.Distinct(StringComparer.Ordinal).Take(MaxRooms).ToList();
+            NearList = new List<string>();
+            foreach (var x in Iter(DigestJson.G(b, "rooms")).Take(MaxRooms))
+                foreach (var k in new[] { "label", "role" })
+                {
+                    JToken r = x is JObject xo ? DigestJson.G(xo, k) : null;
+                    if (!DigestJson.Truthy(r)) continue;
+                    string w = PyStr.Strip(GameData.Clean(PyJson.Str(r), "build", 40));
+                    if (w.Length > 0 && w != None && !NearList.Contains(w)) NearList.Add(w);
+                }
+            foreach (var n in NameList) if (!NearList.Contains(n)) NearList.Add(n);
             Things = WordsOf(Iter(DigestJson.G(b, "can_build")));
             Stuff = WordsOf(Iter(DigestJson.G(b, "stuff")).Select(s => s is JObject so ? (so.TryGetValue("stuff", out JToken v) ? v : null) : s));
             Plants = WordsOf(Iter(DigestJson.G(b, "plants")));
@@ -157,12 +173,14 @@ namespace RimWorldLLM.Mind.RimWorld
                 new Param("kind", "enum", "room: walls and a door; thing: one building", choices: kinds),
                 Opt("purpose", "room: its use", Purposes), Opt("size", "room: how big", Sizes),
             };
+            if (NearList.Count > 0) ps.Add(Opt("near", "room: next to this room or colonist", NearList));
+            if (NameList.Count > 0) ps.Add(Opt("for", "room: whose room it is", NameList));
             if (Things.Count > 0) ps.Add(Opt("thing", "thing: what", Things));
             if (Rooms.Count > 0 && Things.Count > 0)
                 ps.Add(RoomsParam("thing: inside this existing room (a room planned this turn has no id yet), else near home"));
             ps.AddRange(stuff);
             ps.Add(WhyParam);
-            outl.Add(new ToolSpec("build", "Plan a room or one building; the planner picks the cells.", ps));
+            outl.Add(new ToolSpec("build", "Plan a room or one building: say what room you need and why; the game picks where and furnishes it.", ps));
 
             var zk = new List<string>();
             if (Plants.Count > 0) zk.Add("grow");
@@ -253,6 +271,13 @@ namespace RimWorldLLM.Mind.RimWorld
                 // thing/room are ignored for a room: the grammar writes every parameter and the 26B fills them with what it
                 // means to put inside later ("cooler" for a freezer); refusing cost a step each time in the live check.
                 var rb = new JObject { ["purpose"] = p.DeepClone(), ["size"] = s.DeepClone() };
+                foreach (var k in new[] { "near", "for" })
+                {
+                    JToken nv = Get(v, k);
+                    if (nv == null) continue;
+                    string w = PyStr.Strip(GameData.Clean(Text(nv), "build", 40));
+                    if (w.Length > 0) rb[k] = w;
+                }
                 StuffInto(v, rb);
                 return ("room", rb);
             }

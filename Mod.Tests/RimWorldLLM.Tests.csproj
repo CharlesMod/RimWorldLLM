@@ -71,4 +71,8 @@
         <EmbeddedResource Include="Mind/Data/jobs-dreams-golden.json" LogicalName="RimWorldLLM.Tests.jobs-dreams-golden.json" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="Data/tailscale/*.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

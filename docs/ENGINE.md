@@ -31,6 +31,15 @@ The engine installs no uv or Python and runs no agent: the game profile has no a
   `bridge.json` as today.
 - First run: if the engine says `not_installed`, the mod shows one dismissible letter
   ("RimWorldLLM can set up a local model: Set up / Use my own endpoint / Later").
+- Main-menu download bar: while the engine downloads something of 50 MB or more (its own install, the starter model, or the
+  chosen model in the background), a small panel at the bottom centre of the main menu shows what is downloading (the tier's
+  code name first, e.g. "Downloading Campfire (Gemma 4 26B RP)"; "Downloading the AI engine" for the llama binary), a 0-100 bar
+  with the whole percent, and nothing else: no ETA, speed or bytes. A checksum pass reads "Checking download" with its own
+  0-100. An unknown total shows "Downloading... N MB" without a percent. When done it says "Ready" for 4 s; on a failure it
+  shows one short line. The menu polls status itself once per second while a download runs (every 2 s otherwise), off the main
+  thread; the bar moves only on those samples. In game the existing status lines stay. Code: `Bridge/DownloadBar.cs` (pure),
+  `RimWorld/MainMenuDownloadBar.cs` (drawing). Model code names come from status `model_codename` / `upgrade.target_codename`,
+  with `Bridge/ModelCodename.cs` as the fallback table by catalog id.
 - Nothing here blocks the game thread: all engine calls are async with short timeouts, results
   marshalled to the main thread.
 

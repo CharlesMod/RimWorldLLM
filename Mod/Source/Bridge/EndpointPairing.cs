@@ -56,9 +56,15 @@ namespace RimWorldLLM.Bridge
             var p = new EndpointProbe { Root = root, Kind = EndpointPairKind.NotAnEngine };
             if (root == null) return p;
             bool hasKey = !string.IsNullOrEmpty(key);
-            var hr = await api.HelloAsync(root, hasKey ? key : null, ct).ConfigureAwait(false);
+            // Anonymous first: the typed key goes only to an address that answers as an easy-engine.
+            var hr = await api.HelloAsync(root, null, ct).ConfigureAwait(false);
             p.Hello = hr.hello;
             if (hr.hello == null || !hr.hello.IsEasyEngine) return p;
+            if (hasKey && hr.hello.TokenRequired)
+            {
+                var hk = await api.HelloAsync(root, key, ct).ConfigureAwait(false);
+                if (hk.hello != null && hk.hello.IsEasyEngine && hk.hello.EngineId == hr.hello.EngineId) { hr = hk; p.Hello = hk.hello; }
+            }
             bool statusOk = false;
             if (hasKey && EngineAuthCodes.FromHello(hr.hello, true) != EngineAuth.Paired && hr.hello.TokenRequired)
             {

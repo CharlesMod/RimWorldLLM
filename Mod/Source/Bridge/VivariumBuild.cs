@@ -57,7 +57,11 @@ namespace RimWorldLLM.Bridge
         public string Size = "medium";
         public string Stuff;
         public string Door = "auto"; // n, e, s, w, auto (faces the base)
-        public Where At = new Where(); // At.X/Z = south-west corner; none = find a site near the base
+        public Where At = new Where(); // At.X/Z = south-west corner (scripts); none = the base planner picks the site
+        public string Near;        // a room role/label or a colonist's name the room goes next to (planner)
+        public string For;         // who it is for (words only)
+        public int Beds;           // barracks/hospital beds; 0 = from the size
+        public bool Furnish = true; // lay out the role's furniture inside
     }
 
     /// <summary>POST /act/zone. kind: grow, stockpile, dump.</summary>
@@ -274,7 +278,7 @@ namespace RimWorldLLM.Bridge
     {
         public const int MinRoom = 3, MaxRoom = 11, MaxZoneSide = 20;
 
-        public static readonly string[] Purposes = { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec" };
+        public static readonly string[] Purposes = { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec", "research" };
         public static readonly string[] Sizes = { "small", "medium", "large" };
         public static readonly string[] Presets = { "food", "meds", "raw", "all", "waste" };
         public static readonly string[] Priorities = { "low", "normal", "preferred", "important", "critical" };

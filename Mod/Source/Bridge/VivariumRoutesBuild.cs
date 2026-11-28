@@ -189,20 +189,25 @@ namespace RimWorldLLM.Bridge
             a.Size = OptOneOf(b, "size", BuildPure.Sizes, "medium");
             int? w = OptInt(b, "w", BuildPure.MinRoom, BuildPure.MaxRoom), h = OptInt(b, "h", BuildPure.MinRoom, BuildPure.MaxRoom);
             if ((w == null) != (h == null)) throw new ArgError("give both w and h, or neither");
-            if (w != null) { a.W = w.Value; a.H = h.Value; }
-            else BuildPure.RoomSize(a.Purpose, a.Size, out a.W, out a.H);
+            a.Near = OptStr(b, "near", 40);
+            a.For = OptStr(b, "for", 40);
+            a.Beds = OptInt(b, "beds", 1, 16) ?? 0;
+            a.Furnish = OptBool(b, "furnish") ?? true;
+            int ow, oh;
+            if (w != null) { a.W = w.Value; a.H = h.Value; ow = a.W; oh = a.H; }
+            else { BasePlanner.Inside(a.Purpose, a.Size, a.Beds, out ow, out oh); ow += 2; oh += 2; }
             a.Stuff = OptStr(b, "stuff", 60);
             a.Door = OptOneOf(b, "door", BuildPure.DoorSides, "auto");
             a.At = ParseWhere(b, false, false);
             if (a.At.Room != 0) throw new ArgError("a new room takes a corner (x, z) or nothing, not a room id");
-            int walls = 2 * (a.W + a.H) - 4;
+            int walls = 2 * (ow + oh) - 4;
             return new Plan
             {
-                What = () => "build a " + a.Size + " " + a.Purpose,
+                What = () => "build a " + a.Size + " " + a.Purpose + (string.IsNullOrEmpty(a.For) ? "" : " for " + a.For),
                 GateAt = (v, tick) =>
                 {
                     int left = Peek(v, tick).Blueprints;
-                    if (left < walls) return HandResult.No("a " + a.W + "x" + a.H + " room needs up to " + walls + " blueprints but only " + left + " are left this cycle");
+                    if (left < walls) return HandResult.No("a " + ow + "x" + oh + " room needs up to " + walls + " blueprints but only " + left + " are left this cycle");
                     return null;
                 },
                 RunLeft = (hh, left) => hh.Room(a, left)

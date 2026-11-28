@@ -140,9 +140,10 @@ namespace RimWorldLLM
             _finding = true;
             var store = Store(s).Clone();
             string bin = BinaryPath();
+            string os = EnginePlatform.Detect().Os;
             Task.Run(async () =>
             {
-                try { _found = await EngineFinder.FindAsync(store, bin).ConfigureAwait(false); }
+                try { _found = await GuestDiscovery.FindAllAsync(() => EngineFinder.FindAsync(store, bin), () => GuestDiscovery.TailnetAsync(os), store).ConfigureAwait(false); }
                 catch { _found = new List<FoundEngine>(); }
                 finally { _finding = false; _findRan = true; }
             });
@@ -169,7 +170,7 @@ namespace RimWorldLLM
             var pe = Store(s).Get(e.EngineId);
             _outcomeApplied = false;
             _session = new PairingSession(new PairingApi(), e.Root, PairingSession.ClientNameFor(Environment.MachineName), pe != null ? pe.Token : null,
-                line => Log.Message("[RimWorldLLM] " + line));
+                line => Log.Message("[RimWorldLLM] " + line), e.EngineId);
             _session.Start();
         }
 
@@ -221,7 +222,9 @@ namespace RimWorldLLM
 
         // ------------------------------------------------------------------------------------ drawing
         /// <summary>The finding and pairing block inside "My own endpoint". Game thread.</summary>
-        public static void Draw(Listing_Standard l, RimWorldLLMSettings s)
+        /// <param name="guest">true: "An engine on another PC on my network" (find on the LAN and the tailnet, pair);
+        /// false: "My own endpoint" (only the "Pair with this engine" button for a typed URL).</param>
+        public static void Draw(Listing_Standard l, RimWorldLLMSettings s, bool guest = true)
         {
             ApplySession(s);
             // A URL typed by hand lets go of the paired engine (its token stays stored for later).
@@ -232,14 +235,14 @@ namespace RimWorldLLM
             }
             _lastBaseUrl = s.llmBaseUrl;
 
-            l.Label(UiUtil.T("RWL_Pair_Title"));
-            StatusRow(l, s);
+            if (guest) l.Label(UiUtil.T("RWL_Pair_Title"));
+            if (guest || !string.IsNullOrEmpty(s.llmEngineId)) StatusRow(l, s);
             ApplyProbe(s);
 
             var se = _session;
             if (se != null && se.Phase != PairPhase.Idle && se.Phase != PairPhase.Paired && se.Phase != PairPhase.Open) { SessionPanel(l, se); return; }
 
-            if (EndpointPairing.ShouldOffer(s.llmBaseUrl, s.llmEngineId, Store(s)))
+            if (!guest && EndpointPairing.ShouldOffer(s.llmBaseUrl, s.llmEngineId, Store(s)))
             {
                 var prow = l.GetRect(30f);
                 TooltipHandler.TipRegion(prow, UiUtil.T("RWL_Pair_EndpointTip"));
@@ -248,6 +251,7 @@ namespace RimWorldLLM
                 if (!string.IsNullOrEmpty(_probeMsg)) { GUI.color = Red; Widgets.Label(new Rect(prow.x + 270f, prow.y + 4f, prow.width - 270f, 26f), _probeMsg); GUI.color = Color.white; }
             }
 
+            if (!guest) { l.Gap(6f); return; }
             var row = l.GetRect(30f);
             TooltipHandler.TipRegion(row, UiUtil.T("RWL_Pair_FindTip"));
             if (Widgets.ButtonText(new Rect(row.x, row.y, 260f, 28f), UiUtil.T(_finding ? "RWL_Pair_Finding" : "RWL_Pair_Find"), true, true, !_finding)) StartFind(s);
@@ -303,6 +307,9 @@ namespace RimWorldLLM
             string what = e.Answered
                 ? UiUtil.T("RWL_Pair_Row", e.Name, string.IsNullOrEmpty(e.ModelName) ? "-" : e.ModelName, EngineManager.PhaseLabel(e.Phase), e.Address)
                 : UiUtil.T("RWL_Pair_RowSilent", e.Name, e.Address);
+            bool ts = e.ViaTailscale, lan = e.ViaLan;
+            if (!ts && !lan) { if (NetKindOf.Of(e.Root) == NetKind.Tailscale) ts = true; else lan = true; }
+            what = (lan ? "[" + UiUtil.T("RWL_Share_BadgeLan") + "] " : "") + (ts ? "[" + UiUtil.T("RWL_Share_BadgeTailscale") + "] " : "") + what;
             if (e.HaveToken) what += "  " + UiUtil.T("RWL_Pair_HaveToken");
             bool current = !string.IsNullOrEmpty(e.EngineId) && e.EngineId == s.llmEngineId;
             GUI.color = e.Answered ? Color.white : Color.gray;

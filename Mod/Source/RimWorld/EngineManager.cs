@@ -18,27 +18,21 @@ namespace RimWorldLLM
     {
         public const long PollMs = 2000;
 
-        static volatile EngineClient _client;
-        static volatile EngineStatus _status;
-        static volatile EnginePlan _plan;
-        static volatile EngineHardware _hardware;
+        static readonly EngineSession _session = new EngineSession(() => LocalSource, () => EngineLauncher.DefaultDiscoverAsync(EnginePlatform.Detect()));
         static volatile LaunchResult _launch;
-        static volatile string _actionError;
         static volatile bool _launching;
-        static volatile bool _statusInFlight, _planInFlight, _hardwareInFlight;
-        static volatile bool _planStale = true;
-        static volatile bool _showFirstRun;
         static long _lastPollMs = long.MinValue / 2;
         static bool _firstRunShown;
 
-        public static EngineClient Client { get { return _client; } }
-        public static EngineStatus Status { get { return _status; } }
-        public static EnginePlan Plan { get { return _plan; } }
-        public static EngineHardware Hardware { get { return _hardware; } }
+        /// <summary>The local engine's control client; null in own-endpoint mode (and while no engine is attached).</summary>
+        public static EngineClient Client { get { return _session.Client; } }
+        public static EngineStatus Status { get { return _session.Status; } }
+        public static EnginePlan Plan { get { return _session.Plan; } }
+        public static EngineHardware Hardware { get { return _session.Hardware; } }
         public static LaunchResult Launch { get { return _launch; } }
         public static bool Launching { get { return _launching; } }
         /// <summary>Error text of the last button action (install, cancel, import...), or null.</summary>
-        public static string ActionError { get { return _actionError; } }
+        public static string ActionError { get { return _session.ActionError; } }
 
         public static bool LocalSource { get { var s = RimWorldLLMMod.Settings; return s == null || s.llmSource != "own"; } }
 
@@ -49,13 +43,13 @@ namespace RimWorldLLM
         {
             get
             {
-                var c = _client;
+                var c = _session.Client;
                 return c != null ? c.OpenAiBase : "http://127.0.0.1:" + EngineClient.FirstPort + "/v1";
             }
         }
 
         /// <summary>Model name for bridge.json in local mode ("" until the engine reports one).</summary>
-        public static string CurrentModel { get { var st = _status; return st != null && st.Model != null ? st.Model : ""; } }
+        public static string CurrentModel { get { var st = _session.Status; return st != null && st.Model != null ? st.Model : ""; } }
 
         static string ModRoot()
         {
@@ -91,11 +85,11 @@ namespace RimWorldLLM
                         Log.Warning("[RimWorldLLM] Engine: " + r.Error);
                     else if (r.AttachError != null)
                         Log.Warning("[RimWorldLLM] Engine attach: " + r.AttachError);
-                    if (r.Client != null)
+                    if (_session.Attach(r.Client))   // refused when the player switched to their own endpoint meanwhile
                     {
-                        _client = r.Client;
                         await PushSourceAsync().ConfigureAwait(false);
-                        await FetchStatusAsync().ConfigureAwait(false);
+                        await _session.FetchStatusAsync().ConfigureAwait(false);
+                        EngineShareManager.AfterAttach();   // same PC unless the player turned sharing on
                         RWLBridge.RefreshLlm();   // bridge.json carries the engine's real port
                     }
                 }
@@ -114,14 +108,14 @@ namespace RimWorldLLM
         /// <summary>The "Game on X · Y: N GB free for the model" line, or null (older engine, no data).</summary>
         public static string GpuLine()
         {
-            var st = _status;
+            var st = _session.Status;
             return st == null ? null : Bridge.GpuLine.Format(st.Gpu, (k, a) => UiUtil.T(k, a));
         }
 
         /// <summary>Tells a running engine to serve its own model (local source). Own-endpoint mode never talks to the engine: the mind calls the player's endpoint itself.</summary>
         public static Task PushSourceAsync()
         {
-            var c = _client;
+            var c = _session.Client;
             var s = RimWorldLLMMod.Settings;
             if (c == null || s == null) return Task.CompletedTask;
             if (s.llmSource == "own") return Task.CompletedTask;
@@ -132,12 +126,27 @@ namespace RimWorldLLM
         public static void SettingsChanged()
         {
             var s = RimWorldLLMMod.Settings;
-            if (s != null && s.engineAutoStart && LocalSource && _client == null) LaunchAsync();   // switched back to the local engine
+            if (!LocalSource) DropLocalEngine();   // own endpoint: no local client, no polling, no engine buttons
+            if (s != null && s.engineAutoStart && LocalSource && _session.Client == null) LaunchAsync();   // switched back to the local engine
             Task.Run(async () =>
             {
                 try { await PushSourceAsync().ConfigureAwait(false); } catch { }
                 RWLBridge.RefreshLlm();
             });
+            EngineShareManager.SettingsChanged();
+        }
+
+        /// <summary>Own-endpoint mode: forget the local engine and everything shown about it (the process itself is left running).</summary>
+        static void DropLocalEngine()
+        {
+            _session.SourceChanged();
+            _launch = null;
+            _session.FirstRunWanted = false;
+            _test = null;
+            _storage = null;
+            _storageFailed = false;
+            _customCheck = null;
+            _customCheckError = null;
         }
 
         // ---------------------------------------------------------------------------------- polling
@@ -147,93 +156,42 @@ namespace RimWorldLLM
             long now = Now;
             if (now - _lastPollMs < PollMs) return;
             _lastPollMs = now;
-            if (_client == null)
+            if (!LocalSource) return;   // own endpoint: nothing to poll
+            Task.Run(async () =>
             {
-                if (!_launching && LocalSource) Task.Run(DiscoverAsync);   // engine started elsewhere (setup page, CLI), or lost and back
-                return;
-            }
-            Task.Run(FetchStatusAsync);
+                // no client yet: look for an engine started elsewhere (setup page, CLI), or lost and back
+                bool had = _session.Client != null;
+                await _session.PollAsync(_launching).ConfigureAwait(false);
+                if (!had && _session.Client != null) { RWLBridge.RefreshLlm(); EngineShareManager.AfterAttach(); }
+            });
+        }
+
+        /// <summary>One status sample now, off the main thread (the main-menu download bar calls this at 1 Hz). Also resets the Touch clock.</summary>
+        public static void SampleNow()
+        {
+            _lastPollMs = Now;
+            if (!LocalSource) return;
+            Task.Run(async () =>
+            {
+                bool had = _session.Client != null;
+                await _session.PollAsync(_launching).ConfigureAwait(false);
+                if (!had && _session.Client != null) RWLBridge.RefreshLlm();
+            });
         }
 
         /// <summary>Resets the poll clock so the next Touch polls at once (window just opened).</summary>
-        public static void PollNow() { _lastPollMs = long.MinValue / 2; _planStale = true; }
-
-        static async Task DiscoverAsync()
-        {
-            try
-            {
-                var c = await EnginePlatformDiscover().ConfigureAwait(false);
-                if (c != null) { _client = c; await FetchStatusAsync().ConfigureAwait(false); RWLBridge.RefreshLlm(); }
-            }
-            catch { }
-        }
-
-        static Task<EngineClient> EnginePlatformDiscover() { return EngineLauncher.DefaultDiscoverAsync(EnginePlatform.Detect()); }
-
-        static async Task FetchStatusAsync()
-        {
-            var c = _client;
-            if (c == null || _statusInFlight) return;
-            _statusInFlight = true;
-            try
-            {
-                var r = await c.GetStatusAsync().ConfigureAwait(false);
-                if (r.Ok && r.Value != null)
-                {
-                    string before = _status != null ? _status.Phase : null;
-                    _status = r.Value;
-                    if (before != r.Value.Phase) _planStale = true;     // installed flags change when a job ends
-                    if (r.Value.Phase == EnginePhase.NotInstalled) _showFirstRun = true;
-                }
-                else if (r.Unreachable || r.TimedOut) { if (r.Unreachable) { _status = null; _client = null; } }
-            }
-            finally { _statusInFlight = false; }
-            if (_planStale) await FetchPlanAsync().ConfigureAwait(false);
-        }
-
-        /// <summary>Refreshes plan and (once) hardware for the setup window.</summary>
-        public static async Task FetchPlanAsync()
-        {
-            var c = _client;
-            if (c == null || _planInFlight) return;
-            _planInFlight = true;
-            try
-            {
-                _planStale = false;
-                var r = await c.GetPlanAsync().ConfigureAwait(false);
-                if (r.Ok) _plan = r.Value;
-                if (_hardware == null && !_hardwareInFlight)
-                {
-                    _hardwareInFlight = true;
-                    try { var h = await c.GetHardwareAsync().ConfigureAwait(false); if (h.Ok) _hardware = h.Value; }
-                    finally { _hardwareInFlight = false; }
-                }
-            }
-            finally { _planInFlight = false; }
-        }
+        public static void PollNow() { _lastPollMs = long.MinValue / 2; _session.MarkPlanStale(); }
 
         /// <summary>Re-probe hardware (the "refresh" in the setup window).</summary>
         public static void RefreshHardware()
         {
-            var c = _client;
-            if (c == null) return;
-            Task.Run(async () => { var h = await c.GetHardwareAsync(true).ConfigureAwait(false); if (h.Ok) _hardware = h.Value; });
+            _session.RefreshHardwareAsync();
         }
 
         // ---------------------------------------------------------------------------------- actions (button handlers)
-        static void Act<T>(Func<EngineClient, Task<EngineResult<T>>> call)
-        {
-            var c = _client;
-            if (c == null) { _actionError = "engine not running"; return; }
-            _actionError = null;
-            Task.Run(async () =>
-            {
-                var r = await call(c).ConfigureAwait(false);
-                if (!r.Ok) _actionError = r.Error ?? ("HTTP " + r.HttpStatus);
-                await FetchStatusAsync().ConfigureAwait(false);
-            });
-        }
-
+        static void Act<T>(Func<EngineClient, Task<EngineResult<T>>> call) { _session.Act(call); }
+        static string _actionError { get { return _session.ActionError; } set { _session.ActionError = value; } }
+        
         static volatile EngineTestResult _test;
         static volatile bool _testRunning;
         public static EngineTestResult LastTest { get { return _test; } }
@@ -242,7 +200,7 @@ namespace RimWorldLLM
         /// <summary>POST /engine/v1/test: tests the current endpoint and keeps the light for the settings page.</summary>
         public static void RunTest()
         {
-            var c = _client;
+            var c = _session.Client;
             if (c == null || _testRunning) return;
             _testRunning = true;
             _test = null;
@@ -276,7 +234,7 @@ namespace RimWorldLLM
         /// <summary>GET /storage off the game thread; the result lands in <see cref="Storage"/>.</summary>
         public static void RefreshStorage()
         {
-            var c = _client;
+            var c = _session.Client;
             if (c == null || _storageInFlight) return;
             _storageInFlight = true;
             Task.Run(async () =>
@@ -296,7 +254,7 @@ namespace RimWorldLLM
         /// <summary>POST custom/check: reads the file header only.</summary>
         public static void CheckCustom(string path)
         {
-            var c = _client;
+            var c = _session.Client;
             if (c == null) { _customCheckError = UiUtil.T("RWL_Custom_NoEngine"); return; }
             if (_customCheckInFlight) return;
             _customCheckInFlight = true;
@@ -316,7 +274,7 @@ namespace RimWorldLLM
 
         static void BusyAct<T>(Func<EngineClient, Task<EngineResult<T>>> call, Action after = null)
         {
-            var c = _client;
+            var c = _session.Client;
             if (c == null) { _actionError = "engine not running"; return; }
             if (_customBusy) return;
             _customBusy = true;
@@ -327,8 +285,8 @@ namespace RimWorldLLM
                 {
                     var r = await call(c).ConfigureAwait(false);
                     if (!r.Ok) _actionError = r.Error ?? ("HTTP " + r.HttpStatus);
-                    _planStale = true;
-                    await FetchStatusAsync().ConfigureAwait(false);
+                    _session.MarkPlanStale();
+                    await _session.FetchStatusAsync().ConfigureAwait(false);
                     if (after != null) after();
                 }
                 finally { _customBusy = false; }
@@ -352,7 +310,7 @@ namespace RimWorldLLM
             var plat = EnginePlatform.Detect();
             var where = AgentDataDir.ResolveHere(plat);
             if (_customBusy) return;
-            if (_client == null)
+            if (_session.Client == null)
             {
                 // no engine (the player's own endpoint, or it is not running): there are no downloads to remove, but the memory can still go
                 if (alsoMemory) { MindHost.Hold(); Task.Run(() => RemoveAgentMemory(where, plat)); }
@@ -395,33 +353,34 @@ namespace RimWorldLLM
         /// <summary>The model name to show: the engine's human name, the custom file's name, or the model id.</summary>
         public static string ModelLabel()
         {
-            var st = _status;
+            var st = _session.Status;
             if (st == null) return "";
-            if (!string.IsNullOrEmpty(st.ModelName)) return st.ModelName;
+            if (!string.IsNullOrEmpty(st.ModelName) || !string.IsNullOrEmpty(st.ModelCodename) || Bridge.ModelCodename.PlainName(st.Model) != null)
+                return Bridge.ModelCodename.DisplayFor(st.Model, st.ModelCodename, st.ModelName);
             if (st.Custom != null && !string.IsNullOrEmpty(st.Custom.Name)) return st.Custom.Name;
             return st.Model ?? "";
         }
 
         /// <summary>The user's own GGUF file is the selected model (status.custom is also kept, as a memory, after a switch back to a catalog model).</summary>
-        public static bool CustomActive { get { var st = _status; return st != null && st.Custom != null && (st.Model ?? "").StartsWith("custom:", System.StringComparison.Ordinal); } }
+        public static bool CustomActive { get { var st = _session.Status; return st != null && st.Custom != null && (st.Model ?? "").StartsWith("custom:", System.StringComparison.Ordinal); } }
 
         /// <summary>Line for a background model switch (the old one keeps talking), or null.</summary>
         public static string SwitchLine()
         {
-            var st = _status;
+            var st = _session.Status;
             if (st == null || st.Upgrade == null || StarterInUse || string.IsNullOrEmpty(st.Upgrade.State)) return null;
             if (st.Upgrade.State == "done" || st.Upgrade.State == "idle") return null;
             var p = st.Upgrade.Progress;
             int pct = p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
-            string name = !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName : st.Upgrade.Target;
+            string name = Bridge.ModelCodename.DisplayFor(st.Upgrade.Target, st.Upgrade.TargetCodename, st.Upgrade.TargetName);
             return pct >= 0 ? UiUtil.T("RWL_Switch_Line", name, pct) : UiUtil.T("RWL_Switch_LineNoPct", name);
         }
 
         public static void Install(string modelId) { Act(c => c.InstallAsync(modelId)); }
         public static void Cancel() { Act(c => c.CancelAsync()); }
-        public static void Import(string path) { Act(c => c.ImportAsync(path)); _planStale = true; }
+        public static void Import(string path) { Act(c => c.ImportAsync(path)); _session.MarkPlanStale(); }
 
-        public static string SetupUrl { get { var c = _client; return (c != null ? c.BaseUrl : "http://127.0.0.1:" + EngineClient.FirstPort) + "/"; } }
+        public static string SetupUrl { get { var c = _session.Client; return (c != null ? c.BaseUrl : "http://127.0.0.1:" + EngineClient.FirstPort) + "/"; } }
 
         // ---------------------------------------------------------------------------------- presentation helpers
         public enum Light { Grey, Green, Amber, Red }
@@ -429,7 +388,7 @@ namespace RimWorldLLM
         /// <summary>The phase light of the Local source: green ready, amber busy, red error, grey not installed or unknown.</summary>
         public static Light CurrentLight()
         {
-            var st = _status;
+            var st = _session.Status;
             var l = _launch;
             if (st == null)
             {
@@ -462,7 +421,7 @@ namespace RimWorldLLM
         /// <summary>One line: the model, slots x ctx, phase and progress.</summary>
         public static string StatusLine()
         {
-            var st = _status;
+            var st = _session.Status;
             var l = _launch;
             if (st == null)
             {
@@ -487,27 +446,27 @@ namespace RimWorldLLM
         /// <summary>True when the local engine reports that the model in use is the catalog's fallback.</summary>
         public static bool FallbackInUse
         {
-            get { var st = _status; return LocalSource && st != null && st.ModelFallback; }
+            get { var st = _session.Status; return LocalSource && st != null && st.ModelFallback; }
         }
 
         /// <summary>True while a starter model answers and the chosen model is still downloading (fast first run).</summary>
         public static bool StarterInUse
         {
-            get { var st = _status; return LocalSource && st != null && Bridge.StarterWatch.IsStarter(st.ModelTier); }
+            get { var st = _session.Status; return LocalSource && st != null && Bridge.StarterWatch.IsStarter(st.ModelTier); }
         }
 
         /// <summary>The chosen model's download percent while a starter serves, or -1.</summary>
         public static int StarterPercent()
         {
-            var st = _status;
+            var st = _session.Status;
             var p = st != null && st.Upgrade != null ? st.Upgrade.Progress : null;
             return p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
         }
 
         public static string TargetName()
         {
-            var st = _status;
-            return st != null && st.Upgrade != null && !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName
+            var st = _session.Status;
+            return st != null && st.Upgrade != null && !string.IsNullOrEmpty(st.Upgrade.TargetName) ? Bridge.ModelCodename.DisplayFor(st.Upgrade.Target, st.Upgrade.TargetCodename, st.Upgrade.TargetName)
                  : st != null ? st.Model : "";
         }
 
@@ -523,12 +482,12 @@ namespace RimWorldLLM
             if (StarterInUse)
             {
                 int pct = StarterPercent();
-                var up = _status.Upgrade != null ? _status.Upgrade.Progress : null;
+                var up = _session.Status.Upgrade != null ? _session.Status.Upgrade.Progress : null;
                 if (up != null && up.Verifying) return UiUtil.T("RWL_Starter_StatusLineVerifying", pct < 0 ? 0 : pct);
                 return pct >= 0 ? UiUtil.T("RWL_Starter_StatusLine", pct) : UiUtil.T("RWL_Starter_StatusLineNoPct");
             }
             if (!FallbackInUse) return null;
-            return UiUtil.T("RWL_Fallback_StatusLine", FallbackNote(_status.ModelNote));
+            return UiUtil.T("RWL_Fallback_StatusLine", FallbackNote(_session.Status.ModelNote));
         }
 
         public static string Ctx(int ctx) { return ctx % 1024 == 0 ? (ctx / 1024) + "k" : ctx.ToString(); }
@@ -555,12 +514,12 @@ namespace RimWorldLLM
         /// <summary>Game thread, every frame (from RWLBridge.FrameUpdate): shows the first-run prompt once.</summary>
         public static void Tick()
         {
-            if (!_showFirstRun || _firstRunShown) return;
+            if (!_session.FirstRunWanted || _firstRunShown) return;
             var s = RimWorldLLMMod.Settings;
-            if (s == null || s.engineSetupDismissed || s.llmSource == "own") { _showFirstRun = false; return; }
+            if (s == null || s.engineSetupDismissed || s.llmSource == "own") { _session.FirstRunWanted = false; return; }
             if (Find.WindowStack == null) return;
             _firstRunShown = true;
-            _showFirstRun = false;
+            _session.FirstRunWanted = false;
             Find.WindowStack.Add(new Window_EngineFirstRun());
         }
     }

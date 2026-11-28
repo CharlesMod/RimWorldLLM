@@ -1,0 +1,367 @@
+{
+  "Version": "1.90.6-t0000000-g000000",
+  "TUN": true,
+  "BackendState": "Running",
+  "HaveNodeKey": true,
+  "AuthURL": "",
+  "TailscaleIPs": [
+    "100.101.1.1",
+    "fd7a:115c:a1e0::101:101"
+  ],
+  "Self": {
+    "ID": "nFake0CNTRL",
+    "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000000",
+    "HostName": "game-pc",
+    "DNSName": "game-pc.tailabc123.ts.net.",
+    "OS": "windows",
+    "UserID": 1000,
+    "TailscaleIPs": [
+      "100.101.1.1",
+      "fd7a:115c:a1e0::101:101"
+    ],
+    "AllowedIPs": [
+      "100.101.1.1/32",
+      "fd7a:115c:a1e0::101:101/128"
+    ],
+    "Tags": [],
+    "Addrs": [
+      "192.168.1.10:41641"
+    ],
+    "CurAddr": "",
+    "Relay": "ord",
+    "PeerRelay": "",
+    "RxBytes": 0,
+    "TxBytes": 0,
+    "Created": "2026-09-13T17:13:01.711583571Z",
+    "LastWrite": "0001-01-01T00:00:00Z",
+    "LastSeen": "0001-01-01T00:00:00Z",
+    "LastHandshake": "0001-01-01T00:00:00Z",
+    "Online": true,
+    "ExitNode": false,
+    "ExitNodeOption": false,
+    "Active": false,
+    "PeerAPIURL": [
+      "http://100.101.1.1:38232"
+    ],
+    "TaildropTarget": 0,
+    "NoFileSharingReason": "",
+    "InNetworkMap": true,
+    "InMagicSock": true,
+    "InEngine": false,
+    "Capabilities": [
+      "https"
+    ],
+    "CapMap": {
+      "https": null
+    },
+    "KeyExpiry": "2027-05-01T00:00:00Z"
+  },
+  "Health": [],
+  "MagicDNSSuffix": "tailabc123.ts.net",
+  "CurrentTailnet": {
+    "Name": "example.github",
+    "MagicDNSSuffix": "tailabc123.ts.net",
+    "MagicDNSEnabled": true
+  },
+  "CertDomains": [
+    "game-pc.tailabc123.ts.net"
+  ],
+  "ExtraRecords": null,
+  "Peer": {
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000001": {
+      "ID": "nFake1CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000001",
+      "HostName": "den-pc",
+      "DNSName": "den-pc.tailabc123.ts.net.",
+      "OS": "windows",
+      "UserID": 1001,
+      "TailscaleIPs": [
+        "100.101.1.2",
+        "fd7a:115c:a1e0::101:102"
+      ],
+      "AllowedIPs": [
+        "100.101.1.2/32",
+        "fd7a:115c:a1e0::101:102/128"
+      ],
+      "Tags": [],
+      "Addrs": [
+        "192.168.1.11:41641"
+      ],
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.101.1.2:38232"
+      ],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    },
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000002": {
+      "ID": "nFake2CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000002",
+      "HostName": "box",
+      "DNSName": "box.tailabc123.ts.net.",
+      "OS": "linux",
+      "UserID": 1002,
+      "TailscaleIPs": [
+        "100.101.1.3",
+        "fd7a:115c:a1e0::101:103"
+      ],
+      "AllowedIPs": [
+        "100.101.1.3/32",
+        "fd7a:115c:a1e0::101:103/128"
+      ],
+      "Tags": [
+        "tag:server"
+      ],
+      "Addrs": [
+        "192.168.1.12:41641"
+      ],
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.101.1.3:38232"
+      ],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    },
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000003": {
+      "ID": "nFake3CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000003",
+      "HostName": "old-laptop",
+      "DNSName": "old-laptop.tailabc123.ts.net.",
+      "OS": "macOS",
+      "UserID": 1003,
+      "TailscaleIPs": [
+        "100.101.1.4",
+        "fd7a:115c:a1e0::101:104"
+      ],
+      "AllowedIPs": [
+        "100.101.1.4/32",
+        "fd7a:115c:a1e0::101:104/128"
+      ],
+      "Tags": [],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2026-11-20T10:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.101.1.4:38232"
+      ],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    },
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000004": {
+      "ID": "nFake4CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000004",
+      "HostName": "phone",
+      "DNSName": "phone.tailabc123.ts.net.",
+      "OS": "android",
+      "UserID": 1004,
+      "TailscaleIPs": [
+        "100.101.1.5",
+        "fd7a:115c:a1e0::101:105"
+      ],
+      "AllowedIPs": [
+        "100.101.1.5/32",
+        "fd7a:115c:a1e0::101:105/128"
+      ],
+      "Tags": [],
+      "Addrs": [
+        "192.168.1.14:41641"
+      ],
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.101.1.5:38232"
+      ],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    },
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000005": {
+      "ID": "nFake5CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000005",
+      "HostName": "v6only",
+      "DNSName": "v6only.tailabc123.ts.net.",
+      "OS": "linux",
+      "UserID": 1005,
+      "TailscaleIPs": [
+        "fd7a:115c:a1e0::101:106"
+      ],
+      "AllowedIPs": [
+        "fd7a:115c:a1e0::101:106/128"
+      ],
+      "Tags": [],
+      "Addrs": [
+        "192.168.1.15:41641"
+      ],
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    },
+    "nodekey:0000000000000000000000000000000000000000000000000000000000000006": {
+      "ID": "nFake6CNTRL",
+      "PublicKey": "nodekey:0000000000000000000000000000000000000000000000000000000000000006",
+      "HostName": "Someone’s Mac Air",
+      "DNSName": "someones-mac-air.tailabc123.ts.net.",
+      "OS": "macOS",
+      "UserID": 1006,
+      "TailscaleIPs": [
+        "100.101.1.7",
+        "fd7a:115c:a1e0::101:107"
+      ],
+      "AllowedIPs": [
+        "100.101.1.7/32",
+        "fd7a:115c:a1e0::101:107/128"
+      ],
+      "Tags": [],
+      "Addrs": [
+        "192.168.1.16:41641"
+      ],
+      "CurAddr": "",
+      "Relay": "ord",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-13T17:13:01.711583571Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.101.1.7:38232"
+      ],
+      "TaildropTarget": 0,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "Capabilities": [
+        "https"
+      ],
+      "CapMap": {
+        "https": null
+      },
+      "KeyExpiry": "2027-05-01T00:00:00Z"
+    }
+  },
+  "User": {
+    "1000": {
+      "ID": 1000,
+      "LoginName": "player@example.com",
+      "DisplayName": "Player",
+      "ProfilePicURL": ""
+    }
+  },
+  "ClientVersion": {
+    "RunningLatest": true
+  }
+}

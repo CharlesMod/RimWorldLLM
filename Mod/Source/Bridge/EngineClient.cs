@@ -67,10 +67,16 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("custom")] public EngineCustom Custom;
         /// <summary>Human name of the serving model.</summary>
         [JsonProperty("model_name")] public string ModelName;
+        /// <summary>Code name of the serving model; empty from an older engine: see <see cref="ModelCodename"/>.</summary>
+        [JsonProperty("model_codename")] public string ModelCodename;
         /// <summary>The model kept on disk after a switch, null when none.</summary>
         [JsonProperty("previous")] public EnginePrevious Previous;
         /// <summary>Graphics picture and the room left for the model; null from an older engine.</summary>
         [JsonProperty("gpu")] public GpuSummary Gpu;
+        /// <summary>Owner's view: the engine is shared on this PC's private networks; null from an engine without share mode.</summary>
+        [JsonProperty("share")] public bool? Share;
+        /// <summary>Owner's view: the addresses bound right now ("host:port", "[v6]:port"); empty while shared means no private network is up.</summary>
+        [JsonProperty("share_addresses")] public List<string> ShareAddresses;
     }
 
     public sealed class EngineCustom
@@ -148,6 +154,8 @@ namespace RimWorldLLM.Bridge
     {
         [JsonProperty("target")] public string Target;
         [JsonProperty("target_name")] public string TargetName;
+        /// <summary>The tier's code name (Flashlight, Lantern, Campfire...); empty from an older engine: see <see cref="ModelCodename"/>.</summary>
+        [JsonProperty("target_codename")] public string TargetCodename;
         [JsonProperty("state")] public string State;
         [JsonProperty("progress")] public EngineProgress Progress;
         [JsonProperty("error")] public string Error;
@@ -255,6 +263,8 @@ namespace RimWorldLLM.Bridge
         public bool Unreachable;
         /// <summary>On a 401: what the engine said about the token (token_required / token_invalid / token_revoked).</summary>
         public EngineAuth Auth;
+        /// <summary>The engine's error code on a failed reply (for example pair_changed, client_unknown), "" when none.</summary>
+        public string Code = "";
     }
 
     /// <summary>
@@ -262,7 +272,7 @@ namespace RimWorldLLM.Bridge
     /// Every call is async with a short timeout and returns an <see cref="EngineResult{T}"/>; non-GET calls carry
     /// the anti-CSRF header <c>X-Easy-Engine: 1</c>.
     /// </summary>
-    public sealed class EngineClient
+    public sealed class EngineClient : IShareHostApi
     {
         public const int FirstPort = 47480, LastPort = 47489;
         public const string CsrfHeader = "X-Easy-Engine";
@@ -305,6 +315,23 @@ namespace RimWorldLLM.Bridge
         public Task<EngineResult<JObject>> SleepAsync() { return Send<JObject>("POST", "sleep", null, ShortTimeoutMs); }
         public Task<EngineResult<JObject>> WakeAsync() { return Send<JObject>("POST", "wake", null, ShortTimeoutMs); }
         public Task<EngineResult<JObject>> PutSettingsAsync(EngineSettings s) { return Send<JObject>("PUT", "settings", JObject.FromObject(s), ShortTimeoutMs); }
+
+        // Sharing this PC's engine (host side; loopback listener, docs/ENGINE.md share slice). See EngineShare.cs.
+        /// <summary>PUT settings {"share": on}: applies live on the running engine, no restart.</summary>
+        public Task<EngineResult<JObject>> PutShareAsync(bool on) { return Send<JObject>("PUT", "settings", new JObject { ["share"] = on }, ShortTimeoutMs); }
+        /// <summary>GET pairing: the requests waiting for the person's Allow or Deny (loopback only).</summary>
+        public Task<EngineResult<PairingList>> GetPairingAsync() { return Send<PairingList>("GET", "pairing", null, ShortTimeoutMs); }
+        /// <summary>POST pairing/answer {key, code, allow}: 200 answered; 404 nothing waits; 409 pair_changed (asked again with a new code).</summary>
+        public Task<EngineResult<PairAnswerReply>> AnswerPairingAsync(string key, string code, bool allow)
+        {
+            var o = new JObject { ["code"] = code ?? "", ["allow"] = allow };
+            if (!string.IsNullOrEmpty(key)) o["key"] = key;
+            return Send<PairAnswerReply>("POST", "pairing/answer", o, ShortTimeoutMs);
+        }
+        /// <summary>GET clients: the paired PCs whose tokens still stand, oldest first.</summary>
+        public Task<EngineResult<PairedClientList>> GetClientsAsync() { return Send<PairedClientList>("GET", "clients", null, ShortTimeoutMs); }
+        /// <summary>DELETE clients/{id}: 204 revoked at once; 404 client_unknown.</summary>
+        public Task<EngineResult<JObject>> RemoveClientAsync(string id) { return Send<JObject>("DELETE", "clients/" + Uri.EscapeDataString(id ?? ""), null, ShortTimeoutMs); }
         public Task<EngineResult<EngineTestResult>> TestAsync() { return Send<EngineTestResult>("POST", "test", null, LongTimeoutMs); }
         public Task<EngineResult<JObject>> AttachAsync(int pid) { return Send<JObject>("POST", "attach", new JObject { ["pid"] = pid }, ShortTimeoutMs); }
         /// <summary>Tells the engine which process is the game and which card it renders on (POST host; an older engine answers 404, which callers ignore).</summary>
@@ -354,6 +381,7 @@ namespace RimWorldLLM.Bridge
                         if (!resp.IsSuccessStatusCode)
                         {
                             res.Error = ErrorText(text, res.HttpStatus);
+                            res.Code = ErrorCode(text);
                             if (res.HttpStatus == 401) res.Auth = EngineAuthStatus.Note(401, text);
                             return res;
                         }
@@ -376,6 +404,12 @@ namespace RimWorldLLM.Bridge
 
         /// <summary>The Error of a result whose reply was the engine's 503 "yielded" (another program on that machine wants its graphics card).</summary>
         public const string YieldedError = "yielded";
+
+        static string ErrorCode(string body)
+        {
+            try { var j = JObject.Parse(body); var c = j["code"]; return c != null && c.Type == JTokenType.String ? (string)c : ""; }
+            catch { return ""; }
+        }
 
         static string ErrorText(string body, int status)
         {

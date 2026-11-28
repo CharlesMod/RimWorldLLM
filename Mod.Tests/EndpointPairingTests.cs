@@ -130,6 +130,18 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
+        public async Task TheTypedKeyIsNotSentToSomethingThatIsNotAnEngine()
+        {
+            using (var f = new FakePairEngine(Engine(true, true, isEngine: false)))
+            {
+                await EndpointPairing.ProbeAsync(new PairingApi(), f.Root + "/v1", Master);
+                var hello = Assert.Single(f.Seen("GET", "/engine/v1/hello"));
+                Assert.True(string.IsNullOrEmpty(hello.Auth));
+                Assert.Equal(0, f.Count("GET", "/engine/v1/status"));
+            }
+        }
+
+        [Fact]
         public async Task NotAnEngineAndUnreachableChangeNothing()
         {
             using (var f = new FakePairEngine(Engine(true, true, isEngine: false)))

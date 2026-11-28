@@ -126,6 +126,7 @@ namespace RimWorldLLM
             MindHost.Tick();
             EnginePairingUi.Tick();
             VisionCapture.Update();
+            EngineShareManager.Tick();
         }
     }
 
