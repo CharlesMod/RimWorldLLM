@@ -16,7 +16,7 @@ namespace RimWorldLLM.Mind.RimWorld
     public sealed class ZonesKit
     {
         public const string None = "none";
-        public const int WhyMax = 80, MaxZones = 10;
+        public const int WhyMax = 80, MaxZones = 10, MaxRooms = 12;
         public const string Hydro = "hydroponics";
         private static readonly Param WhyParam = new Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); " +
             "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);
@@ -25,6 +25,10 @@ namespace RimWorldLLM.Mind.RimWorld
         /// <summary>The zones of the digest's ZONES line: "#id" (or hydroponics) -> kind.</summary>
         public readonly List<KeyValuePair<string, string>> Zones = new List<KeyValuePair<string, string>>();
         public readonly List<string> Plants;
+        /// <summary>The floor tool: the digest's room ids (with roles) and the floor words the game can build now; it needs both.</summary>
+        public readonly List<KeyValuePair<string, string>> Rooms = new List<KeyValuePair<string, string>>();
+        public readonly List<string> Floors = new List<string>();
+        public readonly bool HasFloors;
         public readonly List<ToolSpec> Tools;
         public readonly HashSet<string> Names;
 
@@ -58,7 +62,31 @@ namespace RimWorldLLM.Mind.RimWorld
                     if (w.Length > 0 && w != None && !Plants.Contains(w)) Plants.Add(w);
                 }
             Has = Zones.Count > 0;
-            Tools = Has ? BuildTools() : new List<ToolSpec>();
+            if (b != null)
+            {
+                if (DigestJson.G(b, "rooms") is JArray ra)
+                    foreach (var r in ra.OfType<JObject>())
+                    {
+                        long id;
+                        try { id = DigestJson.PyInt(DigestJson.G(r, "id")); }
+                        catch (Exception e) when (e is PyTypeError || e is PyValueError) { continue; }
+                        string key = id.ToString(CultureInfo.InvariantCulture);
+                        if (id <= 0 || Rooms.Any(p => p.Key == key)) continue;
+                        JToken role = DigestJson.G(r, "role");
+                        Rooms.Add(new KeyValuePair<string, string>(key, PyStr.Strip(GameData.Clean(DigestJson.Truthy(role) ? PyJson.Str(role) : "", "build", 40))));
+                    }
+                if (Rooms.Count > MaxRooms) Rooms.RemoveRange(MaxRooms, Rooms.Count - MaxRooms);
+                if (DigestJson.G(b, "floors") is JArray fa)
+                    foreach (var x in fa)
+                    {
+                        string w = PyStr.Strip(GameData.Clean(PyJson.Str(x), "build", 40));
+                        if (w.Length > 0 && w != None && w != FloorsPure.Smooth && !Floors.Contains(w)) Floors.Add(w);
+                    }
+            }
+            HasFloors = Rooms.Count > 0 && Floors.Count > 0;
+            Tools = new List<ToolSpec>();
+            if (Has) Tools.AddRange(BuildTools());
+            if (HasFloors) Tools.Add(FloorTool());
             Names = new HashSet<string>(Tools.Select(t => t.Name), StringComparer.Ordinal);
         }
 
@@ -81,6 +109,18 @@ namespace RimWorldLLM.Mind.RimWorld
             return new List<ToolSpec> { new ToolSpec("rezone", "Change a zone: stockpile priority and filter, or a crop.", ps) };
         }
 
+        private ToolSpec FloorTool()
+        {
+            string roles = string.Join(", ", Rooms.Select(p => p.Value.Length > 0 ? p.Key + " " + p.Value : p.Key));
+            var ps = new List<Param>
+            {
+                new Param("room", "enum", "room id: " + roles, choices: Rooms.Select(p => p.Key)),
+                new Param("kind", "enum", "floor to lay, or smooth the rough stone", choices: Floors.Concat(new[] { FloorsPure.Smooth })),
+                WhyParam
+            };
+            return new ToolSpec("floor", "Lay a floor in a room.", ps);
+        }
+
         private static JToken Get(JObject v, string k)
         {
             if (!v.TryGetValue(k, out JToken x) || x == null || x.Type == JTokenType.Null) return null;
@@ -88,8 +128,22 @@ namespace RimWorldLLM.Mind.RimWorld
             return x;
         }
 
+        private (string verb, JObject body) FloorBody(JObject v)
+        {
+            string room = PyStr.Strip(PyJson.Str(v["room"]));
+            if (!Rooms.Any(p => p.Key == room)) throw new PyValueError("no such room; the rooms are: " + string.Join(", ", Rooms.Select(p => p.Key)));
+            string kind = PyStr.Strip(GameData.Clean(PyJson.Str(v["kind"]), "build", 40));
+            if (kind != FloorsPure.Smooth && !Floors.Contains(kind)) throw new PyValueError("no such floor; the floors are: " + string.Join(", ", Floors.Concat(new[] { FloorsPure.Smooth })));
+            var b = new JObject { ["room"] = long.Parse(room, CultureInfo.InvariantCulture), ["kind"] = kind };
+            JToken wt;
+            string why = PyStr.Strip(GameData.Clean(v.TryGetValue("why", out wt) && PyJson.Truthy(wt) ? PyJson.Str(wt) : "", "why", WhyMax));
+            if (why.Length > 0) b["why"] = why;
+            return ("floor", b);
+        }
+
         public (string verb, JObject body) Body(string tool, JObject v)
         {
+            if (tool == "floor") return FloorBody(v);
             if (tool != "rezone") throw new PyAttributeError("ZonesKit has no attribute _" + tool);
             string zone = PyStr.Strip(PyJson.Str(v["zone"]));
             string kind = KindOf(zone);

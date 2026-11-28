@@ -1106,6 +1106,22 @@ namespace RimWorldLLM
                                 if (did) cancelled++; else if (finished) built++; else gone++;
                             }
                             break;
+                        case "floor":
+                            foreach (var p in BuildHelpers.CellPairs(mk))
+                            {
+                                var c = new IntVec3(p[0], 0, p[1]);
+                                if (!c.InBounds(map)) { gone++; continue; }
+                                bool did = false;
+                                foreach (var t in c.GetThingList(map).ToList())
+                                {
+                                    if (t.Faction != Faction.OfPlayer || !(t is Blueprint || t is Frame)) continue;
+                                    if (t.def.entityDefToBuild == null || t.def.entityDefToBuild.defName != mk.Def) continue;
+                                    t.Destroy(DestroyMode.Cancel); did = true;
+                                }
+                                var laid = map.terrainGrid.TerrainAt(c);
+                                if (did) cancelled++; else if (laid != null && laid.defName == mk.Def) built++; else gone++;
+                            }
+                            break;
                         case "designation":
                         {
                             var dd = DefDatabase<DesignationDef>.GetNamedSilentFail(mk.Def);

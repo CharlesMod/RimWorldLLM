@@ -11,7 +11,7 @@ namespace RimWorldLLM
     /// Vanilla reads only, nothing the player could not see in the UI. Each part is independent and dropped if it throws.</summary>
     public static class VivariumBuildView
     {
-        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 14;
+        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 14, MaxFloors = 8;
         static readonly HashSet<string> logged = new HashSet<string>();
 
         // The BASE line is worked out from the live map, then kept until the colony's buildings, blueprints or the hour change
@@ -59,6 +59,7 @@ namespace RimWorldLLM
             Part(o, "can_build", () => new JArray(CanBuildWords()));
             Part(o, "stuff", () => Stuff(map));
             Part(o, "plants", () => Plants(map));
+            Part(o, "floors", () => new JArray(RimWorldLLM.Bridge.FloorsPure.DigestWords(VivariumHands.Floors(), VivariumHands.StockOfMap(map), MaxFloors)));
             if (home != null) Part(o, "ores", () => Ores(map, home));
             if (home != null) Part(o, "loose", () => Loose(map, home));
             return o;

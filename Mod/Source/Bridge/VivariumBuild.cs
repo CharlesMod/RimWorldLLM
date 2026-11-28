@@ -97,7 +97,7 @@ namespace RimWorldLLM.Bridge
     }
 
     /// <summary>Something the narrator put into the world, so the player can take it back.
-    /// Kinds: blueprint (Def = thing defName, Cells = root cells), designation (Def = designation defName,
+    /// Kinds: blueprint (Def = thing defName, Cells = root cells), floor (Def = terrain defName, Cells = laid cells; costs blueprints), designation (Def = designation defName,
     /// Things and/or Cells), zone (Id = a zone the narrator made), zone_cells (Id = zone, Cells it added),
     /// area_cells (Def = area label, Cells it set), bill (Id = bench thing id, Sub = the bill's load id).</summary>
     public sealed class NarratorMark
@@ -251,7 +251,7 @@ namespace RimWorldLLM.Bridge
                 Blueprints = Blueprints, Cells = Cells, Designations = Designations, Bills = Bills, _start = _start };
         }
 
-        public static int CostBlueprints(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "blueprint") n += m.CellCount; return n; }
+        public static int CostBlueprints(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "blueprint" || m.Kind == "floor") n += m.CellCount; return n; }
         public static int CostCells(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "zone" || m.Kind == "zone_cells" || m.Kind == "area_cells") n += m.CellCount; return n; }
         public static int CostDesignations(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "designation") n += m.Things.Count + m.CellCount; return n; }
         public static int CostBills(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "bill") n++; return n; }
