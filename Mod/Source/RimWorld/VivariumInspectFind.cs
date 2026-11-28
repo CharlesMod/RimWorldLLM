@@ -101,7 +101,7 @@ namespace RimWorldLLM
             origin = home; label = ""; refused = null;
             if (string.IsNullOrWhiteSpace(near)) return true;
             string q = near.Trim();
-            var pawns = map.mapPawns.AllPawnsSpawned.Where(p => p.Name != null || p.RaceProps.Animal).ToList();
+            var pawns = map.mapPawns.AllPawnsSpawned.Where(p => (p.Name != null || p.RaceProps.Animal) && !p.Fogged()).ToList();
             var pm = InspectNames.MatchName(q, pawns.Select(p => (NameOf(p), p.thingIDNumber)).ToList());
             if (pm.Single)
             {
@@ -111,7 +111,7 @@ namespace RimWorldLLM
             int id;
             if (InspectNames.TryId(q, out id) && !q.ToLowerInvariant().StartsWith("room"))
             {
-                var t = map.listerThings.AllThings.FirstOrDefault(x => x.thingIDNumber == id && x.Spawned);
+                var t = map.listerThings.AllThings.FirstOrDefault(x => x.thingIDNumber == id && x.Spawned && !x.Fogged());
                 if (t != null) { origin = t.Position; label = "#" + id; return true; }
             }
             var rooms = new List<(string name, int id)>(); var cells = new Dictionary<int, IntVec3>();
@@ -119,7 +119,7 @@ namespace RimWorldLLM
             foreach (var region in map.regionGrid.AllRegions_NoRebuild_InvalidAllowed)
             {
                 var r = region.Room;
-                if (r == null || !seen.Add(r) || r.PsychologicallyOutdoors || r.CellCount < 4) continue;
+                if (r == null || !seen.Add(r) || r.PsychologicallyOutdoors || r.CellCount < 4 || r.Fogged) continue;
                 string l = RoomLabelOf(r);
                 if (l == "") continue;
                 rooms.Add((l, r.ID));
@@ -220,11 +220,11 @@ namespace RimWorldLLM
                     break;
                 case FindKind.Hostiles:
                     foreach (var p in Spawned(map))
-                        if (VivariumHands.IsHostile(p)) l.Add(Of(p, p.KindLabel + (p.Downed ? " (downed)" : "")));
+                        if (VivariumHands.IsHostile(p) && !VivariumHands.Dormant(p)) l.Add(Of(p, p.KindLabel + (p.Downed ? " (downed)" : "")));
                     break;
                 case FindKind.Fires:
                     foreach (var t in map.listerThings.ThingsOfDef(ThingDefOf.Fire))
-                        if (t.Spawned) { var c = Of(t, "Fire"); c.Id = 0; l.Add(c); }
+                        if (t.Spawned && !t.Fogged()) { var c = Of(t, "Fire"); c.Id = 0; l.Add(c); }
                     break;
                 case FindKind.Corpses:
                     foreach (var t in map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse))
@@ -293,7 +293,7 @@ namespace RimWorldLLM
                     break;
                 case FindKind.Downed:
                     foreach (var p in Spawned(map))
-                        if (p.Downed && (Mine(p) || p.IsPrisonerOfColony || (p.RaceProps.Humanlike && !p.HostileTo(Faction.OfPlayer))))
+                        if (p.Downed && (Mine(p) || p.IsPrisonerOfColony || (p.RaceProps.Humanlike && !p.HostileTo(Faction.OfPlayer) && !p.Fogged())))
                             l.Add(Of(p, NameOf(p) + (p.IsPrisonerOfColony ? " (prisoner)" : p.RaceProps.Animal ? " (animal)" : "")));
                     break;
                 case FindKind.Prisoners:
@@ -398,7 +398,7 @@ namespace RimWorldLLM
                 f.Groups.Add(ThreatEntry.From(g, home.x, home.z, attacking, man, mech, siege));
             }
 
-            var fires = map.listerThings.ThingsOfDef(ThingDefOf.Fire).Where(t => t.Spawned).ToList();
+            var fires = map.listerThings.ThingsOfDef(ThingDefOf.Fire).Where(t => t.Spawned && !t.Fogged()).ToList();
             f.Fires = fires.Count;
             if (fires.Count > 0)
             {

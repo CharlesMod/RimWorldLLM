@@ -45,6 +45,17 @@ namespace RimWorldLLM
             return "the " + role;
         }
 
+        /// <summary>True for a spawned thing standing in fog of war: the narrator must not learn of it.</summary>
+        static bool Hidden(Thing t)
+        {
+            try { return t != null && t.Spawned && t.Fogged(); } catch (Exception) { return false; }
+        }
+
+        static bool HiddenRoom(Room r)
+        {
+            try { return r.Fogged; } catch (Exception) { return false; }
+        }
+
         static string RoomDigestName(Room r)
         {
             string l = RoomLabel(r);
@@ -59,7 +70,7 @@ namespace RimWorldLLM
             {
                 var r = region.Room;
                 if (r == null || !seen.Add(r) || r.PsychologicallyOutdoors || r.Role == null || r.Role == RoomRoleDefOf.None) continue;
-                if (r.CellCount < 4) continue;
+                if (r.CellCount < 4 || HiddenRoom(r)) continue;
                 list.Add(r);
             }
             return list;
@@ -166,13 +177,20 @@ namespace RimWorldLLM
         // ------------------------------------------------------------------ lookups
         static Pawn FindPawnId(Map map, int id)
         {
-            foreach (var p in map.mapPawns.AllPawns) if (p.thingIDNumber == id) return p;
-            return Routes.FindPawn(id);
+            // only pawns on this map that are not in fog; unspawned ones (carried, in a bed pod) only when they are the colony's
+            foreach (var p in map.mapPawns.AllPawns)
+                if (p.thingIDNumber == id)
+                {
+                    if (Hidden(p)) return null;
+                    if (!p.Spawned && p.Faction != Faction.OfPlayer && !p.IsPrisonerOfColony) return null;
+                    return p;
+                }
+            return null;
         }
 
         static Thing FindThingId(Map map, int id)
         {
-            foreach (var t in map.listerThings.AllThings) if (t.thingIDNumber == id) return t;
+            foreach (var t in map.listerThings.AllThings) if (t.thingIDNumber == id) return Hidden(t) ? null : t;
             foreach (var p in map.mapPawns.PawnsInFaction(Faction.OfPlayer))
             {
                 if (p.inventory != null) foreach (var t in p.inventory.innerContainer) if (t.thingIDNumber == id) return t;
@@ -188,7 +206,7 @@ namespace RimWorldLLM
             var g = new Group { Kind = "pawn" };
             foreach (var p in map.mapPawns.AllPawnsSpawned)
             {
-                if (p.Dead) continue;
+                if (p.Dead || Hidden(p)) continue;
                 string n = p.LabelShort;
                 if (!string.IsNullOrEmpty(n)) g.Items.Add((n, p.thingIDNumber));
             }
@@ -224,7 +242,7 @@ namespace RimWorldLLM
         Group StackGroup(Map map)
         {
             var g = new Group { Kind = "stack" };
-            foreach (var t in map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver)) g.Items.Add((t.LabelNoCount, t.thingIDNumber));
+            foreach (var t in map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver)) if (!Hidden(t)) g.Items.Add((t.LabelNoCount, t.thingIDNumber));
             g.Read = id => { var t = FindThingId(map, id); return t == null ? null : ReadThing(map, t); };
             return g;
         }
@@ -392,7 +410,7 @@ namespace RimWorldLLM
                 var bcount = new Dictionary<string, int>(); var bone = new Dictionary<string, int>(); var items = new Dictionary<string, int>();
                 foreach (var t in r.ContainedAndAdjacentThings)
                 {
-                    if (t is Pawn || t is Building_Door || t.def.category == ThingCategory.Plant || t.def.category == ThingCategory.Filth) continue;
+                    if (t is Pawn || t is Building_Door || Hidden(t) || t.def.category == ThingCategory.Plant || t.def.category == ThingCategory.Filth) continue;
                     string n = t.LabelNoCount;
                     if (t.def.category == ThingCategory.Building)
                     {
