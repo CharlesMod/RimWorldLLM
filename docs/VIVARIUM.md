@@ -1179,3 +1179,40 @@ three runs: `trade_offer S31`, then one `trade`: buy components x20, glitterworl
 sell cloth x40 and the gold sculptures, "since we need components and medicine", then done. Visiting bulk trader
 `P5521`: `trade_offer`, then buy components x6, herbal medicine x4, steel x50, sell cloth x300, the jade sculpture and
 the smokeleaf joints. The recorded orbital sample as is (food 2.4 days): skipped, "food is critical".
+
+## The narrator can look at the screen (vision)
+
+The routine steward turn may ask for a picture of the colony from above (north up) with the `look` tool; the bridge route is
+`GET /vision` (docs/BRIDGE-API.md / the game side). The mind side lives in `Mod/Source/Mind` (`Llm/VisionProbe.cs`,
+`RimWorld/StewardVision.cs`, `ToolLoop/ImageParts.cs`).
+
+**Shot kinds.** `look(kind, target?, why?)`: `base` the whole base for layout (768 px long side), `wide` the surroundings for
+fields, ore, approaches and raids (1024 px), `close` a few cells around one target (768 px) for doors, blueprints and missing
+walls. The close target is `room:<id>`, `thing:<id>`, `pawn:<id>`, `cell:x,z` or `dir:<side>:<cells>`; a close without a valid
+target is an error text and never reaches the game. The result text is a one-line legend ("Picture attached: base, cells x
+100-140, z 80-110 (40x30 cells), north up, 19 px per cell"); the picture goes into the next request only.
+
+**Limits.** One picture per turn; a second only when the first was `base` or `wide` and the second is `close`. Anything else
+answers `{"error":"no more looks this turn"}` without touching the game. A `pending` reply is polled every 250 ms for 3 s, then
+`{"error":"camera busy"}` (a refused or failed look does not use up the allowance). `look` is not an action: advisor mode allows it
+beside its one act. It is offered on routine turns only, never on combat or trade turns, and only when the digest has a build block.
+
+**The gate** (all must hold): the game setting "Narrator may look at the screen" (`GET /config` `vision_allowed`, missing means
+allowed); and the model reads pictures: with an easyEngine its status JSON has `"vision": true` (missing is false), with the player's
+own endpoint `GET <base>/props` has `modalities.vision == true`. The answer is cached 60 s; an unreachable server is false and not
+cached.
+
+**Cost.** About 194 image tokens at 768 px, 340-450 at 1024; the engine caps an image at 512 tokens (`-ub 512`). The picture rides
+in every later request of that turn (one picture at a time) and is gone at the end of the turn: nothing keeps it in Minds, the
+board, chat, `calls.jsonl`, the loop result or the steward trace (only the kinds looked at, `looks`).
+
+**Playtest (what the keeper checks in game).**
+1. Setting on, vision model loaded: ask the narrator in chat "what does the base look like?"; the greentext/trace shows a `look`
+   and the answer mentions something visible (a gap in a wall, a field). The `calls.jsonl` row for that turn has a larger
+   `prompt_n` (about 200-450 more tokens).
+2. Setting off: no `look` is offered (the tool list lacks it) and `/vision` is never called.
+3. A model without vision (the 26B text build, or an endpoint whose `/props` lacks `modalities.vision`): no `look` offered.
+4. Type in a chat box and ask for a look: the answer says "not now (player_typing)", no crash.
+5. A second `look` in one turn is refused (only base/wide then close is allowed).
+6. Raid or a trader arrives: that turn has no `look`.
+7. Grep `~/.local/share/.../calls.jsonl` and the saved minds for `base64`: nothing.
