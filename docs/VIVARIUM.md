@@ -308,7 +308,7 @@ something, `undo_seq` (its ledger entry) and `left` (what the cycle caps still a
 |---|---|---|
 | `POST /act/designate` | `kind` mine\|chop\|harvest\|haul\|deconstruct\|cancel; where: `x,z,w,h` box, or `x,z,radius`, or `target` thing id; `ore` (mine only); `max` 1..200 (40); `player_asked` | Without a place: mine needs `ore` and takes the nearest such cells to home; chop takes trees blocking the narrator's blueprints and zones; harvest takes ripe wild plants near home; haul takes unstored items near home. deconstruct/cancel need a place. Deconstruct never touches player-made buildings unless `player_asked` (and the player wrote to the narrator in the last game hour), nor colonists' beds or graves. Cancel removes designations and the narrator's own blueprints. |
 | `POST /act/build` | `thing` (word or defName), `stuff`?, `rot`? (0..3 / north..west), `x,z`? or `room`? | No place: a valid cell near home. In a room: an inside cell, against a wall if it fits; a cooler or vent goes into one of the room's plain walls, cold side in, with open air or another room behind it. Refuses unknown things, unfinished research, missing/invalid stuff, bad cells (with why), and footprints over beds or graves. |
-| `POST /act/room` | `purpose` bedroom\|barracks\|kitchen\|dining\|storage\|freezer\|hospital\|workshop\|rec; `size` small\|medium\|large or `w,h` 3..11 (outer, walls included); `stuff`?; `door` n\|e\|s\|w\|auto; `x,z`? (south-west corner) | No corner: the site finder walks rings out from home for a box whose inside is clear and buildable (existing walls on the edge are reused). Checks every cell first and places nothing if any fails. Walls + one door (auto: facing home). |
+| `POST /act/room` | `purpose` bedroom\|barracks\|kitchen\|dining\|storage\|freezer\|hospital\|workshop\|rec\|research; `size` small\|medium\|large; `near`? (a room role or label, or a colonist); `for`? (who it is for, words only); `beds`? 1..16 (barracks, hospital); `furnish`? (true); `stuff`?; scripts only: `w,h` 3..11 (outer), `door` n\|e\|s\|w\|auto, `x,z` (south-west corner) | No corner: the base planner picks the site (attached to the base, sharing walls, door onto a kept-clear walkway, sized from vanilla's expectations), every cell is checked by the game and by the never-seal-off guard, then walls, one door and the role's furniture go in. See "Base planner" below. With a corner: that box, guard-checked. |
 | `POST /act/zone` | `kind` grow\|stockpile\|dump; `plant` (grow); `preset` food\|meds\|raw\|all; `priority`?; `size` or `w,h` ≤ 20; `x,z`? or `room`? | Grow: fertile, unroofed soil near home; refuses a plant that needs research or cannot grow here now. Stockpile in a room: its free inside cells. Dump: away from the rooms. |
 | `POST /act/area` | `kind` home\|allowed; `op` add\|remove; `x,z,w,h`; `name` (allowed); `assign` [pawn ids] | Not a steward tool (home grows as colonists build; allowed areas are the player's); for scripts and later phases. |
 | `POST /act/bill` | `op` add\|remove\|suspend\|resume; `bench`; `recipe` (add; or to pick a bill); `index` 1-based; `count` or `until`; `radius` | Add: the recipe must be one the bench takes. Until = "do until you have X". |
@@ -389,6 +389,91 @@ buildings unless the player asked in chat, prefer the planners over coordinates.
   step to the error: a room now ignores thing/room; it put the freezer's cooler into an existing bedroom/barracks in
   the same turn: a cooler now needs a listed non-living room, the prompt says to furnish a planned room next turn,
   and the game hand mounts coolers and vents in the room's wall, cold side in.
+
+## Base planner and the never-seal-off guard (2026-11-27)
+
+The keeper's first playtest of the builder hands: "it's bad at room and base building ... the first base it built
+blocked the entrance with a wall segment". Two fixes: the model says WHAT room it needs and game code decides WHERE
+and HOW; and nothing the narrator places may cut off what was reachable.
+
+### Pieces
+- `Mod/Source/Bridge/BaseGrid.cs` (Verse-free, tested): `BaseGrid`, a snapshot of a window around the base with a
+  flag per cell (walk, free ground, wall, rock, door, fertile, water, marsh, overhead mountain, fog, zone, furniture),
+  room ids, the rooms (role, label, owner, bounding box) and the things to keep reachable (`BasePoi`: entrances, doors,
+  rooms, beds, benches, stockpiles, colonists). `ToAscii`/`FromAscii` draw and read it (legend in `BaseGrid.Legend`:
+  `. , # R + ~ m B T S @ ? ^`), for tests, the live check, and a picture for the vision work.
+- `ReachGuard` (same file): the never-seal-off check. Given the cells a set of blueprints makes solid (and new doors),
+  it floods the grid four-way from the window's border (the way off the map) before and after; any door, entrance,
+  room, bed, bench, stockpile or colonist reached before and not after is "cut off" and the whole set is refused with
+  a plain reason: "would block the entrance (the south entrance at (127,99) would be cut off from outside)", "would
+  cut off Bram's bed and the kitchen from the way out of the map", "would build over the door at (..)". A sealed base
+  (no way out to begin with) is checked from its main area instead. A new door must open onto reachable ground.
+- `Mod/Source/Bridge/BasePlanner.cs`: `Inside(role, size, beds)` (interior sizes: bedroom 4x5, small 3x4; barracks
+  two rows of beds, about 3 cells a bed; kitchen 5x5; freezer 5x5; dining 6x6; rec 6x7; hospital 6x5; research 5x5;
+  workshop 6x6; storage 7x7; large +2, small -1); `Plan(grid, request)` scans every box position around the built part
+  of the base (both orientations) and keeps those whose inside is free, dry, non-zone ground and whose edge is free
+  ground or a wall/rock to share; picks a door on a free edge cell whose outside is walkable outdoor ground; scores
+  shared wall cells, the door on a corridor (in line with another door's doorstep) and facing home, relations
+  (kitchen with freezer and dining, bedrooms together, workshop with storage, research away from noisy rooms,
+  hospital near the entrance), `near` (+8 attached, else closeness), compactness (growth of the base's bounding box),
+  distance from home, and minus fertile soil covered (fields stay fields); a freezer needs an outside wall for its
+  cooler. Doorsteps of existing doors are kept clear. The best candidates go through the guard; the first that passes
+  is the plan, with words: "planned a bedroom for Bram (4x5 inside) sharing the barracks' east wall, door onto the
+  south corridor". `Describe(grid)` is the digest's BASE line; `Apply` stamps a plan on a grid (suggestions, sim).
+- `Mod/Source/Bridge/FurnitureLayout.cs`: per-role pieces (bedroom: bed, end table, dresser; barracks: beds;
+  hospital: hospital beds; kitchen: stove, butcher table; freezer: a cooler in an outer wall; dining: a table and
+  chairs facing it; rec: horseshoes, chess table; research: research bench; workshop: tailoring bench, smithy,
+  stonecutter; storage: shelves). Wall pieces stand with their back to a wall (rotation = that wall), their front row
+  kept clear; nothing goes on the door's inside cell; every free cell and front stays reachable from the door.
+- `Mod/Source/RimWorld/VivariumBaseRead.cs`: reads the live map into a `BaseGrid` (a window of the colony's buildings
+  and colonists plus 30 cells, at most 170 a side), Verse room roles to the planner's words (a cold storeroom is a
+  freezer), and `Guard(map, def, roots, rot)` for any blocking def.
+
+### Where the guard runs
+`/act/room` (planner and corner paths), `/act/build` (a blocking building: a wall, a cooler in the open),
+`/act/defend` (wall lines and every blocking def through `PlaceAll`; a killbox whose funnel walls would seal off is
+refused whole). Sandbags, barricades, traps and furniture are walkable and never refused by it.
+
+### `/act/room` now
+The hand reads the grid, asks the planner, then asks the game about each new cell (`CanPlaceBlueprintAt`, beds and
+graves): a refused cell is taken off the grid and the planner picks again (up to 6 times). Furniture is laid out
+first (a cooler takes its wall cell instead of a wall; if it can't be placed the wall goes back), walls and the door
+are placed, then the furniture while blueprints are left. Unresearched pieces are skipped and named
+("skipped dresser"). The reply: `{"done": "planned a bedroom for Bram (4x5 inside) sharing the barracks' east wall,
+door onto the south corridor (14 new granite walls, 6 shared); furniture: bed, end table", "box": [x,z,w,h],
+"door": [x,z], "undo_seq": .., "left": {..}}`. Undo cancels walls, door and furniture together.
+
+### Digest: the BASE line
+`build.base` is one string, worked out from the live map and kept until the colony's buildings, blueprints or frames
+change or an in-game hour passes: outline ("compact block 21x15" / "3 separate buildings over ..."), the room count,
+the entrance side(s), "corridor east-west" when two doors open onto one straight walkway, room to grow on each side
+(cells of open buildable ground, with what stops it: water, rock, built up, map edge or unseen), and the planner's
+next spots ("next: room for 3+ more bedrooms east of the barracks"). The mind renders it as `BASE: ...` right after
+the BUILD line (cleaned, at most 260 chars; dropped only at the digest's last shrink level).
+
+### Steward
+The `build` tool's room kind takes `purpose` (now with research), `size`, `near` (enum: the digest's room labels and
+roles, then colonist names) and `for` (colonist names); no coordinates anywhere. The prompt: "Say what room you need
+and why; the game picks where, attaches it to the base and furnishes it. The BASE line says the base's shape and where
+it can grow."
+
+### Tests
+`Mod.Tests/BasePlannerTests.cs`: guard cases (a wall across the only entrance, a wall on the door, a path around, a
+walled-in bed named, a door between rooms, the doorstep), planner placements (attach to the barracks, kitchen ->
+freezer with an outside wall, near, water/marsh/soil and doorsteps, the guard never overruled, no-site words, six
+rooms making one base), furniture (bed against the far wall clear of the door, barracks beds, kitchen pieces, cooler
+in an outer wall facing in, chairs facing the table), the BASE line, and a 170x170 timing check.
+`Mod.Tests/VivariumBuildTests.cs` (the route's new fields), `Mod.Tests/Mind/StewardBuildTests.cs` (near/for, BASE).
+The harness command `planner-sim` (tools/MindHarness) runs steward cycles on a recorded early-colony digest
+(`tools/MindHarness/early_digest.json`) and plays the room requests through the planner on a recorded map grid
+(`tools/MindHarness/early_colony.txt`), drawing the base after each room.
+
+### Limits
+- The game-side pieces (`VivariumBaseRead`, the room hand) are compile-checked only; the playtest (VIVARIUM-PLAYTEST
+  section L) is their first run. Bed heads and bench fronts follow "rotation = the wall at its back": check in game.
+- Rooms are rectangles; an L-shaped existing room is treated by its bounding box for words, by its cells for the guard.
+- The guard floods four-way over a window (base + 30 cells); a detour longer than the window counts as cut off.
+- No power layout, no corridors built as such (rooms leave walkways by keeping doorsteps clear), no roof planning.
 
 ## Phase 3: combat and defense
 
