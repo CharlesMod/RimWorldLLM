@@ -60,7 +60,7 @@ namespace RimWorldLLM.Mind.RimWorld
             {
                 double v = Js.Dbl(imp);
                 if (v >= 50) Add(l, FactKind.Room, "room:impressive", "The room is impressive.", 0.45);
-                else if (v >= 25) Add(l, FactKind.Room, "room:impressive", "The room is nice.", 0.25);
+                else if (v >= 25) Add(l, FactKind.Room, "room:impressive", "The room is nice.", 0.15);
                 else if (v <= 5) Add(l, FactKind.Room, "room:impressive", "The room is bare and grim.", 0.3);
             }
             var temp = Js.Get(room, "temp");

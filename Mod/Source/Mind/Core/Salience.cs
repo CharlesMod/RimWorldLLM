@@ -54,7 +54,9 @@ namespace RimWorldLLM.Mind
         public const double NoveltyFactor = 0.35;
         public const double SocialFactor = 0.1;
         public const double SocialOutcomeWeight = 0.7;
-        public const double Floor = 0.05;
+        public const double Floor = 0.2;
+        /// <summary>Below the floor a fact is used to reach Min only when it is a real one (an event, a wound), never filler (the time, a mild sky).</summary>
+        public const double MinFillWeight = 0.3;
 
         // Value talk is what the voice cards used to fixate on: such a fact is never picked.
         private static readonly Regex Price = new Regex(
@@ -99,8 +101,8 @@ namespace RimWorldLLM.Mind
                 if (chosen.Count < max && kinds.Add(x.F.Kind ?? "")) chosen.Add(x);
             foreach (var x in above)                                    // then fill by score
                 if (chosen.Count < max && !chosen.Contains(x)) chosen.Add(x);
-            foreach (var x in ranked)                                   // below the floor only to reach Min
-                if (chosen.Count < min && !chosen.Contains(x)) chosen.Add(x);
+            foreach (var x in ranked)                                   // below the floor only to reach Min, and never filler
+                if (chosen.Count < min && x.F.Weight >= MinFillWeight && !chosen.Contains(x)) chosen.Add(x);
             return chosen.OrderByDescending(x => x.S).ThenBy(x => x.F.Key ?? "", StringComparer.Ordinal).Select(x => x.F).ToList();
         }
     }

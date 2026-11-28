@@ -106,7 +106,7 @@ namespace RimWorldLLM.Mind
             return false;
         }
 
-        private static readonly Regex TrailingLabel = new Regex(@"^(.*[.!?…])" + Ws + @"+([a-z_]+)" + Ws + @"*[.!?]?$", Opts);
+        private static readonly Regex TrailingLabel = new Regex(@"^(.*[.!?…])(?:" + Ws + @"|[|:>\-–—(\[])+([a-z_]+)(?:" + Ws + @"|[)\]])*[.!?]?$", Opts);   // "... it. insult", "... it. | insult", "... it. (insult)"
 
         /// <summary>Cut one bare intent label left after the last sentence ("...before dark. kind" -> "...before dark.").</summary>
         public static string StripTrailingLabel(string t, IEnumerable<string> labels)

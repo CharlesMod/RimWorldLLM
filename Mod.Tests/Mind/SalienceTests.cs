@@ -16,7 +16,7 @@ namespace RimWorldLLM.Tests.Mind
         [Fact]
         public void OrdersByScoreAndRecency()
         {
-            var r = Salience.Pick(new[] { F("event", "old", 0.9, 12), F("injury", "now", 0.6), F("need", "mid", 0.5, 2) }, Ask(min: 1, max: 3));
+            var r = Salience.Pick(new[] { F("event", "old", 0.9, 12), F("injury", "now", 0.6), F("need", "mid", 0.5, 2) }, Ask(min: 3, max: 3));
             Assert.Equal(new[] { "now", "mid", "old" }, r.Select(x => x.Key).ToArray());
         }
 
@@ -69,14 +69,14 @@ namespace RimWorldLLM.Tests.Mind
         [InlineData("An expensive bed")]
         public void PriceTalkNeverPicked(string text)
         {
-            var r = Salience.Pick(new[] { F("event", "p", 1.0, text: text), F("room", "r", 0.1) }, Ask(min: 2, max: 6));
+            var r = Salience.Pick(new[] { F("event", "p", 1.0, text: text), F("room", "r", 0.4) }, Ask(min: 2, max: 6));
             Assert.Equal(new[] { "r" }, r.Select(x => x.Key).ToArray());
         }
 
         [Fact]
         public void MinReachedBelowFloorMaxCaps()
         {
-            var faint = new[] { F("a", "a", 0.01), F("b", "b", 0.02), F("c", "c", 0.03), F("d", "d", 0.04) };
+            var faint = new[] { F("a", "a", 0.31, 48), F("b", "b", 0.32, 48), F("c", "c", 0.33, 48), F("d", "d", 0.34, 48) };     // real but old
             Assert.Equal(3, Salience.Pick(faint, Ask()).Count);
             Assert.Single(Salience.Pick(faint, Ask(min: 1, max: 6)).Take(1));
             var strong = Enumerable.Range(0, 10).Select(i => F("k" + i, "s" + i, 0.5)).ToList();
@@ -124,6 +124,17 @@ namespace RimWorldLLM.Tests.Mind
             var r = Salience.Pick(new[] { F("a", "same", 0.2), F("a", "same", 0.9) }, Ask(min: 1, max: 3));
             Assert.Single(r);
             Assert.Equal(0.9, r[0].Weight);
+        }
+
+        [Fact]
+        public void FillerNeverPadsToMinButARealFactDoes()
+        {
+            // a quiet moment: a nice room, the morning, a clear sky are filler and are not pushed on the line to reach Min
+            var quiet = new[] { F("room", "room:impressive", 0.15), F("time", "time", 0.1), F("weather", "weather", 0.1) };
+            Assert.Empty(Salience.Pick(quiet, Ask(min: 3, max: 6)));
+            // an old but real event still reaches Min
+            var r = Salience.Pick(quiet.Concat(new[] { F("event", "raid", 0.8, 24) }), Ask(min: 1, max: 6));
+            Assert.Equal(new[] { "raid" }, r.Select(x => x.Key).ToArray());
         }
     }
 }

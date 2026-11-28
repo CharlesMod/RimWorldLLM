@@ -40,12 +40,13 @@ namespace RimWorldLLM.Mind
             return l.Where(x => nowGame - x.Item3 <= PairRecentTicks).Select(x => (x.Item1, x.Item2)).Reverse().Take(PairShown).Reverse().ToList();
         }
 
-        private static List<JObject> EventsForFacts(Mind mind, IEnumerable<LedgerEntry> led, long nowGame, long day)
+        private List<JObject> EventsForFacts(Mind mind, IEnumerable<LedgerEntry> led, long nowGame, long day)
         {
             var o = new List<JObject>();
             foreach (var e in led)
                 o.Add(new JObject { ["type"] = e.Etype ?? "", ["summary"] = e.Summary ?? "", ["game"] = e.OpenedTime });
-            foreach (var m in mind.Memories.Where(x => x.Visibility != "private" && x.Source != "told" && nowGame - x.Game <= day && !string.IsNullOrWhiteSpace(x.Text))
+            foreach (var m in mind.Memories.Where(x => x.Visibility != "private" && x.Source != "told" && nowGame - x.Game <= day && !string.IsNullOrWhiteSpace(x.Text)
+                                                           && !MemoryOps.IsRoutineSocial(x, Adapter))
                          .OrderByDescending(x => x.Game).Take(6))
                 o.Add(new JObject { ["type"] = string.IsNullOrEmpty(m.Etype) || m.Etype == "conversation" ? (m.Etype == "conversation" ? "social" : "memory") : m.Etype,
                                     ["summary"] = m.Text, ["game"] = m.Game, ["severity"] = Math.Min(1.0, m.Importance) });
