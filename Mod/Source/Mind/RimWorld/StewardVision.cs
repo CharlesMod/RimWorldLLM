@@ -21,6 +21,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public const int PollMs = 250, PollTotalMs = 3000;
         public const string NoMore = "no more looks this turn";
         public const string Busy = "camera busy";
+        /// <summary>The question an engine look gets when the steward gave no reason.</summary>
+        public const string DefaultQuestion = "Describe what you see for planning the colony's buildings: walls, doors, rooms, open ground, obstacles, blueprints.";
         private static readonly Regex TargetRe = new Regex(
             @"^(room:\d{1,9}|thing:\d{1,9}|pawn:\d{1,9}|cell:\d{1,4},\d{1,4}|dir:(north|south|east|west|northeast|northwest|southeast|southwest):\d{1,3})$",
             RegexOptions.CultureInvariant);
@@ -40,14 +42,16 @@ namespace RimWorldLLM.Mind.RimWorld
 
         private readonly IBridge _bridge;
         private readonly Func<int, Task> _delay;
+        private readonly ILookClient _look;
         private JObject _pending;
         private readonly List<string> _kinds = new List<string>();
         /// <summary>The kinds looked at this turn, in order (for the turn trace; no pictures).</summary>
         public IReadOnlyList<string> Looked => _kinds;
 
-        public VisionKit(IBridge bridge, Func<int, Task> delay = null)
+        public VisionKit(IBridge bridge, Func<int, Task> delay = null, ILookClient look = null)
         {
             _bridge = bridge;
+            _look = look ?? new DirectLookClient(null);
             _delay = delay ?? (ms => Task.Delay(ms));
         }
 
@@ -100,9 +104,14 @@ namespace RimWorldLLM.Mind.RimWorld
                 string b64 = r.TryGetValue("image_b64", out JToken bt) && bt.Type == JTokenType.String ? (string)bt : "";
                 if (status != "ready" || b64.Length == 0) return Err("no picture came back");
                 string mime = r.TryGetValue("mime", out JToken mt) && mt.Type == JTokenType.String ? (string)mt : "image/jpeg";
-                _pending = ImageParts.Part(mime, b64);
+                string legend = Legend(r, kind, target);
+                string question = v.TryGetValue("why", out JToken wt) && wt.Type == JTokenType.String ? PyStr.Strip((string)wt) : "";
+                LookOutcome got = await _look.LookAsync(new LookRequest { Mime = mime, B64 = b64, Kind = kind, Label = legend, Question = question.Length > 0 ? question : DefaultQuestion }).ConfigureAwait(false);
+                if (got == null || (got.Part == null && string.IsNullOrEmpty(got.Answer))) return Err("the picture could not be used");
+                _pending = got.Part;
                 _kinds.Add(kind);
-                return new JValue(Legend(r, kind, target));
+                if (got.Part == null) return new JValue(legend.Replace("Picture attached: ", "Looked: ") + ". What the picture shows: " + PyStr.Head(got.Answer, 600));
+                return new JValue(legend);
             }
         }
 

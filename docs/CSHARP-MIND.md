@@ -94,6 +94,10 @@ trust model are in docs/BRIDGE-API.md, "In-process use". The HTTP bridge stays f
   loop history: never in `Executed.Result`, the trace, the steward trace, `calls.jsonl` or the board; `ImageParts.Redact` turns a data
   URI into `data:image/jpeg;base64,<N bytes>` for any log. The gate (`Llm/VisionProbe.cs`): engine status `"vision": true`, else the
   endpoint's `/props` `modalities.vision`; cached 60 s.
+- **`ILookClient`** (`Llm/LookClient.cs`, new) is the one seam between a captured picture and the model: the gate (`OpenAsync`) and
+  `PrepareAsync(mime, b64, kind)`, which returns the image content part. Today `DirectLookClient` (the `VisionProbe` gate; the picture
+  as the game captured it, as a data URI). An engine look API (resize/tile to the token budget) can replace it without touching the
+  capture, the camera or the steward (`Steward.Look`).
 
 ## Settings and the config file
 

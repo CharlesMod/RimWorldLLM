@@ -18,7 +18,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public string PlaybookAlerts(JObject digest) { return _k.PlaybookAlerts(digest); }
         public string RenderDigest(JObject digest) { return _k.RenderDigest(digest); }
         public string StrategyExtra(JObject digest) { return _k.StrategyExtra(digest); }
-        public IVisionLook NewLook(JObject digest, IBridge bridge, System.Func<int, Task> delay) { return digest != null && digest["build"] is JObject ? new VisionKit(bridge, delay) : null; }
+        public IVisionLook NewLook(JObject digest, IBridge bridge, System.Func<int, Task> delay, ILookClient look) { return digest != null && digest["build"] is JObject ? new VisionKit(bridge, delay, look) : null; }
         public IReadOnlyCollection<string> TradeTools { get { return StewardKit.TradeToolNames; } }
         public IStewardSession TradeSession(JObject digest, IBridge bridge) { return new Sess(_k.TradeSession(digest, bridge)); }
         public string TradeSystemPrompt() { return _k.TradeSystemPrompt(); }

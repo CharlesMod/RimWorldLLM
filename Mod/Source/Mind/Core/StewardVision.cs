@@ -24,6 +24,6 @@ namespace RimWorldLLM.Mind
     public interface IStewardVisionKit
     {
         /// <summary>A fresh look for this turn, or null when this digest has nothing to look at.</summary>
-        IVisionLook NewLook(JObject digest, IBridge bridge, Func<int, Task> delay);
+        IVisionLook NewLook(JObject digest, IBridge bridge, Func<int, Task> delay, ILookClient look);
     }
 }

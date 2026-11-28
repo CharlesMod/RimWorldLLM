@@ -77,7 +77,7 @@ namespace RimWorldLLM.Bridge
     {
         public const double CacheSeconds = 2.0;
         public const int CacheMax = 2;
-        public const int MaxJpegBytes = 400 * 1024;
+        public const int MaxJpegBytes = 900 * 1024;   // a 1536 px game frame at q80 is a few hundred KiB
         public const int QualityFirst = 80, QualityRetry = 60;
         public const double JobTimeoutSeconds = 20.0;
         public const int RetryMs = 250;
@@ -229,7 +229,8 @@ namespace RimWorldLLM.Bridge
 
         public static int FixedMax(VisionKind k)
         {
-            switch (k) { case VisionKind.Wide: return 1024; default: return 768; }
+            // From the poe evaluation (docs/VIVARIUM.md, Vision): close reads best at 1024, base and wide at 1536.
+            switch (k) { case VisionKind.Close: return 1024; default: return 1536; }
         }
 
         /// <summary>Null error when the query is good.</summary>

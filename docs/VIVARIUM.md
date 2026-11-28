@@ -1186,9 +1186,9 @@ The routine steward turn may ask for a picture of the colony from above (north u
 `GET /vision` (docs/BRIDGE-API.md / the game side). The mind side lives in `Mod/Source/Mind` (`Llm/VisionProbe.cs`,
 `RimWorld/StewardVision.cs`, `ToolLoop/ImageParts.cs`).
 
-**Shot kinds.** `look(kind, target?, why?)`: `base` the whole base for layout (768 px long side), `wide` the surroundings for
-fields, ore, approaches and raids (1024 px), `close` a few cells around one target (768 px) for doors, blueprints and missing
-walls. The close target is `room:<id>`, `thing:<id>`, `pawn:<id>`, `cell:x,z` or `dir:<side>:<cells>`; a close without a valid
+**Shot kinds.** `look(kind, target?, why?)`: `base` the whole base for layout (1536 px long side), `wide` the surroundings for
+fields, ore, approaches and raids (1536 px), `close` a few cells around one target (1024 px) for doors, blueprints and missing
+walls. The sizes come from the evaluation below, not from cost. The close target is `room:<id>`, `thing:<id>`, `pawn:<id>`, `cell:x,z` or `dir:<side>:<cells>`; a close without a valid
 target is an error text and never reaches the game. The result text is a one-line legend ("Picture attached: base, cells x
 100-140, z 80-110 (40x30 cells), north up, 19 px per cell"); the picture goes into the next request only.
 
@@ -1202,7 +1202,19 @@ allowed); and the model reads pictures: with an easyEngine its status JSON has `
 own endpoint `GET <base>/props` has `modalities.vision == true`. The answer is cached 60 s; an unreachable server is false and not
 cached.
 
-**Cost.** About 194 image tokens at 768 px, 340-450 at 1024; the engine caps an image at 512 tokens (`-ub 512`). The picture rides
+**Cost (P40, gemma4-rp-maxxed Q3_K_XL + mmproj-F16, llama.cpp b12651-easy1).** Image tokens: about 190 at 768 px, 340 at 1024,
+510 at 1536 with `-ub 512` (llama-server caps an image at n_ubatch tokens), about 760 at 1536 with `-ub 2048 --image-max-tokens 1120`.
+Cold prefill per image turn: 0.8 s (768), 1.7 s (1024), 2.8 s (1536 capped at 512), 4.7 s (1536 at 1120). The projector adds
+about 1.3 GB of VRAM; `-ub 2048` adds about 0.6-0.75 GB more.
+
+**Evaluation (schematic top-down bases with known answers, 16 per question; scripts and logs outside the repo).** The fine-tune at
+768 / 1024 / 1536 px (`-ub 2048`, 1536): base layout - entrance side 7 / 6 / 7 of 16 (chance 4), side with room for a bedroom
+10 / 9 / 15, room count 6 / 8 / 10; close - "something on a blueprint cell" 14 / 16 / 14; wide - rich soil side 13 / 13 / 16. Read
+poorly at every size and by both models: "is the door blocked" (always "no", 8/16) and "where do raids come from" (1-4/16). The base
+Gemma 4 26B-A4B with the same projector reads layout better at 768 (entrance 11, bedroom side 16, rooms 9): the fine-tune lost some
+vision. Text-only for comparison (the same questions from the digest's room list): entrance 7, bedroom side 3, rooms 16 (the digest
+states the count). Higher resolution measurably helped base layout and soil, not the door or raid questions; a picture never beats the
+digest on facts the digest already states. The picture rides
 in every later request of that turn (one picture at a time) and is gone at the end of the turn: nothing keeps it in Minds, the
 board, chat, `calls.jsonl`, the loop result or the steward trace (only the kinds looked at, `looks`).
 

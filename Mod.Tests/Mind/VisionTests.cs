@@ -33,6 +33,34 @@ namespace RimWorldLLM.Tests.Mind
             return Status(o);
         }
 
+        [Fact]
+        public async Task EngineLookPostsTheContractBodyAndReturnsTheAnswer()
+        {
+            Seen seen = null;
+            var c = Mock.Client(s => { seen = s; return MockResponse.Json(200, JObject.Parse(@"{""text"":"" Door blocked by a wall. "",""tokens"":{""image"":338,""prompt"":420,""completion"":9},""ms"":{""prefill"":1400,""total"":1700}}")); }, out _);
+            var l = new EngineLookClient(c, "http://x:1/v1", null, "k", slot: 3);
+            var o = await l.LookAsync(new LookRequest { B64 = "QUJD", Kind = "close", Label = "Picture attached: close", Question = "is the door blocked?" });
+            Assert.Equal("Door blocked by a wall.", o.Answer); Assert.Null(o.Part);
+            Assert.Equal("/engine/v1/look", seen.Path); Assert.Equal("POST", seen.Method);
+            var b = seen.Json();
+            Assert.Equal("data:image/jpeg;base64,QUJD", (string)b["images"][0]["data"]);
+            Assert.Equal("Picture attached: close", (string)b["images"][0]["label"]);
+            Assert.Equal("is the door blocked?", (string)b["question"]);
+            Assert.Equal("high", (string)b["detail"]); Assert.Equal(3, (int)b["id_slot"]); Assert.Equal(160, (int)b["max_tokens"]);
+            Assert.Equal(338, (int)l.LastStats["tokens"]["image"]);
+            Assert.Equal("max", EngineLookClient.Detail("base")); Assert.Equal("max", EngineLookClient.Detail("wide"));
+        }
+
+        [Fact]
+        public async Task EngineLookVisionOffOrUnreachableFallsBackToText()
+        {
+            var c = Mock.Client(s => MockResponse.Json(409, JObject.Parse(@"{""ok"":false,""error"":""vision_off"",""why"":""no projector""}")), out _);
+            Assert.Null(await new EngineLookClient(c, "http://x:1", null).LookAsync(new LookRequest { B64 = "QUJD" }));
+            var c2 = Mock.Client(s => MockResponse.Json(200, JObject.Parse(@"{""text"":""""}")), out _);
+            Assert.Null(await new EngineLookClient(c2, "http://x:1", null).LookAsync(new LookRequest { B64 = "QUJD" }));
+            Assert.False(await new EngineLookClient(c2, "http://x:1", null).OpenAsync());
+        }
+
         [Fact] public async Task EngineVisionTrueOpens() { var (p, _, _) = Make(s => EngineWith(s, ("vision", true))); Assert.True(await p.OpenAsync()); }
         [Fact] public async Task EngineVisionFalseCloses() { var (p, _, _) = Make(s => EngineWith(s, ("vision", false))); Assert.False(await p.OpenAsync()); }
         [Fact] public async Task EngineVisionMissingCloses() { var (p, h, _) = Make(s => EngineWith(s)); Assert.False(await p.OpenAsync()); Assert.Single(h.All); }   // an engine is asked nothing else
@@ -102,6 +130,66 @@ namespace RimWorldLLM.Tests.Mind
             var part = k.TakeAttachment();
             Assert.Equal("data:image/jpeg;base64," + B64, (string)part["image_url"]["url"]);
             Assert.Null(k.TakeAttachment());                       // once
+        }
+
+        private sealed class PrepLook : ILookClient
+        {
+            public JObject Part; public string Answer; public List<string> Kinds = new List<string>(); public List<LookRequest> Asks = new List<LookRequest>();
+            public Task<bool> OpenAsync() => Task.FromResult(true);
+            public Task<LookOutcome> LookAsync(LookRequest r)
+            {
+                Kinds.Add(r.Kind + "|" + r.Mime + "|" + r.B64); Asks.Add(r);
+                return Task.FromResult(Part == null && Answer == null ? null : new LookOutcome { Part = Part, Answer = Answer });
+            }
+        }
+
+        [Fact]
+        public async Task TheLookClientPreparesThePicture()
+        {
+            var fb = new FakeBridge();
+            var prep = new PrepLook { Part = new JObject { ["type"] = "image_url", ["image_url"] = new JObject { ["url"] = "engine:look/7" } } };
+            var k = new VisionKit(FakeBridge.Client(fb), ms => Task.CompletedTask, prep);
+            Assert.StartsWith("Picture attached: base", (string)await k.RunAsync(A(new { kind = "base" })));
+            Assert.Equal(new[] { "base|image/jpeg|" + B64 }, prep.Kinds);
+            Assert.Equal("engine:look/7", (string)k.TakeAttachment()["image_url"]["url"]);
+        }
+
+        [Fact]
+        public async Task ALookClientThatCannotUseThePictureIsAnErrorAndKeepsTheAllowance()
+        {
+            var fb = new FakeBridge();
+            var prep = new PrepLook { Part = null };
+            var k = new VisionKit(FakeBridge.Client(fb), ms => Task.CompletedTask, prep);
+            Assert.True(IsErr(await k.RunAsync(A(new { kind = "base" })), "the picture could not be used"));
+            Assert.Null(k.TakeAttachment());
+            prep.Part = ImageParts.Part("image/jpeg", B64);
+            Assert.StartsWith("Picture attached", (string)await k.RunAsync(A(new { kind = "base" })));
+        }
+
+        [Fact]
+        public async Task DirectLookClientIsTheDataUriPartBehindTheGate()
+        {
+            var c = new DirectLookClient(null);
+            Assert.False(await c.OpenAsync());
+            Assert.Null(await c.LookAsync(new LookRequest { B64 = "" }));
+            var o = await c.LookAsync(new LookRequest { Mime = "image/png", B64 = B64, Kind = "close" });
+            Assert.Null(o.Answer);
+            Assert.Equal("data:image/png;base64," + B64, (string)o.Part["image_url"]["url"]);
+        }
+
+        [Fact]
+        public async Task AnEngineLookAnswersInTextAndAttachesNothing()
+        {
+            var fb = new FakeBridge();
+            var prep = new PrepLook { Answer = "A wall gap on the east side." };
+            var k = new VisionKit(FakeBridge.Client(fb), ms => Task.CompletedTask, prep);
+            string text = (string)await k.RunAsync(A(new { kind = "close", target = "room:12", why = "is the east wall closed?" }));
+            Assert.StartsWith("Looked: close, cells x 100-140", text);
+            Assert.EndsWith("What the picture shows: A wall gap on the east side.", text);
+            Assert.DoesNotContain(B64, text);
+            Assert.Null(k.TakeAttachment());
+            Assert.Equal("is the east wall closed?", prep.Asks[0].Question);
+            Assert.StartsWith("Picture attached: close", prep.Asks[0].Label);
         }
 
         [Fact]

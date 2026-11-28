@@ -256,12 +256,12 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void MaxIsClampedPerKind()
         {
-            Assert.Equal(768, P("close", "cell:1,1").Max);
-            Assert.Equal(768, P("base").Max);
-            Assert.Equal(1024, P("wide").Max);
-            Assert.Equal(768, P("view").Max);
-            Assert.Equal(768, P("base", null, "5000").Max);
-            Assert.Equal(1024, P("wide", null, "5000").Max);
+            Assert.Equal(1024, P("close", "cell:1,1").Max);
+            Assert.Equal(1536, P("base").Max);
+            Assert.Equal(1536, P("wide").Max);
+            Assert.Equal(1536, P("view").Max);
+            Assert.Equal(1536, P("base", null, "5000").Max);
+            Assert.Equal(1024, P("close", "cell:1,1", "5000").Max);
             Assert.Equal(256, P("base", null, "10").Max);
             Assert.Equal(500, P("wide", null, "500").Max);
         }

@@ -768,7 +768,7 @@ director does not voice them.
 A picture of the map from above, north up, without any interface (the main camera is rendered into its own texture; the
 UI is never in it). `kind`: `close` (needs `target`), `base` (home area bounding box + 3 cells), `wide` (about 3x the base
 span, at least 80 cells wide, clamped to the map), `view` (whatever the camera shows now, no camera move). `max` is the
-long side in px, 256 up to the kind's size (close 768, base 768, wide 1024, view 768); default the kind's size. The
+long side in px, 256 up to the kind's size (close 1024, base 1536, wide 1536, view 1536); default the kind's size. The
 picture has the screen's aspect. `target` (close only): `room:<id>` (room id as in the digest `build.rooms[].id`; frame =
 its bounds + 2 cells, at least 10 wide), `thing:<id>`, `pawn:<id>`, `cell:<x>,<z>` (about 14x10 cells around it), or
 `dir:<north|south|east|west|northeast|northwest|southeast|southwest>:<cells 1..120>` from the home centre.
@@ -780,10 +780,10 @@ A capture takes a few frames, so the client asks again with the same query until
   camera after the move, so a zoom the game clamped is told truthfully (a close frame may show more cells than asked).
 - Errors: `refused` with detail `vision_off` (the setting is off) or `player_typing` (a text field has keyboard focus);
   `no_target` (404; the room, thing, pawn or cell is not on the current map); `capture_failed` (500; including an image still
-  over 400 KiB at JPEG quality 60, a map change mid-capture, or a capture stuck for 20 s); `bad_request` for a bad
+  over 900 KiB at JPEG quality 60, a map change mid-capture, or a capture stuck for 20 s); `bad_request` for a bad
   kind, target or max; `busy` (503) when a capture of a different query is in flight; `no_game`.
 - A finished picture is cached for 2 s of real time per (kind, target, max) so the retry gets it; at most 2 pictures
-  are kept. JPEG quality 80, re-encoded at 60 when over 400 KiB. Encoding runs on a worker thread.
+  are kept. JPEG quality 80, re-encoded at 60 when over 900 KiB. Encoding runs on a worker thread.
 - close/base/wide move the camera for about one frame (the game only draws the map sections in view) and put it back; the
   camera director and watch mode stand still meanwhile. `view` does not move the camera. Pictures are never saved.
 

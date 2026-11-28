@@ -181,6 +181,8 @@ namespace RimWorldLLM.Mind
         public double PartialMinGapS = 0.125;
         /// <summary>NEW (the look tool): can the model read pictures? Null: built from the tool backend's endpoint on first use.</summary>
         public IVisionGate Vision;
+        /// <summary>NEW: gate + picture preparation behind one seam (ILookClient). Null: a DirectLookClient over <see cref="Vision"/>.</summary>
+        public ILookClient Look;
         /// <summary>NEW: the game's "narrator may look" setting (GET /config vision_allowed; missing is allowed). The director sets it.</summary>
         public Func<bool> VisionAllowed = () => true;
         /// <summary>NEW: the wait between two polls of a pending picture (the look tool); replaceable for tests.</summary>
@@ -627,8 +629,13 @@ namespace RimWorldLLM.Mind
             try
             {
                 if (!VisionAllowed()) return false;
-                if (Vision == null && D.ToolBackend is OpenAIBackend ob) Vision = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
-                return Vision != null && await Vision.OpenAsync().ConfigureAwait(false);
+                if (Look == null)
+                {
+                    if (Vision == null && D.ToolBackend is OpenAIBackend ob) Vision = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
+                    if (Vision == null) return false;
+                    Look = new DirectLookClient(Vision);
+                }
+                return await Look.OpenAsync().ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -678,7 +685,7 @@ namespace RimWorldLLM.Mind
             IVisionLook vision = null;                                     // the look tool: routine turns only, when the setting allows it and the model reads pictures
             if (reason != "combat started" && reason != "combat over" && kit is IStewardVisionKit vk && await VisionOpenAsync().ConfigureAwait(false))
             {
-                vision = vk.NewLook(digest, d.Bridge, VisionDelay);
+                vision = vk.NewLook(digest, d.Bridge, VisionDelay, Look);
                 if (vision != null) tools.Add(vision.Spec);
             }
             HashSet<string> allowed = advisor
