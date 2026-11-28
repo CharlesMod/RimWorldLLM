@@ -25,11 +25,12 @@ namespace RimWorldLLM.Bridge
     public sealed class DownloadBar
     {
         public const long LargeBytes = 50L * 1000 * 1000;
-        public const long ActivePollMs = 1000, IdlePollMs = 2000, ReadyShowMs = 4000;
+        public const long ActivePollMs = 1000, IdlePollMs = 2000, ReadyShowMs = 4000, ErrorShowMs = 8000;
         const int MaxTextLen = 90;
 
         bool _wasActive;
-        long _readyUntil = long.MinValue;
+        long _readyUntil = long.MinValue, _errorUntil = long.MinValue;
+        string _errorText;
         long _lastSampleMs = long.MinValue / 2;
         DownloadBarView _view = DownloadBarView.Hidden;
 
@@ -105,8 +106,11 @@ namespace RimWorldLLM.Bridge
             if (st.Phase == EnginePhase.Error && _wasActive)
             {
                 _wasActive = false;
-                return new DownloadBarView { Mode = DownloadBarView.Kind.Error, LabelKey = "RWL_Bar_Paused", Text = Short(st.Message) };
+                _errorUntil = nowMs + ErrorShowMs;   // the engine stops downloading: keep the line up a while, not for one sample
+                _errorText = Short(st.Message);
             }
+            if (nowMs < _errorUntil && st.Phase == EnginePhase.Error)
+                return new DownloadBarView { Mode = DownloadBarView.Kind.Error, LabelKey = "RWL_Bar_Paused", Text = _errorText };
 
             // nothing big now: if one just finished, say Ready for a few seconds
             if (_wasActive)

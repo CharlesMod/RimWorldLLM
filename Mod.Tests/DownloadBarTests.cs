@@ -123,6 +123,9 @@ namespace RimWorldLLM.Tests
             var v = b.Update(new EngineStatus { Phase = EnginePhase.Error, Message = new string('a', 300) }, 2000);
             Assert.Equal(DownloadBarView.Kind.Error, v.Mode);
             Assert.True(v.Text.Length <= 90);
+            var err = new EngineStatus { Phase = EnginePhase.Error, Message = "x" };
+            Assert.Equal(DownloadBarView.Kind.Error, b.Update(err, 5000).Mode);    // stays for a few seconds
+            Assert.False(b.Update(err, 11000).Visible);                             // then hides
         }
 
         [Fact]
