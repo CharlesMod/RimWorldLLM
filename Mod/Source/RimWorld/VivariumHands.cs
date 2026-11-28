@@ -15,7 +15,7 @@ namespace RimWorldLLM
     {
         static bool _warned;
 
-        static HandResult Failed(Exception e)
+        internal static HandResult Failed(Exception e)
         {
             if (!_warned) { _warned = true; Log.Warning("[RimWorldLLM] vivarium hand failed: " + e); }
             return HandResult.No("the game refused: " + e.Message);

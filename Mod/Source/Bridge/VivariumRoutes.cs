@@ -48,6 +48,7 @@ namespace RimWorldLLM.Bridge
             RegisterBio(router, vivarium, hands);
             RegisterTrade(router, vivarium, hands);
             RegisterCombat(router, vivarium, hands);
+            RegisterPlace(router, vivarium, hands);
         }
 
         static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }

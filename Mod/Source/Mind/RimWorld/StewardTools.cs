@@ -49,6 +49,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly HashSet<string> Acting;
         /// <summary>The builder tools; they exist only when the digest has a build block.</summary>
         public readonly BuildKit Build;
+        public readonly PlaceKit Place;
         /// <summary>The colonists the digest marks incapable of violence (they stay out of "draft all").</summary>
         public readonly HashSet<string> CannotFight = new HashSet<string>(StringComparer.Ordinal);
         /// <summary>The combat tools (squad, defend): squad needs a combat view, defend also a build block.</summary>
@@ -87,6 +88,7 @@ namespace RimWorldLLM.Mind.RimWorld
             Research = DigestJson.Items(DigestJson.G(DigestJson.G(Digest, "research"), "available")).OfType<JObject>().ToList();
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
                 if (p is JObject po && IncapableOfViolence(DigestJson.G(po, "incapable"))) CannotFight.Add(GameData.Name(DigestJson.G(po, "name")));
+            Place = new PlaceKit(Digest);
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
             Bio = new BioKit(Digest);                            // the Biotech tools exist only when the digest has a bio block
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
@@ -96,8 +98,8 @@ namespace RimWorldLLM.Mind.RimWorld
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n)), StringComparer.Ordinal);
+            Tools = tools.Concat(Build.Tools).Concat(Place.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Place.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n)), StringComparer.Ordinal);
         }
 
         /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
@@ -437,6 +439,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     }
                 default:
                     if (Build.Names.Contains(tool)) return Build.Body(tool, v);
+                    if (Place.Names.Contains(tool)) return Place.Body(tool, v);
                     if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
                     if (Trade.Acting.Contains(tool)) return Trade.Body(tool, v);
                     if (Bio.Names.Contains(tool)) return Bio.Body(tool, v);

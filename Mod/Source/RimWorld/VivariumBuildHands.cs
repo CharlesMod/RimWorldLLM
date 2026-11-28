@@ -14,7 +14,7 @@ namespace RimWorldLLM
     {
         // ---------------------------------------------------------------- shared
         /// <summary>The current map if it is a player home, else the first player home map; null when none.</summary>
-        static Map HomeMap()
+        internal static Map HomeMap()
         {
             var m = Find.CurrentMap;
             if (m != null && m.IsPlayerHome) return m;
@@ -22,7 +22,7 @@ namespace RimWorldLLM
         }
 
         /// <summary>The centre of the base: mean of the home-area cells, else of the colonists' beds, else of free colonists.</summary>
-        static IntVec3 HomeCenter(Map map)
+        internal static IntVec3 HomeCenter(Map map)
         {
             int x, z;
             var home = map.areaManager.Home;
@@ -37,7 +37,7 @@ namespace RimWorldLLM
 
         static List<int[]> WhereList(Where w, Map map) { return BuildHelpers.WhereCells(w, map.Size.x, map.Size.z); }
 
-        static Thing ThingById(Map map, int id)
+        internal static Thing ThingById(Map map, int id)
         {
             foreach (var t in map.listerThings.AllThings) if (t.thingIDNumber == id) return t;
             return null;
@@ -45,14 +45,14 @@ namespace RimWorldLLM
 
         static bool IsBedOrGrave(Thing t) { return t is Building_Bed || t is Building_Grave; }
 
-        static ThingDef BuiltDef(Thing t)
+        internal static ThingDef BuiltDef(Thing t)
         {
             if (t is Blueprint || t is Frame) return t.def.entityDefToBuild as ThingDef;
             return t.def;
         }
 
         /// <summary>Why a cell cannot take an edifice or zone, or null: bed/grave/blueprint check for footprints.</summary>
-        static string FootprintBlock(Map map, CellRect rect)
+        internal static string FootprintBlock(Map map, CellRect rect)
         {
             foreach (var c in rect.Cells)
             {
@@ -111,7 +111,7 @@ namespace RimWorldLLM
         }
 
         /// <summary>First buildable, researched def for a word (alias list, defName, then label), or the reason not.</summary>
-        static ThingDef ResolveThing(string word, out HandResult no)
+        internal static ThingDef ResolveThing(string word, out HandResult no)
         {
             no = null;
             var names = BuildPure.ThingDefs(word);
@@ -136,14 +136,14 @@ namespace RimWorldLLM
         }
 
 /// <summary>Coolers and vents go into a wall, not on a room's floor.</summary>
-        static bool WallMounted(ThingDef def)
+        internal static bool WallMounted(ThingDef def)
         {
             return typeof(Building_Cooler).IsAssignableFrom(def.thingClass) || typeof(Building_Vent).IsAssignableFrom(def.thingClass);
         }
 
         /// <summary>The room's plain wall cells (impassable edifices that are not doors), not corners: each has a room
         /// cell as a cardinal neighbour.</summary>
-        static List<IntVec3> RoomWallCells(Map map, Room room)
+        internal static List<IntVec3> RoomWallCells(Map map, Room room)
         {
             var seen = new HashSet<IntVec3>();
             foreach (var c in room.Cells)
@@ -231,6 +231,10 @@ namespace RimWorldLLM
                         if (!cell.IsValid) return HandResult.No("no wall cell of that room takes a " + def.label + " (it needs a plain wall with open air or another room behind it)" + (firstReason == null ? "" : ": " + firstReason));
                         goto place;
                     }
+                    // wall lamps hang on a wall: try the room's plain wall cells first (the game's attach check picks the rotation)
+                    if (def.building != null && def.building.isAttachment)
+                        foreach (var wc in RoomWallCells(map, room).OrderBy(w => BuildHelpers.Dist2(w.x, w.z, home.x, home.z)))
+                            if (tryCell(wc)) break;
                     var scored = new List<KeyValuePair<int, IntVec3>>();
                     foreach (var c in room.Cells)
                     {
@@ -245,8 +249,9 @@ namespace RimWorldLLM
                         if (c.GetDoor(map) != null) continue;
                         scored.Add(new KeyValuePair<int, IntVec3>(BuildHelpers.PlaceScore(walls, nearDoor), c));
                     }
-                    foreach (var kv in scored.OrderByDescending(k => k.Key).ThenBy(k => BuildHelpers.Dist2(k.Value.x, k.Value.z, home.x, home.z)))
-                        if (tryCell(kv.Value)) break;
+                    if (!cell.IsValid)
+                        foreach (var kv in scored.OrderByDescending(k => k.Key).ThenBy(k => BuildHelpers.Dist2(k.Value.x, k.Value.z, home.x, home.z)))
+                            if (tryCell(kv.Value)) break;
                     if (!cell.IsValid) return HandResult.No("no free spot for a " + def.label + " in that room" + (firstReason == null ? "" : ": " + firstReason));
                 }
                 else

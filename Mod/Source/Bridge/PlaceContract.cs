@@ -20,7 +20,7 @@ namespace RimWorldLLM.Bridge
         HandResult Place(PlaceArgs a, BuildBudget left);
     }
 
-    public static class PlacePure
+    public static partial class PlacePure
     {
         public static readonly string[] Ops = { "furnish", "generator", "battery", "connect", "switch", "heater", "cooler", "target", "ship" };
         public static readonly string[] GeneratorKinds = { "wood", "chemfuel", "solar", "wind", "geothermal" };
