@@ -185,6 +185,8 @@ namespace RimWorldLLM.Mind
         public ILookClient Look;
         /// <summary>NEW: the game's "narrator may look" setting (GET /config vision_allowed; missing is allowed). The director sets it.</summary>
         public Func<bool> VisionAllowed = () => true;
+        /// <summary>NEW: the engine look's own id_slot (never the conversation's). Null: one past the highest narrator/actor slot.</summary>
+        public int? LookSlot;
         /// <summary>NEW: the wait between two polls of a pending picture (the look tool); replaceable for tests.</summary>
         public Func<int, Task> VisionDelay;
         private int _streams;
@@ -623,6 +625,10 @@ namespace RimWorldLLM.Mind
             }
         }
 
+        /// <summary>A chat completion refused with 400 images_not_offered (a remote caller may not send images in chat).</summary>
+        public static bool IsImagesNotOffered(Exception e)
+            => e != null && e.Message != null && e.Message.Contains("HTTP 400") && e.Message.Contains("images_not_offered");
+
         /// <summary>The vision gate: the game's setting allows it and the model reads pictures. A failing probe is a closed gate, never a failed turn.</summary>
         private async Task<bool> VisionOpenAsync()
         {
@@ -631,9 +637,15 @@ namespace RimWorldLLM.Mind
                 if (!VisionAllowed()) return false;
                 if (Look == null)
                 {
-                    if (Vision == null && D.ToolBackend is OpenAIBackend ob) Vision = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
+                    if (Vision == null && D.ToolBackend is OpenAIBackend ob)
+                    {
+                        var probe = new VisionProbe(ob.Http, ob.Base, ob.ApiKey);
+                        int slot = LookSlot ?? (D.Cfg.ActorSlots.Concat(new[] { D.Cfg.NarratorSlot }).Max() + 1);
+                        Vision = probe;
+                        Look = new RoutedLookClient(probe, new EngineLookClient(ob.Http, ob.Base, probe, ob.ApiKey, slot));
+                    }
                     if (Vision == null) return false;
-                    Look = new DirectLookClient(Vision);
+                    if (Look == null) Look = new DirectLookClient(Vision);
                 }
                 return await Look.OpenAsync().ConfigureAwait(false);
             }
@@ -785,8 +797,13 @@ namespace RimWorldLLM.Mind
                     if (vision != null) o.TakeAttachment = vision.TakeAttachment;
                 }).ConfigureAwait(false);
             }
-            catch
+            catch (Exception e)
             {
+                if (vision != null && Look is RoutedLookClient rl && rl.Path == LookPath.Direct && IsImagesNotOffered(e) && !rl.IsOff)
+                {
+                    rl.Off();                                       // the endpoint refuses pictures in chat: no look for the rest of the session, text only
+                    LlmLog.Warning("rimworldllm.steward", "steward: the endpoint refused a picture (images_not_offered); look is off for this session");
+                }
                 if (sink != null) sink.Finish(null, false, Live);
                 throw;
             }

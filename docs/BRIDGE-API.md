@@ -333,7 +333,9 @@ rule to its system prompt and drops explicit sexual lines (reason `adult_off`). 
 is allowed. The agent's age gate is never relaxed by it. The agent reads it on every config refresh; a missing key
 means off.
 `vision_allowed` (bool, default `true`) is the mod's "Narrator may look at the screen" setting (`narratorMayLook`); the mind may fetch
-pictures only when it is not `false` and the model supports images. See `GET /vision`.
+pictures only when it is not `false` and the model supports images. See `GET /vision`. The engine picks the path: easyEngine
+status/hello `look: true` (missing is false) means POST /engine/v1/look is used (own `id_slot`); a local `vision: true` without `look`
+sends the picture in chat; a remote caller never sends images in chat (400 `images_not_offered`). Details in VIVARIUM.md.
 `text_fill` (bool) is the mod's "Write flavour text for single things" switch (and the mod switch itself): false means
 the agent's text filler stays idle. Missing (an older mod) means the agent decides from `GET /text/queue` alone.
 `llm` is the agent's OpenAI-compatible endpoint from the mod's settings. The key itself is never

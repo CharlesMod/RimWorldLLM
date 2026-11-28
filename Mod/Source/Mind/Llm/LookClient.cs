@@ -51,7 +51,7 @@ namespace RimWorldLLM.Mind
                 : new LookOutcome { Part = ImageParts.Part(string.IsNullOrEmpty(r.Mime) ? "image/jpeg" : r.Mime, r.B64) });
     }
 
-    /// <summary>easyEngine's look API (planned): POST /engine/v1/look {images:[{data,label}], question, detail, max_tokens, id_slot}
+    /// <summary>easyEngine's look API: POST /engine/v1/look {images:[{data,label}], question, detail, max_tokens, id_slot}
     /// -> {text, tokens:{image,prompt,completion}, ms:{prefill,total}}; 409 vision_off means fall back to text. The engine bounds,
     /// downscales and re-encodes the picture. Looks use their own slot so a picture never evicts the conversation's cached prompt.</summary>
     public sealed class EngineLookClient : ILookClient
@@ -98,5 +98,30 @@ namespace RimWorldLLM.Mind
             LastStats = new JObject { ["tokens"] = o["tokens"]?.DeepClone(), ["ms"] = o["ms"]?.DeepClone() };
             return new LookOutcome { Answer = text };
         }
+    }
+
+    /// <summary>Picks the look path from what the endpoint says (see <see cref="LookRoute"/>) each time the gate is asked, so a changed
+    /// engine is followed. Off() closes the gate for the session (a direct picture the endpoint refused with images_not_offered).</summary>
+    public sealed class RoutedLookClient : ILookClient
+    {
+        private readonly VisionProbe _probe;
+        private readonly DirectLookClient _direct;
+        private readonly EngineLookClient _engine;
+        public bool IsOff { get; private set; }
+        public RoutedLookClient(VisionProbe probe, EngineLookClient engine)
+        {
+            _probe = probe; _engine = engine; _direct = new DirectLookClient(probe);
+        }
+        /// <summary>The path chosen by the last gate answer.</summary>
+        public LookPath Path => IsOff ? LookPath.None : _probe.Path;
+        public void Off() { IsOff = true; }
+        public async Task<bool> OpenAsync()
+        {
+            if (IsOff) return false;
+            await _probe.OpenAsync().ConfigureAwait(false);
+            return Path != LookPath.None;
+        }
+        public Task<LookOutcome> LookAsync(LookRequest r)
+            => Path == LookPath.Engine ? _engine.LookAsync(r) : Path == LookPath.Direct ? _direct.LookAsync(r) : Task.FromResult<LookOutcome>(null);
     }
 }

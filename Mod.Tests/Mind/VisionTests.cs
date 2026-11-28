@@ -23,7 +23,7 @@ namespace RimWorldLLM.Tests.Mind
         {
             var now = new[] { 1000.0 };
             var c = Mock.Client(f, out var h);
-            return (new VisionProbe(c, "http://x:1/v1", "", () => now[0]), h, now);
+            return (new VisionProbe(c, "http://localhost:1/v1", "", () => now[0]), h, now);
         }
 
         private static MockResponse EngineWith(Seen s, params (string, object)[] extra)
@@ -372,6 +372,109 @@ namespace RimWorldLLM.Tests.Mind
     }
 
     [Collection("AdultState")]
+    public class LookSwitchTests
+    {
+        private static VisionProbe Probe(string host, Func<Seen, MockResponse> f)
+        {
+            var c = Mock.Client(f, out _);
+            return new VisionProbe(c, "http://" + host + ":1/v1", "", () => 1000.0);
+        }
+        private static MockResponse Eng(params (string, bool)[] flags)
+        {
+            var o = new JObject { ["phase"] = "ready", ["sampler"] = "structured" };
+            foreach (var (k, v) in flags) o[k] = v;
+            return MockResponse.Json(200, o);
+        }
+
+        [Fact]
+        public async Task LocalVisionWithoutLookIsDirect()
+        {
+            var p = Probe("localhost", s => Eng(("vision", true)));
+            Assert.True(await p.OpenAsync()); Assert.Equal(LookPath.Direct, p.Path);
+        }
+
+        [Theory]
+        [InlineData("localhost", true, true)]
+        [InlineData("localhost", true, false)]
+        [InlineData("sprinter", true, true)]
+        [InlineData("sprinter", true, false)]
+        public async Task LookTrueIsEngineLocalOrRemote(string host, bool look, bool vision)
+        {
+            var p = Probe(host, s => Eng(("look", look), ("vision", vision)));
+            Assert.True(await p.OpenAsync()); Assert.Equal(LookPath.Engine, p.Path);
+        }
+
+        [Fact]
+        public async Task RemoteEngineWithoutLookIsNotOffered()
+        {
+            var p = Probe("sprinter", s => Eng(("vision", true)));
+            Assert.False(await p.OpenAsync()); Assert.Equal(LookPath.None, p.Path);
+        }
+
+        [Fact]
+        public async Task VisionFalseWithoutLookIsNotOffered()
+        {
+            var p = Probe("localhost", s => Eng(("vision", false)));
+            Assert.False(await p.OpenAsync()); Assert.Equal(LookPath.None, p.Path);
+        }
+
+        [Fact]
+        public async Task RemoteOwnEndpointWithoutHelloUsesPropsVisionDirect()
+        {
+            var p = Probe("box", s => s.Path == "/engine/v1/status" ? MockResponse.Empty(404) : MockResponse.Json(200, JObject.Parse(@"{""modalities"":{""vision"":true}}")));
+            Assert.True(await p.OpenAsync()); Assert.Equal(LookPath.Direct, p.Path);
+            var q = Probe("box", s => s.Path == "/engine/v1/status" ? MockResponse.Empty(404) : MockResponse.Json(200, JObject.Parse(@"{""modalities"":{""vision"":false}}")));
+            Assert.False(await q.OpenAsync()); Assert.Equal(LookPath.None, q.Path);
+        }
+
+        [Fact]
+        public async Task RoutedClientFollowsThePathAndOffClosesIt()
+        {
+            string posted = null;
+            var c = Mock.Client(s =>
+            {
+                if (s.Path == "/engine/v1/look") { posted = s.Path; return MockResponse.Json(200, JObject.Parse(@"{""text"":""a base""}")); }
+                return Eng(("look", true));
+            }, out _);
+            var probe = new VisionProbe(c, "http://sprinter:1/v1", "", () => 1000.0);
+            var r = new RoutedLookClient(probe, new EngineLookClient(c, "http://sprinter:1/v1", probe, "", 5));
+            Assert.True(await r.OpenAsync());
+            var o = await r.LookAsync(new LookRequest { B64 = "QUJD" });
+            Assert.Equal("a base", o.Answer); Assert.Equal("/engine/v1/look", posted);
+            r.Off();
+            Assert.False(await r.OpenAsync());
+            Assert.Null(await r.LookAsync(new LookRequest { B64 = "QUJD" }));
+        }
+
+        [Fact]
+        public async Task DirectRoutedClientReturnsAPartNotAnAnswer()
+        {
+            var c = Mock.Client(s => Eng(("vision", true)), out _);
+            var probe = new VisionProbe(c, "http://localhost:1/v1", "", () => 1000.0);
+            var r = new RoutedLookClient(probe, new EngineLookClient(c, "http://localhost:1/v1", probe));
+            Assert.True(await r.OpenAsync());
+            var o = await r.LookAsync(new LookRequest { B64 = "QUJD" });
+            Assert.NotNull(o.Part); Assert.Null(o.Answer);
+        }
+
+        [Fact]
+        public void ImagesNotOfferedIsRecognised()
+        {
+            Assert.True(Steward.IsImagesNotOffered(new BackendError("HTTP 400: {\"error\":\"images_not_offered\"}")));
+            Assert.False(Steward.IsImagesNotOffered(new BackendError("HTTP 400: bad json")));
+            Assert.False(Steward.IsImagesNotOffered(new BackendError("HTTP 500: images_not_offered")));
+        }
+
+        [Fact]
+        public void LookParsesFromStatusAndHelloMissingIsFalse()
+        {
+            Assert.True(Newtonsoft.Json.JsonConvert.DeserializeObject<RimWorldLLM.Bridge.EngineStatus>(@"{""look"":true,""vision"":false}").Look);
+            Assert.False(Newtonsoft.Json.JsonConvert.DeserializeObject<RimWorldLLM.Bridge.EngineStatus>(@"{""phase"":""ready""}").Look);
+            Assert.True(RimWorldLLM.Bridge.EngineHello.Parse(@"{""engine"":""easy-engine"",""api"":1,""look"":true}").Look);
+            Assert.False(RimWorldLLM.Bridge.EngineHello.Parse(@"{""engine"":""easy-engine"",""api"":1}").Look);
+        }
+    }
+
     public class VisionStewardTests
     {
         private sealed class Gate : IVisionGate { public bool Open; public int Asks; public Task<bool> OpenAsync() { Asks++; return Task.FromResult(Open); } }

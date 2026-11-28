@@ -1323,9 +1323,18 @@ answers `{"error":"no more looks this turn"}` without touching the game. A `pend
 beside its one act. It is offered on routine turns only, never on combat or trade turns, and only when the digest has a build block.
 
 **The gate** (all must hold): the game setting "Narrator may look at the screen" (`GET /config` `vision_allowed`, missing means
-allowed); and the model reads pictures: with an easyEngine its status JSON has `"vision": true` (missing is false), with the player's
-own endpoint `GET <base>/props` has `modalities.vision == true`. The answer is cached 60 s; an unreachable server is false and not
-cached.
+allowed); and a path to the model, picked from what the endpoint says:
+
+| Endpoint says | Path |
+|---|---|
+| easyEngine status/hello `"look": true` (local or remote, own endpoint or another PC) | `EngineLookClient`, POST `/engine/v1/look` with its own `id_slot` (one past the highest narrator/actor slot), never the steward's slot; a 409 `vision_off` falls back to text |
+| easyEngine, local, `"vision": true`, no `look` | `DirectLookClient` (picture rides in the steward's own request) |
+| not an easyEngine (no status), `GET <base>/props` `modalities.vision == true` | `DirectLookClient` |
+| anything else (remote engine without `look`, vision false, unreachable) | no look tool |
+
+`look` and `vision` missing mean false. A direct look whose chat request is refused with 400 `images_not_offered` (a remote caller
+may not send images in chat) turns the look gate off for the session, falls back to text and logs once. The answer is cached 60 s;
+an unreachable server is false and not cached.
 
 **Cost (P40, gemma4-rp-maxxed Q3_K_XL + mmproj-F16, llama.cpp b12651-easy1).** Image tokens: about 190 at 768 px, 340 at 1024,
 510 at 1536 with `-ub 512` (llama-server caps an image at n_ubatch tokens), about 760 at 1536 with `-ub 2048 --image-max-tokens 1120`.

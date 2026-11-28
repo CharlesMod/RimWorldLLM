@@ -32,6 +32,8 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("paired")] public bool? Paired;
         [JsonProperty("client_id")] public string ClientId = "";
         [JsonProperty("revoked")] public bool Revoked;
+        /// <summary>POST /engine/v1/look is offered (missing is false).</summary>
+        [JsonProperty("look")] public bool Look;
 
         /// <summary>An easyEngine this client can talk to (engine "easy-engine", api 1 or newer, an id).</summary>
         public bool IsEasyEngine { get { return Engine == "easy-engine" && Api >= 1 && !string.IsNullOrEmpty(EngineId); } }

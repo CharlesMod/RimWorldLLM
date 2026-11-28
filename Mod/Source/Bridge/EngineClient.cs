@@ -55,6 +55,10 @@ namespace RimWorldLLM.Bridge
         [JsonProperty("parents")] public List<EngineParent> Parents;
         [JsonProperty("errors")] public List<string> Errors;
         /// <summary>True when the selected local model is the catalog's fallback (the smallest one).</summary>
+        /// <summary>POST /engine/v1/look is offered (missing is false).</summary>
+        [JsonProperty("look")] public bool Look;
+        /// <summary>A projector is loaded right now (missing is false).</summary>
+        [JsonProperty("vision")] public bool Vision;
         [JsonProperty("model_fallback")] public bool ModelFallback;
         /// <summary>What to expect from the fallback model, one sentence from the engine (empty otherwise).</summary>
         [JsonProperty("model_note")] public string ModelNote;
