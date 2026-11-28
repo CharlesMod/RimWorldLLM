@@ -164,6 +164,19 @@ namespace RimWorldLLM
             });
         }
 
+        /// <summary>One status sample now, off the main thread (the main-menu download bar calls this at 1 Hz). Also resets the Touch clock.</summary>
+        public static void SampleNow()
+        {
+            _lastPollMs = Now;
+            if (!LocalSource) return;
+            Task.Run(async () =>
+            {
+                bool had = _session.Client != null;
+                await _session.PollAsync(_launching).ConfigureAwait(false);
+                if (!had && _session.Client != null) RWLBridge.RefreshLlm();
+            });
+        }
+
         /// <summary>Resets the poll clock so the next Touch polls at once (window just opened).</summary>
         public static void PollNow() { _lastPollMs = long.MinValue / 2; _session.MarkPlanStale(); }
 
@@ -340,7 +353,8 @@ namespace RimWorldLLM
         {
             var st = _session.Status;
             if (st == null) return "";
-            if (!string.IsNullOrEmpty(st.ModelName)) return st.ModelName;
+            if (!string.IsNullOrEmpty(st.ModelName) || !string.IsNullOrEmpty(st.ModelCodename) || Bridge.ModelCodename.PlainName(st.Model) != null)
+                return Bridge.ModelCodename.DisplayFor(st.Model, st.ModelCodename, st.ModelName);
             if (st.Custom != null && !string.IsNullOrEmpty(st.Custom.Name)) return st.Custom.Name;
             return st.Model ?? "";
         }
@@ -356,7 +370,7 @@ namespace RimWorldLLM
             if (st.Upgrade.State == "done" || st.Upgrade.State == "idle") return null;
             var p = st.Upgrade.Progress;
             int pct = p == null ? -1 : Bridge.StarterWatch.Percent(p.DoneBytes, p.TotalBytes);
-            string name = !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName : st.Upgrade.Target;
+            string name = Bridge.ModelCodename.DisplayFor(st.Upgrade.Target, st.Upgrade.TargetCodename, st.Upgrade.TargetName);
             return pct >= 0 ? UiUtil.T("RWL_Switch_Line", name, pct) : UiUtil.T("RWL_Switch_LineNoPct", name);
         }
 
@@ -450,7 +464,7 @@ namespace RimWorldLLM
         public static string TargetName()
         {
             var st = _session.Status;
-            return st != null && st.Upgrade != null && !string.IsNullOrEmpty(st.Upgrade.TargetName) ? st.Upgrade.TargetName
+            return st != null && st.Upgrade != null && !string.IsNullOrEmpty(st.Upgrade.TargetName) ? Bridge.ModelCodename.DisplayFor(st.Upgrade.Target, st.Upgrade.TargetCodename, st.Upgrade.TargetName)
                  : st != null ? st.Model : "";
         }
 
