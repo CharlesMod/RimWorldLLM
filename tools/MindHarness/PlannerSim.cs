@@ -53,8 +53,8 @@ namespace RimWorldLLM.Harness
         public static JObject Refresh(JObject digest, BaseGrid g, List<string> missing0, int colonists)
         {
             var d = (JObject)digest.DeepClone();
-            var b = d["build"] as JObject ?? new JObject();
-            d["build"] = b;
+            var b = d["build"] as JObject;
+            if (b == null) { d["build"] = new JObject(); b = (JObject)d["build"]; }   // (re-assigning a parented token would clone it)
             b["base"] = BasePlanner.Describe(g);
             var beds = g.Pois.Where(p => p.Kind == "bed").ToList();
             var rooms = new JArray();
@@ -113,13 +113,27 @@ namespace RimWorldLLM.Harness
                 var d = Refresh(dj, g, missing0, colonists);
                 File.WriteAllText(Path.Combine(outDir, "digest-" + c + ".json"), d.ToString());
                 var t0 = DateTime.UtcNow;
-                var oc = await StewardTry.TryOnceAsync(d, null, chat, true, url, model, mode);
+                // the player's ask is a chat line once (cycle 1); later cycles are the steward's routine looks
+                var oc = await StewardTry.TryOnceAsync(d, null, c == 1 ? chat : "", true, url, model, mode);
+                if (oc.Messages != null)
+                    File.WriteAllText(Path.Combine(outDir, "prompt-" + c + ".txt"), string.Join("\n\n", oc.Messages.Select(m => "[" + (string)m["role"] + "]\n" + m["content"])));
                 say("\n== cycle " + c + " (" + (DateTime.UtcNow - t0).TotalSeconds.ToString("0.0") + " s)");
-                say("BASE: " + (string)d["build"]["base"]);
+                // the lines the model saw about the base (from the user turn of its first request)
+                string user = oc.Messages == null ? "" : string.Join("\n", oc.Messages.Where(m => (string)m["role"] == "user").Select(m => m["content"]?.ToString() ?? ""));
+                foreach (var ln in user.Split('\n').Where(ln => ln.StartsWith("BUILD") || ln.StartsWith("BASE") || ln.StartsWith("ROOMS")).Distinct())
+                    say("saw " + (ln.Length > 400 ? ln.Substring(0, 400) + "..." : ln));
                 if (oc.Acts.Count == 0) say("acts: none");
                 foreach (var kv in oc.Acts)
                 {
                     say("act " + kv.Key + " " + kv.Value.ToString(Newtonsoft.Json.Formatting.None));
+                    if (kv.Key == "build")
+                    {
+                        // a thing put into a room counts as built by the next cycle: what it covers leaves "missing"
+                        string th = ((string)kv.Value["thing"] ?? "").ToLowerInvariant();
+                        string covers = th.Contains("table") && !th.Contains("butcher") ? "dining table" : th.Contains("research") ? "research bench"
+                                      : th.Contains("stove") || th.Contains("campfire") ? "stove" : th.Contains("cooler") ? "freezer" : null;
+                        if (covers != null) missing0.Remove(covers);
+                    }
                     if (kv.Key != "room") continue;
                     var body = kv.Value;
                     var req = new RoomRequest

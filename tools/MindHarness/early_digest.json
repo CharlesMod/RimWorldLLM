@@ -130,7 +130,7 @@
     "Hauling": 3,
     "Firefighter": 1
    },
-   "health": "bleeding (left leg)",
+   "health": "fine",
    "downed": false,
    "mood": 52,
    "mental": "",
@@ -222,7 +222,7 @@
     "Construction": 2,
     "Hauling": 3
    },
-   "health": "bruised (left arm)",
+   "health": "fine",
    "downed": false,
    "mood": 38,
    "mental": "",
@@ -450,7 +450,7 @@
   "prisoners": 0,
   "prisoner_beds_free": 0,
   "beds_free": 2,
-  "colonists_without_bedroom": 2,
+  "colonists_without_bedroom": 5,
   "animals": 3,
   "food_days": 2.4,
   "medicine_total": 4,
@@ -688,11 +688,6 @@
   "hunters": 2
  },
  "deadlines": [
-  {
-   "what": "Bram bleeds out",
-   "hours": 5.5,
-   "kind": "bleed"
-  },
   {
    "what": "raw potatoes rot",
    "hours": 19,
