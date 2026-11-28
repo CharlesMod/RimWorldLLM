@@ -23,8 +23,9 @@ namespace RimWorldLLM
         /// <summary>True while the camera is moved for a picture; DirectorCamera and WatchCamera do nothing meanwhile.</summary>
         public static bool Holding { get; private set; }
 
-        /// <summary>Row 0 of ReadPixels is the bottom; the encoder is given top-first rows. Flip to false if the pictures come out upside down the other way.</summary>
-        public static bool FlipRows = true;
+        /// <summary>Unity texture data (ReadPixels) is bottom row first and EncodeArrayToJPG reads the same layout as EncodeToJPG,
+        /// so no flip is needed. Set true only if pictures come out upside down in game.</summary>
+        public static bool FlipRows = false;
 
         static VisionJob _job;
         static int _mapId;
