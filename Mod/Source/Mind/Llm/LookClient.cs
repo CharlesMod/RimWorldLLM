@@ -69,12 +69,23 @@ namespace RimWorldLLM.Mind
         public EngineLookClient(HttpClient http, string baseUrl, IVisionGate gate, string apiKey = "", int? slot = null)
         {
             _http = http; _base = baseUrl ?? ""; _gate = gate; Slot = slot;
+            _headers["X-Easy-Engine"] = "1";                          // every non-GET engine control call needs it
             if (!string.IsNullOrEmpty(apiKey)) _headers["Authorization"] = "Bearer " + apiKey;
         }
 
         public static string LookUrl(string baseUrl) => LlmWire.RemoveV1((baseUrl ?? "").TrimEnd('/')) + "/engine/v1/look";
 
         /// <summary>close reads single tiles: high; base and wide carry the most detail: max.</summary>
+        /// <summary>Cuts a string to at most maxBytes of UTF-8 without splitting a character.</summary>
+        public static string CapUtf8(string s, int maxBytes)
+        {
+            if (s == null || System.Text.Encoding.UTF8.GetByteCount(s) <= maxBytes) return s;
+            int n = s.Length;
+            while (n > 0 && System.Text.Encoding.UTF8.GetByteCount(s.Substring(0, n)) > maxBytes) n--;
+            if (n > 0 && char.IsHighSurrogate(s[n - 1])) n--;
+            return s.Substring(0, n);
+        }
+
         public static string Detail(string kind) => kind == "close" ? "high" : "max";
 
         public Task<bool> OpenAsync() => _gate == null ? Task.FromResult(false) : _gate.OpenAsync();
@@ -83,7 +94,7 @@ namespace RimWorldLLM.Mind
         {
             if (r == null || string.IsNullOrEmpty(r.B64)) return null;
             var img = new JObject { ["data"] = "data:" + (string.IsNullOrEmpty(r.Mime) ? "image/jpeg" : r.Mime) + ";base64," + r.B64 };
-            if (!string.IsNullOrEmpty(r.Label)) img["label"] = r.Label;
+            if (!string.IsNullOrEmpty(r.Label)) img["label"] = CapUtf8(r.Label, 256);   // the engine refuses labels over 256 bytes
             string q = string.IsNullOrEmpty(r.Question) ? "Describe what you see." : r.Question;
             var body = new JObject { ["images"] = new JArray(img), ["question"] = q, ["detail"] = Detail(r.Kind), ["max_tokens"] = MaxTokens };
             if (Slot.HasValue) body["id_slot"] = Slot.Value;
