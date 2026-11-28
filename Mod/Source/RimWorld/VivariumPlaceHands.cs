@@ -175,7 +175,9 @@ namespace RimWorldLLM
 
         static Blueprint PlaceBp(Map map, ThingDef def, IntVec3 cell, Rot4 rot, BuildHelpers.MarkBuilder mb)
         {
-            var bp = GenConstruct.PlaceBlueprintForBuild(def, cell, map, rot, Faction.OfPlayer, null);
+            // a stuff-made def needs a stuff or its frame cannot be paid for: the game's default for it
+            var stuff = def.MadeFromStuff ? GenStuff.DefaultStuffFor(def) : null;
+            var bp = GenConstruct.PlaceBlueprintForBuild(def, cell, map, rot, Faction.OfPlayer, stuff);
             if (bp == null) return null;
             mb.Blueprint(def.defName, cell.x, cell.z, bp.thingIDNumber);
             return bp;
@@ -380,7 +382,9 @@ namespace RimWorldLLM
             {
                 if (PlacePending.IsNoSpot(r.Reason))
                     return HandResult.No(PlacePending.NoSpotMessage(at.Label, def.size.x, def.size.z, def.label, PlacePending.Detail(r.Reason)));
-                return r;
+                // the Build hand names cells; the model names rooms (words, never coordinates)
+                string words = System.Text.RegularExpressions.Regex.Replace(r.Reason ?? "", @"\s*\(\d+,\d+\)", "");
+                return HandResult.No(words == r.Reason ? words : words + "; try another room or place something else first");
             }
             made = BlueprintOf(map, r.Marks, def);
             string note = "placed " + PlacePure.Article(def.label) + " in " + PlacePending.The(at.Label);
@@ -638,6 +642,7 @@ namespace RimWorldLLM
             }
             int[] rots = def.rotatable ? new[] { 0, 1, 2, 3 } : new[] { 0 };
             Spot spot = null; string first = null; string where;
+            BaseGrid grid = null;   // read once: the seal-off guard rereads the whole base per call otherwise
             if (existing.Count > 0)
             {
                 int pad = Math.Max(def.size.x, def.size.z) + 1;
@@ -659,7 +664,8 @@ namespace RimWorldLLM
                     if (++tried > 400) break;
                     string why = FitReason(map, def, kv.Value);
                     if (why != null) { if (first == null) first = why; continue; }
-                    if (VivariumBaseRead.Guard(map, def, new[] { kv.Value.Cell }, kv.Value.Rot) != null) continue;
+                    if (grid == null) grid = VivariumBaseRead.Read(map);
+                    if (VivariumBaseRead.Guard(map, def, new[] { kv.Value.Cell }, kv.Value.Rot, grid) != null) continue;
                     spot = kv.Value; break;
                 }
                 where = "next to the ship's " + (existing.Count == 1 ? "first part" : "other parts");
@@ -683,7 +689,8 @@ namespace RimWorldLLM
                         var s = new Spot { Cell = c, Rot = rot, Rect = rect };
                         string why = FitReason(map, def, s);
                         if (why != null) { if (first == null) first = why; continue; }
-                        if (VivariumBaseRead.Guard(map, def, new[] { c }, rot) != null) continue;
+                        if (grid == null) grid = VivariumBaseRead.Read(map);
+                        if (VivariumBaseRead.Guard(map, def, new[] { c }, rot, grid) != null) continue;
                         spot = s; break;
                     }
                     if (spot != null || tried > 600) break;

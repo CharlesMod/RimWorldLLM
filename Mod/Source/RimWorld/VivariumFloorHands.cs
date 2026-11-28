@@ -44,6 +44,7 @@ namespace RimWorldLLM
                 Room room = null;
                 foreach (var r in map.regionGrid.AllRooms) if (r.ID == a.Room) { room = r; break; }
                 if (room == null) return HandResult.No("no room " + a.Room + " on the map; use a room id from ROOMS", "lay a floor");
+                if (room.PsychologicallyOutdoors || room.TouchesMapEdge) return HandResult.No("room " + a.Room + " is open ground, not a room; use a room id from ROOMS", "lay a floor");
                 string name = FloorsPure.RoomName(room.Role == null ? null : room.Role.label);
                 // the interior: not a door cell, not fogged
                 var cells = room.Cells.Where(c => c.InBounds(map) && !c.Fogged(map) && c.GetDoor(map) == null).ToList();
@@ -66,6 +67,7 @@ namespace RimWorldLLM
                     var rep = GenConstruct.CanPlaceBlueprintAt(def, c, Rot4.North, map, false, null, null, null);
                     if (!rep.Accepted) { skipped++; if (firstReason == null) firstReason = rep.Reason.NullOrEmpty() ? "it does not fit" : rep.Reason; continue; }
                     lay.Add(c);
+                    if (lay.Count > left.Blueprints) break;   // over the cycle's budget already: no need to test the rest
                 }
                 if (lay.Count == 0)
                     return skipped > 0 ? HandResult.No("can't lay " + word + " in " + name + ": " + firstReason, what) : HandResult.Done(FloorsPure.AlreadyNote(word, name));
