@@ -1051,6 +1051,8 @@ namespace RimWorldLLM.Mind.RimWorld
                     if (p is JObject && DigestJson.IsNumberish(DigestJson.G(p, "age"))) ages[Key(DigestJson.G(p, "id"))] = DigestJson.PyFloat(DigestJson.G(p, "age"));
                 outl.AddRange(BioLines(biob, bio ?? BioLevels[0], ages));
             }
+            string cmdLine = CommandKit.Line(d);
+            if (cmdLine.Length > 0) outl.Add(cmdLine);
             outl.AddRange(TradeLines(d, tl));
             JToken pw = DigestJson.G(d, "power");
             if (DigestJson.Truthy(pw))

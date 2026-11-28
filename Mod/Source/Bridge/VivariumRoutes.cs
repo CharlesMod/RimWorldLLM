@@ -46,6 +46,7 @@ namespace RimWorldLLM.Bridge
             router.Add("POST", "/act/choose", true, c => Choose(c, vivarium, hands));
             RegisterBuild(router, vivarium, hands);
             RegisterBio(router, vivarium, hands);
+            RegisterCommand(router, vivarium, hands);
             RegisterTrade(router, vivarium, hands);
             RegisterCombat(router, vivarium, hands);
         }

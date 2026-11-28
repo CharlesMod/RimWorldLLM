@@ -226,13 +226,13 @@ namespace RimWorldLLM.Bridge
     public sealed class BuildBudget
     {
         public const int CycleTicks = 2500;
-        public int MaxBlueprints = 50, MaxCells = 200, MaxDesignations = 150, MaxBills = 4;
-        public int Blueprints, Cells, Designations, Bills;   // left this cycle
+        public int MaxBlueprints = 50, MaxCells = 200, MaxDesignations = 150, MaxBills = 4, MaxOrders = CommandPure.MaxOrdersPerCycle;
+        public int Blueprints, Cells, Designations, Bills, Orders;   // left this cycle (Orders: job/medical/prisoner/animal/social commands that leave no mark)
         int _start = int.MinValue;
 
         public BuildBudget() { Refill(); }
 
-        void Refill() { Blueprints = MaxBlueprints; Cells = MaxCells; Designations = MaxDesignations; Bills = MaxBills; }
+        void Refill() { Blueprints = MaxBlueprints; Cells = MaxCells; Designations = MaxDesignations; Bills = MaxBills; Orders = MaxOrders; }
 
         public void NewCycle(int tick) { _start = tick; Refill(); }
 
@@ -245,8 +245,8 @@ namespace RimWorldLLM.Bridge
         /// <summary>A copy of what is left, handed to the game hand so it can refuse an action that would not fit.</summary>
         public BuildBudget Left()
         {
-            return new BuildBudget { MaxBlueprints = MaxBlueprints, MaxCells = MaxCells, MaxDesignations = MaxDesignations, MaxBills = MaxBills,
-                Blueprints = Blueprints, Cells = Cells, Designations = Designations, Bills = Bills, _start = _start };
+            return new BuildBudget { MaxBlueprints = MaxBlueprints, MaxCells = MaxCells, MaxDesignations = MaxDesignations, MaxBills = MaxBills, MaxOrders = MaxOrders,
+                Blueprints = Blueprints, Cells = Cells, Designations = Designations, Bills = Bills, Orders = Orders, _start = _start };
         }
 
         public static int CostBlueprints(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "blueprint") n += m.CellCount; return n; }

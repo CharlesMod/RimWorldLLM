@@ -86,6 +86,8 @@ namespace RimWorldLLM
                 ["vivarium_controls_speed"] = s.narratorControlsSpeed,
                 ["vision_allowed"] = s.narratorMayLook,
                 ["vivarium_may_implant_genes"] = s.narratorMayImplantGenes,
+                ["vivarium_may_execute_prisoners"] = s.narratorMayExecutePrisoners,
+                ["vivarium_may_slaughter_pets"] = s.narratorMaySlaughterPets,
                 ["vivarium_heartbeat_hours"] = s.stewardHeartbeatHours,
                 ["llm"] = LlmConfig(s)
             });

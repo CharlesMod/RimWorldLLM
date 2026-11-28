@@ -326,6 +326,8 @@ namespace RimWorldLLM
             Check(l, "RWL_Viv_MayPause", ref s.narratorMayPauseForEmergencies, "RWL_Viv_MayPauseTip");
             Check(l, "RWL_Viv_ControlsSpeed", ref s.narratorControlsSpeed, "RWL_Viv_ControlsSpeedTip");
             if (ModsConfig.BiotechActive) Check(l, "RWL_Viv_ImplantGenes", ref s.narratorMayImplantGenes, "RWL_Viv_ImplantGenesTip");
+            Check(l, "RWL_Viv_ExecutePrisoners", ref s.narratorMayExecutePrisoners, "RWL_Viv_ExecutePrisonersTip");
+            Check(l, "RWL_Viv_SlaughterPets", ref s.narratorMaySlaughterPets, "RWL_Viv_SlaughterPetsTip");
             Check(l, "RWL_Viv_MayLook", ref s.narratorMayLook, "RWL_Viv_MayLookTip");
             Check(l, "RWL_Viv_SlowForCombat", ref s.narratorSlowsForCombat, "RWL_Viv_SlowForCombatTip");
             SliderRow(l, "RWL_Viv_Heartbeat", Mathf.RoundToInt(s.stewardHeartbeatHours), ref s.stewardHeartbeatHours, 1f, 24f, "RWL_Viv_HeartbeatTip");
