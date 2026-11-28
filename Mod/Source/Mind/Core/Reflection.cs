@@ -137,8 +137,8 @@ namespace RimWorldLLM.Mind
             string wants = string.Join("; ", mind.Wants.Select(w => GameData.Clean(w, "label")));
             if (wants.Length == 0) wants = "none";
             string worries = concerns ? ConcernOps.WorriesBlock(mind) : "";
-            string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", bio)
-                + "=== WHO YOU ARE BECOMING NOW ===\n" + GameData.DataSection("character", "Becoming: " + becoming + "\n" + "Wants: " + wants)
+            string card = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", bio);   // fixed per actor: rides in the system message
+            string user = "=== WHO YOU ARE BECOMING NOW ===\n" + GameData.DataSection("character", "Becoming: " + becoming + "\n" + "Wants: " + wants)
                 + "=== WHAT YOU REMEMBER (id: text) ===\n" + GameData.DataSection("memories", memLines)
                 + "=== THE PEOPLE YOU KNOW ===\n" + GameData.DataSection("people", relLines)
                 + (inner && mind.Inner.Count > 0
@@ -148,7 +148,7 @@ namespace RimWorldLLM.Mind
                 + "=== REQUEST ===\n" + adapter.ReflectionRequest
                 + (habits ? " " + (adapter.ReflectionHabitRequest ?? "") : "")
                 + (concerns ? ConcernOps.ReflectConcernRequest : "");
-            return new List<(string, string)> { ("system", adapter.ReflectionSystem + "\n\n" + GameData.DataRule), ("user", user) };
+            return new List<(string, string)> { ("system", adapter.ReflectionSystem + "\n\n" + GameData.DataRule + "\n" + card), ("user", user) };
         }
 
         public static ReflectResult ParseResult(string text)
@@ -187,7 +187,7 @@ namespace RimWorldLLM.Mind
             foreach (var v in toks.Values) allNames.UnionWith(v);
             ISet<string> speaker;
             if (!toks.TryGetValue(mind.ActorId, out speaker)) speaker = new HashSet<string>();
-            string userText = msgs[1].Item2;
+            string userText = msgs[0].Item2 + "\n" + msgs[1].Item2;   // the card (system) and the rest (user)
             var s = Sanitize.SanitizeProse(res.Bio, allNames, allNames, Sanitize.PromptCapWords(userText), commonWords, speaker, 4, MaxBioWords,
                 involvesMinor, minorNames);
             if (!s.Ok) return null;

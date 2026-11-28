@@ -26,6 +26,8 @@ namespace RimWorldLLM.Mind
         public double Ts = NowS();
         /// <summary>The X-Request-Id sent with the call (HttpLlm only; null for a call that was never sent). Appended to the row last.</summary>
         public string RequestId;
+        /// <summary>The conversation key (ConvKey.For): stable per actor per job kind. Logged only, never sent.</summary>
+        public string Conv;
 
         /// <summary>time.time(): seconds since the Unix epoch.</summary>
         public static double NowS() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
@@ -56,6 +58,7 @@ namespace RimWorldLLM.Mind
             };
             d["raw_prefill_tps"] = PyRound.Round(RawPrefillTps, 1);
             d["effective_prefill_tps"] = PyRound.Round(EffectivePrefillTps, 1);
+            if (Conv != null) d["conv"] = Conv;
             if (RequestId != null) d["request_id"] = RequestId;
             return d;
         }

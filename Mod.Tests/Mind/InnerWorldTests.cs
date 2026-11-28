@@ -333,6 +333,27 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ThoughtAndDiarySystemMessagesCarryTheCardAndNothingVolatile()
+        {
+            using var w = new World(); await w.GoAsync();
+            w.D.Cfg.ThoughtEnabled = true;
+            w.D.Minds[1].Memories.Add(new Memory { Id = "m1", Game = 1000, Text = "I saw Bram eat alone.", People = new List<int> { 2 } });
+            w.Llm.Script["thought"] = new List<string> { "Bram should not eat alone.", "The berries will keep a few days." };
+            await Step(w);
+            w.D.Minds[1].Memories.Add(new Memory { Id = "m2", Game = 2000, Text = "I found a ripe berry bush.", People = new List<int> { 2 } });
+            w.Real += w.D.Cfg.ThoughtEveryRealS + 1;
+            await Step(w);
+            var th = w.Llm.Calls.Where(x => x.Kind == "thought" && x.Actor == 1).ToList();
+            Assert.Equal(2, th.Count);
+            Assert.NotEqual(th[0].Messages[1].Text, th[1].Messages[1].Text);
+            Assert.Equal(th[0].Messages[0].Text, th[1].Messages[0].Text);               // the system message is byte-identical across thoughts
+            Assert.Contains("=== WHO YOU ARE ===", th[0].Messages[0].Text);            // the actor's card rides in it
+            Assert.DoesNotContain("=== WHO YOU ARE ===", th[0].Messages[1].Text);
+            Assert.DoesNotContain("berry", th[1].Messages[0].Text); Assert.DoesNotContain("Bram eat alone", th[0].Messages[0].Text);
+            Assert.EndsWith(w.D.Adapter.ThoughtRequest, th[1].Messages[1].Text);       // the request still ends the user message
+        }
+
+        [Fact]
         public async Task IdleThoughtWrappedAsDataAndAddedAsAMusing()
         {
             using var w = new World(); await w.GoAsync();

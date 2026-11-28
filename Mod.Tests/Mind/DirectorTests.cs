@@ -154,7 +154,7 @@ namespace RimWorldLLM.Tests.Mind
             w.Fb.Scenes[1] = JObject.Parse("{\"room\": {\"role\": \"Kitchen\"}, \"present\": [{\"pawn\": 2, \"job\": \"idle\", \"distance\": 2, \"can_hear\": true}], \"time_of_day\": \"morning\", \"weather\": \"clear\", \"trends\": {}}");
             w.Fb.AddEvent("injury", Who((1, "victim")), "Ana was shot.", new[] { 1 }, 0.6);
             await Pump(w);
-            string prefix = w.Llm.Calls[0].Messages[0].Text;
+            string prefix = w.Llm.Calls[0].Messages[0].Text + "\n" + w.Llm.Calls[0].Messages[1].Text;   // the scene now leads the user message
             Assert.Contains("Bram", prefix);
             Assert.DoesNotContain("Cy", prefix);
         }

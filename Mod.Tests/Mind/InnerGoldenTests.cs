@@ -1,4 +1,5 @@
 // Golden tests: prompt text, schemas and hash picks of the inner modules, captured from CPython by csmind/inner/gen_golden.py.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -27,12 +28,25 @@ namespace RimWorldLLM.Tests.Mind
             for (int i = 0; i < w.Count; i++) { Assert.Equal(w[i].Item1, got[i].Item1); Assert.Equal(w[i].Item2, got[i].Item2); }
         }
 
+        /// <summary>Turncost: the bio section (fixed per actor) moved from the head of the reflection's user message to the end of its
+        /// system message, so the system message is the same for that actor across reflections. Nothing else changed.</summary>
+        static JToken ReflReshaped(JToken want)
+        {
+            var r = (JArray)want.DeepClone();
+            string user = (string)r[1][1];
+            int i = user.IndexOf("=== WHO YOU ARE BECOMING NOW ===", StringComparison.Ordinal);
+            Assert.True(i > 0);
+            r[0][1] = (string)r[0][1] + "\n" + user.Substring(0, i);
+            r[1][1] = user.Substring(i);
+            return r;
+        }
+
         [Fact]
         public void ReflectionMessagesAreByteIdenticalInAllEightFlagCombinations()
         {
             var m = M();
             foreach (int a in new[] { 0, 1 }) foreach (int h in new[] { 0, 1 }) foreach (int c in new[] { 0, 1 })
-                SameMsgs(G["refl"][$"{a}{h}{c}"], Reflection.ReflectionMessages(AD, m, NAMES, 9000, 60000, a == 1, h == 1, c == 1));
+                SameMsgs(ReflReshaped(G["refl"][$"{a}{h}{c}"]), Reflection.ReflectionMessages(AD, m, NAMES, 9000, 60000, a == 1, h == 1, c == 1));
         }
 
         [Fact]

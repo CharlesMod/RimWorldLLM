@@ -29,6 +29,8 @@ namespace RimWorldLLM.Tests.Mind
         static bool Conv(JObject s) { return ConvOf(s) != null; }
         static List<JObject> ConvSaid(World w) { return w.D.Said.Where(Conv).ToList(); }
         static string Msg(FakeCall c, int i) { return c.Messages[i].Text; }
+        /// <summary>The system message and the first user message: the volatile scene/memories now lead the user message.</summary>
+        static string Whole(FakeCall c) { return c.Messages[0].Text + "\n" + c.Messages[1].Text; }
         static KeyValuePair<int, string>[] Who(params (int, string)[] a) { return a.Select(x => new KeyValuePair<int, string>(x.Item1, x.Item2)).ToArray(); }
         static string ConvOf(JObject s) { var c = s["conv"]; string v = c == null || c.Type == JTokenType.Null ? null : (string)c; return string.IsNullOrEmpty(v) ? null : v; }   // a JValue holding a null string has Type String
 
@@ -127,7 +129,7 @@ namespace RimWorldLLM.Tests.Mind
             Gather(w, "meal", new[] { 1, 2, 3 });
             await Step(w);
             var first = LineCalls(w)[0];
-            Assert.Contains("wolves", Msg(first, 0));
+            Assert.Contains("wolves", Whole(first));
             Assert.Contains("Bring it up", Msg(first, 1));
             int a = (int)w.D.Said[0]["actor"];
             Assert.True(a == 1 || a == 2);
@@ -145,7 +147,7 @@ namespace RimWorldLLM.Tests.Mind
             await Step(w);
             var ls = LineCalls(w);
             Assert.Equal(3, ls[0].Actor == 3 ? ls.Count : -1);
-            Assert.Contains("Old Tam", Msg(ls[0], 0));
+            Assert.Contains("Old Tam", Whole(ls[0]));
             Assert.Contains("eulogy", Msg(ls[0], 1));
             var said = ConvSaid(w);
             Assert.Equal(3, (int)said[0]["actor"]);
@@ -239,7 +241,7 @@ namespace RimWorldLLM.Tests.Mind
             Gather(w, "speech", new[] { 1, 2, 3 }, lead: 1, severity: 0.6, extra: d => d["ideo"] = "The Work Precept");
             await Step(w);
             Assert.Equal(1, (int)ConvSaid(w)[0]["actor"]);
-            Assert.Contains("Work Precept", Msg(LineCalls(w)[0], 0));
+            Assert.Contains("Work Precept", Whole(LineCalls(w)[0]));
         }
 
         [Fact]
@@ -492,7 +494,7 @@ namespace RimWorldLLM.Tests.Mind
             foreach (int i in new[] { 1, 2, 3 }) Assert.Contains("first:snow", w.D.Minds[i].Firsts);
             var calls = LineCalls(w);
             Assert.InRange(calls.Count, 1, Firsts.MaxSpeakersPerEvent);
-            Assert.Contains("The first time you have ever seen snow fall: It began to snow.", Msg(calls[0], 0));
+            Assert.Contains("The first time you have ever seen snow fall: It began to snow.", Whole(calls[0]));
             foreach (int i in new[] { 1, 2, 3 }) Assert.Contains(w.D.Minds[i].Memories, m => m.Etype == "first_cue" && m.Pinned);
             Assert.Equal(calls.Count, w.Fb.SayLog.Count);
         }
@@ -547,7 +549,7 @@ namespace RimWorldLLM.Tests.Mind
             await Step(w);
             Assert.DoesNotContain(w.D.Minds[1].Firsts, x => x.StartsWith("first:"));
             Assert.DoesNotContain("first_cue", w.D.Minds[1].Firsts);                 // the signal event never reached the memory
-            Assert.DoesNotContain(LineCalls(w), c => Msg(c, 0).Contains("first time"));
+            Assert.DoesNotContain(LineCalls(w), c => Whole(c).Contains("first time"));
         }
 
         [Fact]
@@ -556,15 +558,15 @@ namespace RimWorldLLM.Tests.Mind
             using var w = new World(); await w.GoAsync();
             w.Fb.AddEvent("raid_start", new KeyValuePair<int, string>[0], "Raid by pirates.", new[] { 1 }, 0.8, null, new JObject());
             await Step(w);
-            var first = LineCalls(w).Where(c => Msg(c, 0).Contains("first time you have ever seen a raid")).ToList();
+            var first = LineCalls(w).Where(c => Whole(c).Contains("first time you have ever seen a raid")).ToList();
             w.Fb.Tick += 70000;
             w.Fb.AddEvent("raid_start", new KeyValuePair<int, string>[0], "Another raid.", new[] { 1 }, 0.8, null, new JObject());
             await Step(w);
-            var again = LineCalls(w).Where(c => Msg(c, 0).Contains("Another raid")).ToList();
+            var again = LineCalls(w).Where(c => Whole(c).Contains("Another raid")).ToList();
             Assert.NotEmpty(first);
             Assert.Contains("first:raid", w.D.Minds[1].Firsts);
             Assert.NotEmpty(again);
-            Assert.DoesNotContain(again, c => Msg(c, 0).Contains("first time"));
+            Assert.DoesNotContain(again, c => Whole(c).Contains("first time"));
         }
 
         [Fact]

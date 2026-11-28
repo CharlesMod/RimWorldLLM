@@ -174,11 +174,11 @@ namespace RimWorldLLM.Mind
             bool involvesMinor = d.IsMinor(aid) || mems.Any(m => m.People.Any(p => d.IsMinor(p)));
             string memLines = string.Join("\n", mems.Select(m => "- " + GameData.Clean(m.Text, "event")));
             string words = await Speech.RegisterPhraseAsync(d.Adapter, d.Bridge, aid, mind, snap).ConfigureAwait(false);
-            string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", PromptBlocks.BioLineCap, true))
-                + "=== WHAT HAPPENED TODAY ===\n" + GameData.DataSection("memories", memLines)
+            string card = PromptBlocks.PawnCard(mind, false);         // the actor's fixed card rides in the system message
+            string user = "=== WHAT HAPPENED TODAY ===\n" + GameData.DataSection("memories", memLines)
                 + (stream.Count > 0 ? "=== WHAT YOU WERE THINKING ===\n" + GameData.DataSection("thoughts", ThoughtsText(stream)) : "")
-                + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + d.Adapter.DreamRequest;
-            string system = d.Adapter.DreamSystem + "\n\n" + GameData.DataRule + (involvesMinor ? "\n\n" + AgeGate.MinorRule : "");
+                + PromptBlocks.MinorRuleBeforeRequest(involvesMinor) + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + d.Adapter.DreamRequest;
+            string system = d.Adapter.DreamSystem + "\n\n" + GameData.DataRule + "\n" + card;
             lease.Generating = true;
             Completion c;
             try
@@ -198,7 +198,7 @@ namespace RimWorldLLM.Mind
             var known = new HashSet<string>(toks.TryGetValue(aid, out var mine) ? mine : new HashSet<string>());
             foreach (var m in mems) foreach (var p in m.People) if (toks.TryGetValue(p, out var pt)) known.UnionWith(pt);
             var speaker = toks.TryGetValue(aid, out var sp) ? sp : new HashSet<string>();
-            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(user), new HashSet<string>(d.Adapter.CommonWords), speaker,
+            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(card + user), new HashSet<string>(d.Adapter.CommonWords), speaker,
                 DreamMinWords, DreamMaxWords, involvesMinor, minors);
             string text = s.Ok ? s.Text : null;
             if (text != null && (PyStr.Len(text) > d.Cfg.ThoughtMaxChars || AgeGate.Violation(text, involvesMinor, minors))) text = null;

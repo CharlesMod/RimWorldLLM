@@ -182,6 +182,26 @@ namespace RimWorldLLM.Tests.Mind
         }
 
         [Fact]
+        public async Task ConvKeyIsStablePerActorAndKindRecordedInCallLogAndNeverSentOnTheWire()
+        {
+            var h = new StreamHandler(s => StreamResp.Json(200, "{\"choices\":[{\"message\":{\"content\":\"x\"}}]}"));
+            var log = new CallLog(null);
+            var llm = new HttpLlm(new LlmConfig { BaseUrl = "http://h:1", Engine = false }, log, new HttpClient(h) { Timeout = Timeout.InfiniteTimeSpan });
+            var m = new LlmMessage[] { ("user", "u") };
+            await llm.CompleteAsync(m, 1, "line", actor: 5);
+            await llm.CompleteAsync(m, 2, "line", actor: 5);                 // another slot, same actor and kind: same key
+            await llm.CompleteAsync(m, 1, "intent", actor: 5);
+            await llm.CompleteAsync(m, 1, "line", actor: 6);
+            await llm.CompleteAsync(m, 0, "narrator");
+            var rows = log.Snapshot();
+            Assert.Equal(new[] { "a5:line", "a5:line", "a5:intent", "a6:line", "narrator:narrator" }, rows.Select(r => (string)r["conv"]).ToArray());
+            Assert.Equal("conv", rows[0].Properties().SkipLast(1).Last().Name);       // just before request_id, which stays last
+            Assert.Equal("request_id", rows[0].Properties().Last().Name);
+            foreach (var r in h.All) { Assert.DoesNotContain("conv", r.BodyText); Assert.DoesNotContain("a5:", r.BodyText); }
+            Assert.Equal("a5:line", ConvKey.For(5, "line")); Assert.Equal("narrator:chronicle", ConvKey.For(null, "chronicle"));
+        }
+
+        [Fact]
         public async Task PromptProgressQueuedQuietAndPingsAndTimings()
         {
             string body =

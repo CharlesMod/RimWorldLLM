@@ -96,6 +96,11 @@ namespace RimWorldLLM.Tests.Mind
             var g = Golden(name);
             Assert.True(((JArray)g["llm"]).Count > 20 && ((JArray)g["bridge"]).Count > 20 && ((JArray)g["out"]).Count > 10);     // a golden that records nothing proves nothing
             var (llm, bridge, o) = await RunAsync(input);
+            if (GoldenUpdate.On)     // deliberate update: only the llm requests may change (prompt shape); bridge and out are still asserted
+            {
+                GoldenUpdate.Patch("e2e-" + name + ".json", j => j["llm"] = new JArray(llm));
+                g = Golden(name);
+            }
             var diffs = new[]
             {
                 FirstDiff("llm", (JArray)g["llm"], llm),

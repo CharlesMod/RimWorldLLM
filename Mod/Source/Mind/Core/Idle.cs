@@ -468,17 +468,15 @@ namespace RimWorldLLM.Mind
             if (mems.Count == 0 && ofDay.Count > 0) today = "- Nothing out of the ordinary happened; I spent part of the day around other people.";
             var stream = Cfg.InnerMonologue ? Inner.InnerOnDay(mind, target, day) : new List<InnerThought>();
             string words = await W(Speech.RegisterPhraseAsync(Adapter, Bridge, aid, mind), tok).ConfigureAwait(false);
-            string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", PromptBlocks.BioLineCap, true))
-                + "=== WHO YOU ARE BECOMING ===\n" + GameData.DataSection("character", GameData.Clean(
-                    string.IsNullOrEmpty(mind.EvolvingBio) ? "(nothing yet)" : mind.EvolvingBio, "desc", PromptBlocks.EvolvingCap))
-                + "=== WHAT HAPPENED TODAY ===\n" + GameData.DataSection("events", today)
+            string card = PromptBlocks.PawnCard(mind, true);          // the actor's fixed card rides in the system message
+            string user = "=== WHAT HAPPENED TODAY ===\n" + GameData.DataSection("events", today)
                 + (stream.Count > 0 ? "=== WHAT YOU WERE THINKING TODAY ===\n" + GameData.DataSection("thoughts", Inner.ThoughtsText(stream)) : "")
                 + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + Adapter.DiaryRequest;
             lease.Generating = true;
             Completion c;
             try
             {
-                c = await W(A.Llm.CompleteAsync(new List<LlmMessage> { new LlmMessage("system", Adapter.DiarySystem + "\n\n" + GameData.DataRule),
+                c = await W(A.Llm.CompleteAsync(new List<LlmMessage> { new LlmMessage("system", Adapter.DiarySystem + "\n\n" + GameData.DataRule + "\n" + card),
                     new LlmMessage("user", user) }, lease.Slot, "diary", Cfg.DiaryMaxTokens, new string[0], null, 0.8, aid), tok).ConfigureAwait(false);
             }
             catch (LlmError)
@@ -494,7 +492,7 @@ namespace RimWorldLLM.Mind
             var known = new HashSet<string>(toks.TryGetValue(aid, out var mine) ? mine : new HashSet<string>());
             foreach (var m in mems) foreach (var p in m.People) if (toks.TryGetValue(p, out var pt)) known.UnionWith(pt);
             var speaker = toks.TryGetValue(aid, out var sp) ? sp : new HashSet<string>();
-            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(user), new HashSet<string>(Adapter.CommonWords), speaker,
+            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(card + user), new HashSet<string>(Adapter.CommonWords), speaker,
                 5, 90, A.IsMinor(aid), A.MinorTokens());
             if (!s.Ok)
             {
@@ -563,15 +561,13 @@ namespace RimWorldLLM.Mind
             string memLines = string.Join("\n", mems.Select(m => "- " + GameData.Clean(m.Text, "event")));
             string words = await W(Speech.RegisterPhraseAsync(Adapter, Bridge, aid, mind), tok).ConfigureAwait(false);
             var now = Cfg.SpeechChecks ? await W(RightNowAsync(aid, mind), tok).ConfigureAwait(false) : new List<string>();
-            string user = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", PromptBlocks.BioLineCap, true))
-                + "=== WHO YOU ARE BECOMING ===\n" + GameData.DataSection("character", GameData.Clean(
-                    string.IsNullOrEmpty(mind.EvolvingBio) ? "(nothing yet)" : mind.EvolvingBio, "desc", PromptBlocks.EvolvingCap))
-                + "=== WHAT IS ON YOUR MIND ===\n" + GameData.DataSection("memories", memLines)
-                + (now.Count > 0 ? "=== RIGHT NOW ===\n" + GameData.DataSection("now", string.Join("\n", now.Select(t => "- " + GameData.Clean(t, "event")))) : "")
-                + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + Adapter.ThoughtRequest;
+            string card = PromptBlocks.PawnCard(mind, true);          // the actor's fixed card rides in the system message
             var minors = A.MinorTokens();
-            bool involvesMinor = A.IsMinor(aid) || mems.Any(m => m.People.Any(p => A.IsMinor(p)));
-            string system = Adapter.ThoughtSystem + "\n\n" + GameData.DataRule + (involvesMinor ? "\n\n" + AgeGate.MinorRule : "");
+            bool involvesMinor = A.IsMinor(aid) || mems.Any(m => m.People.Any(p => A.IsMinor(p)));   // per call: the age rule leads the request, not the system message
+            string user = "=== WHAT IS ON YOUR MIND ===\n" + GameData.DataSection("memories", memLines)
+                + (now.Count > 0 ? "=== RIGHT NOW ===\n" + GameData.DataSection("now", string.Join("\n", now.Select(t => "- " + GameData.Clean(t, "event")))) : "")
+                + PromptBlocks.MinorRuleBeforeRequest(involvesMinor) + "=== REQUEST ===\n" + Speech.RegisterLine(mind.Name, words) + Adapter.ThoughtRequest;
+            string system = Adapter.ThoughtSystem + "\n\n" + GameData.DataRule + "\n" + card;
             lease.Generating = true;
             Completion c;
             try
@@ -592,7 +588,7 @@ namespace RimWorldLLM.Mind
             var known = new HashSet<string>(toks.TryGetValue(aid, out var mine) ? mine : new HashSet<string>());
             foreach (var m in mems) foreach (var p in m.People) if (toks.TryGetValue(p, out var pt)) known.UnionWith(pt);
             var speaker = toks.TryGetValue(aid, out var sp) ? sp : new HashSet<string>();
-            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(user), new HashSet<string>(Adapter.CommonWords), speaker,
+            var s = Sanitize.SanitizeProse(c.Text, known, allnames, Sanitize.PromptCapWords(card + user), new HashSet<string>(Adapter.CommonWords), speaker,
                 2, 18, involvesMinor, minors);
             string text = s.Ok ? s.Text : null;
             if (text != null && AgeGate.Violation(text, involvesMinor, minors))

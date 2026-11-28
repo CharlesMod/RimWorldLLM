@@ -210,7 +210,7 @@ namespace RimWorldLLM.Tests.Mind
             w.Ages[1] = 12;
             w.Fake.Script["dream"] = new List<string> { "I am kissing Bram under the stars tonight" };
             Sleep(w); await Step2(c);
-            string sys = Calls(c)[0].Messages[0].Text.ToLowerInvariant();
+            string sys = (Calls(c)[0].Messages[0].Text + Calls(c)[0].Messages[1].Text).ToLowerInvariant();   // the age rule now leads the request in the user message
             Assert.True(sys.Contains("minor") || sys.Contains("under 18"));
             Assert.Empty(DreamLog(w));
         }

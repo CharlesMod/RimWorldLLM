@@ -1,6 +1,6 @@
 // Port of agent/rimworldllm_agent/core/lease.py.
 // Lease manager. Windows are slots 1..N, each leased to one actor at a time; slot 0 is the narrator.
-// - A lease takes the first free actor window (no slot affinity).
+// - A lease prefers the window its actor last held when free, else the first free one (SlotMap).
 // - Priority: PLAYER > URGENT > REACTIVE > SOCIAL > AMBIENT. A higher class may end a lower-class lease early.
 // - Expiry by class on a dual clock (game units and real seconds, whichever comes first).
 // - Quotas per actor and per pair per game day; skip-if-nothing-new; ambient pause at high speed.
@@ -234,6 +234,7 @@ namespace RimWorldLLM.Mind
         public Func<string, Cls> Priority;
         public List<int> ActorSlots;
         public int NarratorSlot;
+        public SlotMap Slots;
         public Dictionary<int, Lease> Leases = new Dictionary<int, Lease>();   // slot -> lease (use LeasesInOrder for Python's order)
         public List<WorkItem> Queue = new List<WorkItem>();
         public QuotaTracker Quotas;
@@ -252,6 +253,7 @@ namespace RimWorldLLM.Mind
             Priority = priority ?? (kind => Cls.Ambient);
             ActorSlots = actorSlots.ToList();
             NarratorSlot = narratorSlot;
+            Slots = new SlotMap(ActorSlots, narratorSlot);
             Quotas = quotas ?? new QuotaTracker();
             PauseAmbientAtSpeed = pauseAmbientAtSpeed;
         }
@@ -383,7 +385,7 @@ namespace RimWorldLLM.Mind
             if (LeaseFor(item.ActorId) != null) return null;   // actor already inhabited; the item stays queued
             var free = FreeSlots();
             int slot;
-            if (free.Count > 0) slot = free[0];
+            if (free.Count > 0) slot = Slots.Pick(item.ActorId, free);
             else
             {
                 var victims = LeasesInOrder().Where(l => l.Cls < item.Cls)
@@ -396,6 +398,7 @@ namespace RimWorldLLM.Mind
             }
             var lease = new Lease(slot, item.ActorId, item.Cls, item.Kind, now, now.Real) { Seq = _leaseSeq++ };
             Leases[slot] = lease;
+            Slots.Remember(item.ActorId, slot);
             Log.Add(("lease", "slot" + slot.ToString(CultureInfo.InvariantCulture) + ":actor"
                 + item.ActorId.ToString(CultureInfo.InvariantCulture) + ":" + item.Cls.Name()));
             return lease;

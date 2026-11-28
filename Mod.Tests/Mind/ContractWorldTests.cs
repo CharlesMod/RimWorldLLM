@@ -305,7 +305,7 @@ namespace RimWorldLLM.Tests.Mind
             var lines = w.Llm.Calls.Where(c => c.Kind == "line" && c.Actor == 1).ToList();
             Assert.NotEmpty(lines);
             string sys = lines[0].Messages[0].Text, user = lines[0].Messages[lines[0].Messages.Count - 1].Text;
-            Assert.Contains("Right now: very drunk", sys); Assert.Contains("Your words right now:", user);
+            Assert.Contains("Right now: very drunk", user);   // the scene leads the user message Assert.Contains("Your words right now:", user);
             var other = w.Llm.Calls.Where(c => c.Kind == "line" && c.Actor == 2).First().Messages;
             Assert.DoesNotContain("Right now:", other[0].Text); Assert.DoesNotContain("words right now", other[other.Count - 1].Text);
         }

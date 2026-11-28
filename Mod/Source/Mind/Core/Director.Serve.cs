@@ -708,8 +708,8 @@ namespace RimWorldLLM.Mind
                 Lease li = leases[me];
                 var baseMsgs = new List<(string, string)>
                 {
-                    ("system", (string)li.Data["prefix"]),
-                    ("user", "=== TURNS SO FAR ===\n" + string.Join("\n", conv.TurnsForPrompt().Select(x => x.Item1 + ": " + x.Item2))),
+                    ("system", PromptBlocks.SystemOf((string)li.Data["prefix"])),
+                    ("user", (PromptBlocks.VolatileOf((string)li.Data["prefix"]) is string vol && vol.Length > 0 ? vol + "\n" : "") + "=== TURNS SO FAR ===\n" + string.Join("\n", conv.TurnsForPrompt().Select(x => x.Item1 + ": " + x.Item2))),
                 };
                 string memText = null, feel = null;
                 if (!fast)

@@ -462,6 +462,10 @@ namespace RimWorldLLM.Mind
             return PyJson.Truthy(t) ? PyJson.Str(t) : "";
         }
 
+        /// <summary>THE ONE SPOT where the conversation key would join the request body once easyEngine names the field
+        /// (e.g. body["conv"] = st.Conv). Deliberately empty: the key is only recorded in calls.jsonl for now.</summary>
+        protected virtual void AddConvToBody(JObject body, CallStats st) { }
+
         public virtual Task<Completion> CompleteAsync(IReadOnlyList<LlmMessage> messages, int? slot, string kind = "line", int maxTokens = 48,
                                                       IReadOnlyList<string> stop = null, string grammar = null, double? temperature = null,
                                                       int? actor = null, JObject jsonSchema = null)
@@ -476,7 +480,8 @@ namespace RimWorldLLM.Mind
             IReadOnlyList<string> stopL = stop ?? new[] { "\n" };
             Gate.Check();                           // backing off after "yielded": no request, no calllog record
             var sw = Stopwatch.StartNew();
-            var st = new CallStats { Kind = kind, Slot = slot, Actor = actor, RequestId = RequestIdFactory() };
+            var st = new CallStats { Kind = kind, Slot = slot, Actor = actor, RequestId = RequestIdFactory(),
+                                  Conv = options?.Conv ?? ConvKey.For(actor, kind) };
             CancellationToken cancel = options != null ? options.Cancel : default;
             ILlmStreamSink sink = options?.Sink;
             bool streamed = false;
@@ -499,6 +504,7 @@ namespace RimWorldLLM.Mind
                     };
                     foreach (var p in samp.Properties()) body[p.Name] = p.Value;
                     if (slot.HasValue) body["id_slot"] = slot.Value;
+                    AddConvToBody(body, st);
                     if (!string.IsNullOrEmpty(grammar)) body["grammar"] = grammar;
                     if (jsonSchema != null && jsonSchema.Count > 0) body["json_schema"] = jsonSchema.DeepClone();
                     var r = await HttpUtil.PostJsonAsync(Http, LlmWire.RemoveV1(Base) + "/completion", body, hdr, Cfg.TimeoutS, cancel).ConfigureAwait(false);
@@ -522,6 +528,7 @@ namespace RimWorldLLM.Mind
                     if (stopL.Count > 0) body["stop"] = new JArray(stopL.Select(x => (object)x).ToArray());
                     if (!string.IsNullOrEmpty(Cfg.Model)) body["model"] = Cfg.Model;
                     if (slot.HasValue) body["id_slot"] = slot.Value;
+                    AddConvToBody(body, st);
                     if (!string.IsNullOrEmpty(grammar)) body["grammar"] = grammar;
                     if (jsonSchema != null && jsonSchema.Count > 0) body["json_schema"] = jsonSchema.DeepClone();
                     if (sink != null)

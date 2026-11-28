@@ -58,6 +58,20 @@ namespace RimWorldLLM.Mind
     {
         public ILlmStreamSink Sink { get; set; }
         public CancellationToken Cancel { get; set; }
+        /// <summary>Overrides the derived conversation key for this call (null = ConvKey.For(actor, kind)).</summary>
+        public string Conv { get; set; }
+    }
+
+    /// <summary>The one place a call's conversation key is made: a stable opaque id per actor per job kind
+    /// ("a&lt;actorId&gt;:&lt;kind&gt;"), or "narrator:&lt;kind&gt;" when no actor is behind the call. It is recorded in calls.jsonl as "conv".
+    /// It is NOT sent on the wire yet (see HttpLlm.AddConvToBody).</summary>
+    public static class ConvKey
+    {
+        public static string For(int? actor, string kind)
+        {
+            string k = string.IsNullOrEmpty(kind) ? "call" : kind;
+            return actor.HasValue ? "a" + actor.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + k : "narrator:" + k;
+        }
     }
 
     /// <summary>An ILlmClient that can also stream one call. Callers that do not stream use ILlmClient and are untouched.</summary>

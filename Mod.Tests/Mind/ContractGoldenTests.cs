@@ -117,6 +117,20 @@ namespace RimWorldLLM.Tests.Mind
 
         // ---- prompt blocks
         static List<(string, string)> Msgs(JToken t) { return t.Select(m => ((string)m[0], (string)m[1])).ToList(); }
+        /// <summary>The Python golden has the whole prefix in the system message. Turncost moved its volatile tail (memories, ledger, thoughts,
+        /// talk, the scene) to the head of the first user message, so the system message is stable for the actor across leases.
+        /// Everything else in the golden is unchanged; this applies exactly that move to the expected messages.</summary>
+        static JToken Reshape(JToken msgs)
+        {
+            var r = (JArray)msgs.DeepClone();
+            string sys = (string)r[0][1];
+            int i = sys.IndexOf("\n=== WHAT YOU REMEMBER ===", StringComparison.Ordinal);
+            Assert.True(i > 0, "golden system message has no memory section");
+            r[0][1] = sys.Substring(0, i);
+            r[1][1] = sys.Substring(i + 1) + "\n" + (string)r[1][1];
+            return r;
+        }
+
         static JArray MsgJson(IEnumerable<(string, string)> m) { return new JArray(m.Select(x => new JArray(x.Item1, x.Item2))); }
 
         [Theory, MemberData(nameof(PromptKeys))]
@@ -135,8 +149,8 @@ namespace RimWorldLLM.Tests.Mind
             var talk = new List<string> { "Cy: nicknamed the dump" }; var thoughts = new List<string> { "thought one" };
             Assert.Equal((string)e["block_d_bare"], PromptBlocks.BlockD(new List<Memory>(), new List<string>()));
             var pre = PromptBlocks.BuildPrefix(A.BlockA, m, MemList(), led, sc, thoughts, talk, worries);
-            Assert.Equal((string)e["prefix"], pre);
-            Assert.Equal((string)e["prefix_bare"], PromptBlocks.BuildPrefix(A.BlockA, bare, new List<Memory>(), new List<string>(), new Scene()));
+            Assert.Equal((string)e["prefix"], pre.Replace(PromptBlocks.VolatileMark, "\n"));   // same text; only where the system message ends moved
+            Assert.Equal((string)e["prefix_bare"], PromptBlocks.BuildPrefix(A.BlockA, bare, new List<Memory>(), new List<string>(), new Scene()).Replace(PromptBlocks.VolatileMark, "\n"));
             var turns = new List<(string, string)> { ("Bram", "hello there"), ("Ana", "hi") };
             Assert.Equal((string)e["block_f"], PromptBlocks.BlockF(turns));
             Assert.Equal((string)e["block_f_empty"], PromptBlocks.BlockF(new List<(string, string)>()));
@@ -146,12 +160,12 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal((string)e["block_g_args"][1], PromptBlocks.BlockG(m, "Ana", 0, "R"));
             Assert.Equal((string)e["block_g_args"][2], PromptBlocks.BlockG(bare, "Ana", 2, null, null, "plain everyday speech"));
             Func<int, List<(string, string)>> lm = n => PromptBlocks.LineMessages(pre, turns.Take(n).ToList(), m, nm, n);
-            for (int n = 0; n < 3; n++) Same(e["lines"][n], MsgJson(lm(n)), key + ".lines" + n);
-            for (int n = 0; n < 2; n++) Same(e["intent"][n], MsgJson(PromptBlocks.IntentMessages(lm(n), "Well done.", "Bram")), key + ".intent" + n);
-            Same(e["intent_aim"][0], MsgJson(PromptBlocks.IntentMessages(lm(1), "Well done.", null, null, true, "hint")), key + ".intent_aim");
-            Same(e["intent_deliv"][0], MsgJson(PromptBlocks.IntentMessages(lm(1), "Well done.", "Bram", new[] { "normal", "shout" })), key + ".intent_deliv");
-            Same(e["aim"][0], MsgJson(PromptBlocks.AimMessages(lm(1), "Well done.")), key + ".aim0");
-            Same(e["aim"][1], MsgJson(PromptBlocks.AimMessages(lm(1), "Well done.", "extra hint")), key + ".aim1");
+            for (int n = 0; n < 3; n++) Same(Reshape(e["lines"][n]), MsgJson(lm(n)), key + ".lines" + n);
+            for (int n = 0; n < 2; n++) Same(Reshape(e["intent"][n]), MsgJson(PromptBlocks.IntentMessages(lm(n), "Well done.", "Bram")), key + ".intent" + n);
+            Same(Reshape(e["intent_aim"][0]), MsgJson(PromptBlocks.IntentMessages(lm(1), "Well done.", null, null, true, "hint")), key + ".intent_aim");
+            Same(Reshape(e["intent_deliv"][0]), MsgJson(PromptBlocks.IntentMessages(lm(1), "Well done.", "Bram", new[] { "normal", "shout" })), key + ".intent_deliv");
+            Same(Reshape(e["aim"][0]), MsgJson(PromptBlocks.AimMessages(lm(1), "Well done.")), key + ".aim0");
+            Same(Reshape(e["aim"][1]), MsgJson(PromptBlocks.AimMessages(lm(1), "Well done.", "extra hint")), key + ".aim1");
 
         }
 

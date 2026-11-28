@@ -172,7 +172,7 @@ namespace RimWorldLLM.Tests.Mind
             var msgs = new[] { (0, (string)null), (1, AIM), (2, (string)null) }
                 .Select(p => PromptBlocks.LineMessages(prefix, Enumerable.Repeat(("Bram", "hi"), p.Item1).ToList(), m, "Ana", p.Item1, aim: p.Item2)).ToList();
             Assert.Single(msgs.Select(x => x[0].Item2).Distinct());
-            Assert.Equal(prefix, msgs[0][0].Item2);
+            Assert.Equal(PromptBlocks.SystemOf(prefix), msgs[0][0].Item2);
             Assert.Contains("private aim", msgs[1][1].Item2); Assert.DoesNotContain("private aim", msgs[2][1].Item2);
         }
 

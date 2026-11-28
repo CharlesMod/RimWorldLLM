@@ -111,6 +111,21 @@ namespace RimWorldLLM.Mind
             return o <= -60 ? "can't stand them" : o <= -20 ? "dislike them" : o < 20 ? "feel nothing much for them" : o < 60 ? "like them" : "are close to them";
         }
 
+        /// <summary>The actor's fixed card for the background kinds (thought, diary, dream, reflect): bio, and with becoming also the evolving bio.
+        /// It rides in the system message after the kind's rules, so it is byte-identical for that actor across calls.</summary>
+        public static string PawnCard(Mind mind, bool becoming)
+        {
+            string s = "=== WHO YOU ARE ===\n" + GameData.DataSection("bio", GameData.Clean(mind.Fixed.Text, "line", BioLineCap, true));
+            if (becoming)
+                s += "=== WHO YOU ARE BECOMING ===\n" + GameData.DataSection("character", GameData.Clean(
+                    string.IsNullOrEmpty(mind.EvolvingBio) ? "(nothing yet)" : mind.EvolvingBio, "desc", EvolvingCap));
+            return s;
+        }
+
+        /// <summary>The age rule for a call whose minor involvement is known only per call: it leads the request in the user
+        /// message (so the system message stays the same for the actor); "" when no minor is involved.</summary>
+        public static string MinorRuleBeforeRequest(bool involvesMinor) { return involvesMinor ? AgeGate.MinorRule + "\n" : ""; }
+
         public static string BlockB(Mind mind)
         {
             var v = mind.Voice;
@@ -199,14 +214,36 @@ namespace RimWorldLLM.Mind
             return "=== THE SCENE ===\n" + GameData.DataSection("scene", body);
         }
 
-        /// <summary>A-E as one string. Freeze it at lease start; never rebuild mid-lease.</summary>
+        /// <summary>Marks where the stable part of a lease prefix ends and the volatile part begins (a control character, never in game text).</summary>
+        public const string VolatileMark = "\u001e";
+
+        /// <summary>The prefix as one string, stable part first: "A B C" + VolatileMark + "D E" (and, appended per lease, the stands-out and
+        /// listener sections). Freeze it at lease start; never rebuild mid-lease. Use SystemOf and VolatileOf to split it:
+        /// the system message holds only what is stable for this actor across leases (shared rules, its card, its slow relations/wants),
+        /// and the volatile part (memories, ledger, thoughts, talk, the scene with time and weather) goes first in the last user
+        /// message, so the engine's prompt cache can keep the system message across leases.</summary>
         public static string BuildPrefix(string blockA, Mind mind, IEnumerable<Memory> memories, IEnumerable<string> ledgerLines, Scene sc,
                                          IList<string> thoughts = null, IList<string> talk = null, IList<string> worries = null)
         {
             if (!blockA.Contains(GameData.DataRule)) blockA = blockA.TrimEnd('\n') + "\n\n" + GameData.DataRule;
             if (!blockA.Contains(AgeGate.MinorRule)) blockA = blockA.TrimEnd('\n') + "\n\n" + AgeGate.MinorRule;
             if (Adult.Off() && !blockA.Contains(Adult.Rule)) blockA = blockA.TrimEnd('\n') + "\n\n" + Adult.Rule;
-            return string.Join("\n", new[] { blockA, BlockB(mind), BlockC(mind, worries: worries), BlockD(memories, ledgerLines, thoughts, talk), BlockE(sc) });
+            return string.Join("\n", new[] { blockA, BlockB(mind), BlockC(mind, worries: worries) }) + VolatileMark +
+                   string.Join("\n", new[] { BlockD(memories, ledgerLines, thoughts, talk), BlockE(sc) });
+        }
+
+        /// <summary>The system message of a prefix: everything before VolatileMark (the whole string when it has no mark).</summary>
+        public static string SystemOf(string prefix)
+        {
+            int i = prefix.IndexOf(VolatileMark, StringComparison.Ordinal);
+            return i < 0 ? prefix : prefix.Substring(0, i);
+        }
+
+        /// <summary>The volatile part of a prefix: everything after VolatileMark ("" when it has no mark).</summary>
+        public static string VolatileOf(string prefix)
+        {
+            int i = prefix.IndexOf(VolatileMark, StringComparison.Ordinal);
+            return i < 0 ? "" : prefix.Substring(i + VolatileMark.Length);
         }
 
         public static string BlockF(IList<(string, string)> turns)
@@ -272,7 +309,9 @@ namespace RimWorldLLM.Mind
         public static List<(string, string)> LineMessages(string prefix, IList<(string, string)> turns, Mind mind, string name,
                                                           int turnNo = 0, string request = null, string aim = null, string speech = null)
         {
-            return new List<(string, string)> { ("system", prefix), ("user", BlockF(turns) + "\n" + BlockG(mind, name, turnNo, request, aim, speech)) };
+            string vol = VolatileOf(prefix);
+            return new List<(string, string)> { ("system", SystemOf(prefix)),
+                ("user", (vol.Length > 0 ? vol + "\n" : "") + BlockF(turns) + "\n" + BlockG(mind, name, turnNo, request, aim, speech)) };
         }
 
         private static string Extra(string aimExtra)
