@@ -379,6 +379,33 @@ namespace RimWorldLLM.Mind.RimWorld
             return context.Any(c => (c ?? "").ToLowerInvariant().Contains(Passing));
         }
 
+        // Routine social contact has no outcome: a chat, a deep talk, a passing exchange. An insult, a rebuff, romance, a breakup, a fight
+        // or a told secret has one and stays.
+        private static readonly Regex RoutineTalk = new Regex(
+            @"passing exchange|chit[\s-]?chat|small[\s-]?talk|deep (talk|conversation)|\bdeeptalk\b|\bhad a (little |quick |short |nice |long |brief )?(chat|talk|conversation)\b|" +
+            @"\btalked (with|to)\b|\bwere talking\b|\bchatted\b|\bkind words\b|\breassur|\bcounsel",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex TalkOutcome = new Regex(
+            @"insult|slight|rebuff|reject|romanc|romantic|break ?up|broke up|propos|kiss|fight|quarrel|argu|secret|gossip|confid|\btold me\b|\bsnapp|\bangry|\bhurt my",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly HashSet<string> RoutineInteractions = new HashSet<string> { "Chitchat", "DeepTalk", "KindWords", "Reassure", "Counsel" };
+
+        public override bool RoutineSocial(string etype, string text)
+        {
+            if (etype == "conversation") return true;                    // the template or model summary of a spoken talk: the relation carries its outcome
+            if (etype != "social") return false;
+            string t = text ?? "";
+            return RoutineTalk.IsMatch(t) && !TalkOutcome.IsMatch(t);
+        }
+
+        public override bool RoutineSocialEvent(JObject ev)
+        {
+            if (Js.StrOr(ev, "type", "") != "social") return false;
+            string inter = Js.StrOr(DataOf(ev), "interaction", "");
+            if (inter.Length > 0) return RoutineInteractions.Contains(inter);
+            return RoutineSocial("social", Js.StrOr(ev, "summary", ""));
+        }
+
         /// <summary>The idle text filler core/idle runs last: fn(host, slot) -> texts stored.</summary>
         public override Func<ITextFillHost, int, Task<int>> IdleFill() { return TextFill.FillOnceAsync; }
 

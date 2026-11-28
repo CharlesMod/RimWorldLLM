@@ -80,7 +80,7 @@ namespace RimWorldLLM.Mind
                 var written = MemoryOps.RememberEvent(Minds, e, Adapter);
                 foreach (var w in written) _dirty.Add(w.Item1);
                 if (fm.Count > 0) foreach (int a in Firsts.Record(Minds, e, Adapter, fm)) _dirty.Add(a);
-                if (Adapter.ChronicleWorthy(e))
+                if (Adapter.ChronicleWorthy(e) && !(Cfg.SpeechChecks && Adapter.RoutineSocialEvent(e)))     // "X and Y had a deep talk" is not a day's event
                 {
                     JToken g = e["game"];
                     Chronicle.Note(g != null && g.Type != JTokenType.Null ? JobsJson.PyInt(g) : Bridge.Env.Game,

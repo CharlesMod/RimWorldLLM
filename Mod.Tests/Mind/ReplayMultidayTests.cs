@@ -21,7 +21,7 @@ namespace RimWorldLLM.Tests.Mind
         {
             using var tmp = new TempDir();
             string real = Path.Combine(tmp.Path, "real");
-            var cfg = new MindConfig { DataDir = real, ThoughtEnabled = false, AcrossRepeat = false };
+            var cfg = new MindConfig { DataDir = real, ThoughtEnabled = false, SpeechChecks = false };
             var o = await Replay.RunAsync(Data, cfg);
             var kinds = o.Select(Kind).ToList();
             Assert.True(new[] { "reflection", "diary", "chronicle" }.All(kinds.Contains));
@@ -39,7 +39,7 @@ namespace RimWorldLLM.Tests.Mind
         public async Task ReplayCliPrintsTheNewKinds()
         {
             using var tmp = new TempDir();
-            var o = await Replay.RunAsync(Data, new MindConfig { DataDir = tmp.Path, ThoughtEnabled = false, AcrossRepeat = false });
+            var o = await Replay.RunAsync(Data, new MindConfig { DataDir = tmp.Path, ThoughtEnabled = false, SpeechChecks = false });
             string text = string.Join("\n", Replay.Format(o));
             Assert.Contains("[diary day 1]", text);
             Assert.Contains("[chronicle day", text);

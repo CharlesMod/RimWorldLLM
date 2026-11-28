@@ -147,7 +147,7 @@ namespace RimWorldLLM.Mind
                 new QuotaTracker(q.ActorPerDay, q.PairPerDay, Day, q.MinGapGameAmbient, q.MinGapRealSAmbient, q.AmbientShare),
                 cfg.PauseAmbientAtSpeed, adapter.Priority,
                 new VoiceBudget(cfg.VoiceLinesPerMin, cfg.VoiceBurst, cfg.VoiceFastScale));
-            Chronicle = new Chronicle(cfg.DataDir, Day);
+            Chronicle = new Chronicle(cfg.DataDir, Day) { CleanChecks = cfg.SpeechChecks };
             Lore = new LoreBook(cfg.LoreMax);
             Tier = new ModelTier(cfg, _clock);
             _creative = new CreativeView(this);

@@ -134,6 +134,10 @@ namespace RimWorldLLM.Mind
         List<string> ListenerCard(JObject snap, JObject listenerSnap, int listenerId);
         /// <summary>A generated line that only remarks on the talking itself (context: the scene's texts).</summary>
         bool DropsMeta(string text, IEnumerable<string> context);
+        /// <summary>True for a memory of routine social contact (chitchat, a deep talk, "X and Y talked") with no outcome: it never feeds a thought, diary, dream or chronicle.</summary>
+        bool RoutineSocial(string etype, string text);
+        /// <summary>The same for an event as the game reports it.</summary>
+        bool RoutineSocialEvent(JObject ev);
         /// <summary>The idle text filler (Python getattr(adapter, "idle_fill", None)): null when the game has none.</summary>
         Func<ITextFillHost, int, Task<int>> IdleFill();
 
@@ -251,6 +255,8 @@ namespace RimWorldLLM.Mind
         public virtual List<SalientFact> SalientFacts(JObject snap, JObject scene, JObject listenerSnap, int listenerId, IEnumerable<JObject> events, long nowGame) { return new List<SalientFact>(); }
         public virtual List<string> ListenerCard(JObject snap, JObject listenerSnap, int listenerId) { return new List<string>(); }
         public virtual bool DropsMeta(string text, IEnumerable<string> context) { return false; }
+        public virtual bool RoutineSocial(string etype, string text) { return false; }
+        public virtual bool RoutineSocialEvent(JObject ev) { return false; }
         public virtual Func<ITextFillHost, int, Task<int>> IdleFill() { return null; }
 
         public virtual List<JObject> ConcernBirths(JObject ev, IList<int> holders, Func<int, int, bool> loved) { return new List<JObject>(); }

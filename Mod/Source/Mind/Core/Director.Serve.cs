@@ -199,7 +199,7 @@ namespace RimWorldLLM.Mind
                     int turnNo; _lineCount.TryGetValue(aid, out turnNo);
                     InnerArgs ia = InnerKw(mind, listener);
                     string request = PromptBlocks.LineRequest(_names[aid], item.Kind == "player_talk" || Adapter.EarnsLength(item.Event));
-                    var (soloCheck, soloOnCheck) = Cfg.AcrossRepeat ? RepeatCheck(new List<Turn>(), aid) : (null, null);          // own and everyone-wide repeats, one retry
+                    var (soloCheck, soloOnCheck) = Cfg.SpeechChecks ? RepeatCheck(new List<Turn>(), aid) : (null, null);          // own and everyone-wide repeats, one retry
                     res = await Passes.SpeakAsync(Llm, lease.Slot, mind, _names[aid], prefix, new List<(string, string)>(), turnNo, ctx, lname,
                                                   LabelsFor(minor), Cfg.Llm.LineMaxTokens, request, ia.Aim, ia.SoloAim, ia.FreshAim, soloCheck, Cfg.RepeatRetries, soloOnCheck,
                                                   speech, ia.AimExtra, ia.IntentLlm, ia.DropJustWant);
@@ -642,7 +642,7 @@ namespace RimWorldLLM.Mind
             var turns = turnList.Select(t => (t.Speaker, t.Text)).ToList();
             List<string> ownL;
             var own = RecentOwn.TryGetValue(speaker, out ownL) ? new List<string>(ownL) : new List<string>();
-            var spoken = Cfg.AcrossRepeat ? new List<(int, string)>(RecentSpoken.Select(c => (c.Actor, c.Text))) : null;
+            var spoken = Cfg.SpeechChecks ? new List<(int, string)>(RecentSpoken.Select(c => (c.Actor, c.Text))) : null;
             var hits = new Dictionary<string, Hit>();
             LineCheck check = text =>
             {

@@ -220,9 +220,10 @@ namespace RimWorldLLM.Mind
         public bool UseLlmVoiceCards { get; set; } = false;
         /// <summary>a conversation turn that repeats an earlier line is refused (core/loopguard.py)</summary>
         public bool RepeatGuard { get; set; } = true;
-        /// <summary>repeat checks across speakers and days: other speakers' recent lines and openings, a mind's recent thoughts and diary
-        /// openings. Not in the settings dump; the recorded parity replays turn it off.</summary>
-        public bool AcrossRepeat { get; set; } = true;
+        /// <summary>The newer speech checks: repeats across speakers and days (other speakers' recent lines and openings, a mind's recent
+        /// thoughts and diary openings), talk-about-talk in thoughts, diaries and the chronicle. Not in the settings dump; the recorded
+        /// parity replays turn it off.</summary>
+        public bool SpeechChecks { get; set; } = true;
         /// <summary>retries with the reason in the prompt, then the talk ends with no line</summary>
         public int RepeatRetries { get; set; } = 1;
         /// <summary>sleepers get one surreal dream cloud a night (core/dreams.py; also the mod's dreams setting)</summary>
