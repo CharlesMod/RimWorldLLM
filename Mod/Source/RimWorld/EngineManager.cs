@@ -89,6 +89,7 @@ namespace RimWorldLLM
                     {
                         await PushSourceAsync().ConfigureAwait(false);
                         await _session.FetchStatusAsync().ConfigureAwait(false);
+                        EngineShareManager.AfterAttach();   // same PC unless the player turned sharing on
                         RWLBridge.RefreshLlm();   // bridge.json carries the engine's real port
                     }
                 }
@@ -132,6 +133,7 @@ namespace RimWorldLLM
                 try { await PushSourceAsync().ConfigureAwait(false); } catch { }
                 RWLBridge.RefreshLlm();
             });
+            EngineShareManager.SettingsChanged();
         }
 
         /// <summary>Own-endpoint mode: forget the local engine and everything shown about it (the process itself is left running).</summary>
@@ -160,7 +162,7 @@ namespace RimWorldLLM
                 // no client yet: look for an engine started elsewhere (setup page, CLI), or lost and back
                 bool had = _session.Client != null;
                 await _session.PollAsync(_launching).ConfigureAwait(false);
-                if (!had && _session.Client != null) RWLBridge.RefreshLlm();
+                if (!had && _session.Client != null) { RWLBridge.RefreshLlm(); EngineShareManager.AfterAttach(); }
             });
         }
 

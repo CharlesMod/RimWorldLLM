@@ -131,11 +131,12 @@
   <RWL_Conn_LlmKey>API key</RWL_Conn_LlmKey>
   <RWL_Conn_KeyNone>(none)</RWL_Conn_KeyNone>
   <RWL_Conn_KeyNote>The key is stored in the mod settings and in bridge.json, which only your user account can read. It is never sent through the bridge API.</RWL_Conn_KeyNote>
-  <RWL_Pair_Title>easyEngine on another computer</RWL_Pair_Title>
+  <RWL_Pair_Title>Use an engine on another PC on my network</RWL_Pair_Title>
+  <RWL_Pair_PcHelp>The game here talks to the other PC's engine; nothing is downloaded or run on this PC. The other PC keeps its game (or easyEngine) running.</RWL_Pair_PcHelp>
   <RWL_Pair_Find>Find engines on my network</RWL_Pair_Find>
   <RWL_Pair_Finding>Looking on the network...</RWL_Pair_Finding>
-  <RWL_Pair_FindTip>Looks for easyEngine on this network (a few seconds). Pick one to connect: you compare a code and press Allow on the engine's computer. Nothing to type.</RWL_Pair_FindTip>
-  <RWL_Pair_NoneFound>No engine answered on this network. Is easyEngine running there and open to the network? You can also type its address below.</RWL_Pair_NoneFound>
+  <RWL_Pair_FindTip>Looks for shared engines on this network and on your Tailscale network, if Tailscale is installed (a few seconds). Pick one and press Connect: the code shown here also shows on the other PC, which presses Allow. Nothing to type.</RWL_Pair_FindTip>
+  <RWL_Pair_NoneFound>No engine answered. On the other PC, turn on "Share this PC's engine on my network" (Model settings, local engine) and keep the game running there. You can also type its address below.</RWL_Pair_NoneFound>
   <RWL_Pair_Typed>Or its address:</RWL_Pair_Typed>
   <RWL_Pair_TypedTip>The engine computer's name or IP address, with :port if it is not 47480 (for example 192.168.1.20 or den-pc:47480).</RWL_Pair_TypedTip>
   <RWL_Pair_EndpointButton>Pair with this engine</RWL_Pair_EndpointButton>
@@ -169,9 +170,45 @@
   <RWL_Pair_StatusPaired>Paired with {0} at {1}.</RWL_Pair_StatusPaired>
   <RWL_Pair_StatusOpen>Connected to {0} at {1} (no pairing needed).</RWL_Pair_StatusOpen>
   <RWL_Pair_StatusPairAgain>{0} does not accept this game's key. Pair again.</RWL_Pair_StatusPairAgain>
-  <RWL_Pair_StatusRevoked>{0} revoked this game's key. Pair again.</RWL_Pair_StatusRevoked>
+  <RWL_Pair_StatusRevoked>{0} removed this PC. Pair again to use its engine.</RWL_Pair_StatusRevoked>
   <RWL_Pair_PairAgain>Pair again</RWL_Pair_PairAgain>
   <RWL_Pair_MsgPairAgain>RimWorldLLM: the engine no longer accepts this game. Pair again in the mod settings (Model).</RWL_Pair_MsgPairAgain>
+  <RWL_Share_Toggle>Share this PC's engine on my network</RWL_Share_Toggle>
+  <RWL_Share_ToggleTip>Lets your other PCs with RimWorldLLM use this PC's engine, at home (LAN) or over Tailscale. Each one has to pair first: you compare a code and press Allow here. Off: the engine listens on this PC only.\n\nThe first time, the Windows firewall asks whether easy-engine may use the network: allow it on private networks only. On a Mac, allow incoming connections when asked.</RWL_Share_ToggleTip>
+  <RWL_Share_Exposure>Any device on this network (a cafe's Wi-Fi too) can see this PC's engine name and model; only PCs you Allow can use it.</RWL_Share_Exposure>
+  <RWL_Share_StatusOff>Not shared: the engine serves this PC only.</RWL_Share_StatusOff>
+  <RWL_Share_StatusNotLocal>Sharing needs the local engine.</RWL_Share_StatusNotLocal>
+  <RWL_Share_StatusWorking>Changing sharing...</RWL_Share_StatusWorking>
+  <RWL_Share_StatusOn>Shared as {0}.</RWL_Share_StatusOn>
+  <RWL_Share_StatusNoNetwork>Sharing is on, but this PC has no private network up right now (no LAN or Tailscale address). It starts when one is.</RWL_Share_StatusNoNetwork>
+  <RWL_Share_StatusUnsupported>This engine can't share yet. Update RimWorldLLM on this PC.</RWL_Share_StatusUnsupported>
+  <RWL_Share_StatusFailed>Couldn't change sharing: {1}</RWL_Share_StatusFailed>
+  <RWL_Share_SeenAt>Other PCs find it at:</RWL_Share_SeenAt>
+  <RWL_Share_BadgeLan>LAN</RWL_Share_BadgeLan>
+  <RWL_Share_BadgeTailscale>Tailscale</RWL_Share_BadgeTailscale>
+  <RWL_Share_RowTip>Click to show this address as a QR code.</RWL_Share_RowTip>
+  <RWL_Share_QrTip>Scan with a phone to check the engine answers at {0}. Other PCs find it by themselves.</RWL_Share_QrTip>
+  <RWL_Share_PairedTitle>Paired PCs</RWL_Share_PairedTitle>
+  <RWL_Share_PairedNone>No PC is paired with this engine yet.</RWL_Share_PairedNone>
+  <RWL_Share_PairedLoading>Reading the paired PCs...</RWL_Share_PairedLoading>
+  <RWL_Share_PairedUnsupported>This engine can't list paired PCs yet. Update RimWorldLLM on this PC.</RWL_Share_PairedUnsupported>
+  <RWL_Share_PairedRow>{0} (since {1})</RWL_Share_PairedRow>
+  <RWL_Share_PairedError>Couldn't read or change the paired PCs: {0}</RWL_Share_PairedError>
+  <RWL_Share_Remove>Remove</RWL_Share_Remove>
+  <RWL_Share_RemoveTip>Takes this PC's access away at once. It has to pair again to use this engine.</RWL_Share_RemoveTip>
+  <RWL_PairReq_Title>A PC wants to use this engine</RWL_PairReq_Title>
+  <RWL_PairReq_Body>{0} wants to use this PC's engine.</RWL_PairReq_Body>
+  <RWL_PairReq_Code>Code: {0}</RWL_PairReq_Code>
+  <RWL_PairReq_From>From {0}</RWL_PairReq_From>
+  <RWL_PairReq_Compare>Allow only if the other PC shows the same code.</RWL_PairReq_Compare>
+  <RWL_PairReq_Changed>It asked again with a new code. Compare again.</RWL_PairReq_Changed>
+  <RWL_PairReq_Failed>The engine didn't take the answer. Press Allow or Deny again.</RWL_PairReq_Failed>
+  <RWL_PairReq_Sending>Sending...</RWL_PairReq_Sending>
+  <RWL_PairReq_Allowed>Allowed. {0} can use this PC's engine now.</RWL_PairReq_Allowed>
+  <RWL_PairReq_Denied>Denied. {0} was told no.</RWL_PairReq_Denied>
+  <RWL_PairReq_Gone>The request ended (withdrawn on the other PC, or answered elsewhere).</RWL_PairReq_Gone>
+  <RWL_PairReq_Allow>Allow</RWL_PairReq_Allow>
+  <RWL_PairReq_Deny>Deny</RWL_PairReq_Deny>
   <RWL_Test_Button>Test</RWL_Test_Button>
   <RWL_Test_Running>Testing...</RWL_Test_Running>
   <RWL_Test_NotRun>Not tested yet.</RWL_Test_NotRun>
@@ -186,9 +223,9 @@
   <RWL_Probe_BadUrl>That is not a usable http or https URL.</RWL_Probe_BadUrl>
   <RWL_Probe_NothingListening>Nothing is listening there. Check the host, port and that the server is running.</RWL_Probe_NothingListening>
   <RWL_Probe_KeyRejected>The server rejected the API key.</RWL_Probe_KeyRejected>
-  <RWL_Probe_TokenRequired>The engine needs this game to be paired with it. Use "Find engines on my network" above and connect.</RWL_Probe_TokenRequired>
+  <RWL_Probe_TokenRequired>The engine needs this game to be paired with it. Pick "An engine on another PC on my network" above and connect.</RWL_Probe_TokenRequired>
   <RWL_Probe_TokenInvalid>The engine does not know this key (another engine at this address, or its keys were replaced). Pair again.</RWL_Probe_TokenInvalid>
-  <RWL_Probe_TokenRevoked>The engine revoked this game's key. Pair again.</RWL_Probe_TokenRevoked>
+  <RWL_Probe_TokenRevoked>The engine's PC removed this PC. Pair again to use it.</RWL_Probe_TokenRevoked>
   <RWL_Probe_WrongBase>Wrong base URL: no /models there. Did you mean {0}?</RWL_Probe_WrongBase>
   <RWL_Probe_ModelNotFound>The server has no model called "{0}".</RWL_Probe_ModelNotFound>
   <RWL_Probe_Tls>TLS error: the certificate is not trusted, or the server is not speaking https.</RWL_Probe_Tls>
@@ -301,6 +338,8 @@
   <RWL_Eng_SourceLabel>LLM source</RWL_Eng_SourceLabel>
   <RWL_Eng_SourceLocal>Local engine (recommended)</RWL_Eng_SourceLocal>
   <RWL_Eng_SourceLocalTip>RimWorldLLM downloads and runs a model that fits your graphics card and memory.</RWL_Eng_SourceLocalTip>
+  <RWL_Eng_SourcePc>An engine on another PC on my network</RWL_Eng_SourcePc>
+  <RWL_Eng_SourcePcTip>Use the engine of another PC that has RimWorldLLM too (at home, or on your Tailscale network). That PC turns on "Share this PC's engine on my network"; this one finds it and pairs with a code.</RWL_Eng_SourcePcTip>
   <RWL_Eng_SourceOwn>My own endpoint</RWL_Eng_SourceOwn>
   <RWL_Eng_SourceOwnTip>Use any OpenAI-compatible server you already run (llama.cpp, Ollama, LM Studio, a cloud API).</RWL_Eng_SourceOwnTip>
   <RWL_Eng_LocalNote>The engine picks how many lines can be written at once and how much each can remember, from your free graphics memory. It makes room for the game and grows back when there is room.</RWL_Eng_LocalNote>

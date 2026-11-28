@@ -1,3 +1,4 @@
+using RimWorldLLM.Bridge;
 using Verse;
 
 namespace RimWorldLLM
@@ -33,6 +34,12 @@ namespace RimWorldLLM
         public string llmEngineId = "";
         // pairedEngines: JSON list of {engine_id, token, client_id, name, address} (Bridge.PairStore). Never logged.
         public string pairedEngines = "";
+        // How the "own" source is shown: "pc" (an engine on another PC on my network, found and paired) or "endpoint"
+        // (a URL typed by hand). Both fill the same fields above; this only picks the settings view.
+        public string llmOwnKind = "";
+        // Host: share this PC's local engine with other PCs on the player's networks (LAN and Tailscale), pairing on.
+        // Off by default: a one-click install serves this PC only (docs/SETTINGS.md "Sharing this PC's engine").
+        public bool shareEngine = ShareDefaults.ShareEngine;
         // Launch or attach the local engine when the game starts.
         public bool engineAutoStart = true;
         // The player answered the first-run "set up a local model" prompt with Set up or My own endpoint.
@@ -171,6 +178,10 @@ namespace RimWorldLLM
                 llmSource = string.IsNullOrWhiteSpace(llmBaseUrl) ? "local" : "own";
             Scribe_Values.Look(ref llmEngineId, "llmEngineId", "");
             Scribe_Values.Look(ref pairedEngines, "pairedEngines", "");
+            Scribe_Values.Look(ref llmOwnKind, "llmOwnKind", "");
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && string.IsNullOrEmpty(llmOwnKind))
+                llmOwnKind = string.IsNullOrEmpty(llmEngineId) ? "endpoint" : "pc";
+            Scribe_Values.Look(ref shareEngine, "shareEngine", ShareDefaults.ShareEngine);
             Scribe_Values.Look(ref engineAutoStart, "engineAutoStart", true);
             Scribe_Values.Look(ref engineSetupDismissed, "engineSetupDismissed", false);
             Scribe_Values.Look(ref hideFallbackWarning, "hideFallbackWarning", false);

@@ -20,6 +20,8 @@ namespace RimWorldLLM.Bridge
         public bool Answered;           // hello answered as an easyEngine
         public bool HaveToken;          // this game holds a token for its engine_id
         public bool NeedsToken;         // hello: token_required
+        public bool ViaTailscale;       // found (also) on the tailnet
+        public bool ViaLan;             // found (also) on the LAN (mDNS, find, or a typed LAN address)
         public string Address { get { return EngineAddress.Display(Root); } }
     }
 

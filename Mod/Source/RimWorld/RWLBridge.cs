@@ -125,6 +125,7 @@ namespace RimWorldLLM
             EngineManager.Tick();
             MindHost.Tick();
             EnginePairingUi.Tick();
+            EngineShareManager.Tick();
         }
     }
 

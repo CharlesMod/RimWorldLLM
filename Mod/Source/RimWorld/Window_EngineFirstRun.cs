@@ -37,7 +37,7 @@ namespace RimWorldLLM
             }
             if (Widgets.ButtonText(new Rect(2f * (w + 10f), y, w, 34f), UiUtil.T("RWL_First_Own")))
             {
-                if (s != null) { s.engineSetupDismissed = true; s.llmSource = "own"; RimWorldLLMMod.Instance.WriteSettings(); EngineManager.SettingsChanged(); }
+                if (s != null) { s.engineSetupDismissed = true; s.llmSource = "own"; s.llmOwnKind = "endpoint"; RimWorldLLMMod.Instance.WriteSettings(); EngineManager.SettingsChanged(); }
                 Close();
             }
             if (Widgets.ButtonText(new Rect(3f * (w + 10f), y, w, 34f), UiUtil.T("RWL_First_Later"))) Close();

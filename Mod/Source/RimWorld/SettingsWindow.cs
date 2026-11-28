@@ -133,13 +133,22 @@ namespace RimWorldLLM
             l.Gap(4f);
             l.Label(UiUtil.T("RWL_Eng_SourceLabel"));
             bool local = s.llmSource != "own";
+            bool pc = !local && s.llmOwnKind == "pc";
             Radio(l, "RWL_Eng_SourceLocal", "RWL_Eng_SourceLocalTip", local, () => { s.llmSource = "local"; EngineManager.SettingsChanged(); });
-            Radio(l, "RWL_Eng_SourceOwn", "RWL_Eng_SourceOwnTip", !local, () => { s.llmSource = "own"; EngineManager.SettingsChanged(); });
+            Radio(l, "RWL_Eng_SourcePc", "RWL_Eng_SourcePcTip", pc, () => { s.llmSource = "own"; s.llmOwnKind = "pc"; EngineManager.SettingsChanged(); });
+            Radio(l, "RWL_Eng_SourceOwn", "RWL_Eng_SourceOwnTip", !local && !pc, () => { s.llmSource = "own"; s.llmOwnKind = "endpoint"; EngineManager.SettingsChanged(); });
             l.Gap(4f);
 
             if (local) { LocalEngine(l, s); return; }
+            if (pc)
+            {
+                Note(l, UiUtil.T("RWL_Pair_PcHelp"));
+                EnginePairingUi.Draw(l, s, true);
+                TestRow(l, s);
+                return;
+            }
             Note(l, UiUtil.T("RWL_Conn_EndpointHelp"));
-            EnginePairingUi.Draw(l, s);
+            EnginePairingUi.Draw(l, s, false);
             TextRow(l, "RWL_Conn_LlmUrl", ref s.llmBaseUrl, "RWL_Tip_LlmUrl");
             TextRow(l, "RWL_Conn_LlmModel", ref s.llmModel, "RWL_Tip_LlmModel");
             float y0 = l.CurHeight;
@@ -210,6 +219,7 @@ namespace RimWorldLLM
             Check(l, "RWL_Eng_AutoStart", ref s.engineAutoStart, "RWL_Eng_AutoStartTip");
             Check(l, "RWL_Fallback_HideSetting", ref s.hideFallbackWarning, "RWL_Tip_HideFallback");
             Note(l, UiUtil.T("RWL_Eng_LocalNote"));
+            EngineShareUi.Draw(l, s, st);
         }
 
         /// <summary>After a model switch the engine keeps the old file: offer to delete it.</summary>
