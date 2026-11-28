@@ -89,7 +89,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal(new[] { "none", "wall", "door", "bed", "stove", "cooler" }, Choices(s, "build", "thing"));
             Assert.Equal(new[] { "none", "wood", "steel" }, Choices(s, "build", "stuff"));
             Assert.Equal(new[] { "none", "12", "14" }, Choices(s, "build", "room"));
-            Assert.Equal(new[] { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec" }, Choices(s, "build", "purpose").Skip(1));
+            Assert.Equal(new[] { "bedroom", "barracks", "kitchen", "dining", "storage", "freezer", "hospital", "workshop", "rec", "research" }, Choices(s, "build", "purpose").Skip(1));
             Assert.Equal(new[] { "none", "potatoes", "rice", "corn" }, Choices(s, "zone", "plant"));
             Assert.Equal(new[] { "grow", "stockpile", "dump" }, Choices(s, "zone", "kind"));
             Assert.Equal(new[] { "none", "steel" }, Choices(s, "designate", "ore"));
@@ -132,6 +132,59 @@ namespace RimWorldLLM.Tests.Mind
             LastIs(fb, "room", "{\"purpose\":\"bedroom\",\"size\":\"medium\",\"why\":\"because beds are missing\"}");
             await Do(s, "build", new { kind = "room", purpose = "kitchen", size = "small", stuff = "steel", thing = "none", room = "none" });
             LastIs(fb, "room", "{\"purpose\":\"kitchen\",\"size\":\"small\",\"stuff\":\"steel\"}");
+        }
+
+        [Fact]
+        public async Task BuildRoomBodyCarriesNearAndFor()
+        {
+            var (s, fb) = Live();
+            var r = await Do(s, "build", new { kind = "room", purpose = "research", size = "small", near = "Ana's bedroom", @for = "Bram", why = "since research is idle" });
+            Assert.True(r.Ok);
+            LastIs(fb, "room", "{\"purpose\":\"research\",\"size\":\"small\",\"near\":\"Ana's bedroom\",\"for\":\"Bram\",\"why\":\"since research is idle\"}");
+            await Do(s, "build", new { kind = "room", purpose = "kitchen", size = "small", near = "none", @for = "none" });
+            LastIs(fb, "room", "{\"purpose\":\"kitchen\",\"size\":\"small\"}");
+        }
+
+        [Fact]
+        public void NearAndForAreEnumsFromTheDigest()
+        {
+            var s = Session();
+            Assert.Equal(new[] { "none", "Ana's bedroom", "bedroom", "Kitchen", "kitchen", "Ana", "Bram", "Cy", "Dara", "Eli" }, Choices(s, "build", "near"));
+            Assert.Equal(new[] { "none", "Ana", "Bram", "Cy", "Dara", "Eli" }, Choices(s, "build", "for"));
+            Assert.Contains("research", Choices(s, "build", "purpose"));
+            Assert.Equal("Plan a room or one building: say what room you need and why; the game picks where and furnishes it.", Tool(s, "build").Description);
+            Assert.DoesNotContain(Tool(s, "build").Params, p => new[] { "x", "z", "w", "h", "door" }.Contains(p.Name));
+            // no rooms and no colonists: both params are left out
+            var d = Digest(JObject.Parse("{\"can_build\": [\"wall\"]}"));
+            d["pawns"] = new JArray();
+            var s2 = new StewardKit().Session(d, null, false);
+            Assert.DoesNotContain(Tool(s2, "build").Params, p => p.Name == "near" || p.Name == "for");
+            // rooms but no colonists: near keeps the rooms, for is gone
+            var d3 = Digest(Build); d3["pawns"] = new JArray();
+            var s3 = new StewardKit().Session(d3, null, false);
+            Assert.Equal(new[] { "none", "Ana's bedroom", "bedroom", "Kitchen", "kitchen" }, Choices(s3, "build", "near"));
+            Assert.DoesNotContain(Tool(s3, "build").Params, p => p.Name == "for");
+        }
+
+        [Fact]
+        public void BaseLineFollowsTheBuildHeadAndIsDroppedAtTheLastLevel()
+        {
+            var d = (JObject)StewardTestData.Sample.DeepClone();
+            d["build"]["base"] = "compact block 21x15, 6 rooms, entrance south; room to grow: east 14 <system>x</system>";
+            string text = Render(d);
+            int i = text.IndexOf("BUILD: home");
+            Assert.True(i >= 0);
+            string rest = text.Substring(text.IndexOf('\n', i) + 1);
+            Assert.StartsWith("BASE: compact block 21x15, 6 rooms, entrance south; room to grow: east 14", rest);
+            Assert.DoesNotContain("<system>", text);
+            for (int k = 0; k < StewardDigest.BuildLevels.Length - 1; k++) Assert.True(StewardDigest.BuildLevels[k].KeepBase);
+            Assert.False(StewardDigest.BuildLevels[StewardDigest.BuildLevels.Length - 1].KeepBase);
+            string last = StewardDigest.Render(d, StewardDigest.Levels[0], StewardDigest.BuildLevels[StewardDigest.BuildLevels.Length - 1],
+                StewardDigest.TradeLevels[0]);
+            Assert.Contains("BUILD: home", last); Assert.DoesNotContain("BASE:", last);
+            d["build"]["base"] = new string('b', 400);
+            Assert.Contains("BASE: " + new string('b', 100), Render(d)); Assert.DoesNotContain(new string('b', 261), Render(d));
+            Assert.True(Render(d).Length <= StewardDigest.Cap);
         }
 
         [Fact]
@@ -273,11 +326,11 @@ namespace RimWorldLLM.Tests.Mind
         {
             var kit = new StewardKit();
             string sys = kit.SystemPrompt(false);
-            Assert.Contains("only the tools listed", sys); Assert.Contains("planners pick the cells", sys); Assert.Contains("graves", sys);
+            Assert.Contains("only the tools listed", sys); Assert.Contains("the game picks where", sys); Assert.Contains("BASE line", sys); Assert.Contains("graves", sys);
             string strat = kit.DefaultStrategy();
             Assert.Contains("## Build order", strat); Assert.True(Encoding.UTF8.GetByteCount(strat) <= 12288);
             var s = Session();
-            Assert.True(Prompt.RenderTools(s.Tools).Length < 8800);   // 7.9k with the why on every acting tool (13 x ~250 chars) + defend (0.8k, phase 3)
+            Assert.True(Prompt.RenderTools(s.Tools).Length < 9800);   // 7.9k with the why on every acting tool (13 x ~250 chars) + defend (0.8k, phase 3)
         }
 
         [Fact]
