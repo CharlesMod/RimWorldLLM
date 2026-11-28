@@ -11,7 +11,7 @@ namespace RimWorldLLM
     /// <summary>The Biotech hands (docs/VIVARIUM.md "Biotech"): mechs, genes, blood, children. Game thread. The routes
     /// checked shapes and the gene-implant setting; this does the game checks and applies the change through the calls
     /// the vanilla gizmos and float menus make.</summary>
-    public sealed partial class VivariumHands : IVivariumBioHands
+    public sealed partial class VivariumHands : IVivariumBioHands, IVivariumCommandHands
     {
         static HandResult NoBiotech() { return ModsConfig.BiotechActive ? null : HandResult.No("Biotech is not active"); }
 
