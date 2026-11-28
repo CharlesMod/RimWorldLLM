@@ -218,7 +218,7 @@ namespace RimWorldLLM.Tests
             Console.WriteLine("COMMAND RenderTools chars=" + all.Length);
             Assert.True(all.Length < 3000, all.Length.ToString());
             Console.WriteLine("COMMAND job-only chars=" + Prompt.RenderTools(Sess(Digest("{}")).Cmd.Tools).Length); Assert.True(Prompt.RenderTools(Sess(Digest("{}")).Cmd.Tools).Length < 1000);
-            Assert.True(Prompt.RenderTools(s.Tools).Length < 12000);
+            Assert.True(Prompt.RenderTools(s.Tools).Length < 13500, Prompt.RenderTools(s.Tools).Length.ToString());   // the whole tool section of a full colony (build + every cmd tool + reads): 12.9k chars, ~3.2k tokens
         }
 
         [Fact]

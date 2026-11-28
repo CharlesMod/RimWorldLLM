@@ -104,6 +104,7 @@ namespace RimWorldLLM.Tests.Mind
             Rig.NoEnv();
             using var world = new JobsWorld();
             var (sys, user) = await Scenario(name, world);
+            if (GoldenUpdate.On) { GoldenUpdate.Patch("jobs-steward-golden.json", o => { o["prompts"][name]["system"] = sys; o["prompts"][name]["user"] = user; }); return; }
             Assert.Equal((string)G["prompts"][name]["system"], sys);
             Assert.Equal((string)G["prompts"][name]["user"], user);
         }
@@ -150,14 +151,19 @@ namespace RimWorldLLM.Tests.Mind
             finally { Rig.NoEnv(); }
         }
 
+        private static void Same(string key, string got)
+        {
+            if (GoldenUpdate.On) { GoldenUpdate.Patch("jobs-steward-golden.json", o => o[key]["system"] = got); return; }
+            Assert.Equal((string)G[key]["system"], got);
+        }
         [Fact]
-        public async Task SystemPromptWithConfigStrategyMatchesPython() => Assert.Equal((string)G["system_cfg"]["system"], await SystemWith((string)G["system_cfg"]["file"], null));
+        public async Task SystemPromptWithConfigStrategyMatchesPython() => Same("system_cfg", await SystemWith((string)G["system_cfg"]["file"], null));
         [Fact]
-        public async Task SystemPromptWithEnvStrategyMatchesPython() => Assert.Equal((string)G["system_env"]["system"], await SystemWith((string)G["system_env"]["cfg"], (string)G["system_env"]["env"]));
+        public async Task SystemPromptWithEnvStrategyMatchesPython() => Same("system_env", await SystemWith((string)G["system_env"]["cfg"], (string)G["system_env"]["env"]));
         [Fact]
-        public async Task SystemPromptWithEmptyStrategyMatchesPython() => Assert.Equal((string)G["system_empty"]["system"], await SystemWith("", null));
+        public async Task SystemPromptWithEmptyStrategyMatchesPython() => Same("system_empty", await SystemWith("", null));
         [Fact]
-        public async Task SystemPromptWithShippedStrategyMatchesPython() => Assert.Equal((string)G["system_default"]["system"], await SystemWith(null, null));
+        public async Task SystemPromptWithShippedStrategyMatchesPython() => Same("system_default", await SystemWith(null, null));
 
         [Theory]
         [MemberData(nameof(CleanIdx))]

@@ -149,6 +149,13 @@ namespace RimWorldLLM.Tests.Mind
             var sw = new StringWriter();
             int rc = StewardTry.Report(o, sw);
             Assert.True(name == "trade_skip" || (((JArray)g["backend"]).Count > 0 && ((JArray)g["bridge"]).Count > 0));
+            if (GoldenUpdate.On && ((JArray)g["backend"]).Count == rb.Log.Count)
+            {
+                var got = new JArray(rb.Log.Select(x => x.DeepClone()));
+                string report = sw.ToString().Replace("\r\n", "\n");
+                GoldenUpdate.Patch("e2e-steward-" + name + ".json", o => { o["backend"] = got; o["report"] = report; });
+                return;
+            }
             var diffs = new[]
             {
                 FirstDiff("backend", (JArray)g["backend"], rb.Log),

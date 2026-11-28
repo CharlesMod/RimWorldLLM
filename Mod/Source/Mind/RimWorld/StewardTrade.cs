@@ -26,8 +26,7 @@ namespace RimWorldLLM.Mind.RimWorld
     {
         public const string None = "none";
         public const int WhyMax = 80;
-        private static readonly Param WhyParam = new Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since components are low); " +
-            "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);   // as StewardSession's (a copy: the Python's too)
+        private static readonly Param WhyParam = new Param("why", "text", StewardKit.WhyText, maxLen: WhyMax, required: false, sameCall: true);   // as StewardSession's (a copy: the Python's too)
 
         public static readonly string[] Looks = { "trade_offer" };
         public static readonly string[] Acts = { "trade" };

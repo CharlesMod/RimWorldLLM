@@ -427,6 +427,13 @@ namespace RimWorldLLM.Tests.Mind
                 var rec = (JObject)kv.Value;
                 var fb = new FakeBridge();
                 var s = new StewardKit().Session((JObject)rec["digest"], FakeBridge.Client(fb), false);
+                if (GoldenUpdate.On)
+                {
+                    string key = kv.Key, tools = Prompt.RenderTools(s.Tools), grammar = Grammar.Build(s.Tools);
+                    var acting = new JArray(s.Acting.OrderBy(x => x, System.StringComparer.Ordinal)); var names = new JArray(s.Tools.Select(t => t.Name));
+                    GoldenUpdate.Patch("steward_build_golden.json", o => { var r = o["builds"][key]; r["tools"] = tools; r["grammar"] = grammar; r["acting"] = acting; r["names"] = names; });
+                    continue;
+                }
                 Assert.True(string.Equals((string)rec["tools"], Prompt.RenderTools(s.Tools)), kv.Key + " tools");
                 Assert.True(string.Equals((string)rec["grammar"], Grammar.Build(s.Tools)), kv.Key + " grammar");
                 Assert.Equal(rec["acting"].Select(x => (string)x).OrderBy(x => x, System.StringComparer.Ordinal), s.Acting.OrderBy(x => x, System.StringComparer.Ordinal));

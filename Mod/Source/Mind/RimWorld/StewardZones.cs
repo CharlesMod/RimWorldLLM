@@ -18,7 +18,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public const string None = "none";
         public const int WhyMax = 80, MaxZones = 10, MaxRooms = 12;
         public const string Hydro = "hydroponics";
-        private static readonly Param WhyParam = new Param("why", "text", "brief reason, starting with since or because (shown to the player)", maxLen: WhyMax, required: false, sameCall: true);
+        private static readonly Param WhyParam = new Param("why", "text", StewardKit.WhyText, maxLen: WhyMax, required: false, sameCall: true);
 
         public readonly bool Has;
         /// <summary>The zones of the digest's ZONES line: "#id" (or hydroponics) -> kind.</summary>

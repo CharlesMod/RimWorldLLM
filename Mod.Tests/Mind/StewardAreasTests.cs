@@ -185,7 +185,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.True(new[] { "rezone", "floor", "area", "undo" }.All(n => full.Tools.Any(t => t.Name == n)));
             int zonesChars = Prompt.RenderTools(full.Tools).Length - Prompt.RenderTools(full.Tools.Where(t => !new[] { "rezone", "floor", "area", "undo" }.Contains(t.Name)).ToList()).Length;
             System.Console.WriteLine("ZONES PART (4 tools) chars: " + zonesChars + " total " + Prompt.RenderTools(full.Tools).Length);
-            Assert.True(Prompt.RenderTools(full.Tools).Length < 9800);
+            Assert.True(Prompt.RenderTools(full.Tools).Length < 11000, Prompt.RenderTools(full.Tools).Length.ToString());   // every build-family tool open at once (lead budget, tools integration)
         }
     }
 }

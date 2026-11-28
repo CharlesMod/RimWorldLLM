@@ -121,8 +121,7 @@ namespace RimWorldLLM.Mind.RimWorld
 
         // ---- the tool list for this digest ----------------------------------------------
         public const int WhyMax = 80;
-        private static readonly Param WhyParam = new Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); " +
-            "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);
+        private static readonly Param WhyParam = new Param("why", "text", StewardKit.WhyText, maxLen: WhyMax, required: false, sameCall: true);
 
         private List<ToolSpec> BuildTools()
         {
@@ -464,6 +463,8 @@ namespace RimWorldLLM.Mind.RimWorld
     /// <summary>What core/steward.py asks of the RimWorld adapter.</summary>
     public sealed class StewardKit
     {
+        /// <summary>The why param's text on every acting tool, kept short: it repeats on ~20 tools; steward_system.txt explains it once with an example.</summary>
+        public const string WhyText = "since or because ..., shown to the player";
         // events that wake the steward at once while the narrator plays
         private static readonly string[] WakeTypes = { "raid_start", "mental_break", "death", "dialog" };
         private static readonly string[] WakeAlertWords = { "fire", "starvation", "rescue" };     // beside any alert the game marks critical

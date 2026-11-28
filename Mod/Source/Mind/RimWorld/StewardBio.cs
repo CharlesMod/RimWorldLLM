@@ -23,7 +23,7 @@ namespace RimWorldLLM.Mind.RimWorld
     {
         public const string None = "none";
         public const int WhyMax = 80;
-        private static readonly Param WhyParam = new Param("why", "text", "a brief reason in your own words, starting with since or because; it is shown to the player",
+        private static readonly Param WhyParam = new Param("why", "text", StewardKit.WhyText,
             maxLen: WhyMax, required: false, sameCall: true);   // a copy, as StewardBuild (the Python's too)
 
         public static readonly string[] ToolNames = { "mechs", "genes", "children" };
