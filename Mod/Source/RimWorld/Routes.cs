@@ -21,6 +21,7 @@ namespace RimWorldLLM
             VisionRoutes.Register(r, VisionCapture.Desk, () => RimWorldLLMMod.Settings.narratorMayLook);
             VivariumRoutes.Register(r, () => VivariumGame.State, () => Current.Game != null ? new VivariumHands() : null);
             VivariumRoutesInspect.Register(r, () => Current.Game != null ? new VivariumInspectHands() : null);
+            PlacePure.Hands = () => Current.Game != null ? new VivariumPlaceHands() : null;
         }
 
         static ApiResult Events(RouteContext c)

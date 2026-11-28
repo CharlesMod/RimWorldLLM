@@ -634,7 +634,7 @@ namespace RimWorldLLM.Mind.Fakes
             if (path.StartsWith("/act/", StringComparison.Ordinal) && method == "POST")
             {
                 string verb = path.Substring(5);
-                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care", "job", "medical", "prisoner", "animal", "social" }, verb) < 0)
+                if (Array.IndexOf(new[] { "time", "work", "schedule", "policy", "bed", "research", "letter", "draft", "order", "room", "build", "place", "zone", "designate", "bill", "squad", "defend", "choose", "trade", "caravan", "mech_mode", "mech_group", "mech_gestate", "genepack", "xenogerm", "hemogen", "child_schedule", "feed", "child_care", "job", "medical", "prisoner", "animal", "social" }, verb) < 0)
                     return null;
                 if (verb == "caravan") return Err(409, "refused", "caravans are off");
                 string bad = ActShape(verb, body);
@@ -932,7 +932,7 @@ namespace RimWorldLLM.Mind.Fakes
                 case "trade": case "mech_mode": case "mech_group": case "mech_gestate": case "genepack": case "xenogerm": case "hemogen": case "child_schedule": case "feed": case "child_care": case "job": case "medical": case "prisoner": case "animal": case "social":      // phase 4 and Biotech hands: accepted as sent
                     note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + (p.Value.Type == JTokenType.String ? (string)p.Value : RimWorldLLM.Mind.Py.PyJson.Repr(p.Value))));
                     break;
-                case "room": case "build": case "zone": case "designate": case "bill": case "squad": case "defend":     // phase 2-3 hands: accepted as sent
+                case "room": case "build": case "place": case "zone": case "designate": case "bill": case "squad": case "defend":     // phase 2-3 hands: accepted as sent
                     note = verb + ": " + string.Join(", ", b.Properties().Where(p => p.Name != "why").Select(p => p.Name + " " + PyStr(p.Value)));
                     break;
             }
