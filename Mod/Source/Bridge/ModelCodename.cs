@@ -8,8 +8,8 @@ namespace RimWorldLLM.Bridge
     {
         static readonly string[][] Table =
         {
-            new[] { "gemma4-e2b-q4km", null, "Gemma 4 E2B" },          // no tier name (keeper 2026-11-27)
-            new[] { "gemma4-e4b-rp-q40", "Flashlight", "Gemma 4 E4B RP" },   // Flashlight-4B
+            new[] { "gemma4-e2b-q4km", "Flashlight", "Gemma 4 E2B" },  // Flashlight-E2B, unused
+            new[] { "gemma4-e4b-rp-q40", "Lantern", "Gemma 4 E4B RP" },   // Lantern-4B
             new[] { "gemma4-rp-maxxed-q3kxl", "Campfire", "Gemma 4 26B RP" }, // Campfire-26B; Bonfire-27B comes from the engine
         };
 
