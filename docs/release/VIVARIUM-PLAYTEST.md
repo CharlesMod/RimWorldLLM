@@ -432,3 +432,76 @@ scene; switch it off before the narrator plays).
 
 Report back: the step numbers that failed, the log around them, and how the fights felt (too passive, too
 twitchy, sensible?).
+
+
+## M. Narrator tools: what the keeper checks in game (agent with the 26B; Biotech and Ideology steps need those DLCs)
+
+The narrator gained read tools (inspect, find, survey), command tools (job, medical, prisoner, animal, social), `place`,
+and `rezone`, `floor`, `area` and `undo` (docs/VIVARIUM.md "The narrator's tool catalogue"). Ask it in the chat, or call the
+route with curl (`B`, `T` as at the top). Each step says what you should see in the greentext (green `>` lines) or the reply.
+A refusal shows dim as "couldn't ...: reason". Reads (inspect, find, survey) print nothing in the chat; look at the steward
+trace or `calls.jsonl`, or call the GET route.
+
+81. **Inspect a fogged enemy says nothing.** Start a raid and keep one raider in the fog (or use dev mode to spawn a
+    hostile in unexplored ground). `curl -s -H "Authorization: Bearer $T" "$B/inspect?target=raider"` and
+    `"$B/survey?what=threats"`: neither names or counts the fogged one; once it walks into the light it appears.
+    Also a fire in the fog is not listed, and `"$B/inspect?target=#<id of a world pawn>"` is refused.
+82. **Find and survey hide fog.** `"$B/find?what=hostiles"`, `what=fires`, `what=downed`: only what a colonist can see. Then
+    `"$B/find?what=item&item=steel"` shows "steel xN #id, M cells north of home"; the same #id works in `inspect?target=%23<id>`.
+    `"$B/survey?what=stock"` gives days of food and medicine that match the resource tab.
+83. **Reads are limited.** Ask a question that needs many looks ("how is everyone and what is lying around?"): the trace shows
+    at most four reads in the turn; a fifth gets "no more reads this turn; act now".
+84. **Equip and wear from the inventory.** Give a colonist a rifle and a flak vest in the inventory (dev mode). Ask "have Ana
+    equip the rifle and wear the vest" (`POST /act/job {"op":"equip","who":"Ana","target":"rifle"}`, then `"op":"wear"`). The
+    greentext says "have Ana equip rifle"; Ana walks, equips, and the item leaves the inventory. Wearing something she already
+    wears, or something she cannot wear, is refused with a reason.
+85. **Free a prisoner.** `{"op":"free","who":"<prisoner>"}`: the prisoner is released and walks out; a prisoner you set to
+    `release` mode (`{"op":"mode","mode":"release"}`) leaves once the game's own release job runs. Recruit mode shows in the
+    prisoner tab as "Attempt to recruit". Free ends their status at once; check the log for no red errors.
+86. **Clean outside the home area.** Make filth outside the home area. Ask "have Ana clean the yard" (`"op":"clean","target":"#<id>"`
+    or a room label). She goes and cleans it even outside the home area. A room with no filth is refused "there is no filth
+    to clean in ...".
+87. **Stay order.** Draft Bram. `{"op":"stay","who":"Bram"}`: he stops and holds still, not wandering, until undrafted. On an
+    undrafted colonist `stay` is refused with a reason.
+88. **Power switch on a conduit.** Build a generator and run conduits (`place generator`, `place connect`). `place switch`: a
+    power switch replaces a conduit cell (a blueprint). With no conduit yet it is refused "no power conduit built yet to put a switch on".
+    The switch must not cut a room off from power in a way you did not ask: look at it in the power overlay.
+89. **Wall torch via furnish.** `{"op":"furnish","what":"torch wall lamp","at":"room <id>"}` (the word comes from the digest's can-build list;
+    "wall lamp" is the electric one): the lamp is a wall-mounted blueprint on a wall cell of the room, not on a door and not in the
+    middle of the floor. A "torch" or "lamp" word gives a standing torch or lamp instead. The room is lit once it is built.
+90. **Geothermal on a geyser.** Near a steam geyser: `{"op":"generator","what":"geothermal"}`: the blueprint sits on the geyser.
+    Far from any geyser it is refused "no steam geyser near the base; geothermal needs one in sight". A wind turbine needs
+    open ground ("it needs open, unroofed ground").
+91. **Freezer cooler, target -10 after the build.** Make a freezer room, then `{"op":"cooler","at":"the freezer"}` and
+    `{"op":"target","at":"the freezer","temp":"freezing"}` at once. The answer says the target will be set once it is built; build
+    finishes, then the cooler's target reads -10 C. Try `target` on a room with no heater or cooler: refused "place one with place cooler first".
+92. **Place target.** With a finished cooler or heater in a room, `target` with comfy, warm, cool, chilled sets 21, 25, 15, 3 C
+    on every heater and cooler in that room. It cannot be undone (no undo line).
+93. **Undo of floor, rezone and area.** Do each of these, then `{"n":1}` on `/act/undo` (or the chat: "undo that"):
+    - `floor` (`{"room":<id>,"kind":"..."}`): the floor blueprints vanish ("undid 1 narrator action: ..."); the room keeps its old floor.
+    - `rezone` a stockpile (`{"zone":"#4","priority":"important","deny":"corn"}`): the priority and filter go back to what they were.
+    - `area` assign (`{"op":"assign","name":"Inside","who":"Rex"}`): Rex gets his old area back (none if he had none).
+    - A surgery bill added with `medical operate`: the bill is gone from the patient's health tab.
+    The narrator can undo only once a turn: a second `undo` is refused "already undid this turn; move on".
+94. **Rezone words.** `{"zone":"#4","allow":"meals, steel"}` changes the stockpile's filter; `{"zone":"hydroponics","plant":"rice"}`
+    changes the basins; a plant on a stockpile is refused "a stockpile grows nothing; plant is for fields and hydroponics".
+95. **Ship search without a hitch.** Late game with the ship research done: `{"op":"ship","what":"beam"}`, then reactor, engine, a
+    casket. Each call comes back within a moment (no multi-second freeze of the game; watch the frame time), the part is placed
+    touching the ship, and a missing research says "needs ShipBasics research; ...". `{"op":"ship","what":"launch"}` is refused: the keeper launches.
+96. **Party and wedding.** `{"op":"party"}` and `{"op":"wedding"}` (with two engaged colonists): a gathering starts ("throw a party",
+    "hold a wedding"); with no engaged pair, or in a raid or bad weather, refused with the reason ("a wedding needs an engagement first").
+97. **Surgery bill and undo.** Hurt a colonist or give them a bad part (dev mode). `medical`: `{"op":"operate","who":"Bram"}` with no
+    `what` lists the choices; pick one; the bill shows on Bram's health tab and the greentext names it. Undo removes it. No
+    harvest-organ or violation surgeries are ever offered. Also `{"op":"rest"}` puts a hurt colonist in a medical bed (any bed
+    when no medical bed is free) and `{"op":"care","what":"best"}` sets the care level.
+98. **Execute and slaughter settings default off.** Settings window, "Narrator plays": "The narrator may execute prisoners" and
+    "The narrator may slaughter named pets" are both unchecked on a new install. `curl $B/config | jq` shows
+    `vivarium_may_execute_prisoners` and `vivarium_may_slaughter_pets` both `false`. With the first off: `{"op":"mode","who":"<prisoner>","mode":"execute"}`
+    is refused "the player has not let the narrator execute prisoners; ..." and `execute` is not in the tool's mode list. With the second off:
+    `{"op":"slaughter","who":"<a named pet>"}` is refused; an unnamed, unbonded colony animal is marked. Turn each on and repeat:
+    it now goes through (always with a why in the greentext).
+99. **Tool section size.** In a big colony, `calls.jsonl` shows the tool section about 3.2k tokens or less; no turn fails for
+    lack of context, and a quiet colony sees far fewer tools.
+
+Report back: the step numbers that failed, the log around them, and whether the narrator picked the new tools on its own
+(did it inspect before it acted, and did it stop at four reads?).
