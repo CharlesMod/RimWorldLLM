@@ -144,6 +144,10 @@ namespace RimWorldLLM.Mind.Fakes
         public Dictionary<string, string> ActRefuse = new Dictionary<string, string>();   // verb -> reason: refused 409 "refused"
         public Dictionary<string, JObject> ActExtra = new Dictionary<string, JObject>();   // verb -> extra fields in the success reply
         public List<KeyValuePair<string, Dictionary<string, string>>> Looks = new List<KeyValuePair<string, Dictionary<string, string>>>();   // (path, query) of every GET /trade/offer
+        public List<Dictionary<string, string>> VisionAsks = new List<Dictionary<string, string>>();   // the query of every GET /vision
+        public int VisionPending;                 // answer this many GET /vision with {"status":"pending"} before the picture
+        public (int status, string code, string detail)? VisionError;   // answer GET /vision with this error
+        public string VisionB64 = "QUJDREVGR0g=";  // the picture's base64 (what the game would send)
         public List<JObject> Traders;             // what GET /vivarium lists as traders; null: the digest's trade.traders that can trade
         public JObject TradePending;              // a walking trade ({negotiator, to, with}); the digest's trade block shows it, a second trade is refused
         JObject _walk = new JObject();
@@ -532,6 +536,17 @@ namespace RimWorldLLM.Mind.Fakes
                 if (Dialogs.Count == 0) return Ok(withDialogs);
                 withDialogs["dialogs"] = new JArray(Dialogs.Select(d => d.DeepClone()));
                 return Ok(withDialogs);
+            }
+            if (path == "/vision" && method == "GET")
+            {
+                VisionAsks.Add(req.Query.ToDictionary(kv => kv.Key, kv => kv.Value));
+                if (VisionError.HasValue) return Err(VisionError.Value.status, VisionError.Value.code, VisionError.Value.detail);
+                if (VisionPending > 0) { VisionPending--; return Ok(("status", "pending"), ("retry_ms", 250)); }
+                string kind = Qstr(req, "kind");
+                return Ok(("status", "ready"), ("kind", kind), ("target", Qstr(req, "target")), ("mime", "image/jpeg"), ("width", 768), ("height", 576),
+                    ("bytes", VisionB64.Length), ("image_b64", VisionB64),
+                    ("legend", J(@"{""north"": ""up"", ""x0"": 100, ""z0"": 80, ""x1"": 140, ""z1"": 110, ""cells_w"": 40, ""cells_h"": 30, ""px_per_cell"": 19, ""target_name"": """", ""ui"": ""hidden"", ""note"": """"}")),
+                    ("captured_tick", Tick), ("age_s", 0));
             }
             if (path == "/trade/offer" && method == "GET")
             {

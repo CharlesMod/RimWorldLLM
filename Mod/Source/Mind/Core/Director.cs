@@ -155,6 +155,7 @@ namespace RimWorldLLM.Mind
             Idle = new IdleRunner(this);
             Commentary = new Commentary(this);
             Steward = new Steward(this);
+            Steward.VisionAllowed = () => !JobsJson.IsFalse(BridgeCfg["vision_allowed"]);
             if (streaming) Steward.Live = new BridgeChatLive(bridge);
         }
 

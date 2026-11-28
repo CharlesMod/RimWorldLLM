@@ -86,6 +86,14 @@ trust model are in docs/BRIDGE-API.md, "In-process use". The HTTP bridge stays f
 - **401** calls `LlmAuth.OnUnauthorized(status, body)`, which the host sets to `EngineAuthStatus.Note`: the mod's own pairing UI shows
   "Pair again" without the mind knowing about the bridge.
 - **Call log** `calls.jsonl` rotates at 20 MB x 3, same row format.
+- **Image content parts** (new, the look tool). A tool-loop message's `content` may be an array `[{"type":"text",...},
+  {"type":"image_url","image_url":{"url":"data:image/jpeg;base64,..."}}]`; the backend copies messages into the body as they
+  are, so nothing else changes and a loop with no picture sends byte-identical bodies. `LoopOptions.TakeAttachment` hands the loop a
+  picture after a step's tool results are in the history; `ImageParts.Attach` puts it in the last user message (grammar/json) or in an
+  extra user message after the tool rows (native) and replaces any earlier picture, so a request carries one. Pictures live only in the
+  loop history: never in `Executed.Result`, the trace, the steward trace, `calls.jsonl` or the board; `ImageParts.Redact` turns a data
+  URI into `data:image/jpeg;base64,<N bytes>` for any log. The gate (`Llm/VisionProbe.cs`): engine status `"vision": true`, else the
+  endpoint's `/props` `modalities.vision`; cached 60 s.
 
 ## Settings and the config file
 
