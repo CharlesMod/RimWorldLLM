@@ -459,8 +459,8 @@ trace or `calls.jsonl`, or call the GET route.
     `release` mode (`{"op":"mode","mode":"release"}`) leaves once the game's own release job runs. Recruit mode shows in the
     prisoner tab as "Attempt to recruit". Free ends their status at once; check the log for no red errors.
 86. **Clean outside the home area.** Make filth outside the home area. Ask "have Ana clean the yard" (`"op":"clean","target":"#<id>"`
-    or a room label). She goes and cleans it even outside the home area. A room with no filth is refused "there is no filth
-    to clean in ...".
+    or a room label). Watch what happens: the game's own cleaning ignores filth outside the home area, so the order may be refused
+    without a clear reason (known gap; note the wording). Inside the home area she cleans; a room with no filth is refused.
 87. **Stay order.** Draft Bram. `{"op":"stay","who":"Bram"}`: he stops and holds still, not wandering, until undrafted. On an
     undrafted colonist `stay` is refused with a reason.
 88. **Power switch on a conduit.** Build a generator and run conduits (`place generator`, `place connect`). `place switch`: a
