@@ -117,6 +117,11 @@ namespace RimWorldLLM.Tests
             lock (Requests) return Requests.Where(r => r.Method == method && r.Path == path).ToList();
         }
 
+        public List<PReq> All()
+        {
+            lock (Requests) return Requests.ToList();
+        }
+
         public void Dispose() { _stop.Cancel(); try { Listener.Close(); } catch { } }
     }
 
@@ -690,10 +695,10 @@ namespace RimWorldLLM.Tests
 
         static TaskCompletionSource<PReply> Hold() { return new TaskCompletionSource<PReply>(TaskCreationOptions.RunContinuationsAsynchronously); }
 
-        static PairingSession Make(FakePairEngine f, List<string> log, string existingToken = null, string root = null)
+        static PairingSession Make(FakePairEngine f, List<string> log, string existingToken = null, string root = null, string expectedId = Id1)
         {
             return new PairingSession(new PairingApi { HelloTimeoutMs = 3000, ShortTimeoutMs = 3000 }, root ?? f.Root, "RimWorld on test-box", existingToken,
-                s => { lock (log) log.Add(s); })
+                s => { lock (log) log.Add(s); }, expectedId)
             { RetryMinMs = 20, RetryMaxMs = 60, ModelsTimeoutMs = 2000 };
         }
 
@@ -1000,11 +1005,44 @@ namespace RimWorldLLM.Tests
                 await PhaseIs(s, PairPhase.Paired);
                 await RunEnds(s);
                 Assert.Equal(0, f.Count("POST", PairPath));
-                Assert.Equal("Bearer " + Token, Assert.Single(f.Seen("GET", "/engine/v1/hello")).Auth);
+                var hellos = f.Seen("GET", "/engine/v1/hello");
+                Assert.Equal(2, hellos.Count);
+                Assert.True(string.IsNullOrEmpty(hellos[0].Auth));            // anonymous first: the id is checked before the token goes out
+                Assert.Equal("Bearer " + Token, hellos[1].Auth);
                 Assert.Equal(Token, s.Outcome.Engine.Token);
                 Assert.Equal("c-9", s.Outcome.Engine.ClientId);
                 Assert.Equal("Bearer " + Token, Assert.Single(f.Seen("GET", "/v1/models")).Auth);
                 NoSecrets(s, log, Token, ReqId);
+            }
+        }
+
+        [Fact]
+        public async Task ExistingTokenIsNeverSentToAnotherEngineAtTheAddress()
+        {
+            // The address now answers as a different engine (Id2): the token held for Id1 must not leave this PC.
+            using (var f = new FakePairEngine(Route(r => HelloJson(Id2, true, true), r => Hold().Task)))
+            {
+                var log = new List<string>();
+                var s = Make(f, log, Token, expectedId: Id1);
+                s.Start();
+                await PhaseIs(s, PairPhase.ShowingCode);
+                foreach (var q in f.Seen("GET", "/engine/v1/hello")) Assert.True(string.IsNullOrEmpty(q.Auth));
+                Assert.DoesNotContain(f.All(), q => (q.Auth ?? "").Contains(Token));
+                await s.CancelAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ExistingTokenWithoutAnExpectedIdIsNeverSent()
+        {
+            using (var f = new FakePairEngine(Route(r => HelloJson(Id1, true, true, ",\"paired\":true,\"client_id\":\"c-9\""), r => Hold().Task)))
+            {
+                var log = new List<string>();
+                var s = Make(f, log, Token, expectedId: null);
+                s.Start();
+                await PhaseIs(s, PairPhase.ShowingCode);
+                Assert.DoesNotContain(f.All(), q => (q.Auth ?? "").Contains(Token));
+                await s.CancelAsync();
             }
         }
 
@@ -1237,6 +1275,38 @@ namespace RimWorldLLM.Tests
                 var res = await EngineReconnect.CheckAsync(store, Id1, f.Root, Api(), (ms, ct) => Task.FromResult(new List<MdnsEngine>()));
                 Assert.False(res.Found);
                 Assert.True(store.HasToken(Id1));
+                Assert.DoesNotContain(f.All(), q => (q.Auth ?? "").Contains("tok-reconnect"));   // the token stays home
+            }
+        }
+
+        [Fact]
+        public async Task ReconnectNeverSendsTheTokenToAnMdnsImpostor()
+        {
+            // mDNS says Id1 (unauthenticated), but the address answers hello as Id2: no token goes out.
+            using (var f = new FakePairEngine(ReconnectRoute(Id2, true, r => "")))
+            {
+                string dead = "http://127.0.0.1:" + FakePairEngine.FreePort();
+                var store = StoreWith(dead);
+                var m = new MdnsEngine { Id = Id1, Name = "den-pc", Port = f.Port };
+                m.Addrs.Add(IPAddress.Loopback);
+                var res = await EngineReconnect.CheckAsync(store, Id1, dead, Api(), (ms, ct) => Task.FromResult(new List<MdnsEngine> { m }));
+                Assert.False(res.Found);
+                Assert.NotEmpty(f.Seen("GET", "/engine/v1/hello"));
+                Assert.DoesNotContain(f.All(), q => !string.IsNullOrEmpty(q.Auth));
+            }
+        }
+
+        [Fact]
+        public async Task ReconnectSendsTheTokenOnlyAfterAnAnonymousHello()
+        {
+            using (var f = new FakePairEngine(ReconnectRoute(Id1, true, r => r.Auth == "Bearer tok-reconnect" ? ",\"paired\":true,\"client_id\":\"c1\"" : "")))
+            {
+                var res = await EngineReconnect.CheckAsync(StoreWith(f.Root), Id1, f.Root, Api(), null);
+                Assert.Equal(EngineAuth.Paired, res.Auth);
+                var hellos = f.Seen("GET", "/engine/v1/hello");
+                Assert.Equal(2, hellos.Count);
+                Assert.True(string.IsNullOrEmpty(hellos[0].Auth));
+                Assert.Equal("Bearer tok-reconnect", hellos[1].Auth);
             }
         }
 

@@ -308,6 +308,22 @@ namespace RimWorldLLM.Bridge
             return (r.Ok ? EngineHello.Parse(r.Body) : null, r);
         }
 
+        /// <summary>
+        /// Hello that never hands a token to the wrong engine: first without a bearer; then, only when that reply is an
+        /// easy-engine whose engine_id is <paramref name="engineId"/> and a token is held, once more with the token
+        /// (the reply that says paired/revoked). A stored token goes only to the engine that issued it, never to whatever
+        /// answers at an address. <c>sentToken</c> says whether the returned hello was asked with the token.
+        /// </summary>
+        public async Task<(EngineHello hello, PairReply reply, bool sentToken)> HelloForAsync(string root, string engineId, string token, CancellationToken ct = default(CancellationToken))
+        {
+            var (h, r) = await HelloAsync(root, null, ct).ConfigureAwait(false);
+            string want = (engineId ?? "").Trim().ToLowerInvariant();
+            if (h == null || !h.IsEasyEngine || string.IsNullOrEmpty(token) || want.Length == 0 || h.EngineId != want) return (h, r, false);
+            var (h2, r2) = await HelloAsync(root, token, ct).ConfigureAwait(false);
+            if (h2 == null || !h2.IsEasyEngine || h2.EngineId != want) return (h, r, false);
+            return (h2, r2, true);
+        }
+
         /// <summary>GET /engine/v1/status with a Bearer: a 200 proves the key works (it needs a token on a non-loopback engine).</summary>
         public Task<PairReply> StatusAsync(string root, string token, CancellationToken ct = default(CancellationToken))
         {
@@ -388,7 +404,7 @@ namespace RimWorldLLM.Bridge
     public sealed class PairingSession
     {
         readonly PairingApi _api;
-        readonly string _root, _clientName, _existingToken;
+        readonly string _root, _clientName, _existingToken, _expectedId;
         readonly Action<string> _log;
         readonly CancellationTokenSource _cts = new CancellationTokenSource();
         readonly object _lock = new object();
@@ -417,12 +433,15 @@ namespace RimWorldLLM.Bridge
         public PairOutcome Outcome { get { lock (_lock) return _outcome; } }
         public Task Running { get { return _run ?? Task.CompletedTask; } }
 
-        public PairingSession(PairingApi api, string root, string clientName, string existingToken = null, Action<string> log = null)
+        /// <param name="existingToken">a token held for <paramref name="expectedEngineId"/>; sent only after an anonymous
+        /// hello shows that engine_id at <paramref name="root"/> (never without an expected id).</param>
+        public PairingSession(PairingApi api, string root, string clientName, string existingToken = null, Action<string> log = null, string expectedEngineId = null)
         {
             _api = api ?? new PairingApi();
             _root = (root ?? "").TrimEnd('/');
             _clientName = clientName ?? "";
             _existingToken = existingToken;
+            _expectedId = expectedEngineId;
             _log = log ?? (_ => { });
         }
 
@@ -490,13 +509,13 @@ namespace RimWorldLLM.Bridge
                 if (!again)
                 {
                     SetPhase(PairPhase.Checking);
-                    var (h, hr) = await _api.HelloAsync(_root, _existingToken, ct).ConfigureAwait(false);
+                    var (h, hr, sent) = await _api.HelloForAsync(_root, _expectedId, _existingToken, ct).ConfigureAwait(false);
                     if (ct.IsCancellationRequested) { SetPhase(PairPhase.Cancelled); return; }
                     if (hr.Unreachable || hr.TimedOut) { End(PairPhase.Unreachable); return; }
                     if (h == null || !h.IsEasyEngine) { End(PairPhase.NotAnEngine, hr.Ok ? "" : "HTTP " + hr.Status); return; }
                     hello = h;
                     _engineName = h.Name;
-                    var auth = EngineAuthCodes.FromHello(h, !string.IsNullOrEmpty(_existingToken));
+                    var auth = EngineAuthCodes.FromHello(h, sent);
                     if (auth == EngineAuth.Open || auth == EngineAuth.Paired)
                     {
                         await Finish(h, auth == EngineAuth.Paired ? _existingToken : "", auth == EngineAuth.Paired ? h.ClientId : "", ct).ConfigureAwait(false);
@@ -628,10 +647,11 @@ namespace RimWorldLLM.Bridge
             string token = pe != null ? pe.Token : "";
             string root = !string.IsNullOrEmpty(lastRoot) ? lastRoot : (pe != null ? pe.Address : "");
             EngineHello h = null;
+            bool sent = false;
             if (!string.IsNullOrEmpty(root))
             {
-                var (hh, _) = await api.HelloAsync(root, token, ct).ConfigureAwait(false);
-                if (hh != null && hh.IsEasyEngine && hh.EngineId == (engineId ?? "").ToLowerInvariant()) h = hh;
+                var (hh, _, s1) = await api.HelloForAsync(root, engineId, token, ct).ConfigureAwait(false);
+                if (hh != null && hh.IsEasyEngine && hh.EngineId == (engineId ?? "").ToLowerInvariant()) { h = hh; sent = s1; }
             }
             if (h == null && browse != null)
             {
@@ -640,8 +660,8 @@ namespace RimWorldLLM.Bridge
                 var m = seen == null ? null : seen.FirstOrDefault(e => e.Id == (engineId ?? "").ToLowerInvariant());
                 if (m != null)
                 {
-                    var (r2, hh) = await EngineFinder.FirstAnswering(m, api, token, ct).ConfigureAwait(false);
-                    if (hh != null) { h = hh; root = r2; }
+                    var (r2, hh, s2) = await EngineFinder.FirstAnsweringFor(m, api, token, ct).ConfigureAwait(false);
+                    if (hh != null) { h = hh; root = r2; sent = s2; }
                 }
             }
             if (h == null) return res;
@@ -649,7 +669,7 @@ namespace RimWorldLLM.Bridge
             res.Hello = h;
             res.Root = root;
             res.Moved = !string.Equals(root, lastRoot ?? "", StringComparison.OrdinalIgnoreCase);
-            res.Auth = EngineAuthCodes.FromHello(h, !string.IsNullOrEmpty(token));
+            res.Auth = EngineAuthCodes.FromHello(h, sent);
             if (EngineAuthCodes.PairAgain(res.Auth)) { store.ClearToken(engineId); res.TokenCleared = true; }
             else store.Remember(engineId, root);
             if ((res.Auth == EngineAuth.Paired || res.Auth == EngineAuth.Open) && !string.IsNullOrEmpty(h.ModelId)) res.ModelId = h.ModelId;

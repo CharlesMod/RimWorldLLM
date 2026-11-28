@@ -169,7 +169,7 @@ namespace RimWorldLLM
             var pe = Store(s).Get(e.EngineId);
             _outcomeApplied = false;
             _session = new PairingSession(new PairingApi(), e.Root, PairingSession.ClientNameFor(Environment.MachineName), pe != null ? pe.Token : null,
-                line => Log.Message("[RimWorldLLM] " + line));
+                line => Log.Message("[RimWorldLLM] " + line), e.EngineId);
             _session.Start();
         }
 

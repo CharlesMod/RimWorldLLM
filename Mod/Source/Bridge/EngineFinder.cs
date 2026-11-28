@@ -90,12 +90,22 @@ namespace RimWorldLLM.Bridge
         /// <summary>Calls hello on each root of <paramref name="e"/> until one answers as that engine; (null, null) when none does.</summary>
         public static async Task<(string root, EngineHello hello)> FirstAnswering(MdnsEngine e, PairingApi api, string token, CancellationToken ct)
         {
+            var (r, h, _) = await FirstAnsweringFor(e, api, token, ct).ConfigureAwait(false);
+            return (r, h);
+        }
+
+        /// <summary>
+        /// As <see cref="FirstAnswering"/>; the token (held for e.Id) is sent only to a root whose anonymous hello shows
+        /// that engine_id (an mDNS id is unauthenticated). <c>sentToken</c>: the hello returned was asked with it.
+        /// </summary>
+        public static async Task<(string root, EngineHello hello, bool sentToken)> FirstAnsweringFor(MdnsEngine e, PairingApi api, string token, CancellationToken ct)
+        {
             foreach (var r in RootsOf(e))
             {
-                var (h, _) = await api.HelloAsync(r, token, ct).ConfigureAwait(false);
-                if (h != null && h.IsEasyEngine && h.EngineId == e.Id) return (r, h);
+                var (h, _, sent) = await api.HelloForAsync(r, e.Id, token, ct).ConfigureAwait(false);
+                if (h != null && h.IsEasyEngine && h.EngineId == e.Id) return (r, h, sent);
             }
-            return (null, null);
+            return (null, null, false);
         }
 
         public static async Task<string> DefaultRun(string path, string args, int timeoutMs)
