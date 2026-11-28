@@ -70,7 +70,17 @@ MODVER=$(sed -nE 's#.*<modVersion>[[:space:]]*([^<[:space:]]+)[[:space:]]*</modV
 [ -n "$VERSION" ] || VERSION="$MODVER-beta"
 RW_SHA=$(git -C "$REPO" rev-parse HEAD)
 EE_SHA=$(git -C "$EE_DIR" rev-parse HEAD)
-LLAMA_TAG=$(tr -d '\n' <"$EE_DIR/catalog/catalog.json" | sed -nE 's#.*"llamacpp"[[:space:]]*:[[:space:]]*\{[[:space:]]*"tag"[[:space:]]*:[[:space:]]*"([^"]+)".*#\1#p')
+# Catalog v10+: "llama" is a ladder, its first rung is the patched pin the engine runs by default.
+# Older catalogs: a single "llamacpp" release.
+LLAMA_TAG=$(python3 -I -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+l = d.get("llama")
+if isinstance(l, list) and l:
+    print(l[0].get("tag", ""))
+else:
+    print((d.get("llamacpp") or {}).get("tag", ""))
+' "$EE_DIR/catalog/catalog.json") || die "could not parse catalog.json"
 [ -n "$LLAMA_TAG" ] || die "could not read llama.cpp tag from catalog"
 
 [ -n "$OUT" ] || OUT="$REPO/dist-release"
@@ -175,7 +185,7 @@ mod_version: $MODVER
 release: $VERSION
 rimworldllm_commit: $RW_SHA
 easyengine_commit: $EE_SHA
-llamacpp_tag: $LLAMA_TAG
+llama_tag: $LLAMA_TAG
 build_date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
 
