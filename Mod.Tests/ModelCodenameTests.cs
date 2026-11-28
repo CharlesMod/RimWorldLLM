@@ -7,10 +7,9 @@ namespace RimWorldLLM.Tests
     public class ModelCodenameTests
     {
         [Theory]
-        [InlineData("gemma4-e2b-q4km", "Flashlight")]
-        [InlineData("gemma4-e4b-rp-q40", "Lantern")]
+                [InlineData("gemma4-e4b-rp-q40", "Flashlight")]
         [InlineData("gemma4-rp-maxxed-q3kxl", "Campfire")]
-        [InlineData("GEMMA4-E2B-Q4KM", "Flashlight")]
+        [InlineData("GEMMA4-E4B-RP-Q40", "Flashlight")]
         public void Table_gives_the_code_name(string id, string want) { Assert.Equal(want, ModelCodename.For(id, null)); }
 
         [Fact]
@@ -39,8 +38,8 @@ namespace RimWorldLLM.Tests
         [Fact]
         public void Status_reads_the_codename_fields()
         {
-            var st = JsonConvert.DeserializeObject<EngineStatus>("{\"model_codename\":\"Lantern\",\"upgrade\":{\"target\":\"x\",\"target_codename\":\"Campfire\"}}");
-            Assert.Equal("Lantern", st.ModelCodename);
+            var st = JsonConvert.DeserializeObject<EngineStatus>("{\"model_codename\":\"Flashlight\",\"upgrade\":{\"target\":\"x\",\"target_codename\":\"Campfire\"}}");
+            Assert.Equal("Flashlight", st.ModelCodename);
             Assert.Equal("Campfire", st.Upgrade.TargetCodename);
         }
 
@@ -53,7 +52,7 @@ namespace RimWorldLLM.Tests
             Assert.Equal("Campfire (Gemma 4 26B RP)", v.LabelArg);
             var v2 = b.Update(new EngineStatus { Phase = EnginePhase.Downloading, Progress = new EngineProgress { DoneBytes = 1, TotalBytes = 3000000000, Step = "model gemma4-e2b-q4km" } }, 1000);
             Assert.Equal("RWL_Bar_Model", v2.LabelKey);
-            Assert.Equal("Flashlight (Gemma 4 E2B)", v2.LabelArg);
+            Assert.Equal("Gemma 4 E2B", v2.LabelArg);
             var v3 = b.Update(new EngineStatus { Phase = EnginePhase.Ready, Upgrade = new EngineUpgrade { State = "downloading", Target = "q", TargetName = "Qwen 27B", TargetCodename = "Bonfire",
                 Progress = new EngineProgress { DoneBytes = 1, TotalBytes = 10000000000, Step = "model q" } } }, 2000);
             Assert.Equal("Bonfire (Qwen 27B)", v3.LabelArg);
