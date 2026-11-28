@@ -526,7 +526,9 @@ namespace RimWorldLLM.Tests.Mind
                 Rig.Chat(w, "hello");
                 await Rig.Cycle(w);
                 Assert.NotEmpty(fake.Calls);
-                Assert.DoesNotContain("Look at a picture", Rig.System(fake.Calls[0]));
+                if (why == "nobuild")       // declared with the gate open (a fixed system text), but not callable: AVAILABLE NOW leaves it out
+                    Assert.DoesNotContain("look", Rig.User(fake.Calls[0]).Split('\n')[0].Split(':')[1].Split(',').Select(x => x.Trim()));
+                else Assert.DoesNotContain("Look at a picture", Rig.System(fake.Calls[0]));
             }
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RimWorldLLM.Mind.ToolLoop;
@@ -6,7 +7,7 @@ using RimWorldLLM.Mind.ToolLoop;
 namespace RimWorldLLM.Mind.RimWorld
 {
     /// <summary>The RimWorld StewardKit as the core Steward's IStewardKit (the adapter's StewardKit object).</summary>
-    public sealed class RimWorldStewardKit : IStewardKit, IStewardCombatKit, IStewardTradeKit, IStewardVisionKit
+    public sealed class RimWorldStewardKit : IStewardKit, IStewardCombatKit, IStewardTradeKit, IStewardVisionKit, IStewardCatalogKit
     {
         private readonly StewardKit _k;
         public RimWorldStewardKit(StewardKit k) { _k = k; }
@@ -18,6 +19,9 @@ namespace RimWorldLLM.Mind.RimWorld
         public string PlaybookAlerts(JObject digest) { return _k.PlaybookAlerts(digest); }
         public string RenderDigest(JObject digest) { return _k.RenderDigest(digest); }
         public string StrategyExtra(JObject digest) { return _k.StrategyExtra(digest); }
+        public IReadOnlyList<ToolSpec> Declared(bool advisor, bool withLook)
+            => withLook ? StewardCatalog.Tools(advisor) : StewardCatalog.Tools(advisor).Where(t => t.Name != VisionKit.Name).ToList();
+        public string AvailableNow(IEnumerable<ToolSpec> callable, IReadOnlyList<ToolSpec> declared) => StewardCatalog.AvailableNow(callable, declared);
         public IVisionLook NewLook(JObject digest, IBridge bridge, System.Func<int, Task> delay, ILookClient look) { return digest != null && digest["build"] is JObject ? new VisionKit(bridge, delay, look) : null; }
         public IReadOnlyCollection<string> TradeTools { get { return StewardKit.TradeToolNames; } }
         public IStewardSession TradeSession(JObject digest, IBridge bridge) { return new Sess(_k.TradeSession(digest, bridge)); }

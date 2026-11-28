@@ -56,7 +56,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal("floor(room, kind, why?)", Floor(s).Signature());
             Assert.Equal(new[] { "14", "15" }, Floor(s).Params.First(p => p.Name == "room").Choices);
             Assert.Equal(new[] { "wood floor", "concrete", "red carpet", "smooth stone" }, Floor(s).Params.First(p => p.Name == "kind").Choices);
-            Assert.Contains("15 dining room", Floor(s).Params.First(p => p.Name == "room").Description);
+            Assert.Contains("room id from ROOMS", Floor(s).Params.First(p => p.Name == "room").Description);
         }
 
         [Fact]

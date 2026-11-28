@@ -240,7 +240,7 @@ namespace RimWorldLLM.Tests.Mind
             int plain = StewardTools_RenderLen(Sess(SampleD())), full = StewardTools_RenderLen(Sess(Load("bio_all")));
             Assert.True(full - plain < 2600, (full - plain).ToString());
             Assert.True(System.Text.Encoding.UTF8.GetByteCount(k.DefaultStrategy()) <= 12288); Assert.DoesNotContain("## Biotech", k.DefaultStrategy());
-            Assert.Contains("## Biotech", k.StrategyExtra(Load("bio_all"))); Assert.Equal("", k.StrategyExtra(SampleD()));
+            Assert.Contains("## Biotech", k.StrategyExtra(Load("bio_all"))); Assert.Contains("## Biotech", k.StrategyExtra(SampleD()));   // always: the bio tools are always declared
         }
 
         private static int StewardTools_RenderLen(StewardSession s) => Prompt.RenderTools(s.Tools).Length;

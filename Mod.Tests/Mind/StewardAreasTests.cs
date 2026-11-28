@@ -58,7 +58,7 @@ namespace RimWorldLLM.Tests.Mind
         {
             var s = Session(Build);
             Assert.Equal("area(op, area, where?, who?, why?)", Tool(s, "area").Signature());
-            Assert.Contains("pen, Barn", Tool(s, "area").Params.First(p => p.Name == "area").Description);
+            Assert.Contains("one of the AREAS in the digest", Tool(s, "area").Params.First(p => p.Name == "area").Description);
             Assert.Equal(new[] { "add", "remove", "assign" }, Tool(s, "area").Params.First(p => p.Name == "op").Choices);
         }
 

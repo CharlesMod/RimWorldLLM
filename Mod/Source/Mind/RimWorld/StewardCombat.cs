@@ -148,8 +148,7 @@ namespace RimWorldLLM.Mind.RimWorld
                 };
                 if (Rooms.Count > 0)
                 {
-                    string roles = string.Join(", ", Rooms.Select(p => p.Value.Length > 0 ? p.Key + " " + p.Value : p.Key));
-                    ps.Add(new Param("room", "enum", "at door or inside: which room (room id: " + roles + ")", choices: new[] { None }.Concat(Rooms.Select(p => p.Key)), required: false));
+                    ps.Add(new Param("room", "enum", "at door or inside: which room (room id from ROOMS)", choices: new[] { None }.Concat(Rooms.Select(p => p.Key)), required: false));
                 }
                 ps.Add(new Param("target", "text", "focus: the threat, as its group number from THREATS or words like the pirates", maxLen: 60, required: false));
                 ps.Add(new Param("below", "int", "retreat: wounded fall back under this health percent (10 to 60), 0 if unused", lo: 0, hi: 90, required: false));

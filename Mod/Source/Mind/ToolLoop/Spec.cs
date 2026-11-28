@@ -38,6 +38,19 @@ namespace RimWorldLLM.Mind.ToolLoop
         public bool Required = true;
         /// <summary>commentary (a reason, say): two calls that differ only here are the same call</summary>
         public bool SameCall;
+        /// <summary>A declared (prompt-only) enum whose values depend on the game: the system text says so in words and the values go in the
+        /// turn's AVAILABLE NOW line. Choices keeps only the fixed words (like "none"). Never used for the grammar or for checking.</summary>
+        public bool Open;
+        public const string OpenWords = "a value from the AVAILABLE NOW line";
+
+        /// <summary>A copy of this enum for the declared tool list: Open, with only the fixed words kept.</summary>
+        public Param AsOpen(IEnumerable<string> fixedChoices)
+        {
+            var c = (Param)MemberwiseClone();
+            c.Open = true;
+            c.Choices = fixedChoices.ToList();
+            return c;
+        }
 
         private static readonly Regex IntText = new Regex(@"\A\s*-?\d+\s*\z", RegexOptions.CultureInvariant);
 
@@ -61,7 +74,9 @@ namespace RimWorldLLM.Mind.ToolLoop
                 case "text": return "short text, at most " + MaxLen.ToString(CultureInfo.InvariantCulture) + " characters";
                 case "int": return "a whole number from " + Lo + " to " + Hi;
                 case "scale": return "one of: " + Join(" | ", Scale.Words.Select(w => "\"" + w + "\""));
-                default: return "one of: " + Join(" | ", Choices.Select(c => "\"" + c + "\""));
+                default:
+                    if (Open) return Choices.Count == 0 ? OpenWords : "one of: " + Join(" | ", Choices.Select(c => "\"" + c + "\"")) + " | " + OpenWords;
+                    return "one of: " + Join(" | ", Choices.Select(c => "\"" + c + "\""));
             }
         }
 
@@ -90,8 +105,9 @@ namespace RimWorldLLM.Mind.ToolLoop
             if (Kind == "text") { d["type"] = "string"; d["maxLength"] = MaxLen; d["minLength"] = MinLen; }
             else if (Kind == "int") { d["type"] = "integer"; d["minimum"] = Lo.Value; d["maximum"] = Hi.Value; }
             else if (Kind == "scale") { d["type"] = "string"; d["enum"] = new JArray(Scale.Words.Select(w => (object)w).ToArray()); }
+            else if (Open) d["type"] = "string";
             else { d["type"] = "string"; d["enum"] = new JArray(Choices.Select(w => (object)w).ToArray()); }
-            if (!string.IsNullOrEmpty(Description)) d["description"] = Description;
+            if (!string.IsNullOrEmpty(Description)) d["description"] = Open ? Description + "; " + Hint() : Description;
             return d;
         }
 

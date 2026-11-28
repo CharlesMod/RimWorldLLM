@@ -173,7 +173,7 @@ namespace RimWorldLLM.Tests.Mind
             await Cycle(w);
             var c = fake.Calls[0];
             string system = Rig.System(c), user = Rig.User(c);
-            Assert.StartsWith("=== THE TRADE ===", user);
+            Assert.StartsWith("AVAILABLE NOW: trade_offer, trade, note", user); user = user.Substring(user.IndexOf("=== THE TRADE ==="));
             Assert.True(user.IndexOf("ARRIVED: Bulk goods trader Tomas (P5521)") < user.IndexOf("TRADE: silver"));
             Assert.True(user.IndexOf("TRADERS") < user.IndexOf("FOOD: about 12 days") && user.IndexOf("FOOD: about 12 days") < user.IndexOf("=== YOUR PLAN ===")); Assert.Contains("Get components.", user);
             Assert.Contains("NEEDS:", user); Assert.Contains("STOCK:", user); Assert.Contains("NEVER SELL:", user);
@@ -230,7 +230,7 @@ namespace RimWorldLLM.Tests.Mind
             var be = new StewardFake(new object[] { Call("trade_offer", new { with = "S31" }), Final("done") });
             var o = await RimWorldLLM.Harness.StewardTry.TryOnceAsync(Fed(Orbital), null, "", true, "http://x", mode: "grammar", makeBackend: _ => be, tradeTurn: true);
             Assert.Equal("trade", (string)o.Trace["reason"]); Assert.Equal("trade_offer", (string)o.Trace["executed"][0][0]);
-            Assert.StartsWith("=== THE TRADE ===", (string)o.Messages[1]["content"]);
+            Assert.StartsWith("AVAILABLE NOW: trade_offer, trade", (string)o.Messages[1]["content"]); Assert.Contains("\n=== THE TRADE ===", (string)o.Messages[1]["content"]);
             Assert.Equal(0, RimWorldLLM.Harness.StewardTry.Report(o, new StringWriter()));
         }
     }

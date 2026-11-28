@@ -142,8 +142,7 @@ namespace RimWorldLLM.Mind.RimWorld
         // ---- the tools ------------------------------------------------------------------
         private Param WithParam()
         {
-            string names = string.Join(", ", Partners.Select(kv => kv.Key + " " + Short(DigestJson.G(kv.Value, "name"), 14)));
-            return new Param("with", "enum", "who (" + names + ")", choices: Partners.Keys.ToList());
+            return new Param("with", "enum", "who (a trader's id from TRADERS)", choices: Partners.Keys.ToList());
         }
 
         private List<ToolSpec> BuildTools()

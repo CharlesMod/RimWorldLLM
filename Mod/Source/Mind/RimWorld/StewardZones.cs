@@ -139,10 +139,9 @@ namespace RimWorldLLM.Mind.RimWorld
 
         private ToolSpec FloorTool()
         {
-            string roles = string.Join(", ", Rooms.Select(p => p.Value.Length > 0 ? p.Key + " " + p.Value : p.Key));
             var ps = new List<Param>
             {
-                new Param("room", "enum", "room id: " + roles, choices: Rooms.Select(p => p.Key)),
+                new Param("room", "enum", "room id from ROOMS", choices: Rooms.Select(p => p.Key)),
                 new Param("kind", "enum", "floor to lay, or smooth the rough stone", choices: Floors.Concat(new[] { FloorsPure.Smooth })),
                 WhyParam
             };
@@ -151,11 +150,10 @@ namespace RimWorldLLM.Mind.RimWorld
 
         private ToolSpec AreaTool()
         {
-            string have = Areas.Count > 0 ? string.Join(", ", Areas) + "; " : "";
             var ps = new List<Param>
             {
                 new Param("op", "enum", "assign restricts who to the area", choices: new[] { "add", "remove", "assign" }),
-                new Param("area", "text", "allowed area: " + have + "a new name makes one; home; none frees assigned pawns", maxLen: AreasPure.MaxName),
+                new Param("area", "text", "allowed area: one of the AREAS in the digest; a new name makes one; home; none frees assigned pawns", maxLen: AreasPure.MaxName),
                 new Param("where", "text", "add/remove: room 12 (ROOMS), #4 (a ZONES id) or base", maxLen: 24, required: false),
                 new Param("who", "text", "assign: colonist or animal names, comma list", maxLen: 100, required: false),
                 WhyParam

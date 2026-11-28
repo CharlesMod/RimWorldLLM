@@ -94,7 +94,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal(new[] { "grow", "stockpile", "dump" }, Choices(s, "zone", "kind"));
             Assert.Equal(new[] { "none", "steel" }, Choices(s, "designate", "ore"));
             Assert.Equal(new[] { "4410", "4411" }, Choices(s, "bill", "bench"));
-            Assert.Contains("12 bedroom", Tool(s, "build").Params.First(p => p.Name == "room").Description);
+            Assert.Contains("room id from ROOMS", Tool(s, "build").Params.First(p => p.Name == "room").Description);
         }
 
         [Fact]

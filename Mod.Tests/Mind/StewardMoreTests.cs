@@ -145,7 +145,8 @@ namespace RimWorldLLM.Tests.Mind
             File.WriteAllText(e, "");
             var (w, st, fake) = await Boot(world, new object[] { Done }, cfg: cf => cf.StewardStrategyPath = e);
             await Cycle(w);
-            Assert.DoesNotContain("## Strategy notes", SystemOf(fake));
+            Assert.DoesNotContain("Order of concern", SystemOf(fake));       // no strategy text; only the always-present Biotech note remains
+            Assert.Contains("## Biotech", SystemOf(fake));
         }
 
         // ---------------------------------------------------------------- letters / alerts, wants, slot

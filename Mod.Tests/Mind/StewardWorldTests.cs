@@ -674,7 +674,8 @@ namespace RimWorldLLM.Tests.Mind
             File.WriteAllText(e, "");
             var (w, st, fake) = await Boot(world, new object[] { Done }, cfg: cf => cf.StewardStrategyPath = e);
             await Cycle(w);
-            Assert.DoesNotContain("## Strategy notes", SystemOf(fake));
+            Assert.DoesNotContain("Order of concern", SystemOf(fake));       // no strategy text; only the always-present Biotech note remains
+            Assert.Contains("## Biotech", SystemOf(fake));
         }
 
         [Fact]
@@ -843,7 +844,7 @@ namespace RimWorldLLM.Tests.Mind
             var st = w.D.Steward;
             var digest = w.Fb.Digest;
             var user = typeof(Steward).GetMethod("UserText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Func<string, string> text = alerts => (string)user.Invoke(st, new object[] { "heartbeat", new List<JObject>(), new List<string>(), JObject.Parse("{\"rev\":0}"), "DIGEST", false, alerts });
+            Func<string, string> text = alerts => (string)user.Invoke(st, new object[] { "heartbeat", new List<JObject>(), new List<string>(), JObject.Parse("{\"rev\":0}"), "DIGEST", false, alerts, "" });
             string u = text(st.Kit.PlaybookAlerts(digest));
             Assert.True(u.IndexOf("=== WHY YOU WOKE ===") < u.IndexOf("=== PLAYBOOK ALERTS ===") && u.IndexOf("=== PLAYBOOK ALERTS ===") < u.IndexOf("=== SETTINGS ==="));
             Assert.Contains("[P1 food.emergency]", u);

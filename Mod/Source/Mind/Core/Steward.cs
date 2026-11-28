@@ -61,6 +61,16 @@ namespace RimWorldLLM.Mind
         string StrategyExtra(JObject digest);
     }
 
+    /// <summary>NEW (prefix-stable prompts): a kit that declares a fixed tool list, whatever the digest holds. The system text and the native
+    /// request carry the declared tools; the turn's last message opens with the AVAILABLE NOW line for what is callable.</summary>
+    public interface IStewardCatalogKit
+    {
+        /// <summary>The fixed declared tools of a routine turn (advisor false) or an advisor turn; withLook false leaves the look tool out.</summary>
+        IReadOnlyList<ToolSpec> Declared(bool advisor, bool withLook);
+        /// <summary>The "AVAILABLE NOW: ..." line for the callable tools: their names, then the values of the declared params that depend on the game.</summary>
+        string AvailableNow(IEnumerable<ToolSpec> callable, IReadOnlyList<ToolSpec> declared);
+    }
+
     /// <summary>NEW (the Python's hasattr(kit, "trade_session")): a kit that has the trade turn, a small turn for each new trader.</summary>
     public interface IStewardTradeKit
     {
@@ -695,7 +705,8 @@ namespace RimWorldLLM.Mind
             var session = reason == "combat over" && kit is IStewardCombatKit afterKit ? afterKit.SessionAfterFight(digest, d.Bridge, advisor) : kit.Session(digest, d.Bridge, advisor);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board, advisor)).ToList();
             IVisionLook vision = null;                                     // the look tool: routine turns only, when the setting allows it and the model reads pictures
-            if (reason != "combat started" && reason != "combat over" && kit is IStewardVisionKit vk && await VisionOpenAsync().ConfigureAwait(false))
+            bool visionGate = kit is IStewardVisionKit && await VisionOpenAsync().ConfigureAwait(false);     // the look tool is declared whenever the gate is open
+            if (visionGate && reason != "combat started" && reason != "combat over" && kit is IStewardVisionKit vk)
             {
                 vision = vk.NewLook(digest, d.Bridge, VisionDelay, Look);
                 if (vision != null) tools.Add(vision.Spec);
@@ -704,10 +715,18 @@ namespace RimWorldLLM.Mind
                 ? new HashSet<string>(session.Tools.Select(x => x.Name)) { "note", "add_order", "do_nothing" }
                 : new HashSet<string>(tools.Select(x => x.Name));
             if (vision != null) allowed.Add(vision.ToolName);
+            // the fixed declared list (system text / native request) and the AVAILABLE NOW line for what is callable this turn
+            IReadOnlyList<ToolSpec> declared = null;
+            string available = "";
+            if (kit is IStewardCatalogKit ck)
+            {
+                declared = ck.Declared(advisor, visionGate);
+                available = ck.AvailableNow(tools.Where(x => allowed.Contains(x.Name)), declared);
+            }
             string alerts = "";
             try { alerts = kit.PlaybookAlerts(digest) ?? ""; }
             catch (Exception e) { LlmLog.Warning("rimworldllm.steward", "steward: playbook alerts failed: " + e); }     // the playbook never takes a cycle down
-            string user = UserText(reason, chat, events, board, kit.RenderDigest(digest), advisor, alerts);
+            string user = UserText(reason, chat, events, board, kit.RenderDigest(digest), advisor, alerts, available);
             t["system_chars"] = PyStr.Len(system);
             t["user_chars"] = PyStr.Len(user);
 
@@ -790,6 +809,7 @@ namespace RimWorldLLM.Mind
                 res = await harness.RunAsync(system, user, executor, validator, null, o =>
                 {
                     o.Allowed = allowedSorted;
+                    o.Declared = declared;
                     o.Slot = d.Cfg.NarratorSlot;
                     o.FinalMax = FinalMax;
                     o.MaxTokens = 220;
@@ -871,11 +891,18 @@ namespace RimWorldLLM.Mind
             var session = kit.CombatSession(view, d.Bridge);
             var allowed = new HashSet<string>(kit.CombatTools, StringComparer.Ordinal);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board)).Where(x => allowed.Contains(x.Name)).ToList();
+            IReadOnlyList<ToolSpec> declared = null;
+            string available = "";
+            if (kit is IStewardCatalogKit ck)
+            {
+                declared = ck.Declared(false, false).Where(x => allowed.Contains(x.Name)).ToList();
+                available = ck.AvailableNow(tools, declared) + "\n";
+            }
             JToken planTok = JobsJson.Get(board, "plan");
             string plan = StewardBoard.Plain(Truthy(planTok) ? PyJson.Str(planTok) : "", 300);
             string user = string.Join("\n", new[]
             {
-                "=== COMBAT TURN ===\nA fight is on. Look at the fight below and give the orders it needs now, or call do_nothing if the squad is fine.\n",
+                available + "=== COMBAT TURN ===\nA fight is on. Look at the fight below and give the orders it needs now, or call do_nothing if the squad is fine.\n",
                 "=== YOUR PLAN ===\n" + (plan.Length > 0 ? plan : "none") + "\n",
                 "=== THE FIGHT ===\n" + GameData.DataSection("combat", kit.RenderCombat(view)),
                 "Decide now: call at most a couple of tools, then end with done.",
@@ -914,6 +941,7 @@ namespace RimWorldLLM.Mind
             LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
             {
                 o.Allowed = allowedSorted;
+                o.Declared = declared;
                 o.Slot = d.Cfg.NarratorSlot;
                 o.FinalMax = CombatFinalMax;
                 o.MaxTokens = CombatMaxTokens;
@@ -961,11 +989,18 @@ namespace RimWorldLLM.Mind
             string system = kit.TradeSystemPrompt() + "\n\n" + GameData.DataRule;
             var allowed = new HashSet<string>(kit.TradeTools, StringComparer.Ordinal);
             var tools = session.Tools.Concat(StewardBoard.BoardTools(board)).Where(x => allowed.Contains(x.Name)).ToList();
+            IReadOnlyList<ToolSpec> declared = null;
+            string available = "";
+            if (kit is IStewardCatalogKit ck)
+            {
+                declared = ck.Declared(false, false).Where(x => allowed.Contains(x.Name)).ToList();
+                available = ck.AvailableNow(tools, declared) + "\n";
+            }
             JToken planTok = JobsJson.Get(board, "plan");
             string plan = StewardBoard.Plain(Truthy(planTok) ? PyJson.Str(planTok) : "", 300);
             string user = string.Join("\n", new[]
             {
-                "=== THE TRADE ===\n" + GameData.DataSection("trade", view),
+                available + "=== THE TRADE ===\n" + GameData.DataSection("trade", view),
                 food.Length > 0 ? food + "\n" : "",
                 "=== YOUR PLAN ===\n" + (plan.Length > 0 ? plan : "none") + "\n",
                 "Decide now: look at the offer, make the deal this trader is worth, then end with done.",
@@ -1004,6 +1039,7 @@ namespace RimWorldLLM.Mind
             LoopResult res = await harness.RunAsync(system, user, executor, validator, null, o =>
             {
                 o.Allowed = allowedSorted;
+                o.Declared = declared;
                 o.Slot = d.Cfg.NarratorSlot;
                 o.FinalMax = TradeFinalMax;
                 o.MaxTokens = TradeMaxTokens;
@@ -1073,10 +1109,11 @@ namespace RimWorldLLM.Mind
             }
         }
 
-        private string UserText(string reason, List<JObject> chat, List<string> events, JObject board, string digestText, bool advisor, string alerts = "")
+        private string UserText(string reason, List<JObject> chat, List<string> events, JObject board, string digestText, bool advisor, string alerts = "", string available = "")
         {
             var st = JobsJson.Get(Vv, "settings") as JObject ?? new JObject();
             var parts = new List<string>();
+            if (available.Length > 0) parts.Add(available + "\n");
             if (advisor)
                 parts.Add("=== MODE ===\nThe narrator is not playing: you are only an advisor. Act only on what the player's message explicitly asks, "
                           + "at most one task, and say what you did.\n");

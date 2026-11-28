@@ -69,7 +69,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public const int ChildAge = 13;
         public const string ChildRefusal = "children stay out of fights";
 
-        public StewardSession(JObject digest, IBridge bridge, bool advisor, bool afterFight = false)
+        public StewardSession(JObject digest, IBridge bridge, bool advisor, bool afterFight = false, bool catalog = false)
         {
             Digest = digest ?? new JObject(); Bridge = bridge; Advisor = advisor;
             Pawns = StewardDigest.PawnNames(Digest);
@@ -105,7 +105,7 @@ namespace RimWorldLLM.Mind.RimWorld
             Trade = new TradeKit(Digest);                        // trade_offer, trade: only with a trade block (caravans are off)
             Inspect = new InspectKit(Digest);
             var tools = BuildTools();
-            if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
+            if (!catalog && Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
             Tools = tools.Concat(Build.Tools).Concat(Place.Tools).Concat(Zones.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Cmd.Tools).Concat(Inspect.Tools).ToList();
             Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Place.Names.Contains(n) || Zones.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n) || Cmd.Names.Contains(n)), StringComparer.Ordinal);
@@ -555,9 +555,9 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public string DefaultStrategy() => StewardResources.Text(StewardResources.StrategyName);
 
-        /// <summary>Notes that only matter in some games: the Biotech section when the digest has a bio block.</summary>
-        public string StrategyExtra(JObject digest)
-            => DigestJson.G(digest, "bio") is JObject ? StewardResources.Text(StewardResources.BiotechName).Trim() : "";
+        /// <summary>The Biotech section, always: the bio tools are always declared, and a fixed system text keeps the engine's prompt cache
+        /// (the section is a few hundred characters; the digest's bio block decides only whether the tools are callable).</summary>
+        public string StrategyExtra(JObject digest) => StewardResources.Text(StewardResources.BiotechName).Trim();
 
         /// <summary>The "=== PLAYBOOK ALERTS ===" block: playbook rules that fire on this digest's facts ("" when none).</summary>
         public string PlaybookAlerts(JObject digest) => StewardRules.AlertsSection(digest);

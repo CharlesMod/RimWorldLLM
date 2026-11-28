@@ -105,6 +105,11 @@ namespace RimWorldLLM.Mind.ToolLoop
         /// <summary>NEW (the look tool): called after each step's tool results are in the history; a non-null image content part is attached
         /// to the next request (see ImageParts.Attach) and replaces any earlier one. Null (the default): bodies are byte for byte as before.</summary>
         public Func<JObject> TakeAttachment;
+        /// <summary>NEW (prefix-stable prompts): the tools to DECLARE to the model (in the system text, or in the native request), a fixed list
+        /// whatever the turn holds. The callable tools are the ones passed to the loop (filtered by Allowed): the grammar, the checks and the
+        /// executor use those only. A call to a declared tool that is not callable now is rejected with the callable names. Null: declare the
+        /// callable tools, as before.</summary>
+        public IReadOnlyList<ToolSpec> Declared;
         /// <summary>time.monotonic() in seconds; injectable for tests.</summary>
         public Func<double> Clock = AwayGate.MonotonicS;
 
@@ -170,11 +175,13 @@ namespace RimWorldLLM.Mind.ToolLoop
             double deadline = tStart + o.TimeBudgetS;
             var byName = new Dictionary<string, ToolSpec>();
             foreach (var t in tools) byName[t.Name] = t;
+            HashSet<string> declaredNames = o.Declared == null ? null : new HashSet<string>(o.Declared.Select(t => t.Name).Concat(byName.Keys));
             bool tolerant = protocol != "grammar";
-            JArray nativeTools = protocol == "native" ? new JArray(tools.Select(t => (object)t.OpenAiTool()).ToArray()) : null;
+            IReadOnlyList<ToolSpec> declared = o.Declared ?? tools;
+            JArray nativeTools = protocol == "native" ? new JArray(declared.Select(t => (object)t.OpenAiTool()).ToArray()) : null;
             var hist = new List<JObject>();
             if (protocol == "native") { hist.Add(Msg("system", system)); hist.Add(Msg("user", user)); }
-            else { hist.Add(Msg("system", Prompt.RenderSystem(system, tools))); hist.Add(Msg("user", user)); }
+            else { hist.Add(Msg("system", Prompt.RenderSystem(system, declared))); hist.Add(Msg("user", user)); }
             var seen = new HashSet<string>();
             int stepsDone = 0;
             string reason = "";
@@ -219,7 +226,7 @@ namespace RimWorldLLM.Mind.ToolLoop
                         {
                             tr.Raw = reply.Text; tr.RawCalls = reply.ToolCalls;
                             var (actions, err, implicit_) = await Interpret(reply, protocol, byName, tolerant, o.FinalMax, validator, seen,
-                                                                           res.Executed.Count == 0 && stepsDone == 0, res.Executed.Count > 0, closing).ConfigureAwait(false);
+                                                                           res.Executed.Count == 0 && stepsDone == 0, res.Executed.Count > 0, closing, declaredNames).ConfigureAwait(false);
                             var notes = actions.Select(a => a.Note).Where(n => !string.IsNullOrEmpty(n)).Distinct().ToList();
                             notes.Sort(StringComparer.Ordinal);
                             tr.Salvaged = string.Join("; ", notes);
@@ -277,7 +284,8 @@ namespace RimWorldLLM.Mind.ToolLoop
         private static JObject Msg(string role, string content) => new JObject { ["role"] = role, ["content"] = content };
 
         private static async Task<(List<Item> actions, string err, bool implicit_)> Interpret(Reply reply, string protocol, Dictionary<string, ToolSpec> byName,
-            bool tolerant, int finalMax, Func<string, JObject, Task<string>> validator, HashSet<string> seen, bool firstStep, bool hadCalls, bool closing)
+            bool tolerant, int finalMax, Func<string, JObject, Task<string>> validator, HashSet<string> seen, bool firstStep, bool hadCalls, bool closing,
+            HashSet<string> declaredNames = null)
         {
             var steps = new List<(RawStep step, string note)>();
             if (protocol == "native" && reply.ToolCalls.Count > 0)
@@ -304,12 +312,12 @@ namespace RimWorldLLM.Mind.ToolLoop
                         if (hadCalls) return (new List<Item>(), "", true);
                         return (new List<Item>(), "the reply was empty", false);
                     }
-                    var (s, _) = StepParser.ParseText(text, new HashSet<string>(byName.Keys));
+                    var (s, _) = StepParser.ParseText(text, declaredNames ?? new HashSet<string>(byName.Keys));
                     steps.Add(s != null ? (s, s.Salvaged) : (new RawStep("final") { Text = text }, ""));
                 }
                 else
                 {
-                    var (s, why) = StepParser.ParseText(text, new HashSet<string>(byName.Keys));
+                    var (s, why) = StepParser.ParseText(text, declaredNames ?? new HashSet<string>(byName.Keys));
                     if (s == null) return (new List<Item>(), why, false);
                     steps.Add((s, s.Salvaged));
                 }
@@ -328,7 +336,9 @@ namespace RimWorldLLM.Mind.ToolLoop
                 else
                 {
                     if (closing) return (new List<Item>(), "no more tool calls are allowed now; reply with a final line or done", false);
-                    if (!byName.TryGetValue(s.Tool, out ToolSpec spec))
+                    if (!byName.TryGetValue(s.Tool, out ToolSpec spec) && declaredNames != null && declaredNames.Contains(s.Tool))
+                        return (new List<Item>(), "the tool \"" + s.Tool + "\" is not available now; the tools you can call now are: " + string.Join(", ", byName.Keys), false);
+                    if (spec == null)
                         return (new List<Item>(), "unknown tool \"" + s.Tool + "\"; the tools are: " + string.Join(", ", byName.Keys), false);
                     var (values, err) = spec.CheckArgs(s.Args, tolerant);
                     if (err != null) return (new List<Item>(), err, false);

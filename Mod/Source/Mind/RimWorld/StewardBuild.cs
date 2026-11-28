@@ -158,8 +158,7 @@ namespace RimWorldLLM.Mind.RimWorld
         // ---- the tools ------------------------------------------------------------------
         private Param RoomsParam(string desc)
         {
-            string roles = string.Join(", ", Rooms.Select(p => p.Value.Length > 0 ? p.Key + " " + p.Value : p.Key));
-            return Opt("room", desc + " (room id: " + roles + ")", Rooms.Select(p => p.Key));
+            return Opt("room", desc + " (room id from ROOMS)", Rooms.Select(p => p.Key));
         }
 
         private List<ToolSpec> BuildTools()
@@ -202,11 +201,10 @@ namespace RimWorldLLM.Mind.RimWorld
 
             if (Benches.Count > 0)
             {
-                string names = string.Join(", ", Benches.Select(p => p.Value.Length > 0 ? p.Key + " " + p.Value : p.Key));
                 outl.Add(new ToolSpec("bill", "Add, remove, suspend or resume a workbench bill.", new[]
                 {
                     new Param("op", "enum", "what to do", choices: BillOps),
-                    new Param("bench", "enum", "the workbench id (" + names + ")", choices: Benches.Select(p => p.Key)),
+                    new Param("bench", "enum", "the workbench id (a BENCH id from the digest)", choices: Benches.Select(p => p.Key)),
                     new Param("recipe", "text", "the bench's recipe", maxLen: 60),
                     new Param("count", "int", "add: make this many, 0 if unused", lo: 0, hi: 99, required: false),
                     new Param("until", "int", "add: keep this many in stock, 0 if unused", lo: 0, hi: 999, required: false),

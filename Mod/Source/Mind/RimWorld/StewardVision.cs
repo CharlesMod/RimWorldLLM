@@ -29,6 +29,9 @@ namespace RimWorldLLM.Mind.RimWorld
 
         public ToolSpec Spec { get; } = Make();
 
+        /// <summary>The look tool as declared to the model (the catalog; no turn needed).</summary>
+        public static ToolSpec CatalogSpec() => Make();
+
         private static ToolSpec Make() => new ToolSpec(Name,
             "Look at a picture of the colony from above, north up (not an action). base = the whole base for layout; wide = the surroundings for fields, ore, "
             + "approaches and raids; close = a few cells around one target (target: room:<id>, thing:<id>, pawn:<id>, cell:x,z, dir:<side>:<cells>) for doors, "
