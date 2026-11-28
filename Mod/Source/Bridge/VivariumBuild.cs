@@ -97,7 +97,7 @@ namespace RimWorldLLM.Bridge
     }
 
     /// <summary>Something the narrator put into the world, so the player can take it back.
-    /// Kinds: blueprint (Def = thing defName, Cells = root cells), designation (Def = designation defName,
+    /// Kinds: blueprint (Def = thing defName, Cells = root cells), floor (Def = terrain defName, Cells = laid cells; costs blueprints), designation (Def = designation defName,
     /// Things and/or Cells), zone (Id = a zone the narrator made), zone_cells (Id = zone, Cells it added),
     /// area_cells (Def = area label, Cells it set), bill (Id = bench thing id, Sub = the bill's load id).</summary>
     public sealed class NarratorMark
@@ -106,6 +106,7 @@ namespace RimWorldLLM.Bridge
         public int Map;            // Map.uniqueID
         public string Def;
         public int Id, Sub;
+        public string Extra;       // zone_settings: the filter change as "+turnedOn|-turnedOff" def names
         public List<int> Things = new List<int>();
         public List<int> Cells = new List<int>(); // flat x0, z0, x1, z1, ...
 
@@ -118,6 +119,7 @@ namespace RimWorldLLM.Bridge
             if (!string.IsNullOrEmpty(Def)) o["def"] = Def;
             if (Id != 0) o["id"] = Id;
             if (Sub != 0) o["sub"] = Sub;
+            if (!string.IsNullOrEmpty(Extra)) o["extra"] = Extra;
             if (Things.Count > 0) o["things"] = new JArray(Things);
             if (Cells.Count > 0) o["cells"] = new JArray(Cells);
             return o;
@@ -129,7 +131,7 @@ namespace RimWorldLLM.Bridge
             var m = new NarratorMark
             {
                 Kind = VivJson.Str(o["kind"]), Map = VivJson.Int(o["map"]), Def = VivJson.Str(o["def"], null),
-                Id = VivJson.Int(o["id"]), Sub = VivJson.Int(o["sub"])
+                Id = VivJson.Int(o["id"]), Sub = VivJson.Int(o["sub"]), Extra = VivJson.Str(o["extra"], null)
             };
             if (string.IsNullOrEmpty(m.Kind)) return null;
             if (o["things"] is JArray t) foreach (var x in t) if (x.Type == JTokenType.Integer) m.Things.Add(x.Value<int>());
@@ -249,7 +251,7 @@ namespace RimWorldLLM.Bridge
                 Blueprints = Blueprints, Cells = Cells, Designations = Designations, Bills = Bills, Orders = Orders, _start = _start };
         }
 
-        public static int CostBlueprints(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "blueprint") n += m.CellCount; return n; }
+        public static int CostBlueprints(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "blueprint" || m.Kind == "floor") n += m.CellCount; return n; }
         public static int CostCells(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "zone" || m.Kind == "zone_cells" || m.Kind == "area_cells") n += m.CellCount; return n; }
         public static int CostDesignations(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "designation") n += m.Things.Count + m.CellCount; return n; }
         public static int CostBills(IEnumerable<NarratorMark> ms) { int n = 0; foreach (var m in ms) if (m.Kind == "bill") n++; return n; }

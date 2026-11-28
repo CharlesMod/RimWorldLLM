@@ -515,6 +515,8 @@ namespace RimWorldLLM.Mind.RimWorld
                 ? "home (" + Num(DigestJson.G(home, "x")) + "," + Num(DigestJson.G(home, "z")) + ")" : "home unknown");
             var miss = Words(DigestJson.G(b, "missing"), 8);
             head += "; missing: " + (miss.Count > 0 ? string.Join(", ", miss) : "nothing");
+            var und = DigestJson.G(b, "undoable");
+            if (und != null && DigestJson.IsNumberish(und) && DigestJson.PyInt(und) > 0) head += "; undoable " + Num(und);
             outl.Add(head);
             if (bl.KeepBase)   // BASE is kept at every level but the last
             {
@@ -543,7 +545,11 @@ namespace RimWorldLLM.Mind.RimWorld
                     string kind = CleanLabel(DigestJson.G(z, "kind"));
                     JToken pl = DigestJson.G(z, "plant"), pr = DigestJson.G(z, "preset");
                     string what = CleanLabel(DigestJson.Truthy(pl) ? pl : DigestJson.Truthy(pr) ? pr : null);
-                    zs.Add(("#" + Num(DigestJson.G(z, "id")) + " " + kind + " " + what + " " + Num(DigestJson.G(z, "cells")) + " cells").Replace("  ", " "));
+                    // a hydroponics entry has no id and counts basins; a stockpile's priority shows when it is not normal
+                    string idp = kind != "hydroponics" ? "#" + Num(DigestJson.G(z, "id")) + " " : "";
+                    string prio = CleanLabel(DigestJson.G(z, "priority"));
+                    prio = prio.Length > 0 && prio != "normal" ? " " + prio : "";
+                    zs.Add((idp + kind + " " + what + prio + " " + Num(DigestJson.G(z, "cells")) + (kind == "hydroponics" ? " basins" : " cells")).Replace("  ", " "));
                 }
                 outl.Add("ZONES: " + string.Join("; ", zs));
             }
@@ -551,6 +557,13 @@ namespace RimWorldLLM.Mind.RimWorld
             if (cb.Count > 0) outl.Add("CAN BUILD: " + string.Join(", ", cb));
             var pls = Words(DigestJson.G(b, "plants"), bl.Plants);
             if (pls.Count > 0) outl.Add("PLANTS: " + string.Join(", ", pls));
+            var ars = Objs(DigestJson.G(b, "areas"), bl.Zones);
+            var ans = Words(DigestJson.G(b, "animals"), Math.Min(bl.Plants, 8));
+            if (ars.Count > 0 || ans.Count > 0)
+                outl.Add("AREAS: " + (ars.Count > 0 ? string.Join("; ", ars.Select(a => CleanLabel(DigestJson.G(a, "name")) + " " + Num(DigestJson.G(a, "cells")))) : "none")
+                    + (ans.Count > 0 ? "; animals: " + string.Join(", ", ans) : ""));
+            var fls = Words(DigestJson.G(b, "floors"), Math.Min(bl.Plants, 6));
+            if (fls.Count > 0) outl.Add("FLOORS: " + string.Join(", ", fls));
             var stuff = Objs(DigestJson.G(b, "stuff"), bl.Stuff);
             if (stuff.Count > 0)
                 outl.Add("STUFF: " + string.Join(", ", stuff.Select(s => CleanLabel(DigestJson.G(s, "stuff")) + " " + Num(DigestJson.G(s, "count")))));

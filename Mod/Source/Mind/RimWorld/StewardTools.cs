@@ -50,6 +50,8 @@ namespace RimWorldLLM.Mind.RimWorld
         /// <summary>The builder tools; they exist only when the digest has a build block.</summary>
         public readonly BuildKit Build;
         public readonly PlaceKit Place;
+        /// <summary>The rezone tool; it exists only when the digest lists a zone or a hydroponics basin.</summary>
+        public readonly ZonesKit Zones;
         /// <summary>The colonists the digest marks incapable of violence (they stay out of "draft all").</summary>
         public readonly HashSet<string> CannotFight = new HashSet<string>(StringComparer.Ordinal);
         /// <summary>The combat tools (squad, defend): squad needs a combat view, defend also a build block.</summary>
@@ -95,6 +97,7 @@ namespace RimWorldLLM.Mind.RimWorld
             Place = new PlaceKit(Digest);
             Build = new BuildKit(Digest);                        // the builder tools exist only when the digest has a build block
             Cmd = new CommandKit(Digest);
+            Zones = new ZonesKit(Digest);
             Bio = new BioKit(Digest);                            // the Biotech tools exist only when the digest has a bio block
             foreach (var p in DigestJson.Items(DigestJson.G(Digest, "pawns")))
                 if (p is JObject ao && DigestJson.IsNumberish(DigestJson.G(ao, "age"))) Ages[GameData.Name(DigestJson.G(ao, "name"))] = DigestJson.PyFloat(DigestJson.G(ao, "age"));
@@ -104,8 +107,8 @@ namespace RimWorldLLM.Mind.RimWorld
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Place.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Cmd.Tools).Concat(Inspect.Tools).ToList();
-            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Place.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n) || Cmd.Names.Contains(n)), StringComparer.Ordinal);
+            Tools = tools.Concat(Build.Tools).Concat(Place.Tools).Concat(Zones.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Cmd.Tools).Concat(Inspect.Tools).ToList();
+            Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Place.Names.Contains(n) || Zones.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n) || Cmd.Names.Contains(n)), StringComparer.Ordinal);
         }
 
         /// <summary>"Violent" in (p.get("incapable") or []): a list's item, a string's substring, a dict's key.</summary>
@@ -213,6 +216,7 @@ namespace RimWorldLLM.Mind.RimWorld
                 }
             }
             if (Array.IndexOf(InspectKit.Names, tool) >= 0) return new Outcome(await Inspect.RunAsync(tool, v, Bridge).ConfigureAwait(false));
+            if (tool == "undo" && !Zones.TakeUndo()) return new Outcome(new JObject { ["refused"] = ZonesKit.UndoRefusal });   // one undo a turn
             string verb;
             JObject body;
             try { (verb, body) = Body(tool, v); }
@@ -450,7 +454,8 @@ namespace RimWorldLLM.Mind.RimWorld
                     if (Combat.Names.Contains(tool)) return Combat.Body(tool, v);
                     if (Trade.Acting.Contains(tool)) return Trade.Body(tool, v);
                     if (Bio.Names.Contains(tool)) return Bio.Body(tool, v);
-            if (Cmd.Names.Contains(tool)) return Cmd.Body(tool, v);
+                    if (Cmd.Names.Contains(tool)) return Cmd.Body(tool, v);
+                    if (Zones.Names.Contains(tool)) return Zones.Body(tool, v);
                     throw new PyValueError("unknown tool " + tool);
             }
         }

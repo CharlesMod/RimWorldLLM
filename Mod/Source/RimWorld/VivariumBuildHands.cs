@@ -619,15 +619,9 @@ namespace RimWorldLLM
 
                 if (a.Kind == "grow")
                 {
-                    var plant = DefDatabase<ThingDef>.GetNamedSilentFail(BuildPure.PlantDef(a.Plant));
-                    if (plant == null || plant.plant == null)
-                        return HandResult.No(BuildHelpers.Unknown("plant", a.Plant, BuildPure.PlantAliases.Keys));
-                    if (plant.plant.sowTags == null || !plant.plant.sowTags.Contains("Ground")) return HandResult.No((plant.label ?? plant.defName) + " can't be sown in a field");
-                    if (plant.plant.sowResearchPrerequisites != null)
-                    {
-                        var miss = plant.plant.sowResearchPrerequisites.Where(r => !r.IsFinished).ToList();
-                        if (miss.Count > 0) return HandResult.No((plant.label ?? plant.defName) + " needs research first (" + string.Join(", ", miss.Select(r => r.LabelCap.ToString())) + ")");
-                    }
+                    string cropErr;
+                    var plant = ResolveCropDef(a.Plant, false, out cropErr);   // alias, label or defName; refuses with the research or soil reason
+                    if (plant == null) return HandResult.No(cropErr);
                     if (w * h > left.Cells) return HandResult.No("that field is " + (w * h) + " cells but only " + left.Cells + " are left this cycle");
                     Func<IntVec3, bool> ok = c =>
                     {
@@ -1093,7 +1087,7 @@ namespace RimWorldLLM
         {
             try
             {
-                int cancelled = 0, desigs = 0, zones = 0, zoneCells = 0, areaCells = 0, bills = 0, built = 0, gone = 0;
+                int cancelled = 0, desigs = 0, zones = 0, zoneCells = 0, areaCells = 0, bills = 0, built = 0, gone = 0, restored = 0, pens = 0;
                 foreach (var mk in marks.Reverse())
                 {
                     var map = Find.Maps.FirstOrDefault(m => m.uniqueID == mk.Map);
@@ -1115,6 +1109,22 @@ namespace RimWorldLLM
                                     else if (t is Building) finished = true;
                                 }
                                 if (did) cancelled++; else if (finished) built++; else gone++;
+                            }
+                            break;
+                        case "floor":
+                            foreach (var p in BuildHelpers.CellPairs(mk))
+                            {
+                                var c = new IntVec3(p[0], 0, p[1]);
+                                if (!c.InBounds(map)) { gone++; continue; }
+                                bool did = false;
+                                foreach (var t in c.GetThingList(map).ToList())
+                                {
+                                    if (t.Faction != Faction.OfPlayer || !(t is Blueprint || t is Frame)) continue;
+                                    if (t.def.entityDefToBuild == null || t.def.entityDefToBuild.defName != mk.Def) continue;
+                                    t.Destroy(DestroyMode.Cancel); did = true;
+                                }
+                                var laid = map.terrainGrid.TerrainAt(c);
+                                if (did) cancelled++; else if (laid != null && laid.defName == mk.Def) built++; else gone++;
                             }
                             break;
                         case "designation":
@@ -1162,6 +1172,8 @@ namespace RimWorldLLM
                             }
                             break;
                         }
+                        case "zone_settings": if (UndoZoneSettings(mk, map)) restored++; else gone++; break;
+                        case "area_restrict": if (UndoAreaRestrict(mk, map)) pens++; else gone++; break;
                         case "bill":
                         {
                             var patient = map.mapPawns.AllPawnsSpawned.FirstOrDefault(x => x.thingIDNumber == mk.Id);
@@ -1180,7 +1192,10 @@ namespace RimWorldLLM
                         }
                     }
                 }
-                return HandResult.Done(BuildHelpers.UndoNote(cancelled, desigs, zones, zoneCells, areaCells, bills, built, gone));
+                string undone = BuildHelpers.UndoNote(cancelled, desigs, zones, zoneCells, areaCells, bills, built, gone);
+                if (restored > 0) undone = (undone == "nothing left to undo" ? "" : undone + ", ") + ZonesPure.RestoredNote(restored);
+                if (pens > 0) undone = (undone == "nothing left to undo" ? "" : undone + ", ") + AreasPure.RestrictUndoNote(pens);
+                return HandResult.Done(undone);
             }
             catch (Exception e) { return Failed(e); }
         }

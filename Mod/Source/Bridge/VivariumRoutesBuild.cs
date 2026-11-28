@@ -50,7 +50,7 @@ namespace RimWorldLLM.Bridge
 
         /// <summary>Takes back the narrator's last n world changes (game thread). Used by POST /vivarium/undo, the chat's
         /// "/undo" and the settings button. Refuses when there is nothing to undo; logs the undo as an action.</summary>
-        public static HandResult UndoLast(Vivarium v, IVivariumHands h, int n, int tick, string by)
+        public static HandResult UndoLast(Vivarium v, IVivariumHands h, int n, int tick, string by, bool log = true)
         {
             if (v.Ledger.Count == 0) return HandResult.No("the narrator has placed nothing that can be undone");
             var popped = v.Ledger.PopLast(Math.Max(1, n));
@@ -67,7 +67,7 @@ namespace RimWorldLLM.Bridge
             var notes = new List<string>();
             foreach (var e in popped) notes.Add(e.Note);
             string note = "undid " + popped.Count + " narrator action" + (popped.Count == 1 ? "" : "s") + (string.IsNullOrEmpty(r.Note) ? "" : ": " + r.Note);
-            v.Actions.Add("undo", note, tick, by);
+            if (log) v.Actions.Add("undo", note, tick, by);   // the narrator's /act/undo logs through the Act pipeline instead
             var extra = r.Extra ?? new JObject();
             extra["undone"] = new JArray(notes.ToArray());
             extra["undoable"] = v.Ledger.Count;
@@ -247,6 +247,7 @@ namespace RimWorldLLM.Bridge
         // ---------------------------------------------------------------- /act/area
         static Plan Area(JObject b)
         {
+            if (b["where"] != null || b["who"] != null || (b["op"] != null && b["op"].Type == JTokenType.String && (string)b["op"] == "assign")) return AreaWordsPlan(b);   // the word form (VivariumRoutesAreas.cs)
             var a = new AreaArgs { Kind = OneOf(b, "kind", AreaKinds), Op = OneOf(b, "op", AreaOps) };
             a.Name = OptStr(b, "name", 40);
             if (a.Kind == "allowed" && a.Name == null) throw new ArgError("an allowed area needs its name");
