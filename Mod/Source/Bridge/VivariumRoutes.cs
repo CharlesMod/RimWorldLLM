@@ -50,6 +50,7 @@ namespace RimWorldLLM.Bridge
             RegisterCombat(router, vivarium, hands);
             RegisterZones(router, vivarium, hands);
             RegisterFloors(router, vivarium, hands);
+            RegisterUndo(router, vivarium, hands);
         }
 
         static ApiResult NoGame() { return ApiResult.Fail("no_game", "no game is loaded"); }

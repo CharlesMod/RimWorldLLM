@@ -1082,7 +1082,7 @@ namespace RimWorldLLM
         {
             try
             {
-                int cancelled = 0, desigs = 0, zones = 0, zoneCells = 0, areaCells = 0, bills = 0, built = 0, gone = 0, restored = 0;
+                int cancelled = 0, desigs = 0, zones = 0, zoneCells = 0, areaCells = 0, bills = 0, built = 0, gone = 0, restored = 0, pens = 0;
                 foreach (var mk in marks.Reverse())
                 {
                     var map = Find.Maps.FirstOrDefault(m => m.uniqueID == mk.Map);
@@ -1168,6 +1168,7 @@ namespace RimWorldLLM
                             break;
                         }
                         case "zone_settings": if (UndoZoneSettings(mk, map)) restored++; else gone++; break;
+                        case "area_restrict": if (UndoAreaRestrict(mk, map)) pens++; else gone++; break;
                         case "bill":
                         {
                             Map bm;
@@ -1181,6 +1182,7 @@ namespace RimWorldLLM
                 }
                 string undone = BuildHelpers.UndoNote(cancelled, desigs, zones, zoneCells, areaCells, bills, built, gone);
                 if (restored > 0) undone = (undone == "nothing left to undo" ? "" : undone + ", ") + ZonesPure.RestoredNote(restored);
+                if (pens > 0) undone = (undone == "nothing left to undo" ? "" : undone + ", ") + AreasPure.RestrictUndoNote(pens);
                 return HandResult.Done(undone);
             }
             catch (Exception e) { return Failed(e); }

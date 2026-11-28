@@ -11,7 +11,7 @@ namespace RimWorldLLM
     /// Vanilla reads only, nothing the player could not see in the UI. Each part is independent and dropped if it throws.</summary>
     public static class VivariumBuildView
     {
-        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 14, MaxFloors = 8;
+        const int MaxRooms = 12, MaxBenches = 8, MaxBills = 5, MaxRecipes = 8, MaxZones = 10, MaxStuff = 8, MaxPlants = 14, MaxFloors = 8, MaxAreas = 6, MaxAnimals = 8;
         static readonly HashSet<string> logged = new HashSet<string>();
 
         // The BASE line is worked out from the live map, then kept until the colony's buildings, blueprints or the hour change
@@ -60,6 +60,9 @@ namespace RimWorldLLM
             Part(o, "stuff", () => Stuff(map));
             Part(o, "plants", () => Plants(map));
             Part(o, "floors", () => new JArray(RimWorldLLM.Bridge.FloorsPure.DigestWords(VivariumHands.Floors(), VivariumHands.StockOfMap(map), MaxFloors)));
+            Part(o, "areas", () => Areas(map));
+            Part(o, "animals", () => Animals(map));
+            Part(o, "undoable", () => { var st = VivariumGame.State; return st == null ? null : new JValue(st.Ledger.Count); });
             if (home != null) Part(o, "ores", () => Ores(map, home));
             if (home != null) Part(o, "loose", () => Loose(map, home));
             return o;
@@ -238,6 +241,27 @@ namespace RimWorldLLM
                 arr.Add(ho);
             }
             return arr;
+        }
+
+        /// <summary>The allowed areas by name and cell count (the area tool's names).</summary>
+        static JToken Areas(Map map)
+        {
+            var arr = new JArray();
+            foreach (var a in map.areaManager.AllAreas.OfType<Area_Allowed>())
+            {
+                if (arr.Count >= MaxAreas) break;
+                arr.Add(new JObject { ["name"] = a.Label, ["cells"] = a.TrueCount });
+            }
+            return arr;
+        }
+
+        /// <summary>The names of the colony's animals (the area tool can restrict them).</summary>
+        static JToken Animals(Map map)
+        {
+            var names = new List<string>();
+            foreach (var p in map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+                if (p.RaceProps.Animal && !p.Dead && p.playerSettings != null && !names.Contains(p.LabelShort)) names.Add(p.LabelShort);
+            return new JArray(names.Take(MaxAnimals));
         }
 
         internal static string Preset(Zone_Stockpile s)

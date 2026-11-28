@@ -515,6 +515,8 @@ namespace RimWorldLLM.Mind.RimWorld
                 ? "home (" + Num(DigestJson.G(home, "x")) + "," + Num(DigestJson.G(home, "z")) + ")" : "home unknown");
             var miss = Words(DigestJson.G(b, "missing"), 8);
             head += "; missing: " + (miss.Count > 0 ? string.Join(", ", miss) : "nothing");
+            var und = DigestJson.G(b, "undoable");
+            if (und != null && DigestJson.IsNumberish(und) && DigestJson.PyInt(und) > 0) head += "; undoable " + Num(und);
             outl.Add(head);
             if (bl.KeepBase)   // BASE is kept at every level but the last
             {
@@ -555,6 +557,11 @@ namespace RimWorldLLM.Mind.RimWorld
             if (cb.Count > 0) outl.Add("CAN BUILD: " + string.Join(", ", cb));
             var pls = Words(DigestJson.G(b, "plants"), bl.Plants);
             if (pls.Count > 0) outl.Add("PLANTS: " + string.Join(", ", pls));
+            var ars = Objs(DigestJson.G(b, "areas"), bl.Zones);
+            var ans = Words(DigestJson.G(b, "animals"), Math.Min(bl.Plants, 8));
+            if (ars.Count > 0 || ans.Count > 0)
+                outl.Add("AREAS: " + (ars.Count > 0 ? string.Join("; ", ars.Select(a => CleanLabel(DigestJson.G(a, "name")) + " " + Num(DigestJson.G(a, "cells")))) : "none")
+                    + (ans.Count > 0 ? "; animals: " + string.Join(", ", ans) : ""));
             var fls = Words(DigestJson.G(b, "floors"), Math.Min(bl.Plants, 6));
             if (fls.Count > 0) outl.Add("FLOORS: " + string.Join(", ", fls));
             var stuff = Objs(DigestJson.G(b, "stuff"), bl.Stuff);

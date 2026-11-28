@@ -207,6 +207,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     return new Outcome(new JObject { ["error"] = PyStr.Head((e.Code + ": " + e.Detail).Trim(':', ' '), 160) });
                 }
             }
+            if (tool == "undo" && !Zones.TakeUndo()) return new Outcome(new JObject { ["refused"] = ZonesKit.UndoRefusal });   // one undo a turn
             string verb;
             JObject body;
             try { (verb, body) = Body(tool, v); }

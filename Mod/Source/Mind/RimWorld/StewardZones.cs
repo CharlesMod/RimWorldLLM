@@ -18,8 +18,7 @@ namespace RimWorldLLM.Mind.RimWorld
         public const string None = "none";
         public const int WhyMax = 80, MaxZones = 10, MaxRooms = 12;
         public const string Hydro = "hydroponics";
-        private static readonly Param WhyParam = new Param("why", "text", "a brief reason in your own words, starting with since or because (for example: since meals are running low); " +
-            "it is shown to the player beside what you did", maxLen: WhyMax, required: false, sameCall: true);
+        private static readonly Param WhyParam = new Param("why", "text", "brief reason, starting with since or because (shown to the player)", maxLen: WhyMax, required: false, sameCall: true);
 
         public readonly bool Has;
         /// <summary>The zones of the digest's ZONES line: "#id" (or hydroponics) -> kind.</summary>
@@ -29,6 +28,14 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly List<KeyValuePair<string, string>> Rooms = new List<KeyValuePair<string, string>>();
         public readonly List<string> Floors = new List<string>();
         public readonly bool HasFloors;
+        /// <summary>The area tool: the digest's allowed areas and animals; it needs a build block with a room or a zone.</summary>
+        public readonly List<string> Areas = new List<string>();
+        public readonly List<string> Animals = new List<string>();
+        public readonly bool HasAreas;
+        /// <summary>The undo tool: how many placements the digest says can be taken back; it exists when that is above 0.</summary>
+        public readonly int Undoable;
+        private readonly Dictionary<string, int> _pawns;
+        private bool _undid;
         public readonly List<ToolSpec> Tools;
         public readonly HashSet<string> Names;
 
@@ -84,9 +91,30 @@ namespace RimWorldLLM.Mind.RimWorld
                     }
             }
             HasFloors = Rooms.Count > 0 && Floors.Count > 0;
+            _pawns = StewardDigest.PawnNames(digest ?? new JObject());
+            if (b != null)
+            {
+                if (DigestJson.G(b, "areas") is JArray aa)
+                    foreach (var x in aa.OfType<JObject>())
+                    {
+                        string w = PyStr.Strip(GameData.Clean(PyJson.Str(DigestJson.G(x, "name")), "build", AreasPure.MaxName));
+                        if (w.Length > 0 && w.ToLowerInvariant() != None && w.ToLowerInvariant() != AreasPure.HomeWord && !Areas.Contains(w, StringComparer.OrdinalIgnoreCase)) Areas.Add(w);
+                    }
+                if (DigestJson.G(b, "animals") is JArray na)
+                    foreach (var x in na)
+                    {
+                        string w = PyStr.Strip(GameData.Clean(PyJson.Str(x), "name", 30));
+                        if (w.Length > 0 && !Animals.Contains(w, StringComparer.OrdinalIgnoreCase)) Animals.Add(w);
+                    }
+                JToken ut = DigestJson.G(b, "undoable");
+                if (ut != null && DigestJson.IsNumberish(ut)) Undoable = (int)Math.Max(0, Math.Min(DigestJson.PyInt(ut), 1000));
+            }
+            HasAreas = b != null && (Rooms.Count > 0 || Zones.Any(p => p.Key.StartsWith("#", StringComparison.Ordinal)));
             Tools = new List<ToolSpec>();
             if (Has) Tools.AddRange(BuildTools());
             if (HasFloors) Tools.Add(FloorTool());
+            if (HasAreas) Tools.Add(AreaTool());
+            if (b != null && Undoable > 0) Tools.Add(UndoTool());
             Names = new HashSet<string>(Tools.Select(t => t.Name), StringComparer.Ordinal);
         }
 
@@ -121,6 +149,92 @@ namespace RimWorldLLM.Mind.RimWorld
             return new ToolSpec("floor", "Lay a floor in a room.", ps);
         }
 
+        private ToolSpec AreaTool()
+        {
+            string have = Areas.Count > 0 ? string.Join(", ", Areas) + "; " : "";
+            var ps = new List<Param>
+            {
+                new Param("op", "enum", "assign restricts who to the area", choices: new[] { "add", "remove", "assign" }),
+                new Param("area", "text", "allowed area: " + have + "a new name makes one; home; none frees assigned pawns", maxLen: AreasPure.MaxName),
+                new Param("where", "text", "add/remove: room 12 (ROOMS), #4 (a ZONES id) or base", maxLen: 24, required: false),
+                new Param("who", "text", "assign: colonist or animal names, comma list", maxLen: 100, required: false),
+                WhyParam
+            };
+            return new ToolSpec("area", "Shape an allowed area or restrict pawns and animals to it.", ps);
+        }
+
+        private ToolSpec UndoTool()
+        {
+            var ps = new List<Param> { new Param("n", "int", "how many, 1 to 5 (default 1)", lo: 1, hi: VivariumRoutes.MaxNarratorUndo, required: false), WhyParam };
+            return new ToolSpec("undo", "Take back your last placements.", ps);
+        }
+
+        /// <summary>The one undo of a turn: true the first time, false after (a session is one turn).</summary>
+        public bool TakeUndo()
+        {
+            if (_undid) return false;
+            _undid = true;
+            return true;
+        }
+        public const string UndoRefusal = "already undid this turn; move on";
+
+        private JObject AreaBody(JObject v)
+        {
+            string op = PyStr.Strip(PyJson.Str(v["op"])).ToLowerInvariant();
+            if (op != "add" && op != "remove" && op != "assign") throw new PyValueError("op is add, remove or assign");
+            string name = PyStr.Strip(GameData.Clean(PyJson.Str(v["area"]), "build", AreasPure.MaxName));
+            if (name.Length == 0) throw new PyValueError("give the area's name");
+            string low = name.ToLowerInvariant();
+            bool home = low == AreasPure.HomeWord, none = low == None;
+            if (none && op != "assign") throw new PyValueError("area none goes with assign");
+            if (home && op == "assign") throw new PyValueError("home is not for pawns; name an allowed area, or none to free them");
+            if (!home && !none && op != "add" && !Areas.Contains(name, StringComparer.OrdinalIgnoreCase))
+                throw new PyValueError("no allowed area named " + name + "; " + (Areas.Count == 0 ? "make one with op add" : "the areas are: " + string.Join(", ", Areas)));
+            var b = new JObject { ["op"] = op, ["name"] = home ? AreasPure.HomeWord : none ? None : (Areas.FirstOrDefault(a => a.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? name) };
+            JToken wt = Get(v, "where");
+            string where = wt == null ? "" : PyStr.Strip(PyJson.Str(wt));
+            if (op == "assign")
+            {
+                if (where.Length > 0) throw new PyValueError("assign takes who, not where");
+            }
+            else
+            {
+                if (where.Length == 0) throw new PyValueError("add and remove need where: room 12, #4 or base");
+                AreaWhere w; string refusal;
+                if (!AreasPure.ParseWhere(where, out w, out refusal)) throw new PyValueError(refusal);
+                if (w.Kind == AreaWhere.Room && !Rooms.Any(r => r.Key == w.Id.ToString(CultureInfo.InvariantCulture)))
+                    throw new PyValueError("no such room; the rooms are: " + string.Join(", ", Rooms.Select(r => r.Key)));
+                if (w.Kind == AreaWhere.Zone && !Zones.Any(z => z.Key == "#" + w.Id.ToString(CultureInfo.InvariantCulture)))
+                    throw new PyValueError("no such zone; the zones are: " + string.Join(", ", Zones.Where(z => z.Key.StartsWith("#", StringComparison.Ordinal)).Select(z => z.Key)));
+                b["where"] = w.ToString();
+            }
+            JToken who = Get(v, "who");
+            var names = who == null ? new List<string>() : AreasPure.SplitNames(PyJson.Str(who));
+            if (op == "assign" && names.Count == 0) throw new PyValueError("assign needs who: colonist or animal names, comma separated");
+            if (names.Count > AreasPure.MaxWho) throw new PyValueError("who takes at most " + AreasPure.MaxWho + " names");
+            if (names.Count > 0)
+            {
+                var pool = _pawns.Select(p => p.Key).Concat(Animals).ToList();
+                var okNames = new List<string>();
+                foreach (var n in names)
+                {
+                    string hit = pool.FirstOrDefault(p => p.Equals(n, StringComparison.OrdinalIgnoreCase));
+                    if (hit == null) throw new PyValueError("no pawn named " + n + "; colonists: " + string.Join(", ", _pawns.Keys) + (Animals.Count > 0 ? "; animals: " + string.Join(", ", Animals) : ""));
+                    okNames.Add(hit);
+                }
+                b["who"] = new JArray(okNames.Cast<object>().ToArray());
+            }
+            return b;
+        }
+
+        private static JObject WithWhy(JObject b, JObject v)
+        {
+            JToken wt;
+            string why = PyStr.Strip(GameData.Clean(v.TryGetValue("why", out wt) && PyJson.Truthy(wt) ? PyJson.Str(wt) : "", "why", WhyMax));
+            if (why.Length > 0) b["why"] = why;
+            return b;
+        }
+
         private static JToken Get(JObject v, string k)
         {
             if (!v.TryGetValue(k, out JToken x) || x == null || x.Type == JTokenType.Null) return null;
@@ -144,6 +258,19 @@ namespace RimWorldLLM.Mind.RimWorld
         public (string verb, JObject body) Body(string tool, JObject v)
         {
             if (tool == "floor") return FloorBody(v);
+            if (tool == "area") return ("area", WithWhy(AreaBody(v), v));
+            if (tool == "undo")
+            {
+                var u = new JObject();
+                JToken nt = Get(v, "n");
+                if (nt != null)
+                {
+                    long n = DigestJson.PyInt(nt);
+                    if (n < 1 || n > VivariumRoutes.MaxNarratorUndo) throw new PyValueError("n is 1 to " + VivariumRoutes.MaxNarratorUndo);
+                    u["n"] = n;
+                }
+                return ("undo", WithWhy(u, v));
+            }
             if (tool != "rezone") throw new PyAttributeError("ZonesKit has no attribute _" + tool);
             string zone = PyStr.Strip(PyJson.Str(v["zone"]));
             string kind = KindOf(zone);
