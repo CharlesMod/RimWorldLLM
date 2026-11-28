@@ -266,6 +266,20 @@ namespace RimWorldLLM.Tests
         }
 
         [Fact]
+        public void QuietRequestsStillWaitInTheList()
+        {
+            var b = new PairApprovals();
+            b.Sync(new[] { P("k1", "111111", quiet: true), P("k2", "222222") });
+            Assert.Equal(new[] { "k1", "k2" }, b.Waiting.Select(x => x.Key));
+            Assert.Equal("k2", b.Current.Key);
+            string code;
+            Assert.True(b.TryBeginAnswer("k1", out code));   // a mistaken Deny is undone from the settings list
+            b.Finish("k1", code, true, PairAnswerOutcome.Done);
+            Assert.Equal(PairAskState.Allowed, b.Get("k1").State);
+            Assert.Equal(new[] { "k2" }, b.Waiting.Select(x => x.Key));
+        }
+
+        [Fact]
         public void AllowAndDeny()
         {
             var b = new PairApprovals();

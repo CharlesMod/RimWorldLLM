@@ -188,6 +188,9 @@
   <RWL_Share_BadgeTailscale>Tailscale</RWL_Share_BadgeTailscale>
   <RWL_Share_RowTip>Click to show this address as a QR code.</RWL_Share_RowTip>
   <RWL_Share_QrTip>Scan with a phone to check the engine answers at {0}. Other PCs find it by themselves.</RWL_Share_QrTip>
+  <RWL_Share_WaitingTitle>Waiting to pair</RWL_Share_WaitingTitle>
+  <RWL_Share_WaitingRow>{0}, code {1} (from {2})</RWL_Share_WaitingRow>
+  <RWL_Share_WaitingNote>Allow only if the other PC shows the same code. After a Deny, that PC's new requests wait here without a pop-up.</RWL_Share_WaitingNote>
   <RWL_Share_PairedTitle>Paired PCs</RWL_Share_PairedTitle>
   <RWL_Share_PairedNone>No PC is paired with this engine yet.</RWL_Share_PairedNone>
   <RWL_Share_PairedLoading>Reading the paired PCs...</RWL_Share_PairedLoading>

@@ -42,6 +42,7 @@ namespace RimWorldLLM
             GUI.color = Color.white;
 
             if (view == ShareView.On) Addresses(l, host.Addresses);
+            if (s.shareEngine) WaitingRequests(l, host);
             if (s.shareEngine && (view == ShareView.On || view == ShareView.OnNoNetwork)) PairedPcs(l, host);
         }
 
@@ -93,6 +94,27 @@ namespace RimWorldLLM
                 return tex;
             }
             catch { return null; }
+        }
+
+        // Requests waiting for an answer, quiet ones too (a source denied once raises no window for the rest of the
+        // engine's life; a mistaken Deny is undone here).
+        static void WaitingRequests(Listing_Standard l, ShareHost host)
+        {
+            var list = host.Book.Waiting;
+            if (list.Count == 0) return;
+            l.Gap(4f);
+            l.Label(UiUtil.T("RWL_Share_WaitingTitle"));
+            foreach (var it in list)
+            {
+                var row = l.GetRect(30f);
+                Widgets.Label(new Rect(row.x + 6f, row.y + 4f, row.width - 260f, 26f), UiUtil.T("RWL_Share_WaitingRow", it.Name, PairingSession.FormatCode(it.Code), it.From));
+                bool can = it.State == PairAskState.Pending;
+                if (Widgets.ButtonText(new Rect(row.xMax - 250f, row.y, 120f, 28f), UiUtil.T("RWL_PairReq_Allow"), true, true, can)) EngineShareManager.Answer(it.Key, true);
+                if (Widgets.ButtonText(new Rect(row.xMax - 120f, row.y, 120f, 28f), UiUtil.T("RWL_PairReq_Deny"), true, true, can)) EngineShareManager.Answer(it.Key, false);
+            }
+            GUI.color = Color.gray;
+            l.Label(UiUtil.T("RWL_Share_WaitingNote"));
+            GUI.color = Color.white;
         }
 
         static void PairedPcs(Listing_Standard l, ShareHost host)

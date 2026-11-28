@@ -224,6 +224,12 @@ namespace RimWorldLLM.Bridge
 
         public List<PairAsk> Snapshot() { lock (_lk) return _items.Select(x => x.Copy()).ToList(); }
 
+        /// <summary>
+        /// Every live request, quiet ones included, oldest first: the settings list. A source the person denied once is
+        /// quiet for the rest of the engine's life (no window), but it can still be allowed from here if the Deny was a mistake.
+        /// </summary>
+        public List<PairAsk> Waiting { get { lock (_lk) return _items.Where(x => x.Live).OrderBy(x => x.Seq).Select(x => x.Copy()).ToList(); } }
+
         public PairAsk Get(string key)
         {
             lock (_lk)

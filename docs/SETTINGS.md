@@ -73,6 +73,8 @@ source the status line reads "Sharing needs the local engine."
   Deny. The code must match the one the other PC shows big on its screen. If the other PC asks again, the window says
   "It asked again with a new code. Compare again." If it withdraws or the request is answered elsewhere: "The request
   ended (withdrawn on the other PC, or answered elsewhere)." The window does not pause the game and Esc does not answer it.
+- **Waiting to pair:** every request still waiting, with Allow and Deny. After a Deny, the engine marks that address's
+  later requests quiet for the rest of its life: no pop-up, but they still wait here, so a mistaken Deny can be undone.
 - **Paired PCs:** the list under the toggle, "<name> (since <date>)", with **Remove**: it takes the PC's access away at
   once; that PC has to pair again.
 - **Firewall:** the first time sharing is on, Windows asks whether easy-engine may use the network: allow it on private
