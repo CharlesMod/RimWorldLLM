@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased: colonists talk about what is really happening
+
+- **Lines from the moment.** Every spoken line now sees what stands out right now: a wound, the cold, low food, a raid, a death, who
+  is there and what they do. It also sees who it is said to (what they are doing, how the two feel about each other, and the last
+  few things they said). The game's own interaction (insult, kind words, deep talk, romance attempt...) sets the intent and tone,
+  and a rebuff or fight it caused is reflected.
+- **No more price talk or random subjects.** Voice cards lost the code-written example lines and the "what things cost" habit.
+  Chitchat no longer takes the game log's random topic (hickory wood, mortars, haircuts).
+- **Longer when it matters.** Small talk stays short. A death, an injury, a fight, a deep talk or a romance may take up to three
+  sentences (60 words max).
+- **Thoughts and diaries are about the day,** not about who talked to whom. Thoughts see the pawn's present state. No thought or
+  diary opening repeats day after day, and no pawn repeats another's line or keeps the same opening word.
+
 ## Unreleased: share an engine across your PCs
 
 - **Same PC by default.** A fresh install runs the engine on this PC only (127.0.0.1): nothing is exposed, nothing asks to pair.
