@@ -57,6 +57,8 @@ namespace RimWorldLLM.Mind.RimWorld
         public readonly TradeKit Trade;
         /// <summary>The Biotech tools (mechs, genes, children); they exist only when the digest has a bio block.</summary>
         public readonly BioKit Bio;
+        /// <summary>The read tools inspect, find, survey (offered when the digest has pawns); the 4-reads-per-turn counter lives here, one session per turn.</summary>
+        public readonly InspectKit Inspect;
         /// <summary>Cleaned colonist name -> age, for the pawns whose digest entry has a numeric age.</summary>
         public readonly Dictionary<string, double> Ages = new Dictionary<string, double>(StringComparer.Ordinal);
         public const int ChildAge = 13;
@@ -93,10 +95,11 @@ namespace RimWorldLLM.Mind.RimWorld
                 if (p is JObject ao && DigestJson.IsNumberish(DigestJson.G(ao, "age"))) Ages[GameData.Name(DigestJson.G(ao, "name"))] = DigestJson.PyFloat(DigestJson.G(ao, "age"));
             Combat = new CombatKit(DigestJson.G(Digest, "combat"), Pawns, Build, afterFight);   // squad needs a combat view; defend also a build block
             Trade = new TradeKit(Digest);                        // trade_offer, trade: only with a trade block (caravans are off)
+            Inspect = new InspectKit(Digest);
             var tools = BuildTools();
             if (Combat.Tools.Count > 0 && Combat.Tools.Any(t => t.Name == "squad"))
                 tools = tools.Where(t => t.Name != "order").ToList();   // in a fight squad orders replace single orders (cells by name, not x/z)
-            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).ToList();
+            Tools = tools.Concat(Build.Tools).Concat(Combat.Tools).Concat(Trade.Tools).Concat(Bio.Tools).Concat(Inspect.Tools).ToList();
             Acting = new HashSet<string>(Tools.Select(t => t.Name).Where(n => StewardKit.Acting.Contains(n) || Build.Names.Contains(n) || Combat.Names.Contains(n) || Trade.Acting.Contains(n) || Bio.Names.Contains(n)), StringComparer.Ordinal);
         }
 
@@ -204,6 +207,7 @@ namespace RimWorldLLM.Mind.RimWorld
                     return new Outcome(new JObject { ["error"] = PyStr.Head((e.Code + ": " + e.Detail).Trim(':', ' '), 160) });
                 }
             }
+            if (Array.IndexOf(InspectKit.Names, tool) >= 0) return new Outcome(await Inspect.RunAsync(tool, v, Bridge).ConfigureAwait(false));
             string verb;
             JObject body;
             try { (verb, body) = Body(tool, v); }
@@ -464,7 +468,7 @@ namespace RimWorldLLM.Mind.RimWorld
         };
 
         /// <summary>COMBAT_TOOLS: what a combat turn may use (core/steward.py).</summary>
-        public static readonly string[] CombatToolNames = { "squad", "defend", "draft", "note", "do_nothing" };
+        public static readonly string[] CombatToolNames = { "squad", "defend", "draft", "inspect", "survey", "note", "do_nothing" };
 
         /// <summary>TRADE_TOOLS: what a trade turn may use (core/steward.py).</summary>
         public static readonly string[] TradeToolNames = { "trade_offer", "trade", "note", "do_nothing" };

@@ -151,6 +151,10 @@ namespace RimWorldLLM.Mind.Fakes
         public List<JObject> Traders;             // what GET /vivarium lists as traders; null: the digest's trade.traders that can trade
         public JObject TradePending;              // a walking trade ({negotiator, to, with}); the digest's trade block shows it, a second trade is refused
         JObject _walk = new JObject();
+        public List<KeyValuePair<string, Dictionary<string, string>>> InspectAsks = new List<KeyValuePair<string, Dictionary<string, string>>>();   // (path, query) of every GET /inspect, /find and /survey
+        public Dictionary<string, string> InspectTexts = new Dictionary<string, string>();   // "/inspect?target" etc: key "<path>|<value of target or what>" -> canned text; a missing key gets a plausible default
+        public string UnknownTarget;              // GET /inspect with this target is refused ("no pawn named X; colonists: A, B")
+        public string InspectRefusal = "no pawn named {0}; colonists: Ana, Bo";
         public Dictionary<string, JObject> Offers = new Dictionary<string, JObject>();   // trader id -> a canned /trade/offer reply that replaces the one built from the digest
 
         public FakeBridge(string token = "tok") { Token = token; }
@@ -547,6 +551,19 @@ namespace RimWorldLLM.Mind.Fakes
                     ("bytes", VisionB64.Length), ("image_b64", VisionB64),
                     ("legend", J(@"{""north"": ""up"", ""x0"": 100, ""z0"": 80, ""x1"": 140, ""z1"": 110, ""cells_w"": 40, ""cells_h"": 30, ""px_per_cell"": 19, ""target_name"": """", ""ui"": ""hidden"", ""note"": """"}")),
                     ("captured_tick", Tick), ("age_s", 0));
+            }
+            if ((path == "/inspect" || path == "/find" || path == "/survey") && method == "GET")
+            {
+                var q = req.Query.ToDictionary(kv => kv.Key, kv => kv.Value);
+                InspectAsks.Add(new KeyValuePair<string, Dictionary<string, string>>(path, q));
+                string key = path == "/inspect" ? (q.TryGetValue("target", out string tg) ? tg : "") : (q.TryGetValue("what", out string wh) ? wh : "");
+                if (path == "/inspect" && UnknownTarget != null && string.Equals(key, UnknownTarget, StringComparison.OrdinalIgnoreCase))
+                    return Err(409, "refused", string.Format(InspectRefusal, key));
+                if (InspectTexts.TryGetValue(path + "|" + key, out string canned)) return Ok(("text", canned));
+                string dflt = path == "/inspect" ? key + ": fine, no needs, at home"
+                    : path == "/find" ? "2 found: #101 and #102, 4 cells N of home"
+                    : key == "stock" ? "steel 120, wood 80, meals 14 (6 days of food)" : "no threats";
+                return Ok(("text", dflt));
             }
             if (path == "/trade/offer" && method == "GET")
             {

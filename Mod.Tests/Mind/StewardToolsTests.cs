@@ -145,7 +145,7 @@ namespace RimWorldLLM.Tests.Mind
             var names = s.Tools.Select(t => t.Name).ToList();
             foreach (var n in new[] { "set_time", "set_work", "set_schedule", "draft", "order", "set_policy", "assign_bed", "set_research", "answer_letter" })
                 Assert.Contains(n, names);
-            Assert.True(s.Acting.SetEquals(names));
+            Assert.True(s.Acting.SetEquals(names.Where(n => !InspectKit.Names.Contains(n))));   // every tool acts but the read tools (inspect, find, survey)
             var empty = new StewardKit().Session(new JObject(), null, false);
             Assert.Equal(new[] { "set_time", "set_research" }, empty.Tools.Select(t => t.Name).ToArray());
         }
