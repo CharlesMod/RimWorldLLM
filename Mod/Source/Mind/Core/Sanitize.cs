@@ -24,7 +24,7 @@ namespace RimWorldLLM.Mind
 
     public static class Sanitize
     {
-        public const int MaxWords = 35;
+        public const int MaxWords = 60;
         public const int SecretRun = 5;     // consecutive words shared with a private memory that count as quoting it
 
         private const RegexOptions Opts = RegexOptions.CultureInvariant;

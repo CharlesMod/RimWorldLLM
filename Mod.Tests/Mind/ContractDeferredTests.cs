@@ -185,7 +185,7 @@ namespace RimWorldLLM.Tests.Mind
             Assert.Equal("Baron", (string)bio.Extras["royal_title"]); Assert.Contains("Noble title: Baron", bio.Text);
             Assert.Equal(bio.Text, Builders.BuildFixedBio(p).Text);
             var vc = Builders.BuildVoiceCard(p);
-            Assert.Equal(3, vc.Examples.Count); Assert.InRange(vc.Tics.Count, 1, 3); Assert.NotEqual("", vc.RegisterLine);
+            Assert.Empty(vc.Examples); Assert.InRange(vc.Tics.Count, 1, 3); Assert.NotEqual("", vc.RegisterLine);
             Assert.DoesNotContain("Baron", Builders.BuildFixedBio(FakeBridge.DefaultPawn(2, "Bo")).Text);
             var q = (JObject)p.DeepClone(); q["age"] = 99;
             Assert.NotEqual(Builders.FactsHash(p), Builders.FactsHash(q));

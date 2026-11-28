@@ -124,6 +124,14 @@ namespace RimWorldLLM.Mind
         /// <summary>The game's own interaction between two actors, when the mod asked for words for it; else null.</summary>
         JObject VanillaSocial(JObject ev);
         string VanillaRequest(JObject info, string speaker, string listener);
+        /// <summary>The scene's "what just happened" for a vanilla interaction: the game's sentence, or a neutral one when the sentence only names a random topic.</summary>
+        string VanillaTrigger(JObject info, string speaker, string listener);
+        /// <summary>True when the moment earns more than one short line (a death, a wound, a fight, a deep or romantic talk).</summary>
+        bool EarnsLength(JObject ev);
+        /// <summary>What could stand out for a line: facts from the speaker, the scene, the listener (or null) and recent events (core/salience picks).</summary>
+        List<SalientFact> SalientFacts(JObject snap, JObject scene, JObject listenerSnap, int listenerId, IEnumerable<JObject> events, long nowGame);
+        /// <summary>The listener as the speaker sees them, in words: what they are doing, how they look, the relation and opinions.</summary>
+        List<string> ListenerCard(JObject snap, JObject listenerSnap, int listenerId);
         /// <summary>A generated line that only remarks on the talking itself (context: the scene's texts).</summary>
         bool DropsMeta(string text, IEnumerable<string> context);
         /// <summary>The idle text filler (Python getattr(adapter, "idle_fill", None)): null when the game has none.</summary>
@@ -238,6 +246,10 @@ namespace RimWorldLLM.Mind
         public virtual JObject GatherInfo(JObject ev) { return null; }
         public virtual JObject VanillaSocial(JObject ev) { return null; }
         public virtual string VanillaRequest(JObject info, string speaker, string listener) { throw new NotSupportedException(); }
+        public virtual string VanillaTrigger(JObject info, string speaker, string listener) { return (string)info["sentence"]; }
+        public virtual bool EarnsLength(JObject ev) { return false; }
+        public virtual List<SalientFact> SalientFacts(JObject snap, JObject scene, JObject listenerSnap, int listenerId, IEnumerable<JObject> events, long nowGame) { return new List<SalientFact>(); }
+        public virtual List<string> ListenerCard(JObject snap, JObject listenerSnap, int listenerId) { return new List<string>(); }
         public virtual bool DropsMeta(string text, IEnumerable<string> context) { return false; }
         public virtual Func<ITextFillHost, int, Task<int>> IdleFill() { return null; }
 

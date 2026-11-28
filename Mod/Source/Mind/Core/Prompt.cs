@@ -69,6 +69,48 @@ namespace RimWorldLLM.Mind
             return PyJson.Truthy(w) ? PyJson.Str(w) : null;
         }
 
+        // Tics, register fragments and example lines the code used to write for every character: a TOPIC tic (what it talks about) made
+        // every character of a trait talk about the same thing. A saved mind may still hold them, so the prompt filters them.
+        private static readonly string[] LegacyTopicTics = {
+            "Mentions what things cost", "Talks about the next job", "Mentions meals", "Quotes numbers", "Mentions sleep",
+            "Compares things to art", "Compares rooms", "Talks about the kill", "Calls the dead 'meat'" };
+        private static readonly string[] LegacyTopicRegisters = {
+            "counts everything", "thinks about food", "talks in kitchen terms", "casual about eating people", "resentful of others' comfort",
+            "relishes violence" };
+
+        /// <summary>Example lines reach the prompt only when the model or the player wrote them, never code.</summary>
+        public static IList<string> PromptExamples(VoiceCard v)
+        {
+            return v.LlmExamples || v.EditedByPlayer ? v.Examples : new List<string>();
+        }
+
+        public static IList<string> PromptTics(VoiceCard v)
+        {
+            if (v.EditedByPlayer) return v.Tics;
+            var t = v.Tics.Where(x => !LegacyTopicTics.Contains(x)).ToList();
+            return t.Count > 0 ? t : new List<string> { "Short sentences" };
+        }
+
+        /// <summary>The register as a manner, without a topic that pushes the character onto one subject; grammar fixed.</summary>
+        public static string PromptRegister(VoiceCard v)
+        {
+            string r = v.RegisterLine ?? "";
+            if (v.EditedByPlayer) return r;
+            foreach (var f in LegacyTopicRegisters)
+                r = System.Text.RegularExpressions.Regex.Replace(r, "(,\\s*)?" + System.Text.RegularExpressions.Regex.Escape(f) + "(\\s*,)?", m => m.Groups[1].Success && m.Groups[2].Success ? "," : "");
+            r = System.Text.RegularExpressions.Regex.Replace(r, "\\s+", " ").Replace(" ,", ",").Replace(",.", ".").Trim();
+            if (r.StartsWith("Speaks ", StringComparison.Ordinal)) r = "Comes across as " + r.Substring(7);
+            r = r.Replace("Comes across as ,", "Comes across as ").Replace("Comes across as .", "Plain and brief.");
+            if (r == "Comes across as" || r.Length == 0) r = "Plain and brief.";
+            return r;
+        }
+
+        /// <summary>An opinion as words (the model is told never to say the numbers, so it never sees them).</summary>
+        public static string OpinionWords(int o)
+        {
+            return o <= -60 ? "can't stand them" : o <= -20 ? "dislike them" : o < 20 ? "feel nothing much for them" : o < 60 ? "like them" : "are close to them";
+        }
+
         public static string BlockB(Mind mind)
         {
             var v = mind.Voice;
@@ -77,9 +119,10 @@ namespace RimWorldLLM.Mind
             string wordsLine = (words != null && !v.EditedByPlayer)
                 ? "Words: " + GameData.Clean(words, "desc") + " (your style above still applies).\n" : "";   // a player-edited card: the player's wording stands
             s += "\n=== HOW YOU TALK ===\n" +
-                 "Register: " + GameData.Clean(v.RegisterLine, "desc") + "\n" + wordsLine +
-                 "Habits: " + string.Join("; ", v.Tics.Select(t => GameData.Clean(t, "label"))) + " (use a habit in at most one line in three)\n" +
-                 "Example lines:\n" + string.Join("\n", v.Examples.Select(e => "- " + GameData.Clean(e, "line"))) + "\n";
+                 "Register: " + GameData.Clean(PromptRegister(v), "desc") + "\n" + wordsLine +
+                 "Habits: " + string.Join("; ", PromptTics(v).Select(t => GameData.Clean(t, "label"))) + " (use a habit in at most one line in three)\n";
+            var ex = PromptExamples(v);
+            if (ex.Count > 0) s += "Example lines:\n" + string.Join("\n", ex.Select(e => "- " + GameData.Clean(e, "line"))) + "\n";
             return s;
         }
 
@@ -90,7 +133,7 @@ namespace RimWorldLLM.Mind
             int shown = 0;
             foreach (var r in mind.CRelations.Take(maxRel))
             {
-                string op = r.Opinion.HasValue ? ", opinion " + (r.Opinion.Value >= 0 ? "+" : "-") + Math.Abs(r.Opinion.Value).ToString(CultureInfo.InvariantCulture) : "";
+                string op = r.Opinion.HasValue ? ", you " + OpinionWords(r.Opinion.Value) : "";
                 string rep = (!string.IsNullOrEmpty(r.Reputation) && shown < maxRep)
                     ? " (people say: " + GameData.Clean(r.Reputation, "line", 90) + ")" : "";
                 shown += rep.Length > 0 ? 1 : 0;
@@ -177,9 +220,10 @@ namespace RimWorldLLM.Mind
         public static string BlockG(Mind mind, string name, int turnNo = 0, string request = null, string aim = null, string speech = null)
         {
             var v = mind.Voice;
-            string ex = v.Examples.Count > 0 ? " Sound like: \"" + v.Examples[0] + "\"" : "";
-            string habit = PyFmt.Mod(turnNo, 3) == 0 ? "Habits (this line): " + string.Join("; ", v.Tics) + "." : "No habits this line.";
-            string s = "=== VOICE REMINDER ===\nYou are " + name + ". " + v.RegisterLine + " " + habit + ex + "\n";
+            var exs = PromptExamples(v);
+            string ex = exs.Count > 0 ? " Sound like: \"" + exs[0] + "\"" : "";
+            string habit = PyFmt.Mod(turnNo, 3) == 0 ? "Habits (this line): " + string.Join("; ", PromptTics(v)) + "." : "No habits this line.";
+            string s = "=== VOICE REMINDER ===\nYou are " + name + ". " + PromptRegister(v) + " " + habit + ex + "\n";
             if (!string.IsNullOrEmpty(speech))    // while a temporary state (drunk, dazed...) is active
                 s += "Your words right now: " + GameData.Clean(speech, "desc") + ".\n";
             else                                   // the lasting register, re-said each turn: small models follow a per-turn reminder far better
@@ -190,6 +234,39 @@ namespace RimWorldLLM.Mind
             if (!string.IsNullOrEmpty(aim))       // a fresh private aim from the inner stream (per turn, so it lives here and not in A-E)
                 s += "Your private aim (never say it outright): " + GameData.Clean(aim, "line") + "\n";
             return s + (!string.IsNullOrEmpty(request) ? request : "=== REQUEST ===\nWrite " + name + "'s next line of speech now. One line only.");
+        }
+
+        /// <summary>The 3 to 6 facts the salience picker chose for this moment, as plain lines; "" when there are none.</summary>
+        public static string StandsOut(IEnumerable<string> facts)
+        {
+            var l = facts.Select(f => GameData.Clean(f, "line")).Where(f => f.Length > 0).ToList();
+            if (l.Count == 0) return "";
+            return "\n=== WHAT STANDS OUT RIGHT NOW ===\n(Take what fits the moment; none of it is required.)\n" +
+                   GameData.DataSection("standout", string.Join("\n", l.Select(f => "- " + f)));
+        }
+
+        /// <summary>Who the line is said to: name, what they do and look like, how the two feel, the last lines between them.</summary>
+        public static string ListenerSection(string name, IEnumerable<string> card, IEnumerable<string> said)
+        {
+            var body = new List<string>();
+            if (!string.IsNullOrEmpty(name)) body.Add("Name: " + GameData.Clean(name, "name"));
+            body.AddRange(card.Select(c => GameData.Clean(c, "line")).Where(c => c.Length > 0));
+            var sl = said.Select(c => GameData.Clean(c, "line")).Where(c => c.Length > 0).ToList();
+            if (sl.Count > 0) { body.Add("The last things said between you (newest last):"); body.AddRange(sl.Select(c => "- " + c)); }
+            if (body.Count == 0) return "";
+            return "\n=== WHO YOU ARE TALKING TO ===\n" + GameData.DataSection("listener", string.Join("\n", body));
+        }
+
+        /// <summary>How long this line may be: a passing remark stays short, a real moment may take up to three sentences.</summary>
+        public static string LengthHint(bool earnsLength)
+        {
+            return earnsLength ? "Up to three short sentences, since this matters; do not pad." : "Keep it short: a few words or one short sentence.";
+        }
+
+        /// <summary>The default request for a line (no custom request): the name, the length hint, one line.</summary>
+        public static string LineRequest(string name, bool earnsLength)
+        {
+            return "=== REQUEST ===\nWrite " + name + "'s next line of speech now. " + LengthHint(earnsLength) + " One line only.";
         }
 
         public static List<(string, string)> LineMessages(string prefix, IList<(string, string)> turns, Mind mind, string name,

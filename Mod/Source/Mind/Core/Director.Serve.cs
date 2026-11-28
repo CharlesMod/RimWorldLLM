@@ -22,6 +22,12 @@ namespace RimWorldLLM.Mind
             return sb.ToString();
         }
 
+        private string NameOf(JToken id, string dflt)
+        {
+            string n;
+            return id != null && id.Type == JTokenType.Integer && _names.TryGetValue((int)(long)id, out n) ? n : dflt;
+        }
+
         private static ISet<string> TokensOfAll(IDictionary<int, HashSet<string>> map, IEnumerable<int> ids)
         {
             var s = new HashSet<string>();
@@ -143,7 +149,8 @@ namespace RimWorldLLM.Mind
                     lease.Data["talk_id"] = item.Payload["talk_id"];
                 }
                 else if (BridgeJson.Truthy(item.Payload["trigger"], false)) trigger = PyJson.Str(item.Payload["trigger"]);          // a payoff line (core/concerns.py)
-                else if (vanilla != null) trigger = BridgeJson.Truthy(vanilla["sentence"], false) ? PyJson.Str(vanilla["sentence"]) : evSummary;
+                else if (vanilla != null) trigger = BridgeJson.Truthy(vanilla["sentence"], false) || vanilla["key"] != null
+                    ? Adapter.VanillaTrigger(vanilla, NameOf(vanilla["initiator"], "someone"), NameOf(vanilla["recipient"], "someone")) : evSummary;
                 else if (BridgeJson.Truthy(item.Payload["first"], false)) trigger = Adapter.FirstTrigger(PyJson.Str(item.Payload["first"]), evSummary);
                 else trigger = evSummary;
                 SanitizeCtx ctx; JObject scene; string sig;
@@ -167,6 +174,13 @@ namespace RimWorldLLM.Mind
                 }
                 lease.Generating = true;
                 object res;
+                // what stands out and who is listening: per lease, so they ride with the frozen prefix
+                string lctx = await LineContextAsync(aid, listener, (JObject)lease.Data["snap"], scene, lname);
+                if (lctx.Length > 0)
+                {
+                    lease.Data["prefix"] = (string)lease.Data["prefix"] + lctx;
+                    ctx.PromptWords = new HashSet<string>(ctx.PromptWords.Concat(Sanitize.PromptCapWords(lctx)));
+                }
                 string prefix = (string)lease.Data["prefix"];
                 string speech = lease.Data.TryGetValue("speech", out object sp0) ? sp0 as string : null;
                 if (vanilla != null)
@@ -184,8 +198,9 @@ namespace RimWorldLLM.Mind
                 {
                     int turnNo; _lineCount.TryGetValue(aid, out turnNo);
                     InnerArgs ia = InnerKw(mind, listener);
+                    string request = PromptBlocks.LineRequest(_names[aid], item.Kind == "player_talk" || Adapter.EarnsLength(item.Event));
                     res = await Passes.SpeakAsync(Llm, lease.Slot, mind, _names[aid], prefix, new List<(string, string)>(), turnNo, ctx, lname,
-                                                  LabelsFor(minor), Cfg.Llm.LineMaxTokens, null, ia.Aim, ia.SoloAim, ia.FreshAim, null, 0, null,
+                                                  LabelsFor(minor), Cfg.Llm.LineMaxTokens, request, ia.Aim, ia.SoloAim, ia.FreshAim, null, 0, null,
                                                   speech, ia.AimExtra, ia.IntentLlm, ia.DropJustWant);
                 }
                 lease.Generating = false;
@@ -207,6 +222,7 @@ namespace RimWorldLLM.Mind
                     int lc; _lineCount.TryGetValue(aid, out lc);
                     _lineCount[aid] = lc + 1;
                     RememberOwn(aid, spoken.Text);
+                    if (listener != null) RememberPair(aid, listener.Value, spoken.Text, now.Game);
                     _dirty.Add(aid);
                 }
             }
@@ -504,7 +520,18 @@ namespace RimWorldLLM.Mind
                 var leases = new Dictionary<int, Lease> { [a] = leaseA, [b] = leaseB };
                 var ctxs = new Dictionary<int, SanitizeCtx>();
                 foreach (var (aid, trig) in new[] { (a, summary + " You start talking to " + _names[b] + "."), (b, summary + " " + _names[a] + " is talking to you.") })
-                    ctxs[aid] = (await PrepareAsync(aid, trig, item.Event, leases[aid], aid == a ? b : a)).Ctx;
+                {
+                    var prep = await PrepareAsync(aid, trig, item.Event, leases[aid], aid == a ? b : a);
+                    ctxs[aid] = prep.Ctx;
+                    int other = aid == a ? b : a;
+                    string lctx = await LineContextAsync(aid, other, (JObject)leases[aid].Data["snap"], prep.Scene, _names.TryGetValue(other, out string on) ? on : null);
+                    if (lctx.Length > 0)
+                    {
+                        leases[aid].Data["prefix"] = (string)leases[aid].Data["prefix"] + lctx;
+                        prep.Ctx.PromptWords = new HashSet<string>(prep.Ctx.PromptWords.Concat(Sanitize.PromptCapWords(lctx)));
+                    }
+                }
+                bool longTalk = Adapter.EarnsLength(item.Event);
                 bool pairMinor = IsMinor((int?)a) || IsMinor((int?)b);
                 foreach (SanitizeCtx c in ctxs.Values) c.MinorInvolved = c.MinorInvolved || pairMinor;
                 var startJobs = new Dictionary<int, string>();
@@ -526,8 +553,8 @@ namespace RimWorldLLM.Mind
                     var (check, onCheck) = RepeatCheck(conv.Turns, spId);
                     InnerArgs ia = InnerKw(Minds[spId], lis);
                     object res = await Passes.SpeakAsync(Llm, li.Slot, Minds[spId], _names[spId], (string)li.Data["prefix"], conv.TurnsForPrompt(),
-                                                         conv.Turns.Count / 2, ctxs[spId], _names[lis], LabelsFor(ctxs[spId].MinorInvolved),
-                                                         Cfg.Llm.LineMaxTokens, null, ia.Aim, ia.SoloAim, ia.FreshAim, check, Cfg.RepeatRetries, onCheck,
+                                                         _lineCount.TryGetValue(spId, out int turnLc) ? turnLc : 0, ctxs[spId], _names[lis], LabelsFor(ctxs[spId].MinorInvolved),
+                                                         Cfg.Llm.LineMaxTokens, PromptBlocks.LineRequest(_names[spId], longTalk), ia.Aim, ia.SoloAim, ia.FreshAim, check, Cfg.RepeatRetries, onCheck,
                                                          li.Data.TryGetValue("speech", out object sp1) ? sp1 as string : null, ia.AimExtra, ia.IntentLlm,
                                                          ia.DropJustWant);
                     li.Generating = false;
@@ -547,6 +574,7 @@ namespace RimWorldLLM.Mind
                     if (!ok) { conv.Ended = "apart"; break; }        // the game's liveness check refused: gone or out of range
                     conv.Add(spId, sp.Text, sp.Intent);
                     RememberOwn(spId, sp.Text);
+                    RememberPair(spId, lis, sp.Text, Now().Game);
                     lastTurnReal = Now().Real;
                     Leases.Quotas.Record(spId, lis, Now(), pair: conv.Turns.Count == 1);
                     int lc; _lineCount.TryGetValue(spId, out lc);

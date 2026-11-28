@@ -172,13 +172,13 @@ namespace RimWorldLLM.Mind.RimWorld
                 conds.Add((label, Js.S(Js.Get(c, "part")).Trim(), Js.IsNum(sv, true) ? Js.Dbl(sv) : 0, Js.Truthy(Js.Get(c, "tended"))));
             }
             foreach (var c in conds.OrderByDescending(x => x.Sev).ThenBy(x => x.Label, StringComparer.Ordinal).Take(2))
-                Add(l, FactKind.Injury, "injury:" + c.Label + ":" + c.Part,
+                Add(l, FactKind.Wound, "injury:" + c.Label + ":" + c.Part,
                     (c.Part.Length > 0 ? "Your " + c.Part.ToLowerInvariant() + ": " : "You have ") + c.Label.ToLowerInvariant() + (c.Tended ? " (tended)." : " (not tended yet)."),
                     c.Tended ? 0.35 : 0.65);
             var pain = Js.Get(h, "pain");
-            if (Js.IsNum(pain, true) && Js.Dbl(pain) >= 0.6) Add(l, FactKind.Injury, "injury:pain", "You are in a lot of pain.", 0.8);
-            else if (Js.IsNum(pain, true) && Js.Dbl(pain) > 0.3) Add(l, FactKind.Injury, "injury:pain", "You are in pain.", 0.5);
-            if (Js.Truthy(Js.Get(h, "downed"))) Add(l, FactKind.Injury, "injury:downed", "You are down and cannot get up.", 0.9);
+            if (Js.IsNum(pain, true) && Js.Dbl(pain) >= 0.6) Add(l, FactKind.Wound, "injury:pain", "You are in a lot of pain.", 0.8);
+            else if (Js.IsNum(pain, true) && Js.Dbl(pain) > 0.3) Add(l, FactKind.Wound, "injury:pain", "You are in pain.", 0.5);
+            if (Js.Truthy(Js.Get(h, "downed"))) Add(l, FactKind.Wound, "injury:downed", "You are down and cannot get up.", 0.9);
         }
 
         private static void Needs(List<SalientFact> l, JObject snap)
@@ -276,6 +276,29 @@ namespace RimWorldLLM.Mind.RimWorld
         }
 
         public static int SelfId(JObject snap) { var i = Js.Get(snap, "id"); return i != null && i.Type == JTokenType.Integer ? (int)(long)i : -1; }
+
+        /// <summary>The listener for a "who you are talking to" section: lines like "Doing: ...", "Looks: ...", "You and them: ...". In words, no numbers.</summary>
+        public static List<string> ListenerCard(JObject snap, JObject lis, int listenerId)
+        {
+            var o = new List<string>();
+            if (lis == null) return o;
+            string job = Js.JobText(Js.Get(lis, "job")).Trim();
+            if (job.Length > 0) o.Add("Doing: " + job);
+            var state = VisibleState(lis);
+            if (state.Count > 0) o.Add("Looks: " + string.Join(", ", state.Take(4)));
+            var mine = RelationTo(snap, listenerId);
+            if (mine.HasValue)
+            {
+                string kind = mine.Value.Kind;
+                bool kin = kind.Length > 0 && kind != "acquaintance";
+                string op = mine.Value.Opinion.HasValue ? "you " + OpinionWords(mine.Value.Opinion.Value) + " them" : "";
+                if (kin || op.Length > 0) o.Add("You and them: " + (kin ? "your " + kind : "an acquaintance") + (op.Length > 0 ? "; " + op : ""));
+            }
+            int me = SelfId(snap);
+            var theirs = me >= 0 ? RelationTo(lis, me) : null;
+            if (theirs.HasValue && theirs.Value.Opinion.HasValue) o.Add("What they think of you: they " + OpinionWords(theirs.Value.Opinion.Value) + " you");
+            return o;
+        }
 
         private static void Listener(List<SalientFact> l, JObject snap, JObject lis, int listenerId)
         {

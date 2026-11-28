@@ -1,5 +1,5 @@
 // What stands out right now: picks the few facts about the scene, the speaker and the listener that a spoken line, a thought or a diary
-// entry should be built from. Pure: no RimWorld types, no IO, deterministic (stable tie-break by Key).
+// entry should be built from. Pure: no game types, no IO, deterministic (stable tie-break by Key).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +12,10 @@ namespace RimWorldLLM.Mind
     public static class FactKind
     {
         public const string Room = "room", Weather = "weather", Time = "time", Season = "season", Job = "job", Nearby = "nearby",
-            Event = "event", Injury = "injury", Need = "need", Mood = "mood", Listener = "listener", History = "history", Social = "social";
+            Event = "event", Wound = "wound", Need = "need", Mood = "mood", Listener = "listener", History = "history", Social = "social";
     }
 
-    /// <summary>One thing a pawn could notice or mention. Text is plain words (no numbers the model is told never to say).</summary>
+    /// <summary>One thing a character could notice or mention. Text is plain words (no numbers the model is told never to say).</summary>
     public sealed class SalientFact
     {
         public string Kind = "";
@@ -41,7 +41,7 @@ namespace RimWorldLLM.Mind
         public SaliencePurpose Purpose = SaliencePurpose.Line;
         public int Min = 3;
         public int Max = 6;
-        /// <summary>Keys this pawn used in its last few prompts (novelty penalty).</summary>
+        /// <summary>Keys this character used in its last few prompts (novelty penalty).</summary>
         public ISet<string> RecentKeys;
         public string ListenerName = "";
     }

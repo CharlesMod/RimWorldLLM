@@ -273,7 +273,7 @@ in the file to change either.
 | `llm.min_p` | null | file |  |
 | `llm.repeat_penalty` | null | file |  |
 | `llm.engine` | null | file |  |
-| `llm.line_max_tokens` | 48 | file |  |
+| `llm.line_max_tokens` | 96 | file |  |
 | `llm.line_dry` | false | file |  |
 | `llm.dry_multiplier` | 0.8 | file |  |
 | `llm.dry_base` | 1.75 | file |  |

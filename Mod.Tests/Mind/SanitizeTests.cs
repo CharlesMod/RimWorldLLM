@@ -43,7 +43,7 @@ namespace RimWorldLLM.Tests.Mind
             new[] { "As an AI language model, I cannot continue.", "refusal" },
             new[] { "I cannot assist with that request.", "refusal" },
             new[] { "Disclaimer: this is fiction.", "refusal" },
-            new[] { string.Concat(Enumerable.Repeat("word ", 40)), "too_long" },
+            new[] { string.Concat(Enumerable.Repeat("word ", 65)), "too_long" },
             new[] { "Cy told me and I believe it.", "unknown_name" },
             new[] { "Zed took the rifle.", "unknown_name" },
             new[] { "Get back, Zed.", "unknown_name" });

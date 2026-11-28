@@ -16,7 +16,7 @@ namespace RimWorldLLM.Mind
         public double? MinP { get; set; } = null;
         public double? RepeatPenalty { get; set; } = null;
         public bool? Engine { get; set; } = null;
-        public int LineMaxTokens { get; set; } = 48;
+        public int LineMaxTokens { get; set; } = 96;
         public bool LineDry { get; set; } = false;
         public double DryMultiplier { get; set; } = 0.8;
         public double DryBase { get; set; } = 1.75;
