@@ -70,6 +70,8 @@ namespace RimWorldLLM.Harness
                 cfg.Llm.BaseUrl = llmUrl;
                 if (!string.IsNullOrEmpty(model)) cfg.Llm.Model = model;
                 var fb = new FakeBridge("tok") { Digest = digest, Combat = combat };
+                if (ReadTexts != null)
+                    foreach (var kv in ReadTexts.Properties()) fb.InspectTexts[kv.Name] = (string)kv.Value;
                 if (goals != null)
                     foreach (string k in new[] { "goals", "plan", "orders", "log" })
                         if (goals[k] != null) fb.GoalsBoard[k] = goals[k].DeepClone();
@@ -143,10 +145,13 @@ namespace RimWorldLLM.Harness
 
         public const string Usage =
             "steward-try --digest FILE [--goals FILE] [--chat TEXT] [--playing] --llm-url URL [--model M] [--mode auto|grammar|json|native]\n" +
-            "      [--combat FILE [--combat-cycle]] [--trade-turn]   (a recorded GET /combat body; --combat-cycle runs one small combat turn and needs no --digest)\n" +
+            "      [--combat FILE [--combat-cycle]] [--trade-turn] [--reads FILE]   (a recorded GET /combat body; --combat-cycle runs one small combat turn and needs no --digest)\n" +
             "      --trade-turn runs one trade turn on the digest (needs --digest; implies --playing); SKIPPED is printed when food is critical or a fight is on.\n" +
             "  Runs one steward cycle on a recorded GET /digest body against the fake bridge with the real tool backend at URL; prints the system prompt size,\n" +
             "  the user turn, each tool call with its result, the chat lines and the REJECTED failures. Nothing here touches a game.";
+
+        /// <summary>--reads FILE: canned answers for the fake bridge's GET /inspect, /find and /survey ("/inspect|Bram" -> text), so a live run reads plausible words.</summary>
+        public static JObject ReadTexts;
 
         /// <summary>steward_try.main: arguments after the command word. Exit code 2 on a usage error (argparse).</summary>
         public static async Task<int> MainAsync(string[] argv, TextWriter stdout, TextWriter stderr, Func<MindConfig, IBackend> makeBackend = null)
@@ -164,6 +169,7 @@ namespace RimWorldLLM.Harness
                         case "--digest": digest = Next(); break;
                         case "--goals": goals = Next(); break;
                         case "--chat": chat = Next(); break;
+                        case "--reads": ReadTexts = JObject.Parse(File.ReadAllText(Next())); break;
                         case "--playing": playing = true; break;
                         case "--combat": combat = Next(); break;
                         case "--combat-cycle": combatCycle = true; break;
