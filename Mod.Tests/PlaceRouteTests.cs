@@ -260,6 +260,18 @@ namespace RimWorldLLM.Tests
             Assert.Equal(Tuple.Create("label", "the lab"), PlaceWords.ParseAt("the lab"));
             Assert.Equal(Tuple.Create("label", "room service"), PlaceWords.ParseAt("room service"));
             Assert.Equal(Tuple.Create("label", "#abc"), PlaceWords.ParseAt("#abc"));
+            Assert.Equal(Tuple.Create("room", "17"), PlaceWords.ParseAt("17"));            // seen live: a bare digest room id
+            Assert.Equal(Tuple.Create("room", "17"), PlaceWords.ParseAt("near 17"));
+            Assert.Equal(Tuple.Create("label", "the lab"), PlaceWords.ParseAt("near the lab"));
+        }
+
+        [Fact]
+        public void FurnishWithACoolerIsTheCoolerOp()   // seen live: place(op=furnish, what=cooler, temp=freezing)
+        {
+            Assert.True(Post(new { op = "furnish", what = "cooler", at = "room 18", temp = "freezing" }).Ok);
+            Assert.Equal("cooler", Place.Last.Op); Assert.Null(Place.Last.What); Assert.Equal(-10, Place.Last.Degrees);
+            Assert.True(Post(new { op = "furnish", what = "Heater", at = "the barracks" }).Ok);
+            Assert.Equal("heater", Place.Last.Op);
         }
 
         [Fact]

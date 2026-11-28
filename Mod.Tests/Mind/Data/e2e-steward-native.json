@@ -548,7 +548,7 @@
           "cooler",
           "research bench"
          ],
-         "description": "thing: what"
+         "description": "thing: what (heaters, coolers, power and lamps: use place)"
         },
         "room": {
          "type": "string",
@@ -1803,7 +1803,7 @@
           "cooler",
           "research bench"
          ],
-         "description": "thing: what"
+         "description": "thing: what (heaters, coolers, power and lamps: use place)"
         },
         "room": {
          "type": "string",

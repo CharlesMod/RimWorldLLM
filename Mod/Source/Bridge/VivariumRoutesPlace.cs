@@ -25,6 +25,7 @@ namespace RimWorldLLM.Bridge
                 if (a.Degrees == null) throw new ArgError("temp must be one of " + string.Join(", ", PlacePure.TempWords));
             }
             string w = a.What == null ? null : a.What.ToLowerInvariant();
+            if (a.Op == "furnish" && (w == "heater" || w == "cooler" || w == "battery")) { a.Op = w; a.What = null; w = null; }   // seen live: furnish what=cooler; the cooler op puts it in a wall and keeps the temp
             switch (a.Op)
             {
                 case "furnish":

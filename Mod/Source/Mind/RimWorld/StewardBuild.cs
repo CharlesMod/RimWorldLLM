@@ -175,7 +175,7 @@ namespace RimWorldLLM.Mind.RimWorld
             };
             if (NearList.Count > 0) ps.Add(Opt("near", "room: next to this room or colonist", NearList));
             if (NameList.Count > 0) ps.Add(Opt("for", "room: whose room it is", NameList));
-            if (Things.Count > 0) ps.Add(Opt("thing", "thing: what", Things));
+            if (Things.Count > 0) ps.Add(Opt("thing", "thing: what (heaters, coolers, power and lamps: use place)", Things));
             if (Rooms.Count > 0 && Things.Count > 0)
                 ps.Add(RoomsParam("thing: inside this existing room (a room planned this turn has no id yet), else near home"));
             ps.AddRange(stuff);

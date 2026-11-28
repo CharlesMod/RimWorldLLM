@@ -181,11 +181,13 @@ namespace RimWorldLLM.Bridge
             }
         }
 
-        /// <summary>"#123" -> (id, "123"); "room 12" / "room #12" -> (room, "12"); anything else -> (label, text).</summary>
+        /// <summary>"#123" -> (id, "123"); "room 12" / "room #12" / "12" -> (room, "12"); a leading "near " is dropped; anything else -> (label, text).</summary>
         public static Tuple<string, string> ParseAt(string at)
         {
             string s = (at ?? "").Trim();
+            if (s.StartsWith("near ", StringComparison.OrdinalIgnoreCase)) s = s.Substring(5).Trim();   // the model writes "near 17" as often as "17"
             int n;
+            if (int.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out n)) return Tuple.Create("room", n.ToString(CultureInfo.InvariantCulture));   // a bare digest room id
             if (s.StartsWith("#") && int.TryParse(s.Substring(1).Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out n)) return Tuple.Create("id", n.ToString(CultureInfo.InvariantCulture));
             if (s.StartsWith("room ", StringComparison.OrdinalIgnoreCase))
             {
