@@ -1214,7 +1214,8 @@ poorly at every size and by both models: "is the door blocked" (always "no", 8/1
 Gemma 4 26B-A4B with the same projector reads layout better at 768 (entrance 11, bedroom side 16, rooms 9): the fine-tune lost some
 vision. Text-only for comparison (the same questions from the digest's room list): entrance 7, bedroom side 3, rooms 16 (the digest
 states the count). Higher resolution measurably helped base layout and soil, not the door or raid questions; a picture never beats the
-digest on facts the digest already states. The picture rides
+digest on facts the digest already states. Tiling (the 1536 px picture cut into four 768 px tiles, about 950 tokens) read worse than one picture
+(entrance 3, bedroom side 7, rooms 7, soil 4 of 16): send one picture, and give it more tokens rather than more tiles. The picture rides
 in every later request of that turn (one picture at a time) and is gone at the end of the turn: nothing keeps it in Minds, the
 board, chat, `calls.jsonl`, the loop result or the steward trace (only the kinds looked at, `looks`).
 
